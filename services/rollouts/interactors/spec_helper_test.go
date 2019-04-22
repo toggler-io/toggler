@@ -28,7 +28,7 @@ func (storage *TestStorage) FindPilotsByFeatureFlag(ff *rollouts.FeatureFlag) fr
 		}
 	}
 
-	return iterators.NewEmpty()
+	return iterators.NewSlice(pilots)
 }
 
 func (storage *TestStorage) FindFlagPilotByExternalPilotID(FeatureFlagID, ExternalPublicPilotID string) (*rollouts.Pilot, error) {

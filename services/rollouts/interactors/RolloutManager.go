@@ -18,8 +18,33 @@ type RolloutManager struct {
 	RandIntn func(int) int
 }
 
-func (trier *RolloutManager) TryRolloutThisPilot(featureFlagName string, ExternalPublicPilotID string) error {
+func (manager *RolloutManager) TryRolloutThisPilot(featureFlagName string, ExternalPilotID string) error {
 
+	ff, err := manager.Storage.FindByFlagName(featureFlagName)
 
-	return nil
+	if err != nil {
+		return err
+	}
+
+	pilot, err := manager.Storage.FindFlagPilotByExternalPilotID(ff.ID, ExternalPilotID)
+
+	if err != nil {
+		return err
+	}
+
+	if pilot != nil {
+		return nil
+	}
+
+	return manager.Storage.Save(&rollouts.Pilot{
+		FeatureFlagID: ff.ID,
+		ExternalID: ExternalPilotID,
+		Enrolled: manager.tryLuckForFeatureEnrollmentWith(ff),
+	})
+
+}
+
+func (manager *RolloutManager) tryLuckForFeatureEnrollmentWith(ff *rollouts.FeatureFlag) bool {
+	nextRand := manager.RandIntn(99) + 1
+	return nextRand <= ff.Rollout.Percentage
 }
