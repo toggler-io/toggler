@@ -1,5 +1,11 @@
 package interactors
 
-type storage interface {
+import (
+	"github.com/adamluzsi/frameless/resources/specs"
+)
 
+type Storage interface {
+	specs.Resource
+	FindByFlagName
+	PilotFinder
 }
