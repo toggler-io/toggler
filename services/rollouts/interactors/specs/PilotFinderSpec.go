@@ -2,7 +2,6 @@ package specs
 
 import (
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
-	"github.com/adamluzsi/FeatureFlags/services/rollouts/interactors"
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/stretchr/testify/require"
@@ -12,7 +11,7 @@ import (
 
 type PilotFinderSpec struct {
 	Subject interface {
-		interactors.PilotFinder
+		rollouts.PilotFinder
 
 		specs.MinimumRequirements
 	}

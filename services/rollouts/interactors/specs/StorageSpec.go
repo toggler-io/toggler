@@ -2,13 +2,12 @@ package specs
 
 import (
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
-	"github.com/adamluzsi/FeatureFlags/services/rollouts/interactors"
 	"github.com/adamluzsi/frameless/resources/specs"
 	"testing"
 )
 
 type StorageSpec struct {
-	Storage interactors.Storage
+	Storage rollouts.Storage
 }
 
 func (spec *StorageSpec) Test(t *testing.T) {

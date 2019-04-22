@@ -28,6 +28,7 @@ func TestRolloutTrier(t *testing.T) {
 
 	setup := func(t *testing.T) {
 		require.Nil(t, storage.Truncate(rollouts.FeatureFlag{}))
+		require.Nil(t, storage.Truncate(rollouts.Pilot{}))
 	}
 
 	t.Run(`TryRolloutThisPilot`, func(t *testing.T) {

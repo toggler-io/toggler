@@ -5,7 +5,7 @@ import (
 )
 
 type FeatureFlagChecker struct {
-	Storage Storage
+	Storage rollouts.Storage
 }
 
 func (ffc *FeatureFlagChecker) IsFeatureEnabled(featureFlagName string, ExternalPublicPilotID string) (bool, error) {

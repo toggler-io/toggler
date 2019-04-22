@@ -2,7 +2,6 @@ package specs
 
 import (
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
-	"github.com/adamluzsi/FeatureFlags/services/rollouts/interactors"
 	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -10,7 +9,7 @@ import (
 
 type FlagFinderSpec struct {
 	Subject interface {
-		interactors.FlagFinder
+		rollouts.FlagFinder
 
 		specs.MinimumRequirements
 	}
