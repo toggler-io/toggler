@@ -63,7 +63,7 @@ func (spec PilotFinderSpec) Test(t *testing.T) {
 					var expectedPilots []*rollouts.Pilot
 
 					for i := 0 ; i < 5 ; i++ {
-						pilot := &rollouts.Pilot{FeatureFlagID: ff.ID, ExternalPublicID: strconv.Itoa(i)}
+						pilot := &rollouts.Pilot{FeatureFlagID: ff.ID, ExternalID: strconv.Itoa(i)}
 						require.Nil(t, spec.Subject.Save(pilot))
 						expectedPilots = append(expectedPilots, pilot)
 					}
@@ -94,12 +94,12 @@ func (spec PilotFinderSpec) Test(t *testing.T) {
 		})
 	})
 
-	t.Run(`FindPilotByFeatureFlagIDAndPublicPilotID`, func(t *testing.T) {
+	t.Run(`FindFlagPilotByExternalPilotID`, func(t *testing.T) {
 		var featureFlagID string
 		const ExternalPublicPilotID = `42`
 
 		subject := func() (*rollouts.Pilot, error) {
-			return spec.Subject.FindPilotByFeatureFlagIDAndPublicPilotID(featureFlagID, ExternalPublicPilotID)
+			return spec.Subject.FindFlagPilotByExternalPilotID(featureFlagID, ExternalPublicPilotID)
 		}
 
 		noPilotsFound := func(t *testing.T) {
@@ -131,14 +131,14 @@ func (spec PilotFinderSpec) Test(t *testing.T) {
 				t.Run(`and the given there is a registered pilot for the feature`, func(t *testing.T) {
 					require.Nil(t, spec.Subject.Truncate(rollouts.Pilot{}))
 
-					pilot := &rollouts.Pilot{FeatureFlagID: ff.ID, ExternalPublicID: ExternalPublicPilotID}
+					pilot := &rollouts.Pilot{FeatureFlagID: ff.ID, ExternalID: ExternalPublicPilotID}
 					require.Nil(t, spec.Subject.Save(pilot))
 
 					pilot, err := subject()
 					require.Nil(t, err)
 					require.NotNil(t, pilot)
 
-					require.Equal(t, ExternalPublicPilotID, pilot.ExternalPublicID)
+					require.Equal(t, ExternalPublicPilotID, pilot.ExternalID)
 					require.Equal(t, ff.ID, pilot.FeatureFlagID)
 				})
 			})

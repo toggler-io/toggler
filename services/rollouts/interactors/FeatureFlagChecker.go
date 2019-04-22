@@ -8,10 +8,10 @@ type FeatureFlagChecker struct {
 	Storage rollouts.Storage
 }
 
-func (ffc *FeatureFlagChecker) IsFeatureEnabled(featureFlagName string, ExternalPublicPilotID string) (bool, error) {
+func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, ExternalPilotID string) (bool, error) {
 	ff := &rollouts.FeatureFlag{}
 
-	ff, err := ffc.Storage.FindByFlagName(featureFlagName)
+	ff, err := checker.Storage.FindByFlagName(featureFlagName)
 
 	if err != nil {
 		return false, err
@@ -25,7 +25,7 @@ func (ffc *FeatureFlagChecker) IsFeatureEnabled(featureFlagName string, External
 		return true, nil
 	}
 
-	pilot, err := ffc.Storage.FindPilotByFeatureFlagIDAndPublicPilotID(ff.ID, ExternalPublicPilotID)
+	pilot, err := checker.Storage.FindFlagPilotByExternalPilotID(ff.ID, ExternalPilotID)
 
 	if err != nil {
 		return false, err
@@ -35,5 +35,5 @@ func (ffc *FeatureFlagChecker) IsFeatureEnabled(featureFlagName string, External
 		return false, nil
 	}
 
-	return true, nil
+	return pilot.Enrolled, nil
 }

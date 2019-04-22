@@ -31,13 +31,13 @@ func (storage *TestStorage) FindPilotsByFeatureFlag(ff *rollouts.FeatureFlag) fr
 	return iterators.NewEmpty()
 }
 
-func (storage *TestStorage) FindPilotByFeatureFlagIDAndPublicPilotID(FeatureFlagID, ExternalPublicPilotID string) (*rollouts.Pilot, error) {
+func (storage *TestStorage) FindFlagPilotByExternalPilotID(FeatureFlagID, ExternalPublicPilotID string) (*rollouts.Pilot, error) {
 	table := storage.TableFor(rollouts.Pilot{})
 
 	for _, v := range table {
 		pilot := v.(*rollouts.Pilot)
 
-		if pilot.FeatureFlagID == FeatureFlagID && pilot.ExternalPublicID == ExternalPublicPilotID {
+		if pilot.FeatureFlagID == FeatureFlagID && pilot.ExternalID == ExternalPublicPilotID {
 			return pilot, nil
 		}
 	}

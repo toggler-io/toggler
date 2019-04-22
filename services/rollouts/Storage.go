@@ -20,6 +20,6 @@ type FlagFinder interface {
 }
 
 type PilotFinder interface {
-	FindPilotByFeatureFlagIDAndPublicPilotID(FeatureFlagID, ExternalPublicPilotID string) (*Pilot, error)
+	FindFlagPilotByExternalPilotID(FeatureFlagID, ExternalPilotID string) (*Pilot, error)
 	FindPilotsByFeatureFlag(*FeatureFlag) frameless.Iterator
 }
