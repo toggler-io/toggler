@@ -1,6 +1,7 @@
 package interactors_test
 
 import (
+	"github.com/Pallinder/go-randomdata"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts/interactors"
 	"github.com/stretchr/testify/require"
@@ -10,11 +11,14 @@ import (
 func TestRolloutTrier(t *testing.T) {
 	t.Parallel()
 
+	PublicIDOfThePilot := randomdata.MacAddress()
+	flagName := randomdata.SillyName()
+
 	var nextRandIntn int
 	storage := NewTestStorage()
 
-	trier := func() *interactors.RolloutTrier {
-		return &interactors.RolloutTrier{
+	trier := func() *interactors.RolloutManager {
+		return &interactors.RolloutManager{
 			Storage: storage,
 			RandIntn: func(max int) int {
 				return nextRandIntn
@@ -22,18 +26,17 @@ func TestRolloutTrier(t *testing.T) {
 		}
 	}
 
+	setup := func(t *testing.T) {
+		require.Nil(t, storage.Truncate(rollouts.FeatureFlag{}))
+	}
+
 	t.Run(`TryRolloutThisPilot`, func(t *testing.T) {
 		subject := func() error {
 			return trier().TryRolloutThisPilot(flagName, PublicIDOfThePilot)
 		}
 
-		cleanAhead := func(t *testing.T) {
-			require.Nil(t, storage.Truncate(rollouts.Rollout{}))
-			require.Nil(t, storage.Truncate(rollouts.FeatureFlagRolloutStrategy{}))
-		}
-
 		t.Run(`when rollout policy is currently not set`, func(t *testing.T) {
-			cleanAhead(t)
+			setup(t)
 
 			t.Run(`then the rollout will return with no erro, and modify nothing`, func(t *testing.T) {
 				require.Nil(t, subject())
@@ -41,7 +44,7 @@ func TestRolloutTrier(t *testing.T) {
 		})
 
 		t.Run(`when rollout policy is to have a percentage of users to be rolled out`, func(t *testing.T) {
-			cleanAhead(t)
+			setup(t)
 
 			t.Skip()
 		})

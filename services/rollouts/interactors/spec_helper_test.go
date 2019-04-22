@@ -4,19 +4,11 @@ import (
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
-	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources/storages/memorystorage"
 )
 
-const (
-	flagName           = `test-flag`
-	PublicIDOfThePilot = `42`
-)
-
 func NewTestStorage() *TestStorage {
-	return &TestStorage{
-		Memory: memorystorage.NewMemory(),
-	}
+	return &TestStorage{Memory: memorystorage.NewMemory()}
 }
 
 type TestStorage struct {
@@ -53,16 +45,18 @@ func (storage *TestStorage) FindPilotByFeatureFlagIDAndPublicPilotID(FeatureFlag
 	return nil, nil
 }
 
-func (storage *TestStorage) FindByFlagName(name string, ptr *rollouts.FeatureFlag) (bool, error) {
+func (storage *TestStorage) FindByFlagName(name string) (*rollouts.FeatureFlag, error) {
+	var ptr *rollouts.FeatureFlag
 	table := storage.TableFor(ptr)
 
 	for _, v := range table {
 		flag := v.(*rollouts.FeatureFlag)
 
 		if flag.Name == name {
-			return true, reflects.Link(flag, ptr)
+			ptr = flag
+			break
 		}
 	}
 
-	return false, nil
+	return ptr, nil
 }

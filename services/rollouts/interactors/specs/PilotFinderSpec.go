@@ -14,13 +14,17 @@ type PilotFinderSpec struct {
 	Subject interface {
 		interactors.PilotFinder
 
-		specs.Purge
 		specs.MinimumRequirements
 	}
 }
 
 func (spec PilotFinderSpec) Test(t *testing.T) {
-	flagName := `PilotFinderSpec`
+	flagName := exampleFeatureFlagName()
+
+	setup := func(t *testing.T) {
+		require.Nil(t, spec.Subject.Truncate(rollouts.FeatureFlag{}))
+		require.Nil(t, spec.Subject.Truncate(rollouts.Pilot{}))
+	}
 
 	t.Run(`PilotFinderSpec`, func(t *testing.T) {
 		var ff *rollouts.FeatureFlag
@@ -39,7 +43,8 @@ func (spec PilotFinderSpec) Test(t *testing.T) {
 		}
 
 		t.Run(`when feature was never enabled before`, func(t *testing.T) {
-			require.Nil(t, spec.Subject.Truncate(rollouts.FeatureFlag{}))
+			setup(t)
+
 			ff = nil
 
 			t.Run(`then it will tell that`, noPilotsFound)
@@ -48,14 +53,14 @@ func (spec PilotFinderSpec) Test(t *testing.T) {
 		t.Run(`when feature flag exists`, func(t *testing.T) {
 
 			t.Run(`and the flag is not enabled globally`, func(t *testing.T) {
-				require.Nil(t, spec.Subject.Truncate(rollouts.FeatureFlag{}))
-				ff = &rollouts.FeatureFlag{Name: flagName, IsGlobal: false}
+				setup(t)
+				ff = &rollouts.FeatureFlag{Name: flagName}
+				ff.Rollout.GloballyEnabled = false
 				require.Nil(t, spec.Subject.Save(ff))
 
 				t.Run(`then it will tell that`, noPilotsFound)
 
 				t.Run(`and the given there is a registered pilot for the feature`, func(t *testing.T) {
-					defer spec.Subject.Truncate(rollouts.Pilot{})
 					var expectedPilots []*rollouts.Pilot
 
 					for i := 0 ; i < 5 ; i++ {
@@ -115,8 +120,10 @@ func (spec PilotFinderSpec) Test(t *testing.T) {
 
 		t.Run(`when feature flag exists`, func(t *testing.T) {
 			t.Run(`and the flag is not enabled globally`, func(t *testing.T) {
-				ff := &rollouts.FeatureFlag{Name: flagName, IsGlobal: false}
-				require.Nil(t, spec.Subject.Truncate(rollouts.FeatureFlag{}))
+				setup(t)
+
+				ff := &rollouts.FeatureFlag{Name: flagName}
+				ff.Rollout.GloballyEnabled = true
 				require.Nil(t, spec.Subject.Save(ff))
 				featureFlagID = ff.ID
 

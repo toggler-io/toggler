@@ -22,7 +22,7 @@ func (spec *StorageSpec) Test(t *testing.T) {
 		specs.TestMinimumRequirements(t, spec.Storage, entity)
 	}
 
-	FindByFlagNameSpec{Subject: spec.Storage}.Test(t)
+	FlagFinderSpec{Subject: spec.Storage}.Test(t)
 	PilotFinderSpec{Subject: spec.Storage}.Test(t)
 
 }
