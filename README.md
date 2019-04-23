@@ -20,7 +20,10 @@ every custom decision logic is expected to be implemented by your company trough
     - [ ] rolling out between users based on percentage
     - [ ] rolling out a flag globally for everyone
     - [ ] event and audit log about every rollout
-    - [ ] custom API based decision logic for pilot/user enrollment.
+    - [ ] API callback based decision logic enrollment to support custom needs like:  
+      * creating control groups
+      * A / B Testing
+      * other to your company/team related rollout logic
 
 - Feature Status check
     - [X] Is enabled for a given User
