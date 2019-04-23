@@ -1,14 +1,15 @@
 package interactors
 
 import (
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"math/rand"
 	"time"
+
+	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 )
 
 func NewRolloutManager(s rollouts.Storage) *RolloutManager {
 	return &RolloutManager{
-		Storage: s,
+		Storage:  s,
 		RandIntn: rand.New(rand.NewSource(time.Now().Unix())).Intn,
 	}
 }
@@ -38,8 +39,8 @@ func (manager *RolloutManager) TryRolloutThisPilot(featureFlagName string, Exter
 
 	return manager.Storage.Save(&rollouts.Pilot{
 		FeatureFlagID: ff.ID,
-		ExternalID: ExternalPilotID,
-		Enrolled: manager.tryLuckForFeatureEnrollmentWith(ff),
+		ExternalID:    ExternalPilotID,
+		Enrolled:      manager.tryLuckForFeatureEnrollmentWith(ff),
 	})
 
 }

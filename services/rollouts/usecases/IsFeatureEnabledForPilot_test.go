@@ -1,22 +1,22 @@
 package usecases_test
 
 import (
-	"github.com/Pallinder/go-randomdata"
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
-	"github.com/stretchr/testify/require"
 	"testing"
 
-	timp "github.com/adamluzsi/FeatureFlags/services/rollouts/testing"
+	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	"github.com/stretchr/testify/require"
+
+	. "github.com/adamluzsi/FeatureFlags/services/rollouts/testing"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts/usecases"
 )
 
 func TestIsFeatureEnabledForPilotChecker(t *testing.T) {
 	t.Parallel()
 
-	flagName := randomdata.SillyName()
-	ExternalPilotID := randomdata.MacAddress()
+	flagName := ExampleFlagName()
+	ExternalPilotID := ExampleExternalPilotID()
 
-	storage := timp.NewStorage()
+	storage := NewStorage()
 
 	checker := func() *usecases.IsFeatureEnabledForPilotChecker {
 		return usecases.NewIsFeatureEnabledForPilotChecker(storage)

@@ -1,21 +1,21 @@
 package usecases_test
 
 import (
-	"github.com/Pallinder/go-randomdata"
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
-	"github.com/stretchr/testify/require"
 	"testing"
 
-	timp "github.com/adamluzsi/FeatureFlags/services/rollouts/testing"
+	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	"github.com/stretchr/testify/require"
+
+	. "github.com/adamluzsi/FeatureFlags/services/rollouts/testing"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts/usecases"
 )
 
 func TestIsFeatureGloballyEnabledChecker(t *testing.T) {
 	t.Parallel()
 
-	flagName := randomdata.SillyName()
+	flagName := ExampleFlagName()
 
-	storage := timp.NewStorage()
+	storage := NewStorage()
 
 	checker := func() *usecases.IsFeatureGloballyEnabledChecker {
 		return usecases.NewIsFeatureGloballyEnabledChecker(storage)

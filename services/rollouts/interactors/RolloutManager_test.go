@@ -4,24 +4,23 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/Pallinder/go-randomdata"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts/interactors"
-	thelp "github.com/adamluzsi/FeatureFlags/services/rollouts/testing"
+	. "github.com/adamluzsi/FeatureFlags/services/rollouts/testing"
 	"github.com/stretchr/testify/require"
 )
 
-func TestRolloutTrier(t *testing.T) {
+func TestRolloutManager(t *testing.T) {
 	t.Parallel()
 
-	ExternalPilotID := randomdata.MacAddress()
-	flagName := randomdata.SillyName()
 	var ff *rollouts.FeatureFlag
-
 	var nextRandIntn int
-	storage := thelp.NewStorage()
 
-	trier := func() *interactors.RolloutManager {
+	ExternalPilotID := ExampleExternalPilotID()
+	flagName := ExampleFlagName()
+	storage := NewStorage()
+
+	manager := func() *interactors.RolloutManager {
 		return &interactors.RolloutManager{
 			Storage: storage,
 			RandIntn: func(max int) int {
@@ -62,7 +61,7 @@ func TestRolloutTrier(t *testing.T) {
 
 	t.Run(`TryRolloutThisPilot`, func(t *testing.T) {
 		subject := func() error {
-			return trier().TryRolloutThisPilot(flagName, ExternalPilotID)
+			return manager().TryRolloutThisPilot(flagName, ExternalPilotID)
 		}
 
 		t.Run(`when rollout percentage`, func(t *testing.T) {

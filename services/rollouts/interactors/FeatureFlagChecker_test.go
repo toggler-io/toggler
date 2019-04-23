@@ -1,20 +1,21 @@
 package interactors_test
 
 import (
-	"github.com/Pallinder/go-randomdata"
+	"testing"
+
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts/interactors"
+	. "github.com/adamluzsi/FeatureFlags/services/rollouts/testing"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestFeatureFlagChecker(t *testing.T) {
 	t.Parallel()
 
-	ExternalPilotID := randomdata.MacAddress()
-	FlagName := randomdata.SillyName()
+	ExternalPilotID := ExampleExternalPilotID()
+	FlagName := ExampleFlagName()
 
-	storage := NewTestStorage()
+	storage := NewStorage()
 
 	featureFlagChecker := func() *interactors.FeatureFlagChecker {
 		return &interactors.FeatureFlagChecker{Storage: storage}
