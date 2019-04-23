@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	. "github.com/adamluzsi/FeatureFlags/services/rollouts/testing"
 	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/stretchr/testify/require"
 )
@@ -17,7 +18,7 @@ type FlagFinderSpec struct {
 }
 
 func (spec FlagFinderSpec) Test(t *testing.T) {
-	featureName := exampleFeatureFlagName()
+	featureName := ExampleFlagName()
 
 	setup := func(t *testing.T) {
 		require.Nil(t, spec.Subject.Truncate(rollouts.FeatureFlag{}))
