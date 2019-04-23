@@ -1,12 +1,14 @@
 package interactors_test
 
 import (
+	"math/rand"
+	"testing"
+
 	"github.com/Pallinder/go-randomdata"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts/interactors"
+	thelp "github.com/adamluzsi/FeatureFlags/services/rollouts/testing"
 	"github.com/stretchr/testify/require"
-	"math/rand"
-	"testing"
 )
 
 func TestRolloutTrier(t *testing.T) {
@@ -17,7 +19,7 @@ func TestRolloutTrier(t *testing.T) {
 	var ff *rollouts.FeatureFlag
 
 	var nextRandIntn int
-	storage := NewTestStorage()
+	storage := thelp.NewStorage()
 
 	trier := func() *interactors.RolloutManager {
 		return &interactors.RolloutManager{
@@ -41,7 +43,7 @@ func TestRolloutTrier(t *testing.T) {
 		require.Nil(t, storage.Save(ff))
 	}
 
-	pilotsEnrollment := func(t *testing.T) bool {
+	pilotEnrollment := func(t *testing.T) bool {
 		require.NotNil(t, ff, `to use this, it is expected that the feature flag already exist`)
 		pilot, err := storage.FindFlagPilotByExternalPilotID(ff.ID, ExternalPilotID)
 
@@ -74,7 +76,7 @@ func TestRolloutTrier(t *testing.T) {
 						t.Run(`then pilot is not enrolled for the feature`, func(t *testing.T) {
 							require.Nil(t, subject())
 
-							require.False(t, pilotsEnrollment(t))
+							require.False(t, pilotEnrollment(t))
 						})
 					})
 
@@ -84,7 +86,7 @@ func TestRolloutTrier(t *testing.T) {
 						t.Run(`then pilot is not enrolled for the feature`, func(t *testing.T) {
 							require.Nil(t, subject())
 
-							require.False(t, pilotsEnrollment(t))
+							require.False(t, pilotEnrollment(t))
 						})
 					})
 				})
@@ -103,7 +105,7 @@ func TestRolloutTrier(t *testing.T) {
 
 						t.Run(`then it will enroll the pilot for the feature`, func(t *testing.T) {
 							require.Nil(t, subject())
-							require.True(t, pilotsEnrollment(t))
+							require.True(t, pilotEnrollment(t))
 
 							p, err := storage.FindFlagPilotByExternalPilotID(ff.ID, ExternalPilotID)
 							require.Nil(t, err)
@@ -118,7 +120,7 @@ func TestRolloutTrier(t *testing.T) {
 						t.Run(`then pilot is not enrolled for the feature`, func(t *testing.T) {
 							require.Nil(t, subject())
 
-							require.False(t, pilotsEnrollment(t))
+							require.False(t, pilotEnrollment(t))
 
 							t.Run(`and after the first call`, func(t *testing.T) {
 								t.Run(`when rand int less than accepted percentage`, func(t *testing.T) {
@@ -127,7 +129,7 @@ func TestRolloutTrier(t *testing.T) {
 									t.Run(`then already seen user will be still blacklisted from being enrolled for this feature`, func(t *testing.T) {
 										require.Nil(t, subject())
 
-										require.False(t, pilotsEnrollment(t))
+										require.False(t, pilotEnrollment(t))
 									})
 								})
 							})
