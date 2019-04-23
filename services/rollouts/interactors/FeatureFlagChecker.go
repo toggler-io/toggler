@@ -9,7 +9,6 @@ type FeatureFlagChecker struct {
 }
 
 func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, ExternalPilotID string) (bool, error) {
-	ff := &rollouts.FeatureFlag{}
 
 	ff, err := checker.Storage.FindByFlagName(featureFlagName)
 
@@ -36,4 +35,18 @@ func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, E
 	}
 
 	return pilot.Enrolled, nil
+}
+
+func (checker *FeatureFlagChecker) IsFeatureGloballyEnabled(featureFlagName string) (bool, error) {
+	ff, err := checker.Storage.FindByFlagName(featureFlagName)
+
+	if err != nil {
+		return false, err
+	}
+
+	if ff == nil {
+		return false, nil
+	}
+
+	return ff.Rollout.GloballyEnabled, nil
 }

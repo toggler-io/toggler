@@ -116,4 +116,55 @@ func TestFeatureFlagChecker(t *testing.T) {
 			})
 		})
 	})
+
+	t.Run(`IsFeatureGloballyEnabled`, func(t *testing.T) {
+		subject := func() (bool, error) {
+			return featureFlagChecker().IsFeatureGloballyEnabled(FlagName)
+		}
+
+		thenItWillReportThatFeatureNotGlobballyEnabled := func(t *testing.T) {
+			t.Run(`then it will report that feature is not enabled globally`, func(t *testing.T) {
+				enabled, err := subject()
+				require.Nil(t, err)
+				require.False(t, enabled)
+			})
+		}
+
+		thenItWillReportThatFeatureIsGloballyRolledOut := func(t *testing.T) {
+			t.Run(`then it will report that feature is globally rolled out`, func(t *testing.T) {
+				enabled, err := subject()
+				require.Nil(t, err)
+				require.True(t, enabled)
+			})
+		}
+
+		t.Run(`when feature flag is not seen before`, func(t *testing.T) {
+			setup(t)
+
+			thenItWillReportThatFeatureNotGlobballyEnabled(t)
+		})
+
+		t.Run(`when feature flag is given`, func(t *testing.T) {
+			t.Run(`and it is not yet rolled out globally`, func(t *testing.T) {
+				setup(t)
+
+				ff := &rollouts.FeatureFlag{Name: FlagName}
+				ff.Rollout.GloballyEnabled = false
+				require.Nil(t, storage.Save(ff))
+
+				thenItWillReportThatFeatureNotGlobballyEnabled(t)
+			})
+
+			t.Run(`and it is rolled out globally`, func(t *testing.T) {
+				setup(t)
+
+				ff := &rollouts.FeatureFlag{Name: FlagName}
+				ff.Rollout.GloballyEnabled = true
+				require.Nil(t, storage.Save(ff))
+
+				thenItWillReportThatFeatureIsGloballyRolledOut(t)
+			})
+		})
+
+	})
 }
