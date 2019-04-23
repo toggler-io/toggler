@@ -1,9 +1,10 @@
 package specs
 
 import (
+	"testing"
+
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"github.com/adamluzsi/frameless/resources/specs"
-	"testing"
 )
 
 type StorageSpec struct {

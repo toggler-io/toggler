@@ -1,10 +1,11 @@
 package specs
 
 import (
+	"testing"
+
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 type FlagFinderSpec struct {

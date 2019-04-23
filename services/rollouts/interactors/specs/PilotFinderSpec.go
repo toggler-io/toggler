@@ -1,12 +1,13 @@
 package specs
 
 import (
+	"strconv"
+	"testing"
+
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/stretchr/testify/require"
-	"strconv"
-	"testing"
 )
 
 type PilotFinderSpec struct {
@@ -62,7 +63,7 @@ func (spec PilotFinderSpec) Test(t *testing.T) {
 				t.Run(`and the given there is a registered pilot for the feature`, func(t *testing.T) {
 					var expectedPilots []*rollouts.Pilot
 
-					for i := 0 ; i < 5 ; i++ {
+					for i := 0; i < 5; i++ {
 						pilot := &rollouts.Pilot{FeatureFlagID: ff.ID, ExternalID: strconv.Itoa(i)}
 						require.Nil(t, spec.Subject.Save(pilot))
 						expectedPilots = append(expectedPilots, pilot)
@@ -86,7 +87,7 @@ func (spec PilotFinderSpec) Test(t *testing.T) {
 						require.True(t, len(expectedPilots) == len(actualPilots))
 
 						for _, expected := range expectedPilots {
-							require.Contains(t,actualPilots, expected)
+							require.Contains(t, actualPilots, expected)
 						}
 					})
 				})
