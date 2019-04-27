@@ -72,8 +72,8 @@ func TestRolloutManager(t *testing.T) {
 				ff := findFlag(t)
 
 				require.Equal(t, FeatureFlagName, ff.Name)
-				require.Equal(t, "", ff.Rollout.URL)
-				require.Equal(t, 0, ff.Rollout.Percentage)
+				require.Equal(t, "", ff.Rollout.Strategy.URL)
+				require.Equal(t, 0, ff.Rollout.Strategy.Percentage)
 				require.Equal(t, GeneratedRandomSeed, ff.Rollout.RandSeedSalt)
 			})
 

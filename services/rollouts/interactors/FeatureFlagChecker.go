@@ -38,7 +38,7 @@ func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, E
 		return pilot.Enrolled, nil
 	}
 
-	if ff.Rollout.Percentage == 0 {
+	if ff.Rollout.Strategy.Percentage == 0 {
 		return false, nil
 	}
 
@@ -48,7 +48,7 @@ func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, E
 		return false, err
 	}
 
-	return diceRollResultPercentage <= ff.Rollout.Percentage, nil
+	return diceRollResultPercentage <= ff.Rollout.Strategy.Percentage, nil
 
 }
 
@@ -63,5 +63,5 @@ func (checker *FeatureFlagChecker) IsFeatureGloballyEnabled(featureFlagName stri
 		return false, nil
 	}
 
-	return ff.Rollout.Percentage == 100, nil
+	return ff.Rollout.Strategy.Percentage == 100, nil
 }

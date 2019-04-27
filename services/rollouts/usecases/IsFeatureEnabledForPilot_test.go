@@ -44,7 +44,7 @@ func TestIsFeatureEnabledForPilotChecker(t *testing.T) {
 
 		t.Run(`when received flag allow enrollment for pilots`, func(t *testing.T) {
 			setup(t)
-			ff := &rollouts.FeatureFlag{Name: flagName, Rollout: rollouts.Rollout{Percentage: 100}}
+			ff := &rollouts.FeatureFlag{Name: flagName, Rollout: rollouts.Rollout{Strategy: rollouts.RolloutStrategy{Percentage: 100}}}
 			defer ensureFlag(t, ff)()
 
 			t.Run(`then pilot on call being enrolled`, func(t *testing.T) {
@@ -57,7 +57,7 @@ func TestIsFeatureEnabledForPilotChecker(t *testing.T) {
 
 		t.Run(`when received flag disallow enrollment for pilots`, func(t *testing.T) {
 			setup(t)
-			ff := &rollouts.FeatureFlag{Name: flagName, Rollout: rollouts.Rollout{Percentage: 0}}
+			ff := &rollouts.FeatureFlag{Name: flagName, Rollout: rollouts.Rollout{Strategy: rollouts.RolloutStrategy{Percentage: 0}}}
 			defer ensureFlag(t, ff)()
 
 			t.Run(`then pilot on call being enrolled`, func(t *testing.T) {

@@ -62,8 +62,10 @@ func (manager *RolloutManager) newDefaultFeatureFlag(featureFlagName string) *ro
 	return &rollouts.FeatureFlag{
 		Name: featureFlagName,
 		Rollout: rollouts.Rollout{
-			Percentage: 0,
 			RandSeedSalt: manager.RandSeedGenerator(),
+			Strategy: rollouts.RolloutStrategy{
+				Percentage: 0,
+			},
 		},
 	}
 }

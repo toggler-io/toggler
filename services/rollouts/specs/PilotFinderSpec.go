@@ -56,7 +56,7 @@ func (spec PilotFinderSpec) Test(t *testing.T) {
 			t.Run(`and the flag is not enabled globally`, func(t *testing.T) {
 				setup(t)
 				ff = &rollouts.FeatureFlag{Name: flagName}
-				ff.Rollout.Percentage = 0
+				ff.Rollout.Strategy.Percentage = 0
 				require.Nil(t, spec.Subject.Save(ff))
 
 				t.Run(`then it will tell that`, noPilotsFound)
@@ -124,7 +124,7 @@ func (spec PilotFinderSpec) Test(t *testing.T) {
 				setup(t)
 
 				ff := &rollouts.FeatureFlag{Name: flagName}
-				ff.Rollout.Percentage = 100
+				ff.Rollout.Strategy.Percentage = 100
 				require.Nil(t, spec.Subject.Save(ff))
 				featureFlagID = ff.ID
 

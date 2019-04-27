@@ -44,7 +44,7 @@ func TestIsFeatureGloballyEnabledChecker(t *testing.T) {
 
 		t.Run(`when received flag name is rolled out globally already`, func(t *testing.T) {
 			setup(t)
-			ff := &rollouts.FeatureFlag{Name: flagName, Rollout: rollouts.Rollout{Percentage: 100}}
+			ff := &rollouts.FeatureFlag{Name: flagName, Rollout: rollouts.Rollout{Strategy: rollouts.RolloutStrategy{Percentage: 100}}}
 			defer ensureFlag(t, ff)()
 
 			t.Run(`then it will be reported as enabled`, func(t *testing.T) {

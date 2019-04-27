@@ -66,7 +66,7 @@ func TestFeatureFlagChecker(t *testing.T) {
 			t.Run(`and the rollout percentage`, func(t *testing.T) {
 				t.Run(`is 0`, func(t *testing.T) {
 					setup(t, func(flag *rollouts.FeatureFlag) {
-						flag.Rollout.Percentage = 0
+						flag.Rollout.Strategy.Percentage = 0
 					})
 
 					t.Run(`and pseudo rand percentage for the id is 0 as well`, func(t *testing.T) {
@@ -91,7 +91,7 @@ func TestFeatureFlagChecker(t *testing.T) {
 				})
 				t.Run(`is greater than 0`, func(t *testing.T) {
 					setRollout := func(flag *rollouts.FeatureFlag) {
-						flag.Rollout.Percentage = rand.Intn(99) + 1
+						flag.Rollout.Strategy.Percentage = rand.Intn(99) + 1
 					}
 
 					t.Run(`and the next pseudo rand int`, func(t *testing.T) {
@@ -99,7 +99,7 @@ func TestFeatureFlagChecker(t *testing.T) {
 
 						t.Run(`is less or eq with the rollout percentage`, func(t *testing.T) {
 							setup(t, setRollout)
-							PseudoRandPercentage = ff.Rollout.Percentage - rand.Intn(ff.Rollout.Percentage)
+							PseudoRandPercentage = ff.Rollout.Strategy.Percentage - rand.Intn(ff.Rollout.Strategy.Percentage)
 
 							t.Run(`then it will enroll the pilot for the feature`, func(t *testing.T) {
 								ok, err := subject()
@@ -120,7 +120,7 @@ func TestFeatureFlagChecker(t *testing.T) {
 
 						t.Run(`is greater than the rollout percentage`, func(t *testing.T) {
 							setup(t, setRollout)
-							PseudoRandPercentage = ff.Rollout.Percentage + 1
+							PseudoRandPercentage = ff.Rollout.Strategy.Percentage + 1
 							defer func() { PseudoRandPercentage = 0 }()
 
 							t.Run(`then pilot is not enrolled for the feature`, func(t *testing.T) {
@@ -144,7 +144,7 @@ func TestFeatureFlagChecker(t *testing.T) {
 				})
 				t.Run(`is 100, in other words it is set to be globally enabled`, func(t *testing.T) {
 					setup(t, func(flag *rollouts.FeatureFlag) {
-						ff.Rollout.Percentage = 100
+						ff.Rollout.Strategy.Percentage = 100
 					})
 					t.Run(`and basically regardless the pseudo random percentage`, func(t *testing.T) {
 						PseudoRandPercentage = rand.Intn(101)
@@ -193,7 +193,7 @@ func TestFeatureFlagChecker(t *testing.T) {
 		t.Run(`when feature flag is given`, func(t *testing.T) {
 			t.Run(`and it is not yet rolled out globally`, func(t *testing.T) {
 				setup(t, func(flag *rollouts.FeatureFlag) {
-					flag.Rollout.Percentage = 99
+					flag.Rollout.Strategy.Percentage = 99
 				})
 
 				thenItWillReportThatFeatureNotGlobballyEnabled(t)
@@ -201,7 +201,7 @@ func TestFeatureFlagChecker(t *testing.T) {
 
 			t.Run(`and it is rolled out globally`, func(t *testing.T) {
 				setup(t, func(flag *rollouts.FeatureFlag) {
-					ff.Rollout.Percentage = 100
+					ff.Rollout.Strategy.Percentage = 100
 				})
 
 				thenItWillReportThatFeatureIsGloballyRolledOut(t)
