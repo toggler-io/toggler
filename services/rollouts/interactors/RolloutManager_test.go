@@ -1,12 +1,14 @@
 package interactors_test
 
 import (
+	"testing"
+	"time"
+
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts/interactors"
 	. "github.com/adamluzsi/FeatureFlags/services/rollouts/testing"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestRolloutManager(t *testing.T) {
@@ -16,10 +18,16 @@ func TestRolloutManager(t *testing.T) {
 
 	ExternalPilotID := ExampleExternalPilotID()
 	FeatureFlagName := ExampleFlagName()
+	GeneratedRandomSeed := time.Now().Unix()
 	storage := NewStorage()
 
 	manager := func() *interactors.RolloutManager {
-		return &interactors.RolloutManager{Storage: storage}
+		return &interactors.RolloutManager{
+			Storage: storage,
+			RandSeedGenerator: func() int64 {
+				return GeneratedRandomSeed
+			},
+		}
 	}
 
 	setup := func(t *testing.T, ffSetup func(*rollouts.FeatureFlag)) {
@@ -64,8 +72,9 @@ func TestRolloutManager(t *testing.T) {
 				ff := findFlag(t)
 
 				require.Equal(t, FeatureFlagName, ff.Name)
-				require.Equal(t, 0, ff.Rollout.Percentage)
 				require.Equal(t, "", ff.Rollout.URL)
+				require.Equal(t, 0, ff.Rollout.Percentage)
+				require.Equal(t, GeneratedRandomSeed, ff.Rollout.RandSeedSalt)
 			})
 
 			t.Run(`then pilot is enrolled for the feature`, func(t *testing.T) {

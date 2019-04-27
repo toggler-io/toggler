@@ -2,8 +2,8 @@ package interactors_test
 
 import (
 	"math/rand"
-	"strconv"
 	"testing"
+	"time"
 
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts/interactors"
@@ -16,14 +16,19 @@ func TestFeatureFlagChecker(t *testing.T) {
 
 	ExternalPilotID := ExampleExternalPilotID()
 	FeatureFlagName := ExampleFlagName()
+	RolloutSeedSalt := time.Now().Unix()
 	storage := NewStorage()
 
 	var PseudoRandPercentage int
 
 	featureFlagChecker := func() *interactors.FeatureFlagChecker {
 		return &interactors.FeatureFlagChecker{
-			Storage:                storage,
-			IDPercentageCalculator: func(string) int { return PseudoRandPercentage },
+			Storage: storage,
+			IDPercentageCalculator: func(id string, seedSalt int64) (int, error) {
+				require.Equal(t, ExternalPilotID, id)
+				require.Equal(t, RolloutSeedSalt, seedSalt)
+				return PseudoRandPercentage, nil
+			},
 		}
 	}
 
@@ -34,13 +39,13 @@ func TestFeatureFlagChecker(t *testing.T) {
 		require.Nil(t, storage.Truncate(rollouts.Pilot{}))
 
 		ff = &rollouts.FeatureFlag{Name: FeatureFlagName}
+		ff.Rollout.RandSeedSalt = RolloutSeedSalt
 
 		require.Nil(t, storage.Save(ff))
 
 		if ffSetup != nil {
 			ffSetup(ff)
 		}
-
 	}
 
 	t.Run(`IsFeatureEnabledFor`, func(t *testing.T) {
@@ -203,42 +208,5 @@ func TestFeatureFlagChecker(t *testing.T) {
 			})
 		})
 
-	})
-}
-
-func TestPseudoRandPercentageWithFNV1a64(t *testing.T) {
-	subject := interactors.PseudoRandPercentageWithFNV1a64
-
-	t.Run(`it is expected that the result is deterministic`, func(t *testing.T) {
-		t.Parallel()
-
-		for i := 0; i < 1000; i++ {
-			res1 := subject(strconv.Itoa(i))
-			res2 := subject(strconv.Itoa(i))
-			require.Equal(t, res1, res2)
-		}
-	})
-
-	t.Run(`it is expected that the values are between 0 and 100`, func(t *testing.T) {
-		t.Parallel()
-
-		var minFount, maxFount bool
-
-		for i := 0; i<=10000; i++ {
-			res := subject(strconv.Itoa(i))
-
-			require.True(t, 0 <= res && res <= 100)
-
-			if res == 0 {
-				minFount = true
-			}
-
-			if res == 100 {
-				maxFount = true
-			}
-		}
-
-		require.True(t, minFount)
-		require.True(t, maxFount)
 	})
 }

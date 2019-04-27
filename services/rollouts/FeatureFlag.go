@@ -8,6 +8,7 @@ type FeatureFlag struct {
 }
 
 type Rollout struct {
-	Percentage       int
-	URL              string
+	RandSeedSalt int64
+	Percentage   int
+	URL          string
 }

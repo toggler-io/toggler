@@ -2,20 +2,18 @@ package interactors
 
 import (
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
-	"hash/fnv"
-	"math/rand"
 )
 
 func NewFeatureFlagChecker(s rollouts.Storage) *FeatureFlagChecker {
 	return &FeatureFlagChecker{
 		Storage:                s,
-		IDPercentageCalculator: PseudoRandPercentageWithFNV1a64,
+		IDPercentageCalculator: GeneratePseudoRandPercentageWithFNV1a64,
 	}
 }
 
 type FeatureFlagChecker struct {
 	Storage                rollouts.Storage
-	IDPercentageCalculator func(string) int
+	IDPercentageCalculator func(string, int64) (int, error)
 }
 
 func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, ExternalPilotID string) (bool, error) {
@@ -44,7 +42,14 @@ func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, E
 		return false, nil
 	}
 
-	return checker.IDPercentageCalculator(ExternalPilotID) <= ff.Rollout.Percentage, nil
+	diceRollResultPercentage, err := checker.IDPercentageCalculator(ExternalPilotID, ff.Rollout.RandSeedSalt)
+
+	if err != nil {
+		return false, err
+	}
+
+	return diceRollResultPercentage <= ff.Rollout.Percentage, nil
+
 }
 
 func (checker *FeatureFlagChecker) IsFeatureGloballyEnabled(featureFlagName string) (bool, error) {
@@ -59,15 +64,4 @@ func (checker *FeatureFlagChecker) IsFeatureGloballyEnabled(featureFlagName stri
 	}
 
 	return ff.Rollout.Percentage == 100, nil
-}
-
-func PseudoRandPercentageWithFNV1a64(id string) int {
-	h := fnv.New64a()
-
-	if _, err := h.Write([]byte(id)); err != nil {
-		panic(err)
-	}
-
-	seed := rand.NewSource(int64(h.Sum64()))
-	return rand.New(seed).Intn(101)
 }

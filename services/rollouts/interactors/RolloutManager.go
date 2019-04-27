@@ -1,15 +1,21 @@
 package interactors
 
 import (
+	"time"
+
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 )
 
 func NewRolloutManager(s rollouts.Storage) *RolloutManager {
-	return &RolloutManager{Storage: s}
+	return &RolloutManager{
+		Storage:           s,
+		RandSeedGenerator: func() int64 { return time.Now().Unix() },
+	}
 }
 
 type RolloutManager struct {
 	rollouts.Storage
+	RandSeedGenerator func() int64
 }
 
 func (manager *RolloutManager) EnableFeatureFor(featureFlagName, ExternalPilotID string) error {
@@ -22,7 +28,7 @@ func (manager *RolloutManager) EnableFeatureFor(featureFlagName, ExternalPilotID
 
 	if ff == nil {
 
-		ff = &rollouts.FeatureFlag{Name: featureFlagName, Rollout: rollouts.Rollout{Percentage: 0}}
+		ff = manager.newDefaultFeatureFlag(featureFlagName)
 
 		if err := manager.Storage.Save(ff); err != nil {
 			return err
@@ -50,4 +56,14 @@ func (manager *RolloutManager) EnableFeatureFor(featureFlagName, ExternalPilotID
 
 	return manager.Save(&rollouts.Pilot{FeatureFlagID: ff.ID, ExternalID: ExternalPilotID, Enrolled: true})
 
+}
+
+func (manager *RolloutManager) newDefaultFeatureFlag(featureFlagName string) *rollouts.FeatureFlag {
+	return &rollouts.FeatureFlag{
+		Name: featureFlagName,
+		Rollout: rollouts.Rollout{
+			Percentage: 0,
+			RandSeedSalt: manager.RandSeedGenerator(),
+		},
+	}
 }
