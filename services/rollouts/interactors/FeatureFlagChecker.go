@@ -2,10 +2,20 @@ package interactors
 
 import (
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	"hash/fnv"
+	"math/rand"
 )
 
+func NewFeatureFlagChecker(s rollouts.Storage) *FeatureFlagChecker {
+	return &FeatureFlagChecker{
+		Storage:                s,
+		IDPercentageCalculator: PseudoRandPercentageWithFNV1a64,
+	}
+}
+
 type FeatureFlagChecker struct {
-	Storage rollouts.Storage
+	Storage                rollouts.Storage
+	IDPercentageCalculator func(string) int
 }
 
 func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, ExternalPilotID string) (bool, error) {
@@ -20,21 +30,21 @@ func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, E
 		return false, nil
 	}
 
-	if ff.Rollout.GloballyEnabled {
-		return true, nil
-	}
-
 	pilot, err := checker.Storage.FindFlagPilotByExternalPilotID(ff.ID, ExternalPilotID)
 
 	if err != nil {
 		return false, err
 	}
 
-	if pilot == nil {
+	if pilot != nil {
+		return pilot.Enrolled, nil
+	}
+
+	if ff.Rollout.Percentage == 0 {
 		return false, nil
 	}
 
-	return pilot.Enrolled, nil
+	return checker.IDPercentageCalculator(ExternalPilotID) <= ff.Rollout.Percentage, nil
 }
 
 func (checker *FeatureFlagChecker) IsFeatureGloballyEnabled(featureFlagName string) (bool, error) {
@@ -48,5 +58,16 @@ func (checker *FeatureFlagChecker) IsFeatureGloballyEnabled(featureFlagName stri
 		return false, nil
 	}
 
-	return ff.Rollout.GloballyEnabled, nil
+	return ff.Rollout.Percentage == 100, nil
+}
+
+func PseudoRandPercentageWithFNV1a64(id string) int {
+	h := fnv.New64a()
+
+	if _, err := h.Write([]byte(id)); err != nil {
+		panic(err)
+	}
+
+	seed := rand.NewSource(int64(h.Sum64()))
+	return rand.New(seed).Intn(101)
 }

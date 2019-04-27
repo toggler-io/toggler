@@ -29,6 +29,7 @@ func (storage *Storage) FindPilotsByFeatureFlag(ff *rollouts.FeatureFlag) framel
 	return iterators.NewSlice(pilots)
 }
 
+//TODO: fix name here
 func (storage *Storage) FindFlagPilotByExternalPilotID(FeatureFlagID, ExternalPublicPilotID string) (*rollouts.Pilot, error) {
 	table := storage.TableFor(rollouts.Pilot{})
 

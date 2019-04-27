@@ -7,7 +7,7 @@ import (
 
 func NewIsFeatureGloballyEnabledChecker(s rollouts.Storage) *IsFeatureGloballyEnabledChecker {
 	return &IsFeatureGloballyEnabledChecker{
-		FeatureFlagChecker: &interactors.FeatureFlagChecker{Storage: s},
+		FeatureFlagChecker: interactors.NewFeatureFlagChecker(s),
 	}
 }
 

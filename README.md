@@ -29,17 +29,6 @@ that you want to measure trough they feedback and usage.
 This is useful when you have loyal customers, who love to try out new features early,
 and give feedback they personal feedback about it.
 
-### Global Release
-- [ ] domain logic implemented
-- [ ] available trough API
-
-This option allow you to turn on or off a certain feature.
-This is used for fully release features.
-Some scenario are preventing new features to be able to work with an individual user,
-such as batch processing contexts. 
-For those, the global release is an option, and in case of malfunctioning,
-rolling back the feature becomes easier without release. 
-
 ### Rollout By Percentage
 - [X] domain logic implemented
 - [ ] available trough API
@@ -48,13 +37,22 @@ This option is to enroll users based or percentage.
 This happens when a feature flag status is being asked from the service.
 If the currently calling User is win a Pseudo random lottery,
 then the user is enrolled to become a pilot of the new feature.
-When a user already failed to become a pilot for a new feature,
-the user will be rejected from being able to participate in the feature,
-until either the feature rollout percentage is increased,
-or a rollout manager enrol the user manually,
-or the feature being released to the global audience  
-By this, the behavior of the rollout process gives a more consistent feeling
+The Pseudo random is based on the user's 
+external id FNV-1a 64 bit hash code + pseudo random code generation.
+This grant random like percentage based feature release distribution on an unknown amount of user.
+While you can manually enroll or blacklist users for piloting a feature,
+that approach need to persist this information.
+This on the other hand only rely on the fact that the external id for the user is uniq on system level. 
+The users that lost in the enrollment can still be enrolled when the rollout percentage increase.
 
+#### Global Release on 100 Percentage
+- [X] domain logic implemented
+- [ ] available trough API
+
+In some cases you don't have such information as individual user ids.
+Such scenario can be batch jobs behavior change feature releases.
+When the rollout percentage set to be 100%, the feature considered to be globally available,
+and the the calls that ask for globally enabled features will be replied with yes.
 
 #### Custom Needs like target groups
 - [ ] domain logic implemented

@@ -8,7 +8,6 @@ type FeatureFlag struct {
 }
 
 type Rollout struct {
-	GloballyEnabled bool
-	Percentage      int
-	URL             string
+	Percentage       int
+	URL              string
 }
