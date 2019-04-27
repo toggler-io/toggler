@@ -30,13 +30,13 @@ func (storage *Storage) FindPilotsByFeatureFlag(ff *rollouts.FeatureFlag) framel
 }
 
 //TODO: fix name here
-func (storage *Storage) FindFlagPilotByExternalPilotID(FeatureFlagID, ExternalPublicPilotID string) (*rollouts.Pilot, error) {
+func (storage *Storage) FindFlagPilotByExternalPilotID(featureFlagID, externalPilotID string) (*rollouts.Pilot, error) {
 	table := storage.TableFor(rollouts.Pilot{})
 
 	for _, v := range table {
 		pilot := v.(*rollouts.Pilot)
 
-		if pilot.FeatureFlagID == FeatureFlagID && pilot.ExternalID == ExternalPublicPilotID {
+		if pilot.FeatureFlagID == featureFlagID && pilot.ExternalID == externalPilotID {
 			return pilot, nil
 		}
 	}

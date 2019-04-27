@@ -15,6 +15,6 @@ type IsFeatureEnabledForPilotChecker struct {
 	featureFlagChecker *interactors.FeatureFlagChecker
 }
 
-func (checker *IsFeatureEnabledForPilotChecker) IsFeatureEnabledForPilot(featureFlagName string, ExternalPilotID string) (bool, error) {
-	return checker.featureFlagChecker.IsFeatureEnabledFor(featureFlagName, ExternalPilotID)
+func (checker *IsFeatureEnabledForPilotChecker) IsFeatureEnabledForPilot(featureFlagName string, externalPilotID string) (bool, error) {
+	return checker.featureFlagChecker.IsFeatureEnabledFor(featureFlagName, externalPilotID)
 }

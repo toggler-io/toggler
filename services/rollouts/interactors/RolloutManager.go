@@ -18,7 +18,7 @@ type RolloutManager struct {
 	RandSeedGenerator func() int64
 }
 
-func (manager *RolloutManager) EnableFeatureFor(featureFlagName, ExternalPilotID string) error {
+func (manager *RolloutManager) EnableFeatureFor(featureFlagName, externalPilotID string) error {
 
 	ff, err := manager.Storage.FindByFlagName(featureFlagName)
 
@@ -30,13 +30,13 @@ func (manager *RolloutManager) EnableFeatureFor(featureFlagName, ExternalPilotID
 
 		ff = manager.newDefaultFeatureFlag(featureFlagName)
 
-		if err := manager.Storage.Save(ff); err != nil {
-			return err
+		if serr := manager.Storage.Save(ff); serr != nil {
+			return serr
 		}
 
 	}
 
-	pilot, err := manager.Storage.FindFlagPilotByExternalPilotID(ff.ID, ExternalPilotID)
+	pilot, err := manager.Storage.FindFlagPilotByExternalPilotID(ff.ID, externalPilotID)
 
 	if err != nil {
 		return err
@@ -54,7 +54,7 @@ func (manager *RolloutManager) EnableFeatureFor(featureFlagName, ExternalPilotID
 
 	}
 
-	return manager.Save(&rollouts.Pilot{FeatureFlagID: ff.ID, ExternalID: ExternalPilotID, Enrolled: true})
+	return manager.Save(&rollouts.Pilot{FeatureFlagID: ff.ID, ExternalID: externalPilotID, Enrolled: true})
 
 }
 

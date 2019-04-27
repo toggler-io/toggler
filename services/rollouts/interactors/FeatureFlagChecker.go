@@ -16,7 +16,7 @@ type FeatureFlagChecker struct {
 	IDPercentageCalculator func(string, int64) (int, error)
 }
 
-func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, ExternalPilotID string) (bool, error) {
+func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, externalPilotID string) (bool, error) {
 
 	ff, err := checker.Storage.FindByFlagName(featureFlagName)
 
@@ -28,7 +28,7 @@ func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, E
 		return false, nil
 	}
 
-	pilot, err := checker.Storage.FindFlagPilotByExternalPilotID(ff.ID, ExternalPilotID)
+	pilot, err := checker.Storage.FindFlagPilotByExternalPilotID(ff.ID, externalPilotID)
 
 	if err != nil {
 		return false, err
@@ -42,7 +42,7 @@ func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, E
 		return false, nil
 	}
 
-	diceRollResultPercentage, err := checker.IDPercentageCalculator(ExternalPilotID, ff.Rollout.RandSeedSalt)
+	diceRollResultPercentage, err := checker.IDPercentageCalculator(externalPilotID, ff.Rollout.RandSeedSalt)
 
 	if err != nil {
 		return false, err

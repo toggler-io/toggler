@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	//nolint:golint,stylecheck
 	. "github.com/adamluzsi/FeatureFlags/services/rollouts/testing"
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/resources/specs"

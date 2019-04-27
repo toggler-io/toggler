@@ -6,6 +6,7 @@ import (
 	"github.com/Pallinder/go-randomdata"
 )
 
+//nolint:gochecknoglobals
 var mutex sync.Mutex
 
 func ExampleFlagName() string {

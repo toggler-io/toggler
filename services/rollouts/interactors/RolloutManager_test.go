@@ -69,21 +69,21 @@ func TestRolloutManager(t *testing.T) {
 
 				require.Nil(t, subject())
 
-				ff := findFlag(t)
+				flag := findFlag(t)
 
-				require.Equal(t, FeatureFlagName, ff.Name)
-				require.Equal(t, "", ff.Rollout.Strategy.URL)
-				require.Equal(t, 0, ff.Rollout.Strategy.Percentage)
-				require.Equal(t, GeneratedRandomSeed, ff.Rollout.RandSeedSalt)
+				require.Equal(t, FeatureFlagName, flag.Name)
+				require.Equal(t, "", flag.Rollout.Strategy.URL)
+				require.Equal(t, 0, flag.Rollout.Strategy.Percentage)
+				require.Equal(t, GeneratedRandomSeed, flag.Rollout.RandSeedSalt)
 			})
 
 			t.Run(`then pilot is enrolled for the feature`, func(t *testing.T) {
 				setup(t, flagSetup)
 
 				require.Nil(t, subject())
-				ff := findFlag(t)
+				flag := findFlag(t)
 
-				pilot, err := storage.FindFlagPilotByExternalPilotID(ff.ID, ExternalPilotID)
+				pilot, err := storage.FindFlagPilotByExternalPilotID(flag.ID, ExternalPilotID)
 				require.Nil(t, err)
 
 				require.NotNil(t, pilot)
@@ -123,9 +123,9 @@ func TestRolloutManager(t *testing.T) {
 					t.Run(`then original pilot is kept for enrollment`, func(t *testing.T) {
 
 						require.Nil(t, subject())
-						ff := findFlag(t)
+						flag := findFlag(t)
 
-						pilot, err := storage.FindFlagPilotByExternalPilotID(ff.ID, ExternalPilotID)
+						pilot, err := storage.FindFlagPilotByExternalPilotID(flag.ID, ExternalPilotID)
 						require.Nil(t, err)
 
 						require.NotNil(t, pilot)
