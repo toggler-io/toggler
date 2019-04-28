@@ -55,7 +55,7 @@ When the rollout percentage set to be 100%, the feature considered to be globall
 and the the calls that ask for globally enabled features will be replied with yes.
 
 #### Custom Needs like target groups
-- [ ] domain logic implemented
+- [X] domain logic implemented
 - [ ] available trough API
 
 Sometimes it is a requirement, to release a feature for certain target groups first,
@@ -68,10 +68,9 @@ to use that as a domain decision logic for the feature release process.
 
 The API will receive information about:
 * feature-flag-name
-  * guaranteed
-* external-id of the user
-  * optional, based on if it was received
-
+  * flag name that was received by the FeatureFlag service
+* pilot-id
+  * uniq id that was received by the FeatureFlag service
 
 ### Feature Status check
 - [X] Is enabled for a given User

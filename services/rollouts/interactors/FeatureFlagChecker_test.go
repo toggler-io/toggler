@@ -2,6 +2,8 @@ package interactors_test
 
 import (
 	"math/rand"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -157,6 +159,53 @@ func TestFeatureFlagChecker(t *testing.T) {
 						})
 					})
 				})
+			})
+			t.Run(`and custom decision logic is defined with URL endpoint`, func(t *testing.T) {
+				var url string
+				flagSetup := func(flag *rollouts.FeatureFlag) {
+					flag.Rollout.Strategy.URL = url
+				}
+
+				var replyCode int
+				handler := func(t *testing.T) http.Handler {
+					return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						require.Equal(t, FeatureFlagName, r.URL.Query().Get(`feature-flag-name`))
+						require.Equal(t, ExternalPilotID, r.URL.Query().Get(`pilot-id`))
+						w.WriteHeader(replyCode)
+					})
+				}
+
+				t.Run(`and the remote reject the pilot enrollment`, func(t *testing.T) {
+					replyCode = rand.Intn(100) + 400
+
+					t.Run(`then the pilot is not enrolled for the feature`, func(t *testing.T) {
+						s := httptest.NewServer(handler(t))
+						defer s.Close()
+						url = s.URL
+						setup(t, flagSetup)
+
+						enabled, err := subject()
+						require.Nil(t, err)
+						require.False(t, enabled)
+					})
+				})
+
+				t.Run(`and the the remote accept the pilot enrollment`, func(t *testing.T) {
+					replyCode = rand.Intn(100) + 200
+
+					t.Run(`then the pilot is not enrolled for the feature`, func(t *testing.T) {
+						s := httptest.NewServer(handler(t))
+						defer s.Close()
+						url = s.URL
+						setup(t, flagSetup)
+
+						enabled, err := subject()
+						require.Nil(t, err)
+						require.True(t, enabled)
+					})
+				})
+
+
 			})
 		})
 	})
