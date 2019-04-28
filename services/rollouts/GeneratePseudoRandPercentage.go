@@ -1,10 +1,12 @@
-package interactors
+package rollouts
 
 import (
 	"hash/fnv"
 	"math/rand"
 )
 
+// GeneratePseudoRandPercentageWithFNV1a64 implements pseudo random percentage calculation.
+// this is mainly used for pilot enrollments when percentage strategy is used for rollout.
 func GeneratePseudoRandPercentageWithFNV1a64(id string, seedSalt int64) (int, error) {
 	h := fnv.New64a()
 

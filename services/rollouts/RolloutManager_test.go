@@ -1,12 +1,11 @@
-package interactors_test
+package rollouts_test
 
 import (
-	"github.com/adamluzsi/FeatureFlags/services/rollouts/interactors"
+	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"math/rand"
 	"testing"
 	"time"
 
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	. "github.com/adamluzsi/FeatureFlags/services/rollouts/testing"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/stretchr/testify/require"
@@ -22,8 +21,8 @@ func TestRolloutManager(t *testing.T) {
 	GeneratedRandomSeed := time.Now().Unix()
 	storage := NewStorage()
 
-	manager := func() *interactors.RolloutManager {
-		return &interactors.RolloutManager{
+	manager := func() *rollouts.RolloutManager {
+		return &rollouts.RolloutManager{
 			Storage: storage,
 			RandSeedGenerator: func() int64 {
 				return GeneratedRandomSeed

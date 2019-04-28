@@ -1,16 +1,16 @@
-package interactors_test
+package rollouts_test
 
 import (
+	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"strconv"
 	"testing"
 	"time"
 
-	"github.com/adamluzsi/FeatureFlags/services/rollouts/interactors"
 	"github.com/stretchr/testify/require"
 )
 
 func TestPseudoRandPercentageWithFNV1a64(t *testing.T) {
-	subject := interactors.GeneratePseudoRandPercentageWithFNV1a64
+	subject := rollouts.GeneratePseudoRandPercentageWithFNV1a64
 	seedSalt := time.Now().Unix()
 
 	t.Run(`it is expected that the result is deterministic`, func(t *testing.T) {

@@ -1,14 +1,13 @@
-package interactors_test
+package rollouts_test
 
 import (
+	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
-	"github.com/adamluzsi/FeatureFlags/services/rollouts/interactors"
 	. "github.com/adamluzsi/FeatureFlags/services/rollouts/testing"
 	"github.com/stretchr/testify/require"
 )
@@ -23,8 +22,8 @@ func TestFeatureFlagChecker(t *testing.T) {
 
 	var PseudoRandPercentage int
 
-	featureFlagChecker := func() *interactors.FeatureFlagChecker {
-		return &interactors.FeatureFlagChecker{
+	featureFlagChecker := func() *rollouts.FeatureFlagChecker {
+		return &rollouts.FeatureFlagChecker{
 			Storage: storage,
 			IDPercentageCalculator: func(id string, seedSalt int64) (int, error) {
 				require.Equal(t, ExternalPilotID, id)

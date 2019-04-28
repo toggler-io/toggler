@@ -1,21 +1,23 @@
-package interactors
+package rollouts
 
 import (
 	"fmt"
 	"time"
-
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 )
 
-func NewRolloutManager(s rollouts.Storage) *RolloutManager {
+func NewRolloutManager(s Storage) *RolloutManager {
 	return &RolloutManager{
 		Storage:           s,
 		RandSeedGenerator: func() int64 { return time.Now().Unix() },
 	}
 }
 
+// RolloutManager provides you with feature flag configurability.
+// The manager use storage in a write heavy behavior.
+//
+// SRP: release manager
 type RolloutManager struct {
-	rollouts.Storage
+	Storage
 	RandSeedGenerator func() int64
 }
 
@@ -55,16 +57,16 @@ func (manager *RolloutManager) EnableFeatureFor(featureFlagName, externalPilotID
 
 	}
 
-	return manager.Save(&rollouts.Pilot{FeatureFlagID: ff.ID, ExternalID: externalPilotID, Enrolled: true})
+	return manager.Save(&Pilot{FeatureFlagID: ff.ID, ExternalID: externalPilotID, Enrolled: true})
 
 }
 
-func (manager *RolloutManager) newDefaultFeatureFlag(featureFlagName string) *rollouts.FeatureFlag {
-	return &rollouts.FeatureFlag{
+func (manager *RolloutManager) newDefaultFeatureFlag(featureFlagName string) *FeatureFlag {
+	return &FeatureFlag{
 		Name: featureFlagName,
-		Rollout: rollouts.Rollout{
+		Rollout: Rollout{
 			RandSeedSalt: manager.RandSeedGenerator(),
-			Strategy: rollouts.RolloutStrategy{
+			Strategy: RolloutStrategy{
 				Percentage: 0,
 			},
 		},

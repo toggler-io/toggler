@@ -1,12 +1,11 @@
-package interactors
+package rollouts
 
 import (
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"net/http"
 	"time"
 )
 
-func NewFeatureFlagChecker(s rollouts.Storage) *FeatureFlagChecker {
+func NewFeatureFlagChecker(s Storage) *FeatureFlagChecker {
 	return &FeatureFlagChecker{
 		Storage:                s,
 		IDPercentageCalculator: GeneratePseudoRandPercentageWithFNV1a64,
@@ -14,12 +13,15 @@ func NewFeatureFlagChecker(s rollouts.Storage) *FeatureFlagChecker {
 	}
 }
 
+// FeatureFlagChecker is an interactor that implements query like (read only) behaviors with feature flags.
 type FeatureFlagChecker struct {
-	Storage                rollouts.Storage
+	Storage                Storage
 	IDPercentageCalculator func(string, int64) (int, error)
 	HTTPClient             http.Client
 }
 
+// IsFeatureEnabledFor grant you the ability to
+// check whether a pilot is enrolled or not for the feature flag in subject.
 func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, externalPilotID string) (bool, error) {
 
 	ff, err := checker.Storage.FindByFlagName(featureFlagName)
