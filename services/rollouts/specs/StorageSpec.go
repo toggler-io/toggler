@@ -20,6 +20,7 @@ func (spec *StorageSpec) Test(t *testing.T) {
 
 	for _, entity := range entities {
 		specs.TestMinimumRequirements(t, spec.Storage, entity)
+		specs.UpdateSpec{Type: entity, Subject: spec.Storage}.Test(t)
 	}
 
 	FlagFinderSpec{Subject: spec.Storage}.Test(t)

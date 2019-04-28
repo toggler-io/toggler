@@ -10,6 +10,7 @@ type Storage interface {
 	specs.FindByID
 	specs.Truncate
 	specs.DeleteByID
+	specs.Update
 
 	FlagFinder
 	PilotFinder
