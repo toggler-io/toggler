@@ -1,6 +1,7 @@
 package interactors
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
@@ -68,4 +69,27 @@ func (manager *RolloutManager) newDefaultFeatureFlag(featureFlagName string) *ro
 			},
 		},
 	}
+}
+
+func (manager *RolloutManager) UpdateFeatureFlagRolloutPercentage(featureFlagName string, rolloutPercentage int) error {
+
+	if rolloutPercentage < 0 || 100 < rolloutPercentage {
+		return fmt.Errorf(`validation error, percentage value not acceptable: %d`, rolloutPercentage)
+	}
+
+	ff, err := manager.Storage.FindByFlagName(featureFlagName)
+
+	if err != nil {
+		return err
+	}
+
+	if ff == nil {
+		ff = manager.newDefaultFeatureFlag(featureFlagName)
+		ff.Rollout.Strategy.Percentage = rolloutPercentage
+		return manager.Storage.Save(ff)
+	}
+
+	ff.Rollout.Strategy.Percentage = rolloutPercentage
+	return manager.Storage.Update(ff)
+
 }

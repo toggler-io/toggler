@@ -1,11 +1,12 @@
 package interactors_test
 
 import (
+	"github.com/adamluzsi/FeatureFlags/services/rollouts/interactors"
+	"math/rand"
 	"testing"
 	"time"
 
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
-	"github.com/adamluzsi/FeatureFlags/services/rollouts/interactors"
 	. "github.com/adamluzsi/FeatureFlags/services/rollouts/testing"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/stretchr/testify/require"
@@ -160,6 +161,81 @@ func TestRolloutManager(t *testing.T) {
 						require.Equal(t, 1, count)
 
 					})
+				})
+			})
+		})
+	})
+
+	t.Run(`UpdateFeatureFlagRolloutPercentage`, func(t *testing.T) {
+		var RolloutPercentage int
+		subject := func() error {
+			return manager().UpdateFeatureFlagRolloutPercentage(FeatureFlagName, RolloutPercentage)
+		}
+
+		t.Run(`when percentage less than 0`, func(t *testing.T) {
+			RolloutPercentage = -1 + (rand.Intn(1024) * -1)
+
+			t.Run(`then it will report error`, func(t *testing.T) {
+				require.Error(t, subject())
+			})
+		})
+		t.Run(`when percentage greater than 100`, func(t *testing.T) {
+			RolloutPercentage = 101 + rand.Intn(1024)
+
+			t.Run(`then it will report error`, func(t *testing.T) {
+				require.Error(t, subject())
+			})
+		})
+		t.Run(`when percentage is a number between 0 and 100`, func(t *testing.T) {
+			RolloutPercentage = rand.Intn(101)
+			getRandomPercentageThatIsNotEqualWith := func(oth int) int {
+				for {
+					roll := rand.Intn(101)
+					if roll != RolloutPercentage {
+						return roll
+					}
+				}
+			}
+
+			t.Run(`and feature flag was undefined until now`, func(t *testing.T) {
+				ffSetup := func(flag *rollouts.FeatureFlag) {
+					require.Nil(t, storage.DeleteByID(flag, flag.ID))
+				}
+
+				t.Run(`then feature flag entry created with the percentage`, func(t *testing.T) {
+					setup(t, ffSetup)
+
+					require.Nil(t, subject())
+					flag, err := storage.FindByFlagName(FeatureFlagName)
+					require.Nil(t, err)
+					require.NotNil(t, flag)
+					require.Equal(t, FeatureFlagName, flag.Name)
+					require.Equal(t, "", flag.Rollout.Strategy.URL)
+					require.Equal(t, RolloutPercentage, flag.Rollout.Strategy.Percentage)
+					require.Equal(t, GeneratedRandomSeed, flag.Rollout.RandSeedSalt)
+				})
+			})
+			t.Run(`and feature flag is already exist with a different percentage`, func(t *testing.T) {
+				originalPercentage := getRandomPercentageThatIsNotEqualWith(RolloutPercentage)
+				originalSeedSalt := GeneratedRandomSeed + 1
+				ffSetup := func(flag *rollouts.FeatureFlag) {
+					ff.Rollout.Strategy.Percentage = originalPercentage
+					ff.Rollout.RandSeedSalt = originalSeedSalt
+					require.Nil(t, storage.Update(ff))
+				}
+
+				t.Run(`then the same feature flag kept but updated to the new percentage`, func(t *testing.T) {
+					setup(t, ffSetup)
+
+					require.Nil(t, subject())
+					flag, err := storage.FindByFlagName(FeatureFlagName)
+					require.Nil(t, err)
+					require.NotNil(t, flag)
+					require.Equal(t, ff.ID, flag.ID)
+					require.Equal(t, FeatureFlagName, flag.Name)
+					require.Equal(t, "", flag.Rollout.Strategy.URL)
+					require.Equal(t, RolloutPercentage, flag.Rollout.Strategy.Percentage)
+					require.Equal(t, originalSeedSalt, flag.Rollout.RandSeedSalt)
 				})
 			})
 		})
