@@ -44,8 +44,10 @@ func TestRolloutManager(t *testing.T) {
 
 	}
 
-	t.Run(`EnableFeatureFor`, func(t *testing.T) {
-		subject := func() error { return manager().EnableFeatureFor(FeatureFlagName, ExternalPilotID) }
+	t.Run(`SetPilotEnrollmentForFeature`, func(t *testing.T) {
+		enrollment := rand.Intn(2) == 0
+
+		subject := func() error { return manager().SetPilotEnrollmentForFeature(FeatureFlagName, ExternalPilotID, enrollment) }
 
 		findFlag := func(t *testing.T) *rollouts.FeatureFlag {
 			iter := storage.FindAll(&rollouts.FeatureFlag{})
@@ -77,7 +79,7 @@ func TestRolloutManager(t *testing.T) {
 				require.Equal(t, GeneratedRandomSeed, flag.Rollout.RandSeedSalt)
 			})
 
-			t.Run(`then pilot is enrolled for the feature`, func(t *testing.T) {
+			t.Run(`then pilot is enrollment for the feature is set`, func(t *testing.T) {
 				setup(t, flagSetup)
 
 				require.Nil(t, subject())
@@ -87,9 +89,8 @@ func TestRolloutManager(t *testing.T) {
 				require.Nil(t, err)
 
 				require.NotNil(t, pilot)
-				require.Equal(t, true, pilot.Enrolled)
+				require.Equal(t, enrollment, pilot.Enrolled)
 				require.Equal(t, ExternalPilotID, pilot.ExternalID)
-
 			})
 
 		})
@@ -115,12 +116,12 @@ func TestRolloutManager(t *testing.T) {
 			})
 
 			t.Run(`and pilot already exists`, func(t *testing.T) {
-				t.Run(`and pilot is already enrolled`, func(t *testing.T) {
+				t.Run(`and pilot is has the opposite enrollment status`, func(t *testing.T) {
 					setup(t, flagSetup)
-					originalPilot := &rollouts.Pilot{FeatureFlagID: ff.ID, ExternalID: ExternalPilotID, Enrolled: true}
+					originalPilot := &rollouts.Pilot{FeatureFlagID: ff.ID, ExternalID: ExternalPilotID, Enrolled: !enrollment}
 					require.Nil(t, storage.Save(originalPilot))
 
-					t.Run(`then original pilot is kept for enrollment`, func(t *testing.T) {
+					t.Run(`then original pilot is updated to the new enrollment status`, func(t *testing.T) {
 
 						require.Nil(t, subject())
 						flag := findFlag(t)
@@ -129,7 +130,7 @@ func TestRolloutManager(t *testing.T) {
 						require.Nil(t, err)
 
 						require.NotNil(t, pilot)
-						require.Equal(t, true, pilot.Enrolled)
+						require.Equal(t, enrollment, pilot.Enrolled)
 						require.Equal(t, ExternalPilotID, pilot.ExternalID)
 						require.Equal(t, originalPilot, pilot)
 
@@ -139,11 +140,11 @@ func TestRolloutManager(t *testing.T) {
 					})
 				})
 
-				t.Run(`and pilot is blacklisted currently`, func(t *testing.T) {
+				t.Run(`and pilot already has the same enrollment status`, func(t *testing.T) {
 					setup(t, flagSetup)
-					require.Nil(t, storage.Save(&rollouts.Pilot{FeatureFlagID: ff.ID, ExternalID: ExternalPilotID, Enrolled: false}))
+					require.Nil(t, storage.Save(&rollouts.Pilot{FeatureFlagID: ff.ID, ExternalID: ExternalPilotID, Enrolled: enrollment}))
 
-					t.Run(`then pilot is enrolled`, func(t *testing.T) {
+					t.Run(`then pilot remain the same`, func(t *testing.T) {
 
 						require.Nil(t, subject())
 						ff := findFlag(t)
@@ -152,7 +153,7 @@ func TestRolloutManager(t *testing.T) {
 						require.Nil(t, err)
 
 						require.NotNil(t, pilot)
-						require.Equal(t, true, pilot.Enrolled)
+						require.Equal(t, enrollment, pilot.Enrolled)
 						require.Equal(t, ExternalPilotID, pilot.ExternalID)
 
 						count, err := iterators.Count(storage.FindAll(rollouts.Pilot{}))
