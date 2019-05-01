@@ -1,6 +1,7 @@
 package rollouts_test
 
 import (
+	. "github.com/adamluzsi/FeatureFlags/testing"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"math/rand"
 	"net/http"
@@ -8,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/adamluzsi/FeatureFlags/services/rollouts/testing"
 	"github.com/stretchr/testify/require"
 )
 

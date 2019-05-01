@@ -7,7 +7,7 @@ import (
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 )
 
-func NewUseCases(s rollouts.Storage) *UseCases {
+func NewUseCases(s Storage) *UseCases {
 	return &UseCases{
 		RolloutManager:     rollouts.NewRolloutManager(s),
 		FeatureFlagChecker: rollouts.NewFeatureFlagChecker(s),
@@ -17,4 +17,8 @@ func NewUseCases(s rollouts.Storage) *UseCases {
 type UseCases struct {
 	*rollouts.FeatureFlagChecker
 	*rollouts.RolloutManager
+}
+
+type Storage interface {
+	rollouts.Storage
 }

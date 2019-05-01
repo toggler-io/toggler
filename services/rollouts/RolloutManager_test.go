@@ -1,12 +1,12 @@
 package rollouts_test
 
 import (
+	. "github.com/adamluzsi/FeatureFlags/testing"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"math/rand"
 	"testing"
 	"time"
 
-	. "github.com/adamluzsi/FeatureFlags/services/rollouts/testing"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/stretchr/testify/require"
 )

@@ -1,11 +1,11 @@
 package specs
 
 import (
+	. "github.com/adamluzsi/FeatureFlags/testing"
 	"testing"
 
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
-	//nolint:golint,stylecheck
-	. "github.com/adamluzsi/FeatureFlags/services/rollouts/testing"
+
 	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/stretchr/testify/require"
 )
