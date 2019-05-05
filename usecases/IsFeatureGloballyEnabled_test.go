@@ -3,58 +3,55 @@ package usecases_test
 import (
 	. "github.com/adamluzsi/FeatureFlags/testing"
 	"github.com/adamluzsi/FeatureFlags/usecases"
-	"github.com/adamluzsi/testrun"
+	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 	"math/rand"
 	"testing"
 )
 
 func TestUseCases_IsFeatureGloballyEnabled(t *testing.T) {
-	t.Parallel()
 
-	var (
-		featureFlagName string
-		uc              *usecases.UseCases
-		storage         usecases.Storage
-	)
+	s := testcase.NewSpec(t)
+	SetupSpecCommonVariables(s)
+	s.Parallel()
 
-	subject := func() (bool, error) {
-		return uc.IsFeatureGloballyEnabled(featureFlagName)
+	s.Let(`UseCases`, func(v *testcase.V) interface{} {
+		return usecases.NewUseCases(v.I(`Storage`).(*Storage))
+	})
+
+	subject := func(v *testcase.V) (bool, error) {
+		uc := v.I(`UseCases`).(*usecases.UseCases)
+		return uc.IsFeatureGloballyEnabled(v.I(`FeatureName`).(string))
 	}
 
-	isEnrolled := func(t *testing.T) bool {
-		enrolled, err := subject()
+	isEnrolled := func(t *testing.T, v *testcase.V) bool {
+		enrolled, err := subject(v)
 		require.Nil(t, err)
 		return enrolled
 	}
 
-	steps := testrun.Steps{}.Add(func(t *testing.T) {
-		storage = NewStorage()
-		uc = usecases.NewUseCases(storage)
-		featureFlagName = ExampleFlagName()
-	})
-
-	t.Run(`when flag is fully rolled out`, func(t *testing.T) {
-		steps := steps.Add(func(t *testing.T) {
-			require.Nil(t, uc.UpdateFeatureFlagRolloutPercentage(featureFlagName, 100))
+	s.When(`flag is already configured`, func(s *testcase.Spec) {
+		s.Before(func(t *testing.T, v *testcase.V) {
+			require.Nil(t, v.I(`UseCases`).(*usecases.UseCases).
+				UpdateFeatureFlagRolloutPercentage(v.I(`FeatureName`).(string),
+					v.I(`percentage`).(int)))
 		})
 
-		t.Run(`then feature is enabled`, func(t *testing.T) {
-			steps.Setup(t)
+		s.And(`with global rollout (100%)`, func(s *testcase.Spec) {
+			s.Let(`percentage`, func(v *testcase.V) interface{} { return int(100) })
 
-			require.True(t, isEnrolled(t))
-		})
-	})
-
-	t.Run(`when flag is not yet fully rolled out`, func(t *testing.T) {
-		steps := steps.Add(func(t *testing.T) {
-			require.Nil(t, uc.UpdateFeatureFlagRolloutPercentage(featureFlagName, rand.Intn(100)))
+			s.Then(`the feature will be reportad to be globally enabled`, func(t *testing.T, v *testcase.V) {
+				require.True(t, isEnrolled(t, v))
+			})
 		})
 
-		t.Run(`then feature is enabled`, func(t *testing.T) {
-			steps.Setup(t)
+		s.And(`with less than 100%`, func(s *testcase.Spec) {
+			s.Let(`percentage`, func(v *testcase.V) interface{} { return rand.Intn(100) })
 
-			require.False(t, isEnrolled(t))
+			s.Then(`it will report that feature is currently not available globally`, func(t *testing.T, v *testcase.V) {
+				require.False(t, isEnrolled(t, v))
+			})
 		})
 	})
+
 }

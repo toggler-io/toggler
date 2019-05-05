@@ -21,7 +21,7 @@ type PilotFinderSpec struct {
 }
 
 func (spec PilotFinderSpec) Test(t *testing.T) {
-	flagName := ExampleFlagName()
+	flagName := ExampleFeatureName()
 
 	setup := func(t *testing.T) {
 		require.Nil(t, spec.Subject.Truncate(rollouts.FeatureFlag{}))

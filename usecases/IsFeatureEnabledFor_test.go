@@ -2,7 +2,7 @@ package usecases_test
 
 import (
 	"github.com/adamluzsi/FeatureFlags/usecases"
-	"github.com/adamluzsi/testrun"
+	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 	"math/rand"
 	"testing"
@@ -11,118 +11,147 @@ import (
 )
 
 func TestUseCases_IsFeatureEnabledFor(t *testing.T) {
-	t.Parallel()
 
-	var (
-		uc              *usecases.UseCases
-		featureFlagName string
-		externalPilotID string
-		storage         usecases.Storage
-	)
+	s := testcase.NewSpec(t)
+	SetupSpecCommonVariables(s)
+	s.Parallel()
 
-	subject := func() (bool, error) {
-		return uc.IsFeatureEnabledFor(featureFlagName, externalPilotID)
-	}
+	UseCases := func(v *testcase.V) *usecases.UseCases { return v.I(`UseCases`).(*usecases.UseCases) }
 
-	isEnrolled := func(t *testing.T) bool {
-		enrolled, err := subject()
-		require.Nil(t, err)
-		return enrolled
-	}
-
-	steps := testrun.Steps{}.Add(func(t *testing.T) {
-		storage = NewStorage()
-		uc = usecases.NewUseCases(storage)
-		featureFlagName = ExampleFlagName()
-		externalPilotID = ExampleExternalPilotID()
+	s.Let(`UseCases`, func(v *testcase.V) interface{} {
+		return usecases.NewUseCases(v.I(`Storage`).(*Storage))
 	})
 
-	t.Run(`when user enrolled by white list`, func(t *testing.T) {
-		steps := steps.Add(func(t *testing.T) {
-			require.Nil(t, uc.SetPilotEnrollmentForFeature(featureFlagName, externalPilotID, true))
-		})
+	s.Describe(`IsFeatureEnabledFor`, func(s *testcase.Spec) {
+		subject := func(v *testcase.V) (bool, error) {
+			return UseCases(v).IsFeatureEnabledFor(
+				v.I(`FeatureName`).(string),
+				v.I(`ExternalPilotID`).(string),
+			)
+		}
 
-		t.Run(`then feature is enabled`, func(t *testing.T) {
-			steps.Setup(t)
-			require.True(t, isEnrolled(t))
-		})
-	})
+		isEnrolled := func(t *testing.T, v *testcase.V) bool {
+			enrolled, err := subject(v)
+			require.Nil(t, err)
+			return enrolled
+		}
 
-	t.Run(`when user blacklisted`, func(t *testing.T) {
-		steps := steps.Add(func(t *testing.T) {
-			require.Nil(t, uc.SetPilotEnrollmentForFeature(featureFlagName, externalPilotID, false))
-		})
-
-		t.Run(`then feature is enabled`, func(t *testing.T) {
-			steps.Setup(t)
-			require.False(t, isEnrolled(t))
-		})
-	})
-
-	t.Run(`when many different user ask for feature enrollment`, func(t *testing.T) {
-		var extIDS []string
-		var tolerationPercentage int
-
-		steps := steps.Add(func(t *testing.T) {
-
-			tolerationPercentage = 3
-			samplingCount := 10000
-
-			if testing.Short() {
-				tolerationPercentage = 5
-				samplingCount = 1000
-			}
-
-			extIDS = []string{}
-			for i := 0; i < samplingCount; i++ {
-				extIDS = append(extIDS, ExampleExternalPilotID())
-			}
-		})
-
-		t.Run(`and the rollout percentage is configured`, func(t *testing.T) {
-			var expectedEnrollMaxPercentage int
-
-			steps := steps.Add(func(t *testing.T) {
-				expectedEnrollMaxPercentage = rand.Intn(51) + 50
-
-				if 100 < expectedEnrollMaxPercentage + tolerationPercentage {
-					tolerationPercentage = 100 - expectedEnrollMaxPercentage
-				}
-
-				require.Nil(t, uc.UpdateFeatureFlagRolloutPercentage(featureFlagName, expectedEnrollMaxPercentage))
+		s.When(`user piloting status registered`, func(s *testcase.Spec) {
+			s.Before(func(t *testing.T, v *testcase.V) {
+				enrollment := v.I(`enrollment`).(bool)
+				require.Nil(t, UseCases(v).SetPilotEnrollmentForFeature(
+					v.I(`FeatureName`).(string),
+					v.I(`ExternalPilotID`).(string),
+					enrollment))
 			})
 
-			t.Run(`then it is expected that the rollout percentage is honored somewhat`, func(t *testing.T) {
-				steps.Setup(t)
+			s.And(`by whitelist`, func(s *testcase.Spec) {
+				s.Let(`enrollment`, func(v *testcase.V) interface{} { return true })
 
-				var enrolled, rejected int
+				s.Then(`feature is enabled`, func(t *testing.T, v *testcase.V) {
+					require.True(t, isEnrolled(t, v))
+				})
+			})
 
-				for _, extID := range extIDS {
-					enrollment, err := uc.IsFeatureEnabledFor(featureFlagName, extID)
+			s.And(`by blacklist`, func(s *testcase.Spec) {
+				s.Let(`enrollment`, func(v *testcase.V) interface{} { return false })
 
-					require.Nil(t, err)
+				s.Then(`feature is disabled`, func(t *testing.T, v *testcase.V) {
+					require.False(t, isEnrolled(t, v))
+				})
+			})
+		})
 
-					if enrollment {
-						enrolled++
-					} else {
-						rejected++
+		s.When(`many different user ask for feature enrollment`, func(s *testcase.Spec) {
+
+			s.Let(`tolerationPercentage`, func(v *testcase.V) interface{} {
+				var percentage int
+				if testing.Short() {
+					percentage = 5
+				} else {
+					percentage = 3
+				}
+				return percentage
+			})
+
+			s.Let(`samplingCount`, func(v *testcase.V) interface{} {
+				var count int
+				if testing.Short() {
+					count = 1000
+				} else {
+					count = 10000
+				}
+				return count
+			})
+
+			s.Let(`extIDS`, func(v *testcase.V) interface{} {
+				extIDS := []string{}
+				samplingCount := v.I(`samplingCount`).(int)
+
+				for i := 0; i < samplingCount; i++ {
+					extIDS = append(extIDS, ExampleExternalPilotID())
+				}
+
+				return extIDS
+			})
+
+			s.And(`the rollout percentage is configured`, func(s *testcase.Spec) {
+
+				s.Let(`expectedEnrollMaxPercentage`, func(v *testcase.V) interface{} {
+					expectedEnrollMaxPercentage := rand.Intn(51) + 50
+					tolerationPercentage := v.I(`tolerationPercentage`).(int)
+
+					if 100 < expectedEnrollMaxPercentage+tolerationPercentage {
+						tolerationPercentage = 100 - expectedEnrollMaxPercentage
 					}
 
-				}
+					return expectedEnrollMaxPercentage
+				})
 
-				t.Logf(`a little toleration is still accepted, as long in generally it is within the range (+%d%%)`, tolerationPercentage)
-				maximumAcceptedEnrollmentPercentage := expectedEnrollMaxPercentage + tolerationPercentage
-				minimumAcceptedEnrollmentPercentage := expectedEnrollMaxPercentage - tolerationPercentage
+				s.Before(func(t *testing.T, v *testcase.V) {
+					expectedEnrollMaxPercentage := v.I(`expectedEnrollMaxPercentage`).(int)
 
-				t.Logf(`so the total percentage in this test that fulfil the requirements is %d%%`, maximumAcceptedEnrollmentPercentage)
-				testRunResultPercentage := int(float32(enrolled) / float32(enrolled+rejected) * 100)
+					require.Nil(t, UseCases(v).UpdateFeatureFlagRolloutPercentage(
+						v.I(`FeatureName`).(string), expectedEnrollMaxPercentage))
+				})
 
-				t.Logf(`and the actual percentage is %d%%`, testRunResultPercentage)
-				require.True(t, testRunResultPercentage <= maximumAcceptedEnrollmentPercentage)
-				require.True(t, minimumAcceptedEnrollmentPercentage <= testRunResultPercentage)
+				s.Then(``, func(t *testing.T, v *testcase.V) {
+					var enrolled, rejected int
 
+					extIDS := v.I(`extIDS`).([]string)
+
+					for _, extID := range extIDS {
+						enrollment, err := UseCases(v).IsFeatureEnabledFor(
+							v.I(`FeatureName`).(string), extID)
+
+						require.Nil(t, err)
+
+						if enrollment {
+							enrolled++
+						} else {
+							rejected++
+						}
+
+					}
+
+					expectedEnrollMaxPercentage := v.I(`expectedEnrollMaxPercentage`).(int)
+					tolerationPercentage := v.I(`tolerationPercentage`).(int)
+
+					t.Logf(`a little toleration is still accepted, as long in generally it is within the range (+%d%%)`, tolerationPercentage)
+					maximumAcceptedEnrollmentPercentage := expectedEnrollMaxPercentage + tolerationPercentage
+					minimumAcceptedEnrollmentPercentage := expectedEnrollMaxPercentage - tolerationPercentage
+
+					t.Logf(`so the total percentage in this test that fulfil the requirements is %d%%`, maximumAcceptedEnrollmentPercentage)
+					testRunResultPercentage := int(float32(enrolled) / float32(enrolled+rejected) * 100)
+
+					t.Logf(`and the actual percentage is %d%%`, testRunResultPercentage)
+					require.True(t, testRunResultPercentage <= maximumAcceptedEnrollmentPercentage)
+					require.True(t, minimumAcceptedEnrollmentPercentage <= testRunResultPercentage)
+
+				})
 			})
-		})
 
+		})
 	})
+
 }

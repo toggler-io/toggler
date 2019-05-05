@@ -19,7 +19,7 @@ type FlagFinderSpec struct {
 }
 
 func (spec FlagFinderSpec) Test(t *testing.T) {
-	featureName := ExampleFlagName()
+	featureName := ExampleFeatureName()
 
 	setup := func(t *testing.T) {
 		require.Nil(t, spec.Subject.Truncate(rollouts.FeatureFlag{}))
