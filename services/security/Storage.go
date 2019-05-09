@@ -1,7 +1,6 @@
-package rollouts
+package security
 
 import (
-	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/resources/specs"
 )
 
@@ -11,16 +10,8 @@ type Storage interface {
 	specs.Truncate
 	specs.DeleteByID
 	specs.Update
-
-	FlagFinder
-	PilotFinder
 }
 
-type FlagFinder interface {
-	FindByFlagName(name string) (*FeatureFlag, error)
-}
-
-type PilotFinder interface {
-	FindFlagPilotByExternalPilotID(FeatureFlagID, ExternalPilotID string) (*Pilot, error)
-	FindPilotsByFeatureFlag(*FeatureFlag) frameless.Iterator
+type TokenFinder interface {
+	FindByTokenHashSum(hashsum string) (*Token, error)
 }

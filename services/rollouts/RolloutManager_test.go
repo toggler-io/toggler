@@ -17,146 +17,146 @@ func TestRolloutManager(t *testing.T) {
 	s.Parallel()
 	SetupSpecCommonVariables(s)
 
-	GetGeneratedRandomSeed := func(v *testcase.V) int64 {
-		return v.I(`GeneratedRandomSeed`).(int64)
+	GetGeneratedRandomSeed := func(t *testcase.T) int64 {
+		return t.I(`GeneratedRandomSeed`).(int64)
 	}
 
-	s.Let(`GeneratedRandomSeed`, func(v *testcase.V) interface{} {
+	s.Let(`GeneratedRandomSeed`, func(t *testcase.T) interface{} {
 		return time.Now().Unix()
 	})
 
-	manager := func(v *testcase.V) *rollouts.RolloutManager {
+	manager := func(t *testcase.T) *rollouts.RolloutManager {
 		return &rollouts.RolloutManager{
-			Storage: GetStorage(v),
+			Storage: GetStorage(t),
 			RandSeedGenerator: func() int64 {
-				return GetGeneratedRandomSeed(v)
+				return GetGeneratedRandomSeed(t)
 			},
 		}
 	}
 
-	s.Before(func(t *testing.T, v *testcase.V) {
-		require.Nil(t, GetStorage(v).Truncate(rollouts.FeatureFlag{}))
-		require.Nil(t, GetStorage(v).Truncate(rollouts.Pilot{}))
+	s.Before(func(t *testcase.T) {
+		require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
+		require.Nil(t, GetStorage(t).Truncate(rollouts.Pilot{}))
 	})
 
 	s.Describe(`SetPilotEnrollmentForFeature`, func(s *testcase.Spec) {
 
-		GetNewEnrollment := func(v *testcase.V) bool {
-			return v.I(`NewEnrollment`).(bool)
+		GetNewEnrollment := func(t *testcase.T) bool {
+			return t.I(`NewEnrollment`).(bool)
 		}
 
-		subject := func(v *testcase.V) error {
-			return manager(v).SetPilotEnrollmentForFeature(
-				GetFeatureFlagName(v),
-				GetExternalPilotID(v),
-				GetNewEnrollment(v),
+		subject := func(t *testcase.T) error {
+			return manager(t).SetPilotEnrollmentForFeature(
+				GetFeatureFlagName(t),
+				GetExternalPilotID(t),
+				GetNewEnrollment(t),
 			)
 		}
 
-		s.Let(`NewEnrollment`, func(v *testcase.V) interface{} {
+		s.Let(`NewEnrollment`, func(t *testcase.T) interface{} {
 			return rand.Intn(2) == 0
 		})
 
-		findFlag := func(v *testcase.V) *rollouts.FeatureFlag {
-			iter := GetStorage(v).FindAll(&rollouts.FeatureFlag{})
-			require.NotNil(v.T(), iter)
-			require.True(v.T(), iter.Next())
+		findFlag := func(t *testcase.T) *rollouts.FeatureFlag {
+			iter := GetStorage(t).FindAll(&rollouts.FeatureFlag{})
+			require.NotNil(t, iter)
+			require.True(t, iter.Next())
 			var ff rollouts.FeatureFlag
-			require.Nil(v.T(), iter.Decode(&ff))
-			require.False(v.T(), iter.Next())
-			require.Nil(v.T(), iter.Err())
+			require.Nil(t, iter.Decode(&ff))
+			require.False(t, iter.Next())
+			require.Nil(t, iter.Err())
 			return &ff
 		}
 
 		s.When(`no feature flag is seen ever before`, func(s *testcase.Spec) {
-			s.Before(func(t *testing.T, v *testcase.V) {
-				require.Nil(t, GetStorage(v).Truncate(rollouts.FeatureFlag{}))
+			s.Before(func(t *testcase.T) {
+				require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
 			})
 
-			s.Then(`feature flag created`, func(t *testing.T, v *testcase.V) {
-				require.Nil(t, subject(v))
+			s.Then(`feature flag created`, func(t *testcase.T) {
+				require.Nil(t, subject(t))
 
-				flag := findFlag(v)
-				require.Equal(t, GetFeatureFlagName(v), flag.Name)
+				flag := findFlag(t)
+				require.Equal(t, GetFeatureFlagName(t), flag.Name)
 				require.Equal(t, "", flag.Rollout.Strategy.URL)
 				require.Equal(t, 0, flag.Rollout.Strategy.Percentage)
-				require.Equal(t, GetGeneratedRandomSeed(v), flag.Rollout.RandSeedSalt)
+				require.Equal(t, GetGeneratedRandomSeed(t), flag.Rollout.RandSeedSalt)
 			})
 
-			s.Then(`pilot is enrollment is set for the feature is set`, func(t *testing.T, v *testcase.V) {
-				require.Nil(t, subject(v))
+			s.Then(`pilot is enrollment is set for the feature is set`, func(t *testcase.T) {
+				require.Nil(t, subject(t))
 
-				flag := findFlag(v)
-				pilot, err := GetStorage(v).FindFlagPilotByExternalPilotID(flag.ID, GetExternalPilotID(v))
+				flag := findFlag(t)
+				pilot, err := GetStorage(t).FindFlagPilotByExternalPilotID(flag.ID, GetExternalPilotID(t))
 				require.Nil(t, err)
 				require.NotNil(t, pilot)
-				require.Equal(t, GetNewEnrollment(v), pilot.Enrolled)
-				require.Equal(t, GetExternalPilotID(v), pilot.ExternalID)
+				require.Equal(t, GetNewEnrollment(t), pilot.Enrolled)
+				require.Equal(t, GetExternalPilotID(t), pilot.ExternalID)
 			})
 		})
 
 		s.When(`feature flag already configured`, func(s *testcase.Spec) {
-			s.Before(func(t *testing.T, v *testcase.V) {
-				require.Nil(t, GetStorage(v).Save(GetFeatureFlag(v)))
+			s.Before(func(t *testcase.T) {
+				require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
 			})
 
-			s.Then(`flag is will not be recreated`, func(t *testing.T, v *testcase.V) {
-				require.Nil(t, subject(v))
+			s.Then(`flag is will not be recreated`, func(t *testcase.T) {
+				require.Nil(t, subject(t))
 
-				count, err := iterators.Count(GetStorage(v).FindAll(rollouts.FeatureFlag{}))
+				count, err := iterators.Count(GetStorage(t).FindAll(rollouts.FeatureFlag{}))
 				require.Nil(t, err)
 				require.Equal(t, 1, count)
 
-				flag := findFlag(v)
-				require.Equal(t, GetFeatureFlag(v), flag)
+				flag := findFlag(t)
+				require.Equal(t, GetFeatureFlag(t), flag)
 			})
 
 			s.And(`pilot already exists`, func(s *testcase.Spec) {
-				s.Before(func(t *testing.T, v *testcase.V) {
-					require.Nil(t, GetStorage(v).Save(GetPilot(v)))
+				s.Before(func(t *testcase.T) {
+					require.Nil(t, GetStorage(t).Save(GetPilot(t)))
 				})
 
 				s.And(`and pilot is has the opposite enrollment status`, func(s *testcase.Spec) {
-					s.Let(`PilotEnrollment`, func(v *testcase.V) interface{} {
-						return !GetNewEnrollment(v)
+					s.Let(`PilotEnrollment`, func(t *testcase.T) interface{} {
+						return !GetNewEnrollment(t)
 					})
 
-					s.Then(`the original pilot is updated to the new enrollment status`, func(t *testing.T, v *testcase.V) {
-						require.Nil(t, subject(v))
-						flag := findFlag(v)
+					s.Then(`the original pilot is updated to the new enrollment status`, func(t *testcase.T) {
+						require.Nil(t, subject(t))
+						flag := findFlag(t)
 
-						pilot, err := GetStorage(v).FindFlagPilotByExternalPilotID(flag.ID, GetExternalPilotID(v))
+						pilot, err := GetStorage(t).FindFlagPilotByExternalPilotID(flag.ID, GetExternalPilotID(t))
 						require.Nil(t, err)
 
 						require.NotNil(t, pilot)
-						require.Equal(t, GetNewEnrollment(v), pilot.Enrolled)
-						require.Equal(t, GetExternalPilotID(v), pilot.ExternalID)
-						require.Equal(t, GetPilot(v), pilot)
+						require.Equal(t, GetNewEnrollment(t), pilot.Enrolled)
+						require.Equal(t, GetExternalPilotID(t), pilot.ExternalID)
+						require.Equal(t, GetPilot(t), pilot)
 
-						count, err := iterators.Count(GetStorage(v).FindAll(rollouts.Pilot{}))
+						count, err := iterators.Count(GetStorage(t).FindAll(rollouts.Pilot{}))
 						require.Nil(t, err)
 						require.Equal(t, 1, count)
 					})
 				})
 
 				s.And(`pilot already has the same enrollment status`, func(s *testcase.Spec) {
-					s.Let(`PilotEnrollment`, func(v *testcase.V) interface{} {
-						return GetNewEnrollment(v)
+					s.Let(`PilotEnrollment`, func(t *testcase.T) interface{} {
+						return GetNewEnrollment(t)
 					})
 
-					s.Then(`pilot remain the same`, func(t *testing.T, v *testcase.V) {
+					s.Then(`pilot remain the same`, func(t *testcase.T) {
 
-						require.Nil(t, subject(v))
-						ff := findFlag(v)
+						require.Nil(t, subject(t))
+						ff := findFlag(t)
 
-						pilot, err := GetStorage(v).FindFlagPilotByExternalPilotID(ff.ID, GetExternalPilotID(v))
+						pilot, err := GetStorage(t).FindFlagPilotByExternalPilotID(ff.ID, GetExternalPilotID(t))
 						require.Nil(t, err)
 
 						require.NotNil(t, pilot)
-						require.Equal(t, GetNewEnrollment(v), pilot.Enrolled)
-						require.Equal(t, GetExternalPilotID(v), pilot.ExternalID)
+						require.Equal(t, GetNewEnrollment(t), pilot.Enrolled)
+						require.Equal(t, GetExternalPilotID(t), pilot.ExternalID)
 
-						count, err := iterators.Count(GetStorage(v).FindAll(rollouts.Pilot{}))
+						count, err := iterators.Count(GetStorage(t).FindAll(rollouts.Pilot{}))
 						require.Nil(t, err)
 						require.Equal(t, 1, count)
 
@@ -168,76 +168,76 @@ func TestRolloutManager(t *testing.T) {
 	})
 
 	s.Describe(`UpdateFeatureFlagRolloutPercentage`, func(s *testcase.Spec) {
-		GetNewRolloutPercentage := func(v *testcase.V) int {
-			return v.I(`NewRolloutPercentage`).(int)
+		GetNewRolloutPercentage := func(t *testcase.T) int {
+			return t.I(`NewRolloutPercentage`).(int)
 		}
 
-		subject := func(v *testcase.V) error {
-			return manager(v).UpdateFeatureFlagRolloutPercentage(GetFeatureFlagName(v), GetNewRolloutPercentage(v))
+		subject := func(t *testcase.T) error {
+			return manager(t).UpdateFeatureFlagRolloutPercentage(GetFeatureFlagName(t), GetNewRolloutPercentage(t))
 		}
 
 		s.When(`percentage less than 0`, func(s *testcase.Spec) {
-			s.Let(`NewRolloutPercentage`, func(v *testcase.V) interface{} { return -1 + (rand.Intn(1024) * -1) })
+			s.Let(`NewRolloutPercentage`, func(t *testcase.T) interface{} { return -1 + (rand.Intn(1024) * -1) })
 
-			s.Then(`it will report error`, func(t *testing.T, v *testcase.V) {
-				require.Error(t, subject(v))
+			s.Then(`it will report error`, func(t *testcase.T) {
+				require.Error(t, subject(t))
 			})
 		})
 
 		s.When(`percentage greater than 100`, func(s *testcase.Spec) {
-			s.Let(`NewRolloutPercentage`, func(v *testcase.V) interface{} { return 101 + rand.Intn(1024) })
+			s.Let(`NewRolloutPercentage`, func(t *testcase.T) interface{} { return 101 + rand.Intn(1024) })
 
-			s.Then(`it will report error`, func(t *testing.T, v *testcase.V) {
-				require.Error(t, subject(v))
+			s.Then(`it will report error`, func(t *testcase.T) {
+				require.Error(t, subject(t))
 			})
 		})
 
 		s.When(`percentage is a number between 0 and 100`, func(s *testcase.Spec) {
-			s.Let(`NewRolloutPercentage`, func(v *testcase.V) interface{} { return rand.Intn(101) })
+			s.Let(`NewRolloutPercentage`, func(t *testcase.T) interface{} { return rand.Intn(101) })
 
 			s.And(`feature flag was undefined until now`, func(s *testcase.Spec) {
-				s.Before(func(t *testing.T, v *testcase.V) {
-					require.Nil(t, GetStorage(v).Truncate(rollouts.FeatureFlag{}))
+				s.Before(func(t *testcase.T) {
+					require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
 				})
 
-				s.Then(`feature flag entry created with the percentage`, func(t *testing.T, v *testcase.V) {
-					require.Nil(t, subject(v))
-					flag, err := GetStorage(v).FindByFlagName(GetFeatureFlagName(v))
+				s.Then(`feature flag entry created with the percentage`, func(t *testcase.T) {
+					require.Nil(t, subject(t))
+					flag, err := GetStorage(t).FindByFlagName(GetFeatureFlagName(t))
 					require.Nil(t, err)
 					require.NotNil(t, flag)
 
-					require.Equal(t, GetFeatureFlagName(v), flag.Name)
+					require.Equal(t, GetFeatureFlagName(t), flag.Name)
 					require.Equal(t, "", flag.Rollout.Strategy.URL)
-					require.Equal(t, GetNewRolloutPercentage(v), flag.Rollout.Strategy.Percentage)
-					require.Equal(t, GetGeneratedRandomSeed(v), flag.Rollout.RandSeedSalt)
+					require.Equal(t, GetNewRolloutPercentage(t), flag.Rollout.Strategy.Percentage)
+					require.Equal(t, GetGeneratedRandomSeed(t), flag.Rollout.RandSeedSalt)
 				})
 			})
 
 			s.And(`feature flag is already exist with a different percentage`, func(s *testcase.Spec) {
-				s.Let(`RolloutPercentage`, func(v *testcase.V) interface{} {
+				s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} {
 					for {
 						roll := rand.Intn(101)
-						if roll != GetNewRolloutPercentage(v) {
+						if roll != GetNewRolloutPercentage(t) {
 							return roll
 						}
 					}
 				})
 
-				s.Before(func(t *testing.T, v *testcase.V) {
-					require.Nil(t, GetStorage(v).Save(GetFeatureFlag(v)))
+				s.Before(func(t *testcase.T) {
+					require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
 				})
 
-				s.Then(`the same feature flag kept but updated to the new percentage`, func(t *testing.T, v *testcase.V) {
-					require.Nil(t, subject(v))
-					flag, err := GetStorage(v).FindByFlagName(GetFeatureFlagName(v))
+				s.Then(`the same feature flag kept but updated to the new percentage`, func(t *testcase.T) {
+					require.Nil(t, subject(t))
+					flag, err := GetStorage(t).FindByFlagName(GetFeatureFlagName(t))
 					require.Nil(t, err)
 					require.NotNil(t, flag)
 
-					require.Equal(t, GetFeatureFlag(v).ID, flag.ID)
-					require.Equal(t, GetFeatureFlagName(v), flag.Name)
+					require.Equal(t, GetFeatureFlag(t).ID, flag.ID)
+					require.Equal(t, GetFeatureFlagName(t), flag.Name)
 					require.Equal(t, "", flag.Rollout.Strategy.URL)
-					require.Equal(t, GetNewRolloutPercentage(v), flag.Rollout.Strategy.Percentage)
-					require.Equal(t, GetRolloutSeedSalt(v), flag.Rollout.RandSeedSalt)
+					require.Equal(t, GetNewRolloutPercentage(t), flag.Rollout.Strategy.Percentage)
+					require.Equal(t, GetRolloutSeedSalt(t), flag.Rollout.RandSeedSalt)
 				})
 			})
 		})

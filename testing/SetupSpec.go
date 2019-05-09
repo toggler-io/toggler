@@ -9,71 +9,71 @@ import (
 
 func SetupSpecCommonVariables(s *testcase.Spec) {
 
-	s.Let(`FeatureName`, func(v *testcase.V) interface{} {
+	s.Let(`FeatureName`, func(t *testcase.T) interface{} {
 		return ExampleFeatureName()
 	})
 
-	s.Let(`ExternalPilotID`, func(v *testcase.V) interface{} {
+	s.Let(`ExternalPilotID`, func(t *testcase.T) interface{} {
 		return ExampleExternalPilotID()
 	})
 
-	s.Let(`Storage`, func(v *testcase.V) interface{} {
+	s.Let(`Storage`, func(t *testcase.T) interface{} {
 		return NewStorage()
 	})
 
-	s.Let(`PilotEnrollment`, func(v *testcase.V) interface{} {
+	s.Let(`PilotEnrollment`, func(t *testcase.T) interface{} {
 		return rand.Intn(2) == 0
 	})
 
-	s.Let(`Pilot`, func(v *testcase.V) interface{} {
+	s.Let(`Pilot`, func(t *testcase.T) interface{} {
 		return &rollouts.Pilot{
-			FeatureFlagID: v.I(`FeatureFlag`).(*rollouts.FeatureFlag).ID,
-			ExternalID:    v.I(`ExternalPilotID`).(string),
-			Enrolled:      v.I(`PilotEnrollment`).(bool),
+			FeatureFlagID: t.I(`FeatureFlag`).(*rollouts.FeatureFlag).ID,
+			ExternalID:    t.I(`ExternalPilotID`).(string),
+			Enrolled:      t.I(`PilotEnrollment`).(bool),
 		}
 	})
 
-	s.Let(`RolloutSeedSalt`, func(v *testcase.V) interface{} { return time.Now().Unix() })
-	s.Let(`RolloutPercentage`, func(v *testcase.V) interface{} { return int(0) })
-	s.Let(`RolloutApiURL`, func(v *testcase.V) interface{} { return "" })
-	s.Let(`FeatureFlag`, func(v *testcase.V) interface{} {
-		ff := &rollouts.FeatureFlag{Name: v.I(`FeatureName`).(string)}
-		ff.Rollout.RandSeedSalt = v.I(`RolloutSeedSalt`).(int64)
-		ff.Rollout.Strategy.Percentage = v.I(`RolloutPercentage`).(int)
-		ff.Rollout.Strategy.URL = v.I(`RolloutApiURL`).(string)
+	s.Let(`RolloutSeedSalt`, func(t *testcase.T) interface{} { return time.Now().Unix() })
+	s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return int(0) })
+	s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return "" })
+	s.Let(`FeatureFlag`, func(t *testcase.T) interface{} {
+		ff := &rollouts.FeatureFlag{Name: t.I(`FeatureName`).(string)}
+		ff.Rollout.RandSeedSalt = t.I(`RolloutSeedSalt`).(int64)
+		ff.Rollout.Strategy.Percentage = t.I(`RolloutPercentage`).(int)
+		ff.Rollout.Strategy.URL = t.I(`RolloutApiURL`).(string)
 		return ff
 	})
 
 }
 
-func GetExternalPilotID(v *testcase.V) string {
-	return v.I(`ExternalPilotID`).(string)
+func GetExternalPilotID(t *testcase.T) string {
+	return t.I(`ExternalPilotID`).(string)
 }
 
-func GetFeatureFlagName(v *testcase.V) string {
-	return v.I(`FeatureName`).(string)
+func GetFeatureFlagName(t *testcase.T) string {
+	return t.I(`FeatureName`).(string)
 }
 
-func GetStorage(v *testcase.V) *Storage {
-	return v.I(`Storage`).(*Storage)
+func GetStorage(t *testcase.T) *Storage {
+	return t.I(`Storage`).(*Storage)
 }
 
-func GetFeatureFlag(v *testcase.V) *rollouts.FeatureFlag {
-	return v.I(`FeatureFlag`).(*rollouts.FeatureFlag)
+func GetFeatureFlag(t *testcase.T) *rollouts.FeatureFlag {
+	return t.I(`FeatureFlag`).(*rollouts.FeatureFlag)
 }
 
-func GetPilot(v *testcase.V) *rollouts.Pilot {
-	return v.I(`Pilot`).(*rollouts.Pilot)
+func GetPilot(t *testcase.T) *rollouts.Pilot {
+	return t.I(`Pilot`).(*rollouts.Pilot)
 }
 
-func GetPilotEnrollment(v *testcase.V) bool {
-	return v.I(`PilotEnrollment`).(bool)
+func GetPilotEnrollment(t *testcase.T) bool {
+	return t.I(`PilotEnrollment`).(bool)
 }
 
-func GetRolloutPercentage(v *testcase.V) int {
-	return v.I(`RolloutPercentage`).(int)
+func GetRolloutPercentage(t *testcase.T) int {
+	return t.I(`RolloutPercentage`).(int)
 }
 
-func GetRolloutSeedSalt(v *testcase.V) int64 {
-	return v.I(`RolloutSeedSalt`).(int64)
+func GetRolloutSeedSalt(t *testcase.T) int64 {
+	return t.I(`RolloutSeedSalt`).(int64)
 }

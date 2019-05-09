@@ -18,11 +18,11 @@ func TestFeatureFlagChecker(t *testing.T) {
 	SetupSpecCommonVariables(s)
 	s.Parallel()
 
-	s.Let(`PseudoRandPercentage`, func(v *testcase.V) interface{} { return int(0) })
+	s.Let(`PseudoRandPercentage`, func(t *testcase.T) interface{} { return int(0) })
 
-	s.Before(func(t *testing.T, v *testcase.V) {
-		require.Nil(t, GetStorage(v).Truncate(rollouts.FeatureFlag{}))
-		require.Nil(t, GetStorage(v).Truncate(rollouts.Pilot{}))
+	s.Before(func(t *testcase.T) {
+		require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
+		require.Nil(t, GetStorage(t).Truncate(rollouts.Pilot{}))
 	})
 
 	s.Describe(`IsFeatureEnabledFor`, func(s *testcase.Spec) {
@@ -35,47 +35,47 @@ func TestFeatureFlagChecker(t *testing.T) {
 }
 
 func SpecFeatureFlagChecker_IsFeatureGloballyEnabledFor(s *testcase.Spec) {
-	subject := func(v *testcase.V) (bool, error) {
-		return featureFlagChecker(v).IsFeatureGloballyEnabled(v.I(`FeatureName`).(string))
+	subject := func(t *testcase.T) (bool, error) {
+		return featureFlagChecker(t).IsFeatureGloballyEnabled(t.I(`FeatureName`).(string))
 	}
 
 	thenItWillReportThatFeatureNotGlobballyEnabled := func(s *testcase.Spec) {
-		s.Then(`it will report that feature is not enabled globally`, func(t *testing.T, v *testcase.V) {
-			enabled, err := subject(v)
+		s.Then(`it will report that feature is not enabled globally`, func(t *testcase.T) {
+			enabled, err := subject(t)
 			require.Nil(t, err)
 			require.False(t, enabled)
 		})
 	}
 
 	thenItWillReportThatFeatureIsGloballyRolledOut := func(s *testcase.Spec) {
-		s.Then(`it will report that feature is globally rolled out`, func(t *testing.T, v *testcase.V) {
-			enabled, err := subject(v)
+		s.Then(`it will report that feature is globally rolled out`, func(t *testcase.T) {
+			enabled, err := subject(t)
 			require.Nil(t, err)
 			require.True(t, enabled)
 		})
 	}
 
 	s.When(`feature flag is not seen before`, func(s *testcase.Spec) {
-		s.Before(func(t *testing.T, v *testcase.V) {
-			require.Nil(t, GetStorage(v).Truncate(rollouts.FeatureFlag{}))
+		s.Before(func(t *testcase.T) {
+			require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
 		})
 
 		thenItWillReportThatFeatureNotGlobballyEnabled(s)
 	})
 
 	s.When(`feature flag is given`, func(s *testcase.Spec) {
-		s.Before(func(t *testing.T, v *testcase.V) {
-			require.Nil(t, GetStorage(v).Save(GetFeatureFlag(v)))
+		s.Before(func(t *testcase.T) {
+			require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
 		})
 
 		s.And(`it is not yet rolled out globally`, func(s *testcase.Spec) {
-			s.Let(`RolloutPercentage`, func(v *testcase.V) interface{} { return 99 })
+			s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return 99 })
 
 			thenItWillReportThatFeatureNotGlobballyEnabled(s)
 		})
 
 		s.And(`it is rolled out globally`, func(s *testcase.Spec) {
-			s.Let(`RolloutPercentage`, func(v *testcase.V) interface{} { return 100 })
+			s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return 100 })
 
 			thenItWillReportThatFeatureIsGloballyRolledOut(s)
 		})
@@ -83,50 +83,50 @@ func SpecFeatureFlagChecker_IsFeatureGloballyEnabledFor(s *testcase.Spec) {
 }
 
 func SpecFeatureFlagChecker_IsFeatureEnabledFor(s *testcase.Spec) {
-	subject := func(v *testcase.V) (bool, error) {
-		return featureFlagChecker(v).IsFeatureEnabledFor(
-			v.I(`FeatureName`).(string),
-			v.I(`ExternalPilotID`).(string),
+	subject := func(t *testcase.T) (bool, error) {
+		return featureFlagChecker(t).IsFeatureEnabledFor(
+			t.I(`FeatureName`).(string),
+			t.I(`ExternalPilotID`).(string),
 		)
 	}
 
 	s.When(`feature was never enabled before`, func(s *testcase.Spec) {
-		s.Before(func(t *testing.T, v *testcase.V) {
-			require.Nil(t, GetStorage(v).Truncate(rollouts.FeatureFlag{}))
+		s.Before(func(t *testcase.T) {
+			require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
 		})
 
-		s.Then(`it will tell that feature flag is not enabled`, func(t *testing.T, v *testcase.V) {
-			ok, err := subject(v)
+		s.Then(`it will tell that feature flag is not enabled`, func(t *testcase.T) {
+			ok, err := subject(t)
 			require.Nil(t, err)
 			require.False(t, ok)
 		})
 	})
 
 	s.When(`feature is configured with rollout strategy`, func(s *testcase.Spec) {
-		s.Before(func(t *testing.T, v *testcase.V) {
-			require.Nil(t, GetStorage(v).Save(GetFeatureFlag(v)))
+		s.Before(func(t *testcase.T) {
+			require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
 		})
 
 		s.And(`by rollout percentage`, func(s *testcase.Spec) {
 			s.And(`it is 0`, func(s *testcase.Spec) {
-				s.Let(`RolloutPercentage`, func(v *testcase.V) interface{} { return int(0) })
+				s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return int(0) })
 
 				s.And(`pseudo rand percentage for the id`, func(s *testcase.Spec) {
 					s.And(`it is 0 as well`, func(s *testcase.Spec) {
-						s.Let(`PseudoRandPercentage`, func(v *testcase.V) interface{} { return int(0) })
+						s.Let(`PseudoRandPercentage`, func(t *testcase.T) interface{} { return int(0) })
 
-						s.Then(`pilot is not enrolled for the feature`, func(t *testing.T, v *testcase.V) {
-							ok, err := subject(v)
+						s.Then(`pilot is not enrolled for the feature`, func(t *testcase.T) {
+							ok, err := subject(t)
 							require.Nil(t, err)
 							require.False(t, ok)
 						})
 					})
 
 					s.And(`it is greater than 0`, func(s *testcase.Spec) {
-						s.Let(`PseudoRandPercentage`, func(v *testcase.V) interface{} { return int(42) })
+						s.Let(`PseudoRandPercentage`, func(t *testcase.T) interface{} { return int(42) })
 
-						s.Then(`pilot is not enrolled for the feature`, func(t *testing.T, v *testcase.V) {
-							ok, err := subject(v)
+						s.Then(`pilot is not enrolled for the feature`, func(t *testcase.T) {
+							ok, err := subject(t)
 							require.Nil(t, err)
 							require.False(t, ok)
 						})
@@ -135,35 +135,35 @@ func SpecFeatureFlagChecker_IsFeatureEnabledFor(s *testcase.Spec) {
 			})
 
 			s.And(`it is greater than 0`, func(s *testcase.Spec) {
-				s.Let(`RolloutPercentage`, func(v *testcase.V) interface{} { return rand.Intn(99) + 1 })
+				s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return rand.Intn(99) + 1 })
 
 				s.And(`the next pseudo rand int is less or eq with the rollout percentage`, func(s *testcase.Spec) {
-					s.Let(`PseudoRandPercentage`, func(v *testcase.V) interface{} {
-						ffPerc := GetFeatureFlag(v).Rollout.Strategy.Percentage
+					s.Let(`PseudoRandPercentage`, func(t *testcase.T) interface{} {
+						ffPerc := GetFeatureFlag(t).Rollout.Strategy.Percentage
 						return ffPerc - rand.Intn(ffPerc)
 					})
 
-					s.Then(`it will enroll the pilot for the feature`, func(t *testing.T, v *testcase.V) {
-						ok, err := subject(v)
+					s.Then(`it will enroll the pilot for the feature`, func(t *testcase.T) {
+						ok, err := subject(t)
 						require.Nil(t, err)
 						require.True(t, ok)
 					})
 
 					s.And(`the pilot is blacklisted manually from the feature`, func(s *testcase.Spec) {
-						s.Before(func(t *testing.T, v *testcase.V) {
+						s.Before(func(t *testcase.T) {
 
 							pilot := &rollouts.Pilot{
-								FeatureFlagID: GetFeatureFlag(v).ID,
-								ExternalID:    v.I(`ExternalPilotID`).(string),
+								FeatureFlagID: GetFeatureFlag(t).ID,
+								ExternalID:    t.I(`ExternalPilotID`).(string),
 								Enrolled:      false,
 							}
 
-							require.Nil(t, GetStorage(v).Save(pilot))
+							require.Nil(t, GetStorage(t).Save(pilot))
 
 						})
 
-						s.Then(`the pilot will be not enrolled for the feature flag`, func(t *testing.T, v *testcase.V) {
-							ok, err := subject(v)
+						s.Then(`the pilot will be not enrolled for the feature flag`, func(t *testcase.T) {
+							ok, err := subject(t)
 							require.Nil(t, err)
 							require.False(t, ok)
 						})
@@ -173,25 +173,25 @@ func SpecFeatureFlagChecker_IsFeatureEnabledFor(s *testcase.Spec) {
 
 				s.And(`the next pseudo rand int is is greater than the rollout percentage`, func(s *testcase.Spec) {
 
-					s.Let(`PseudoRandPercentage`, func(v *testcase.V) interface{} {
-						return GetFeatureFlag(v).Rollout.Strategy.Percentage + 1
+					s.Let(`PseudoRandPercentage`, func(t *testcase.T) interface{} {
+						return GetFeatureFlag(t).Rollout.Strategy.Percentage + 1
 					})
 
-					s.Then(`pilot is not enrolled for the feature`, func(t *testing.T, v *testcase.V) {
-						ok, err := subject(v)
+					s.Then(`pilot is not enrolled for the feature`, func(t *testcase.T) {
+						ok, err := subject(t)
 						require.Nil(t, err)
 						require.False(t, ok)
 					})
 
 					s.And(`if pilot manually enabled for the feature`, func(s *testcase.Spec) {
-						s.Let(`PilotEnrollment`, func(v *testcase.V) interface{} { return true })
+						s.Let(`PilotEnrollment`, func(t *testcase.T) interface{} { return true })
 
-						s.Before(func(t *testing.T, v *testcase.V) {
-							require.Nil(t, GetStorage(v).Save(GetPilot(v)))
+						s.Before(func(t *testcase.T) {
+							require.Nil(t, GetStorage(t).Save(GetPilot(t)))
 						})
 
-						s.Then(`the pilot is enrolled for the feature`, func(t *testing.T, v *testcase.V) {
-							ok, err := subject(v)
+						s.Then(`the pilot is enrolled for the feature`, func(t *testcase.T) {
+							ok, err := subject(t)
 							require.Nil(t, err)
 							require.True(t, ok)
 						})
@@ -200,13 +200,13 @@ func SpecFeatureFlagChecker_IsFeatureEnabledFor(s *testcase.Spec) {
 			})
 
 			s.And(`it is 100% or in other words it is set to be globally enabled`, func(s *testcase.Spec) {
-				s.Let(`RolloutPercentage`, func(v *testcase.V) interface{} { return int(100) })
+				s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return int(100) })
 
 				s.And(`basically regardless the pseudo random percentage`, func(s *testcase.Spec) {
-					s.Let(`PseudoRandPercentage`, func(v *testcase.V) interface{} { return rand.Intn(101) })
+					s.Let(`PseudoRandPercentage`, func(t *testcase.T) interface{} { return rand.Intn(101) })
 
-					s.Then(`it will always be enrolled`, func(t *testing.T, v *testcase.V) {
-						ok, err := subject(v)
+					s.Then(`it will always be enrolled`, func(t *testcase.T) {
+						ok, err := subject(t)
 						require.Nil(t, err)
 						require.True(t, ok)
 					})
@@ -216,41 +216,41 @@ func SpecFeatureFlagChecker_IsFeatureEnabledFor(s *testcase.Spec) {
 		})
 
 		s.And(`by custom decision logic is defined with URL endpoint`, func(s *testcase.Spec) {
-			s.Let(`RolloutApiURL`, func(v *testcase.V) interface{} {
-				return v.I(`httptest.NewServer`).(*httptest.Server).URL
+			s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} {
+				return t.I(`httptest.NewServer`).(*httptest.Server).URL
 			})
 
-			handler := func(t *testing.T, v *testcase.V) http.Handler {
+			handler := func(t *testcase.T) http.Handler {
 				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					require.Equal(t, v.I(`FeatureName`).(string), r.URL.Query().Get(`feature-flag-name`))
-					require.Equal(t, v.I(`ExternalPilotID`).(string), r.URL.Query().Get(`pilot-id`))
-					w.WriteHeader(v.I(`replyCode`).(int))
+					require.Equal(t, t.I(`FeatureName`).(string), r.URL.Query().Get(`feature-flag-name`))
+					require.Equal(t, t.I(`ExternalPilotID`).(string), r.URL.Query().Get(`pilot-id`))
+					w.WriteHeader(t.I(`replyCode`).(int))
 				})
 			}
 
-			s.Let(`httptest.NewServer`, func(v *testcase.V) interface{} {
-				return httptest.NewServer(handler(v.T(), v))
+			s.Let(`httptest.NewServer`, func(t *testcase.T) interface{} {
+				return httptest.NewServer(handler(t))
 			})
 
-			s.After(func(t *testing.T, v *testcase.V) {
-				v.I(`httptest.NewServer`).(*httptest.Server).Close()
+			s.After(func(t *testcase.T) {
+				t.I(`httptest.NewServer`).(*httptest.Server).Close()
 			})
 
 			s.And(`the remote reject the pilot enrollment`, func(s *testcase.Spec) {
-				s.Let(`replyCode`, func(v *testcase.V) interface{} { return rand.Intn(100) + 400 })
+				s.Let(`replyCode`, func(t *testcase.T) interface{} { return rand.Intn(100) + 400 })
 
-				s.Then(`the pilot is not enrolled for the feature`, func(t *testing.T, v *testcase.V) {
-					enabled, err := subject(v)
+				s.Then(`the pilot is not enrolled for the feature`, func(t *testcase.T) {
+					enabled, err := subject(t)
 					require.Nil(t, err)
 					require.False(t, enabled)
 				})
 			})
 
 			s.And(`the the remote accept the pilot enrollment`, func(s *testcase.Spec) {
-				s.Let(`replyCode`, func(v *testcase.V) interface{} { return rand.Intn(100) + 200 })
+				s.Let(`replyCode`, func(t *testcase.T) interface{} { return rand.Intn(100) + 200 })
 
-				s.Then(`the pilot is not enrolled for the feature`, func(t *testing.T, v *testcase.V) {
-					enabled, err := subject(v)
+				s.Then(`the pilot is not enrolled for the feature`, func(t *testcase.T) {
+					enabled, err := subject(t)
 					require.Nil(t, err)
 					require.True(t, enabled)
 				})
@@ -259,13 +259,13 @@ func SpecFeatureFlagChecker_IsFeatureEnabledFor(s *testcase.Spec) {
 	})
 }
 
-func featureFlagChecker(v *testcase.V) *rollouts.FeatureFlagChecker {
+func featureFlagChecker(t *testcase.T) *rollouts.FeatureFlagChecker {
 	return &rollouts.FeatureFlagChecker{
-		Storage: v.I(`Storage`).(*Storage),
+		Storage: t.I(`Storage`).(*Storage),
 		IDPercentageCalculator: func(id string, seedSalt int64) (int, error) {
-			require.Equal(v.T(), v.I(`ExternalPilotID`).(string), id)
-			require.Equal(v.T(), v.I(`RolloutSeedSalt`).(int64), seedSalt)
-			return v.I(`PseudoRandPercentage`).(int), nil
+			require.Equal(t, t.I(`ExternalPilotID`).(string), id)
+			require.Equal(t, t.I(`RolloutSeedSalt`).(int64), seedSalt)
+			return t.I(`PseudoRandPercentage`).(int), nil
 		},
 	}
 }

@@ -15,41 +15,41 @@ func TestUseCases_IsFeatureGloballyEnabled(t *testing.T) {
 	SetupSpecCommonVariables(s)
 	s.Parallel()
 
-	s.Let(`UseCases`, func(v *testcase.V) interface{} {
-		return usecases.NewUseCases(v.I(`Storage`).(*Storage))
+	s.Let(`UseCases`, func(t *testcase.T) interface{} {
+		return usecases.NewUseCases(t.I(`Storage`).(*Storage))
 	})
 
-	subject := func(v *testcase.V) (bool, error) {
-		uc := v.I(`UseCases`).(*usecases.UseCases)
-		return uc.IsFeatureGloballyEnabled(v.I(`FeatureName`).(string))
+	subject := func(t *testcase.T) (bool, error) {
+		uc := t.I(`UseCases`).(*usecases.UseCases)
+		return uc.IsFeatureGloballyEnabled(t.I(`FeatureName`).(string))
 	}
 
-	isEnrolled := func(t *testing.T, v *testcase.V) bool {
-		enrolled, err := subject(v)
+	isEnrolled := func(t *testcase.T) bool {
+		enrolled, err := subject(t)
 		require.Nil(t, err)
 		return enrolled
 	}
 
 	s.When(`flag is already configured`, func(s *testcase.Spec) {
-		s.Before(func(t *testing.T, v *testcase.V) {
-			require.Nil(t, v.I(`UseCases`).(*usecases.UseCases).
-				UpdateFeatureFlagRolloutPercentage(v.I(`FeatureName`).(string),
-					v.I(`percentage`).(int)))
+		s.Before(func(t *testcase.T) {
+			require.Nil(t, t.I(`UseCases`).(*usecases.UseCases).
+				UpdateFeatureFlagRolloutPercentage(t.I(`FeatureName`).(string),
+					t.I(`percentage`).(int)))
 		})
 
 		s.And(`with global rollout (100%)`, func(s *testcase.Spec) {
-			s.Let(`percentage`, func(v *testcase.V) interface{} { return int(100) })
+			s.Let(`percentage`, func(t *testcase.T) interface{} { return int(100) })
 
-			s.Then(`the feature will be reportad to be globally enabled`, func(t *testing.T, v *testcase.V) {
-				require.True(t, isEnrolled(t, v))
+			s.Then(`the feature will be reportad to be globally enabled`, func(t *testcase.T) {
+				require.True(t, isEnrolled(t))
 			})
 		})
 
 		s.And(`with less than 100%`, func(s *testcase.Spec) {
-			s.Let(`percentage`, func(v *testcase.V) interface{} { return rand.Intn(100) })
+			s.Let(`percentage`, func(t *testcase.T) interface{} { return rand.Intn(100) })
 
-			s.Then(`it will report that feature is currently not available globally`, func(t *testing.T, v *testcase.V) {
-				require.False(t, isEnrolled(t, v))
+			s.Then(`it will report that feature is currently not available globally`, func(t *testcase.T) {
+				require.False(t, isEnrolled(t))
 			})
 		})
 	})
