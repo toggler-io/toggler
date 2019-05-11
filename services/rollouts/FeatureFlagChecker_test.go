@@ -261,7 +261,7 @@ func SpecFeatureFlagChecker_IsFeatureEnabledFor(s *testcase.Spec) {
 
 func featureFlagChecker(t *testcase.T) *rollouts.FeatureFlagChecker {
 	return &rollouts.FeatureFlagChecker{
-		Storage: t.I(`Storage`).(*Storage),
+		Storage: t.I(`TestStorage`).(*TestStorage),
 		IDPercentageCalculator: func(id string, seedSalt int64) (int, error) {
 			require.Equal(t, t.I(`ExternalPilotID`).(string), id)
 			require.Equal(t, t.I(`RolloutSeedSalt`).(int64), seedSalt)

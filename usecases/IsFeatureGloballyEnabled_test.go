@@ -16,7 +16,7 @@ func TestUseCases_IsFeatureGloballyEnabled(t *testing.T) {
 	s.Parallel()
 
 	s.Let(`UseCases`, func(t *testcase.T) interface{} {
-		return usecases.NewUseCases(t.I(`Storage`).(*Storage))
+		return usecases.NewUseCases(t.I(`TestStorage`).(*TestStorage))
 	})
 
 	subject := func(t *testcase.T) (bool, error) {

@@ -7,13 +7,13 @@ import (
 	"github.com/adamluzsi/frameless/resources/storages/memorystorage"
 )
 
-func NewStorage() *Storage {
-	return &Storage{Memory: memorystorage.NewMemory()}
+func NewStorage() *TestStorage {
+	return &TestStorage{Memory: memorystorage.NewMemory()}
 }
 
-type Storage struct{ *memorystorage.Memory }
+type TestStorage struct{ *memorystorage.Memory }
 
-func (storage *Storage) FindPilotsByFeatureFlag(ff *rollouts.FeatureFlag) frameless.Iterator {
+func (storage *TestStorage) FindPilotsByFeatureFlag(ff *rollouts.FeatureFlag) frameless.Iterator {
 	table := storage.TableFor(rollouts.Pilot{})
 
 	var pilots []*rollouts.Pilot
@@ -30,7 +30,7 @@ func (storage *Storage) FindPilotsByFeatureFlag(ff *rollouts.FeatureFlag) framel
 }
 
 //TODO: fix name here
-func (storage *Storage) FindFlagPilotByExternalPilotID(featureFlagID, externalPilotID string) (*rollouts.Pilot, error) {
+func (storage *TestStorage) FindFlagPilotByExternalPilotID(featureFlagID, externalPilotID string) (*rollouts.Pilot, error) {
 	table := storage.TableFor(rollouts.Pilot{})
 
 	for _, v := range table {
@@ -44,7 +44,7 @@ func (storage *Storage) FindFlagPilotByExternalPilotID(featureFlagID, externalPi
 	return nil, nil
 }
 
-func (storage *Storage) FindByFlagName(name string) (*rollouts.FeatureFlag, error) {
+func (storage *TestStorage) FindByFlagName(name string) (*rollouts.FeatureFlag, error) {
 	var ptr *rollouts.FeatureFlag
 	table := storage.TableFor(ptr)
 

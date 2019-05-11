@@ -17,7 +17,7 @@ func SetupSpecCommonVariables(s *testcase.Spec) {
 		return ExampleExternalPilotID()
 	})
 
-	s.Let(`Storage`, func(t *testcase.T) interface{} {
+	s.Let(`TestStorage`, func(t *testcase.T) interface{} {
 		return NewStorage()
 	})
 
@@ -54,8 +54,8 @@ func GetFeatureFlagName(t *testcase.T) string {
 	return t.I(`FeatureName`).(string)
 }
 
-func GetStorage(t *testcase.T) *Storage {
-	return t.I(`Storage`).(*Storage)
+func GetStorage(t *testcase.T) *TestStorage {
+	return t.I(`TestStorage`).(*TestStorage)
 }
 
 func GetFeatureFlag(t *testcase.T) *rollouts.FeatureFlag {

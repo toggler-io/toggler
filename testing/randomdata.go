@@ -20,3 +20,9 @@ func ExampleExternalPilotID() string {
 	defer mutex.Unlock()
 	return randomdata.MacAddress()
 }
+
+func ExampleUniqUserID() string {
+	mutex.Lock()
+	defer mutex.Unlock()
+	return randomdata.MacAddress()
+}

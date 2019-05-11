@@ -19,7 +19,7 @@ func TestUseCases_IsFeatureEnabledFor(t *testing.T) {
 	UseCases := func(t *testcase.T) *usecases.UseCases { return t.I(`UseCases`).(*usecases.UseCases) }
 
 	s.Let(`UseCases`, func(t *testcase.T) interface{} {
-		return usecases.NewUseCases(t.I(`Storage`).(*Storage))
+		return usecases.NewUseCases(t.I(`TestStorage`).(*TestStorage))
 	})
 
 	s.Describe(`IsFeatureEnabledFor`, func(s *testcase.Spec) {
