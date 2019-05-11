@@ -27,12 +27,18 @@ func TestToken(t *testing.T) {
 	s.Describe(`IsValid`, func(s *testcase.Spec) {
 		SpecTokenIsValid(token, s)
 	})
+
+	s.Describe(`IsExpirable`, func(s *testcase.Spec) {
+		SpecTokenIsExpirable(token, s)
+	})
+
 }
 
 func SpecTokenIsValid(token func(t *testcase.T) *security.Token, s *testcase.Spec) {
 	subject := func(t *testcase.T) bool {
 		return token(t).IsValid()
 	}
+
 	s.When(`the duration is zero`, func(s *testcase.Spec) {
 		s.Let(`Duration`, func(t *testcase.T) interface{} {
 			return time.Duration(0)
@@ -101,6 +107,30 @@ func SpecTokenIsValid(token func(t *testcase.T) *security.Token, s *testcase.Spe
 			s.Then(`it will be invalid`, func(t *testcase.T) {
 				require.False(t, subject(t))
 			})
+		})
+	})
+}
+
+func SpecTokenIsExpirable(token func(t *testcase.T) *security.Token, s *testcase.Spec) {
+	subject := func(t *testcase.T) bool {
+		return token(t).IsExpirable()
+	}
+
+	s.Let(`IssuedAt`, func(t *testcase.T) interface{} { return time.Now().UTC() })
+
+	s.When(`the duration is zero`, func(s *testcase.Spec) {
+		s.Let(`Duration`, func(t *testcase.T) interface{} { return time.Duration(0) })
+
+		s.Then(`there will be good forever, so will not expire`, func(t *testcase.T) {
+			require.False(t, subject(t))
+		})
+	})
+
+	s.When(`the duration is limited`, func(s *testcase.Spec) {
+		s.Let(`Duration`, func(t *testcase.T) interface{} { return time.Minute })
+
+		s.Then(`it will be expirable`, func(t *testcase.T) {
+			require.True(t, subject(t))
 		})
 	})
 }
