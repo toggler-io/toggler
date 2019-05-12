@@ -18,7 +18,7 @@ func SetupSpecCommonVariables(s *testcase.Spec) {
 	})
 
 	s.Let(`TestStorage`, func(t *testcase.T) interface{} {
-		return NewStorage()
+		return NewTestStorage()
 	})
 
 	s.Let(`PilotEnrollment`, func(t *testcase.T) interface{} {

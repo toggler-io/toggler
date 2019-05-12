@@ -79,9 +79,9 @@ func (spec PilotFinderSpec) Test(t *testing.T) {
 						var actualPilots []*rollouts.Pilot
 
 						for iter.Next() {
-							var actually *rollouts.Pilot
-							require.Nil(t, iter.Decode(actually))
-							actualPilots = append(actualPilots, actually)
+							var actually rollouts.Pilot
+							require.Nil(t, iter.Decode(&actually))
+							actualPilots = append(actualPilots, &actually)
 						}
 
 						require.Nil(t, iter.Err())

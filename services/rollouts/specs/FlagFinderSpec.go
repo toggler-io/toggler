@@ -50,7 +50,7 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 			t.Run(`then searching for it returns the flag entity`, func(t *testing.T) {
 				actually, err := spec.Subject.FindByFlagName(ff.Name)
 				require.Nil(t, err)
-				require.Equal(t, ff, &actually)
+				require.Equal(t, ff, actually)
 			})
 
 		})

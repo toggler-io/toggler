@@ -10,8 +10,10 @@ type Storage interface {
 	specs.Truncate
 	specs.DeleteByID
 	specs.Update
+
+	TokenFinder
 }
 
 type TokenFinder interface {
-	FindByTokenHashSum(hashsum string) (*Token, error)
+	FindTokenByTokenString(token string) (*Token, error)
 }

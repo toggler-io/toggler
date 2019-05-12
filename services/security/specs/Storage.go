@@ -1,25 +1,29 @@
 package specs
 
 import (
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	"github.com/adamluzsi/FeatureFlags/services/security"
+	testing2 "github.com/adamluzsi/FeatureFlags/testing"
 	"github.com/adamluzsi/frameless/resources/specs"
 	"testing"
 )
 
 type StorageSpec struct {
-	Storage rollouts.Storage
+	Storage security.Storage
 }
 
 func (spec *StorageSpec) Test(t *testing.T) {
 
-	entities := []interface{}{
-		rollouts.FeatureFlag{},
-		rollouts.Pilot{},
+	entityTypes := []interface{}{
+		security.Token{},
 	}
 
-	for _, entity := range entities {
-		specs.TestMinimumRequirements(t, spec.Storage, entity)
-		specs.UpdateSpec{Type: entity, Subject: spec.Storage}.Test(t)
+	ff := testing2.NewFixtureFactory()
+
+	for _, entityType := range entityTypes {
+		specs.TestMinimumRequirements(t, spec.Storage, entityType, ff)
+		specs.TestUpdate(t, spec.Storage, entityType, ff)
 	}
+
+	TokenFinderSpec{Subject: spec.Storage}.Test(t)
 
 }

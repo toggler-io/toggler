@@ -2,12 +2,13 @@ package testing
 
 import (
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	"github.com/adamluzsi/FeatureFlags/services/security"
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/resources/storages/memorystorage"
 )
 
-func NewStorage() *TestStorage {
+func NewTestStorage() *TestStorage {
 	return &TestStorage{Memory: memorystorage.NewMemory()}
 }
 
@@ -58,4 +59,19 @@ func (storage *TestStorage) FindByFlagName(name string) (*rollouts.FeatureFlag, 
 	}
 
 	return ptr, nil
+}
+
+func (storage *TestStorage) FindTokenByTokenString(tokenStr string) (*security.Token, error) {
+
+	table := storage.TableFor(security.Token{})
+
+	for _, token := range table {
+		token := token.(*security.Token)
+
+		if token.Token == tokenStr {
+			return token, nil
+		}
+	}
+
+	return nil, nil
 }
