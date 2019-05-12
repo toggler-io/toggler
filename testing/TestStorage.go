@@ -62,7 +62,6 @@ func (storage *TestStorage) FindByFlagName(name string) (*rollouts.FeatureFlag, 
 }
 
 func (storage *TestStorage) FindTokenByTokenString(tokenStr string) (*security.Token, error) {
-
 	table := storage.TableFor(security.Token{})
 
 	for _, token := range table {

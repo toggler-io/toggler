@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+func NewIssuer(s Storage) *Issuer {
+	return &Issuer{Storage: s}
+}
+
 type Issuer struct {
 	Storage
 }
@@ -55,4 +59,8 @@ func (i *Issuer) generateToken() (string, error) {
 	t := base64.URLEncoding.EncodeToString(b)
 	t = strings.TrimRight(t, `=`)
 	return t, err
+}
+
+func (i *Issuer) RevokeToken(token *Token) error {
+	return nil
 }

@@ -1,10 +1,10 @@
 package testing
 
 import (
-	"math/rand"
-	"time"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"github.com/adamluzsi/testcase"
+	"math/rand"
+	"time"
 )
 
 func SetupSpecCommonVariables(s *testcase.Spec) {
@@ -15,6 +15,10 @@ func SetupSpecCommonVariables(s *testcase.Spec) {
 
 	s.Let(`ExternalPilotID`, func(t *testcase.T) interface{} {
 		return ExampleExternalPilotID()
+	})
+
+	s.Let(`UniqUserID`, func(t *testcase.T) interface{} {
+		return ExampleUniqUserID()
 	})
 
 	s.Let(`TestStorage`, func(t *testcase.T) interface{} {
@@ -76,4 +80,8 @@ func GetRolloutPercentage(t *testcase.T) int {
 
 func GetRolloutSeedSalt(t *testcase.T) int64 {
 	return t.I(`RolloutSeedSalt`).(int64)
+}
+
+func GetUniqUserID(t *testcase.T) string {
+	return t.I(`UniqUserID`).(string)
 }

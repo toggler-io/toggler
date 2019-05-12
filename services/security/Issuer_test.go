@@ -17,11 +17,46 @@ func TestIssuer(t *testing.T) {
 	s.Parallel()
 
 	issuer := func(t *testcase.T) *security.Issuer {
-		return &security.Issuer{Storage: t.I(`TestStorage`).(*TestStorage)}
+		return security.NewIssuer(GetStorage(t))
 	}
 
-	s.Describe(`CreateNewToken`, func(s *testcase.Spec) {
+	SpecIssuerCreateNewToken(s, issuer)
 
+	s.Describe(`RevokeToken`, func(s *testcase.Spec) {
+		subject := func(t *testcase.T) error {
+			token, _ := t.I(`Token`).(*security.Token)
+			return issuer(t).RevokeToken(token)
+		}
+
+		s.When(`token exists`, func(s *testcase.Spec) {
+			s.Let(`Token`, func(t *testcase.T) interface{} {
+				token, err := issuer(t).CreateNewToken(GetUniqUserID(t), nil, nil)
+				require.Nil(t, err)
+				return token
+			})
+
+			s.Before(func(t *testcase.T) {
+				require.NotNil(t, t.I(`Token`))
+			})
+
+			s.Then(`token will be revoked`, func(t *testcase.T) {
+				t.Skip(`TODO`)
+
+				require.Nil(t, subject(t))
+				token := t.I(`Token`).(*security.Token)
+
+				dk := security.NewDoorkeeper(GetStorage(t))
+				valid, err := dk.VerifyTokenString(token.Token)
+				require.Nil(t, err)
+				require.False(t, valid)
+			})
+		})
+	})
+
+}
+
+func SpecIssuerCreateNewToken(s *testcase.Spec, issuer func(t *testcase.T) *security.Issuer) {
+	s.Describe(`CreateNewToken`, func(s *testcase.Spec) {
 		subject := func(t *testcase.T) (*security.Token, error) {
 			userUID := t.I(`userUID`).(string)
 			issueAt, _ := t.I(`issueAt`).(*time.Time)
@@ -29,27 +64,23 @@ func TestIssuer(t *testing.T) {
 
 			return issuer(t).CreateNewToken(userUID, issueAt, duration)
 		}
-
 		onSuccess := func(t *testcase.T) *security.Token {
 			token, err := subject(t)
 			require.Nil(t, err)
 			require.NotNil(t, token)
 			return token
 		}
-
 		onFailure := func(t *testcase.T) error {
 			token, err := subject(t)
 			require.Nil(t, token)
 			require.NotNil(t, err)
 			return err
 		}
-
 		givenWeHaveValidParameters := func(s *testcase.Spec) {
 			s.Let(`userUID`, func(t *testcase.T) interface{} { return ExampleUniqUserID() })
 			s.Let(`issueAt`, func(t *testcase.T) interface{} { ia := time.Now().UTC(); return &ia })
 			s.Let(`duration`, func(t *testcase.T) interface{} { d := 42 * time.Hour; return &d })
 		}
-
 		s.When(`all parameter acceptable`, func(s *testcase.Spec) {
 			givenWeHaveValidParameters(s)
 
@@ -97,7 +128,6 @@ func TestIssuer(t *testing.T) {
 				}
 			})
 		})
-
 		s.When(`userUID is empty`, func(s *testcase.Spec) {
 			givenWeHaveValidParameters(s)
 			s.Let(`userUID`, func(t *testcase.T) interface{} { return `` })
@@ -106,7 +136,6 @@ func TestIssuer(t *testing.T) {
 				require.Error(t, onFailure(t))
 			})
 		})
-
 		s.When(`duration is not provided`, func(s *testcase.Spec) {
 			givenWeHaveValidParameters(s)
 			s.Let(`duration`, func(t *testcase.T) interface{} { return nil })
@@ -117,5 +146,4 @@ func TestIssuer(t *testing.T) {
 			})
 		})
 	})
-
 }
