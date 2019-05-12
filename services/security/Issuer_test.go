@@ -4,6 +4,7 @@ import (
 	"github.com/adamluzsi/FeatureFlags/services/security"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
+	"strconv"
 	"testing"
 	"time"
 
@@ -11,10 +12,9 @@ import (
 )
 
 func TestIssuer(t *testing.T) {
-	t.Skip(`TODO: implement`)
-
 	s := testcase.NewSpec(t)
 	SetupSpecCommonVariables(s)
+	s.Parallel()
 
 	issuer := func(t *testcase.T) *security.Issuer {
 		return &security.Issuer{Storage: t.I(`TestStorage`).(*TestStorage)}
@@ -56,8 +56,45 @@ func TestIssuer(t *testing.T) {
 			s.Then(`we receive a token back`, func(t *testcase.T) {
 				token := onSuccess(t)
 				require.Equal(t, t.I(`userUID`).(string), token.UserUID)
-				require.Equal(t, t.I(`issueAt`).(*time.Time), token.IssuedAt)
-				require.Equal(t, t.I(`duration`).(*time.Duration), token.Duration)
+				require.Equal(t, t.I(`issueAt`).(*time.Time), &token.IssuedAt)
+				require.Equal(t, t.I(`duration`).(*time.Duration), &token.Duration)
+			})
+
+			s.Then(`the token generated with a long token key`, func(t *testcase.T) {
+				token := onSuccess(t)
+				require.True(t, 42 <= len(token.Token))
+				require.True(t, len(token.Token) <= 100)
+			})
+
+			s.Then(`token is stored in the storage`, func(t *testcase.T) {
+				t1 := onSuccess(t)
+				t2 := security.Token{}
+
+				found, err := t.I(`TestStorage`).(*TestStorage).FindByID(t1.ID, &t2)
+				require.Nil(t, err)
+				require.True(t, found)
+				require.Equal(t, t1, &t2)
+			})
+
+			s.Then(`each time a token is created, it will be uniq`, func(t *testcase.T) {
+				isr := issuer(t)
+				issueAt := t.I(`issueAt`).(*time.Time)
+				duration := t.I(`duration`).(*time.Duration)
+
+				var last string
+				for i := 0; i < 1024; i++ {
+					token, err := isr.CreateNewToken(strconv.Itoa(i), issueAt, duration)
+					require.Nil(t, err)
+					require.NotNil(t, token)
+
+					if last == "" {
+						last = token.Token
+						continue
+					}
+
+					t.Log(token.Token)
+					require.NotEqual(t, last, token.Token)
+				}
 			})
 		})
 
