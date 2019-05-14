@@ -47,7 +47,7 @@ func (i *Issuer) CreateNewToken(userUID string, issueAt *time.Time, duration *ti
 }
 
 func (i *Issuer) RevokeToken(token *Token) error {
-	return nil
+	return i.Storage.DeleteByID(token, token.ID)
 }
 
 const tokenRawLength = 128

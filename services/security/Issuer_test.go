@@ -46,8 +46,6 @@ func SpecIssuerRevokeToken(s *testcase.Spec) {
 			})
 
 			s.Then(`token will be revoked`, func(t *testcase.T) {
-				t.Skip(`TODO`)
-
 				require.Nil(t, subject(t))
 				token := t.I(`Token`).(*security.Token)
 
@@ -63,11 +61,10 @@ func SpecIssuerRevokeToken(s *testcase.Spec) {
 func SpecIssuerCreateNewToken(s *testcase.Spec) {
 	s.Describe(`CreateNewToken`, func(s *testcase.Spec) {
 		subject := func(t *testcase.T) (*security.Token, error) {
+			issuer := t.I(`issuer`).(*security.Issuer)
 			userUID := t.I(`userUID`).(string)
 			issueAt, _ := t.I(`issueAt`).(*time.Time)
 			duration, _ := t.I(`duration`).(*time.Duration)
-
-			issuer := t.I(`issuer`).(*security.Issuer)
 			return issuer.CreateNewToken(userUID, issueAt, duration)
 		}
 		onSuccess := func(t *testcase.T) *security.Token {
