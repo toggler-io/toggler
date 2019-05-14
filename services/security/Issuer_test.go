@@ -16,21 +16,27 @@ func TestIssuer(t *testing.T) {
 	SetupSpecCommonVariables(s)
 	s.Parallel()
 
-	issuer := func(t *testcase.T) *security.Issuer {
+	s.Let(`issuer`, func(t *testcase.T) interface{} {
 		return security.NewIssuer(GetStorage(t))
-	}
+	})
 
-	SpecIssuerCreateNewToken(s, issuer)
+	SpecIssuerCreateNewToken(s)
+	SpecIssuerRevokeToken(s)
 
+}
+
+func SpecIssuerRevokeToken(s *testcase.Spec) {
 	s.Describe(`RevokeToken`, func(s *testcase.Spec) {
 		subject := func(t *testcase.T) error {
 			token, _ := t.I(`Token`).(*security.Token)
-			return issuer(t).RevokeToken(token)
+			issuer := t.I(`issuer`).(*security.Issuer)
+			return issuer.RevokeToken(token)
 		}
 
 		s.When(`token exists`, func(s *testcase.Spec) {
 			s.Let(`Token`, func(t *testcase.T) interface{} {
-				token, err := issuer(t).CreateNewToken(GetUniqUserID(t), nil, nil)
+				issuer := t.I(`issuer`).(*security.Issuer)
+				token, err := issuer.CreateNewToken(GetUniqUserID(t), nil, nil)
 				require.Nil(t, err)
 				return token
 			})
@@ -52,17 +58,17 @@ func TestIssuer(t *testing.T) {
 			})
 		})
 	})
-
 }
 
-func SpecIssuerCreateNewToken(s *testcase.Spec, issuer func(t *testcase.T) *security.Issuer) {
+func SpecIssuerCreateNewToken(s *testcase.Spec) {
 	s.Describe(`CreateNewToken`, func(s *testcase.Spec) {
 		subject := func(t *testcase.T) (*security.Token, error) {
 			userUID := t.I(`userUID`).(string)
 			issueAt, _ := t.I(`issueAt`).(*time.Time)
 			duration, _ := t.I(`duration`).(*time.Duration)
 
-			return issuer(t).CreateNewToken(userUID, issueAt, duration)
+			issuer := t.I(`issuer`).(*security.Issuer)
+			return issuer.CreateNewToken(userUID, issueAt, duration)
 		}
 		onSuccess := func(t *testcase.T) *security.Token {
 			token, err := subject(t)
@@ -107,13 +113,13 @@ func SpecIssuerCreateNewToken(s *testcase.Spec, issuer func(t *testcase.T) *secu
 			})
 
 			s.Then(`each time a token is created, it will be uniq`, func(t *testcase.T) {
-				isr := issuer(t)
+				issuer := t.I(`issuer`).(*security.Issuer)
 				issueAt := t.I(`issueAt`).(*time.Time)
 				duration := t.I(`duration`).(*time.Duration)
 
 				var last string
 				for i := 0; i < 1024; i++ {
-					token, err := isr.CreateNewToken(strconv.Itoa(i), issueAt, duration)
+					token, err := issuer.CreateNewToken(strconv.Itoa(i), issueAt, duration)
 					require.Nil(t, err)
 					require.NotNil(t, token)
 

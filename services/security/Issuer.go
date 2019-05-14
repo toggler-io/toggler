@@ -46,6 +46,10 @@ func (i *Issuer) CreateNewToken(userUID string, issueAt *time.Time, duration *ti
 
 }
 
+func (i *Issuer) RevokeToken(token *Token) error {
+	return nil
+}
+
 const tokenRawLength = 128
 
 // generateToken returns a URL-safe, base64 encoded
@@ -59,8 +63,4 @@ func (i *Issuer) generateToken() (string, error) {
 	t := base64.URLEncoding.EncodeToString(b)
 	t = strings.TrimRight(t, `=`)
 	return t, err
-}
-
-func (i *Issuer) RevokeToken(token *Token) error {
-	return nil
 }

@@ -1,11 +1,12 @@
 package security_test
 
 import (
+	"testing"
+
 	"github.com/adamluzsi/FeatureFlags/services/security"
 	testing2 "github.com/adamluzsi/FeatureFlags/testing"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestDoorkeeper(t *testing.T) {
@@ -13,13 +14,9 @@ func TestDoorkeeper(t *testing.T) {
 	testing2.SetupSpecCommonVariables(s)
 	s.Parallel()
 
-	doorkeeper := func(t *testcase.T) *security.Doorkeeper {
-		return security.NewDoorkeeper(t.I(`TestStorage`).(*testing2.TestStorage))
-	}
-
-	GetToken := func(t *testcase.T) *security.Token {
-		return t.I(`Token`).(*security.Token)
-	}
+	s.Let(`doorkeeper`, func(t *testcase.T) interface{} {
+		return security.NewDoorkeeper(testing2.GetStorage(t))
+	})
 
 	s.Let(`Token`, func(t *testcase.T) interface{} {
 		issuer := security.NewIssuer(testing2.GetStorage(t))
@@ -28,6 +25,10 @@ func TestDoorkeeper(t *testing.T) {
 		return token
 	})
 
+	SpecDoorkeeperVerifyTokenString(s)
+}
+
+func SpecDoorkeeperVerifyTokenString(s *testcase.Spec) {
 	s.Describe(`VerifyTokenString`, func(s *testcase.Spec) {
 		subject := func(t *testcase.T) (bool, error) {
 			return doorkeeper(t).VerifyTokenString(GetToken(t).Token)
@@ -62,6 +63,12 @@ func TestDoorkeeper(t *testing.T) {
 		})
 
 	})
-
 }
 
+func doorkeeper(t *testcase.T) *security.Doorkeeper {
+	return t.I(`doorkeeper`).(*security.Doorkeeper)
+}
+
+func GetToken(t *testcase.T) *security.Token {
+	return t.I(`Token`).(*security.Token)
+}
