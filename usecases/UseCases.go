@@ -5,20 +5,34 @@ package usecases
 
 import (
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	"github.com/adamluzsi/FeatureFlags/services/security"
+	"github.com/adamluzsi/frameless/resources/specs"
 )
 
 func NewUseCases(s Storage) *UseCases {
 	return &UseCases{
-		RolloutManager:     rollouts.NewRolloutManager(s),
 		FeatureFlagChecker: rollouts.NewFeatureFlagChecker(s),
+		RolloutManager:     rollouts.NewRolloutManager(s),
+		Doorkeeper:         security.NewDoorkeeper(s),
+		Issuer:             security.NewIssuer(s),
 	}
 }
 
 type UseCases struct {
 	*rollouts.FeatureFlagChecker
 	*rollouts.RolloutManager
+	*security.Doorkeeper
+	*security.Issuer
 }
 
 type Storage interface {
-	rollouts.Storage
+	specs.Save
+	specs.FindByID
+	specs.Truncate
+	specs.DeleteByID
+	specs.Update
+	specs.FindAll
+	rollouts.FlagFinder
+	rollouts.PilotFinder
+	security.TokenFinder
 }

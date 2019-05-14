@@ -20,9 +20,11 @@ func (spec *StorageSpec) Test(t *testing.T) {
 	}
 
 	ff := testing2.NewFixtureFactory()
+
 	for _, entityType := range entityTypes {
 		specs.TestMinimumRequirements(t, spec.Storage, entityType, ff)
 		specs.TestUpdate(t, spec.Storage, entityType, ff)
+		specs.TestFindAll(t, spec.Storage, entityType, ff)
 	}
 
 	FlagFinderSpec{Subject: spec.Storage}.Test(t)

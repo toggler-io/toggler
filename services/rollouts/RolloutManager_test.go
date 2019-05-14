@@ -1,8 +1,8 @@
 package rollouts_test
 
 import (
-	. "github.com/adamluzsi/FeatureFlags/testing"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	. "github.com/adamluzsi/FeatureFlags/testing"
 	"github.com/adamluzsi/testcase"
 	"math/rand"
 	"testing"
@@ -17,28 +17,145 @@ func TestRolloutManager(t *testing.T) {
 	s.Parallel()
 	SetupSpecCommonVariables(s)
 
-	GetGeneratedRandomSeed := func(t *testcase.T) int64 {
-		return t.I(`GeneratedRandomSeed`).(int64)
-	}
-
 	s.Let(`GeneratedRandomSeed`, func(t *testcase.T) interface{} {
 		return time.Now().Unix()
 	})
 
-	manager := func(t *testcase.T) *rollouts.RolloutManager {
+	s.Let(`RolloutManager`, func(t *testcase.T) interface{} {
 		return &rollouts.RolloutManager{
 			Storage: GetStorage(t),
+
 			RandSeedGenerator: func() int64 {
 				return GetGeneratedRandomSeed(t)
 			},
 		}
-	}
+	})
 
 	s.Before(func(t *testcase.T) {
 		require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
 		require.Nil(t, GetStorage(t).Truncate(rollouts.Pilot{}))
 	})
 
+	SpecRolloutManagerSetPilotEnrollmentForFeature(s)
+	SpecRolloutManagerUpdateFeatureFlagRolloutPercentage(s)
+	SpecRolloutManagerListFeatureFlags(s)
+}
+
+func SpecRolloutManagerListFeatureFlags(s *testcase.Spec) {
+	s.Describe(`ListFeatureFlags`, func(s *testcase.Spec) {
+		subject := func(t *testcase.T) ([]*rollouts.FeatureFlag, error) {
+			return manager(t).ListFeatureFlags()
+		}
+
+		onSuccess := func(t *testcase.T) []*rollouts.FeatureFlag {
+			ffs, err := subject(t)
+			require.Nil(t, err)
+			return ffs
+		}
+
+		s.When(`features are in the system`, func(s *testcase.Spec) {
+
+			s.Before(func(t *testcase.T) {
+
+				require.Nil(t, manager(t).UpdateFeatureFlagRolloutPercentage(`a`, 42))
+				require.Nil(t, manager(t).UpdateFeatureFlagRolloutPercentage(`b`, 42))
+				require.Nil(t, manager(t).UpdateFeatureFlagRolloutPercentage(`c`, 42))
+			})
+
+			s.Then(`feature flags are returned`, func(t *testcase.T) {
+				flags := onSuccess(t)
+
+				expectedFlagNames := []string{`a`,`b`,`c`}
+
+				for _, ff := range flags {
+					require.Contains(t, expectedFlagNames, ff.Name)
+				}
+			})
+
+		})
+
+	})
+}
+
+func SpecRolloutManagerUpdateFeatureFlagRolloutPercentage(s *testcase.Spec) {
+	s.Describe(`UpdateFeatureFlagRolloutPercentage`, func(s *testcase.Spec) {
+		GetNewRolloutPercentage := func(t *testcase.T) int {
+			return t.I(`NewRolloutPercentage`).(int)
+		}
+
+		subject := func(t *testcase.T) error {
+			return manager(t).UpdateFeatureFlagRolloutPercentage(GetFeatureFlagName(t), GetNewRolloutPercentage(t))
+		}
+
+		s.When(`percentage less than 0`, func(s *testcase.Spec) {
+			s.Let(`NewRolloutPercentage`, func(t *testcase.T) interface{} { return -1 + (rand.Intn(1024) * -1) })
+
+			s.Then(`it will report error`, func(t *testcase.T) {
+				require.Error(t, subject(t))
+			})
+		})
+
+		s.When(`percentage greater than 100`, func(s *testcase.Spec) {
+			s.Let(`NewRolloutPercentage`, func(t *testcase.T) interface{} { return 101 + rand.Intn(1024) })
+
+			s.Then(`it will report error`, func(t *testcase.T) {
+				require.Error(t, subject(t))
+			})
+		})
+
+		s.When(`percentage is a number between 0 and 100`, func(s *testcase.Spec) {
+			s.Let(`NewRolloutPercentage`, func(t *testcase.T) interface{} { return rand.Intn(101) })
+
+			s.And(`feature flag was undefined until now`, func(s *testcase.Spec) {
+				s.Before(func(t *testcase.T) {
+					require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
+				})
+
+				s.Then(`feature flag entry created with the percentage`, func(t *testcase.T) {
+					require.Nil(t, subject(t))
+					flag, err := GetStorage(t).FindByFlagName(GetFeatureFlagName(t))
+					require.Nil(t, err)
+					require.NotNil(t, flag)
+
+					require.Equal(t, GetFeatureFlagName(t), flag.Name)
+					require.Equal(t, "", flag.Rollout.Strategy.URL)
+					require.Equal(t, GetNewRolloutPercentage(t), flag.Rollout.Strategy.Percentage)
+					require.Equal(t, GetGeneratedRandomSeed(t), flag.Rollout.RandSeedSalt)
+				})
+			})
+
+			s.And(`feature flag is already exist with a different percentage`, func(s *testcase.Spec) {
+				s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} {
+					for {
+						roll := rand.Intn(101)
+						if roll != GetNewRolloutPercentage(t) {
+							return roll
+						}
+					}
+				})
+
+				s.Before(func(t *testcase.T) {
+					require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
+				})
+
+				s.Then(`the same feature flag kept but updated to the new percentage`, func(t *testcase.T) {
+					require.Nil(t, subject(t))
+					flag, err := GetStorage(t).FindByFlagName(GetFeatureFlagName(t))
+					require.Nil(t, err)
+					require.NotNil(t, flag)
+
+					require.Equal(t, GetFeatureFlag(t).ID, flag.ID)
+					require.Equal(t, GetFeatureFlagName(t), flag.Name)
+					require.Equal(t, "", flag.Rollout.Strategy.URL)
+					require.Equal(t, GetNewRolloutPercentage(t), flag.Rollout.Strategy.Percentage)
+					require.Equal(t, GetRolloutSeedSalt(t), flag.Rollout.RandSeedSalt)
+				})
+			})
+		})
+	})
+}
+
+func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 	s.Describe(`SetPilotEnrollmentForFeature`, func(s *testcase.Spec) {
 
 		GetNewEnrollment := func(t *testcase.T) bool {
@@ -166,80 +283,12 @@ func TestRolloutManager(t *testing.T) {
 
 		})
 	})
+}
 
-	s.Describe(`UpdateFeatureFlagRolloutPercentage`, func(s *testcase.Spec) {
-		GetNewRolloutPercentage := func(t *testcase.T) int {
-			return t.I(`NewRolloutPercentage`).(int)
-		}
+func GetGeneratedRandomSeed(t *testcase.T) int64 {
+	return t.I(`GeneratedRandomSeed`).(int64)
+}
 
-		subject := func(t *testcase.T) error {
-			return manager(t).UpdateFeatureFlagRolloutPercentage(GetFeatureFlagName(t), GetNewRolloutPercentage(t))
-		}
-
-		s.When(`percentage less than 0`, func(s *testcase.Spec) {
-			s.Let(`NewRolloutPercentage`, func(t *testcase.T) interface{} { return -1 + (rand.Intn(1024) * -1) })
-
-			s.Then(`it will report error`, func(t *testcase.T) {
-				require.Error(t, subject(t))
-			})
-		})
-
-		s.When(`percentage greater than 100`, func(s *testcase.Spec) {
-			s.Let(`NewRolloutPercentage`, func(t *testcase.T) interface{} { return 101 + rand.Intn(1024) })
-
-			s.Then(`it will report error`, func(t *testcase.T) {
-				require.Error(t, subject(t))
-			})
-		})
-
-		s.When(`percentage is a number between 0 and 100`, func(s *testcase.Spec) {
-			s.Let(`NewRolloutPercentage`, func(t *testcase.T) interface{} { return rand.Intn(101) })
-
-			s.And(`feature flag was undefined until now`, func(s *testcase.Spec) {
-				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
-				})
-
-				s.Then(`feature flag entry created with the percentage`, func(t *testcase.T) {
-					require.Nil(t, subject(t))
-					flag, err := GetStorage(t).FindByFlagName(GetFeatureFlagName(t))
-					require.Nil(t, err)
-					require.NotNil(t, flag)
-
-					require.Equal(t, GetFeatureFlagName(t), flag.Name)
-					require.Equal(t, "", flag.Rollout.Strategy.URL)
-					require.Equal(t, GetNewRolloutPercentage(t), flag.Rollout.Strategy.Percentage)
-					require.Equal(t, GetGeneratedRandomSeed(t), flag.Rollout.RandSeedSalt)
-				})
-			})
-
-			s.And(`feature flag is already exist with a different percentage`, func(s *testcase.Spec) {
-				s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} {
-					for {
-						roll := rand.Intn(101)
-						if roll != GetNewRolloutPercentage(t) {
-							return roll
-						}
-					}
-				})
-
-				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
-				})
-
-				s.Then(`the same feature flag kept but updated to the new percentage`, func(t *testcase.T) {
-					require.Nil(t, subject(t))
-					flag, err := GetStorage(t).FindByFlagName(GetFeatureFlagName(t))
-					require.Nil(t, err)
-					require.NotNil(t, flag)
-
-					require.Equal(t, GetFeatureFlag(t).ID, flag.ID)
-					require.Equal(t, GetFeatureFlagName(t), flag.Name)
-					require.Equal(t, "", flag.Rollout.Strategy.URL)
-					require.Equal(t, GetNewRolloutPercentage(t), flag.Rollout.Strategy.Percentage)
-					require.Equal(t, GetRolloutSeedSalt(t), flag.Rollout.RandSeedSalt)
-				})
-			})
-		})
-	})
+func manager(t *testcase.T) *rollouts.RolloutManager {
+	return t.I(`RolloutManager`).(*rollouts.RolloutManager)
 }

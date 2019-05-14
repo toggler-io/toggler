@@ -2,6 +2,7 @@ package rollouts
 
 import (
 	"fmt"
+	"github.com/adamluzsi/frameless/iterators"
 	"time"
 )
 
@@ -65,6 +66,13 @@ func (manager *RolloutManager) UpdateFeatureFlagRolloutPercentage(featureFlagNam
 	ff.Rollout.Strategy.Percentage = rolloutPercentage
 	return manager.Storage.Update(ff)
 
+}
+
+func (manager *RolloutManager) ListFeatureFlags() ([]*FeatureFlag, error) {
+	iter := manager.Storage.FindAll(FeatureFlag{})
+	var ffs []*FeatureFlag
+	err := iterators.CollectAll(iter, &ffs)
+	return ffs, err
 }
 
 //----------------------------------------------------------------------------------------------------------------------
