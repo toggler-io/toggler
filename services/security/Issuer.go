@@ -46,7 +46,7 @@ func (i *Issuer) CreateNewToken(userUID string, issueAt *time.Time, duration *ti
 
 }
 
-const tokenRawLength = 64
+const tokenRawLength = 128
 
 // generateToken returns a URL-safe, base64 encoded
 // securely generated random string.

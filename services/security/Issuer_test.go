@@ -93,8 +93,7 @@ func SpecIssuerCreateNewToken(s *testcase.Spec, issuer func(t *testcase.T) *secu
 
 			s.Then(`the token generated with a long token key`, func(t *testcase.T) {
 				token := onSuccess(t)
-				require.True(t, 42 <= len(token.Token))
-				require.True(t, len(token.Token) <= 100)
+				require.True(t, 128 <= len(token.Token))
 			})
 
 			s.Then(`token is stored in the storage`, func(t *testcase.T) {
