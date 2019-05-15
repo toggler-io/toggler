@@ -1,7 +1,6 @@
 package usecases_test
 
 import (
-	"github.com/adamluzsi/FeatureFlags/usecases"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 	"math/rand"
@@ -14,17 +13,12 @@ func TestUseCases_IsFeatureEnabledFor(t *testing.T) {
 
 	s := testcase.NewSpec(t)
 	SetupSpecCommonVariables(s)
+	SetupSpec(s)
 	s.Parallel()
-
-	UseCases := func(t *testcase.T) *usecases.UseCases { return t.I(`UseCases`).(*usecases.UseCases) }
-
-	s.Let(`UseCases`, func(t *testcase.T) interface{} {
-		return usecases.NewUseCases(t.I(`TestStorage`).(*TestStorage))
-	})
 
 	s.Describe(`IsFeatureEnabledFor`, func(s *testcase.Spec) {
 		subject := func(t *testcase.T) (bool, error) {
-			return UseCases(t).IsFeatureEnabledFor(
+			return GetUseCases(t).IsFeatureEnabledFor(
 				t.I(`FeatureName`).(string),
 				t.I(`ExternalPilotID`).(string),
 			)
@@ -39,10 +33,12 @@ func TestUseCases_IsFeatureEnabledFor(t *testing.T) {
 		s.When(`user piloting status registered`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
 				enrollment := t.I(`enrollment`).(bool)
-				require.Nil(t, UseCases(t).SetPilotEnrollmentForFeature(
+
+				require.Nil(t, GetRolloutManager(t).SetPilotEnrollmentForFeature(
 					t.I(`FeatureName`).(string),
 					t.I(`ExternalPilotID`).(string),
-					enrollment))
+					enrollment,
+				))
 			})
 
 			s.And(`by whitelist`, func(s *testcase.Spec) {
@@ -111,7 +107,7 @@ func TestUseCases_IsFeatureEnabledFor(t *testing.T) {
 				s.Before(func(t *testcase.T) {
 					expectedEnrollMaxPercentage := t.I(`expectedEnrollMaxPercentage`).(int)
 
-					require.Nil(t, UseCases(t).UpdateFeatureFlagRolloutPercentage(
+					require.Nil(t, GetUseCases(t).UpdateFeatureFlagRolloutPercentage(
 						t.I(`FeatureName`).(string), expectedEnrollMaxPercentage))
 				})
 
@@ -121,7 +117,7 @@ func TestUseCases_IsFeatureEnabledFor(t *testing.T) {
 					extIDS := t.I(`extIDS`).([]string)
 
 					for _, extID := range extIDS {
-						enrollment, err := UseCases(t).IsFeatureEnabledFor(
+						enrollment, err := GetUseCases(t).IsFeatureEnabledFor(
 							t.I(`FeatureName`).(string), extID)
 
 						require.Nil(t, err)

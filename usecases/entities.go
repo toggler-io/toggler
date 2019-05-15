@@ -6,6 +6,7 @@ package usecases
 import (
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"github.com/adamluzsi/FeatureFlags/services/security"
+	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/resources/specs"
 )
 
@@ -36,3 +37,5 @@ type Storage interface {
 	rollouts.PilotFinder
 	security.TokenFinder
 }
+
+const ErrInvalidToken frameless.Error = `invalid token error`
