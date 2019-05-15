@@ -1,11 +1,12 @@
 package rollouts_test
 
 import (
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
-	"github.com/adamluzsi/testcase"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	"github.com/adamluzsi/testcase"
 
 	"github.com/stretchr/testify/require"
 )

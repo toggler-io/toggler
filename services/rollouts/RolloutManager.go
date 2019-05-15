@@ -2,8 +2,9 @@ package rollouts
 
 import (
 	"fmt"
-	"github.com/adamluzsi/frameless/iterators"
 	"time"
+
+	"github.com/adamluzsi/frameless/iterators"
 )
 
 func NewRolloutManager(s Storage) *RolloutManager {

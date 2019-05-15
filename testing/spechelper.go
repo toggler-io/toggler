@@ -2,7 +2,9 @@ package testing
 
 import (
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	"github.com/adamluzsi/FeatureFlags/services/security"
 	"github.com/adamluzsi/testcase"
+	"github.com/stretchr/testify/require"
 	"math/rand"
 	"time"
 )
@@ -50,6 +52,13 @@ func SetupSpecCommonVariables(s *testcase.Spec) {
 
 }
 
+func CreateToken(t *testcase.T, tokenOwner string) *security.Token {
+	i := security.NewIssuer(GetStorage(t))
+	token, err := i.CreateNewToken(tokenOwner, nil, nil)
+	require.Nil(t, err)
+	return token
+}
+
 func GetExternalPilotID(t *testcase.T) string {
 	return t.I(`ExternalPilotID`).(string)
 }
@@ -84,4 +93,13 @@ func GetRolloutSeedSalt(t *testcase.T) int64 {
 
 func GetUniqUserID(t *testcase.T) string {
 	return t.I(`UniqUserID`).(string)
+}
+
+func SpecPilotEnrolmentIs(t *testcase.T, enrollment bool) {
+	rm := rollouts.NewRolloutManager(GetStorage(t))
+	require.Nil(t, rm.SetPilotEnrollmentForFeature(
+		GetFeatureFlagName(t),
+		GetExternalPilotID(t),
+		enrollment,
+	))
 }

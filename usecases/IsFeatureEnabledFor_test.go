@@ -1,10 +1,11 @@
 package usecases_test
 
 import (
-	"github.com/adamluzsi/testcase"
-	"github.com/stretchr/testify/require"
 	"math/rand"
 	"testing"
+
+	"github.com/adamluzsi/testcase"
+	"github.com/stretchr/testify/require"
 
 	. "github.com/adamluzsi/FeatureFlags/testing"
 )

@@ -1,11 +1,12 @@
 package usecases_test
 
 import (
+	"math/rand"
+	"testing"
+
 	. "github.com/adamluzsi/FeatureFlags/testing"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
-	"math/rand"
-	"testing"
 )
 
 func TestUseCases_SetPilotEnrollmentForFeature(t *testing.T) {

@@ -1,12 +1,13 @@
 package usecases_test
 
 import (
+	"testing"
+
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"github.com/adamluzsi/FeatureFlags/services/security"
 	"github.com/adamluzsi/FeatureFlags/usecases"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
-	"testing"
 
 	. "github.com/adamluzsi/FeatureFlags/testing"
 )

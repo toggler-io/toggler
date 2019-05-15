@@ -1,11 +1,12 @@
 package security_test
 
 import (
+	"testing"
+	"time"
+
 	"github.com/adamluzsi/FeatureFlags/services/security"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func TestToken(t *testing.T) {

@@ -3,9 +3,10 @@ package security
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"github.com/pkg/errors"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 func NewIssuer(s Storage) *Issuer {

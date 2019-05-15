@@ -1,12 +1,13 @@
 package rollouts_test
 
 import (
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
-	. "github.com/adamluzsi/FeatureFlags/testing"
-	"github.com/adamluzsi/testcase"
 	"math/rand"
 	"testing"
 	"time"
+
+	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	. "github.com/adamluzsi/FeatureFlags/testing"
+	"github.com/adamluzsi/testcase"
 
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/stretchr/testify/require"
@@ -65,7 +66,7 @@ func SpecRolloutManagerListFeatureFlags(s *testcase.Spec) {
 			s.Then(`feature flags are returned`, func(t *testcase.T) {
 				flags := onSuccess(t)
 
-				expectedFlagNames := []string{`a`,`b`,`c`}
+				expectedFlagNames := []string{`a`, `b`, `c`}
 
 				for _, ff := range flags {
 					require.Contains(t, expectedFlagNames, ff.Name)

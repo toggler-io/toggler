@@ -1,12 +1,13 @@
 package security_test
 
 import (
-	"github.com/adamluzsi/FeatureFlags/services/security"
-	"github.com/adamluzsi/testcase"
-	"github.com/stretchr/testify/require"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/adamluzsi/FeatureFlags/services/security"
+	"github.com/adamluzsi/testcase"
+	"github.com/stretchr/testify/require"
 
 	. "github.com/adamluzsi/FeatureFlags/testing"
 )
