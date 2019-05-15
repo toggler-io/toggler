@@ -51,7 +51,7 @@ func (manager *RolloutManager) UpdateFeatureFlagRolloutPercentage(featureFlagNam
 		return fmt.Errorf(`validation error, percentage value not acceptable: %d`, rolloutPercentage)
 	}
 
-	ff, err := manager.Storage.FindByFlagName(featureFlagName)
+	ff, err := manager.Storage.FindFlagByName(featureFlagName)
 
 	if err != nil {
 		return err
@@ -79,7 +79,7 @@ func (manager *RolloutManager) ListFeatureFlags() ([]*FeatureFlag, error) {
 
 func (manager *RolloutManager) ensureFeatureFlag(featureFlagName string) (*FeatureFlag, error) {
 
-	ff, err := manager.Storage.FindByFlagName(featureFlagName)
+	ff, err := manager.Storage.FindFlagByName(featureFlagName)
 
 	if err != nil {
 		return nil, err

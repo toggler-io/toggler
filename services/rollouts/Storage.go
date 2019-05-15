@@ -18,7 +18,7 @@ type Storage interface {
 }
 
 type FlagFinder interface {
-	FindByFlagName(name string) (*FeatureFlag, error)
+	FindFlagByName(name string) (*FeatureFlag, error)
 }
 
 type PilotFinder interface {

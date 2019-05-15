@@ -43,7 +43,7 @@ func TestUseCases_SetPilotEnrollmentForFeature(t *testing.T) {
 		s.Then(`it will set percentage`, func(t *testcase.T) {
 			require.Nil(t, subject(t))
 
-			flag, err := GetStorage(t).FindByFlagName(GetFeatureFlagName(t))
+			flag, err := GetStorage(t).FindFlagByName(GetFeatureFlagName(t))
 			require.Nil(t, err)
 
 			pilot, err := GetStorage(t).FindFlagPilotByExternalPilotID(flag.ID, GetExternalPilotID(t))

@@ -113,7 +113,7 @@ func SpecRolloutManagerUpdateFeatureFlagRolloutPercentage(s *testcase.Spec) {
 
 				s.Then(`feature flag entry created with the percentage`, func(t *testcase.T) {
 					require.Nil(t, subject(t))
-					flag, err := GetStorage(t).FindByFlagName(GetFeatureFlagName(t))
+					flag, err := GetStorage(t).FindFlagByName(GetFeatureFlagName(t))
 					require.Nil(t, err)
 					require.NotNil(t, flag)
 
@@ -140,7 +140,7 @@ func SpecRolloutManagerUpdateFeatureFlagRolloutPercentage(s *testcase.Spec) {
 
 				s.Then(`the same feature flag kept but updated to the new percentage`, func(t *testcase.T) {
 					require.Nil(t, subject(t))
-					flag, err := GetStorage(t).FindByFlagName(GetFeatureFlagName(t))
+					flag, err := GetStorage(t).FindFlagByName(GetFeatureFlagName(t))
 					require.Nil(t, err)
 					require.NotNil(t, flag)
 

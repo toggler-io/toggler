@@ -24,7 +24,7 @@ type FeatureFlagChecker struct {
 // check whether a pilot is enrolled or not for the feature flag in subject.
 func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, externalPilotID string) (bool, error) {
 
-	ff, err := checker.Storage.FindByFlagName(featureFlagName)
+	ff, err := checker.Storage.FindFlagByName(featureFlagName)
 
 	if err != nil {
 		return false, err
@@ -63,7 +63,7 @@ func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, e
 }
 
 func (checker *FeatureFlagChecker) IsFeatureGloballyEnabled(featureFlagName string) (bool, error) {
-	ff, err := checker.Storage.FindByFlagName(featureFlagName)
+	ff, err := checker.Storage.FindFlagByName(featureFlagName)
 
 	if err != nil {
 		return false, err

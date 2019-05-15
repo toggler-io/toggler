@@ -25,10 +25,10 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 		require.Nil(t, spec.Subject.Truncate(rollouts.FeatureFlag{}))
 	}
 
-	t.Run(`FindByFlagName`, func(t *testing.T) {
+	t.Run(`FindFlagByName`, func(t *testing.T) {
 
 		subject := func(t *testing.T) *rollouts.FeatureFlag {
-			ff, err := spec.Subject.FindByFlagName(featureName)
+			ff, err := spec.Subject.FindFlagByName(featureName)
 			require.Nil(t, err)
 			return ff
 		}
@@ -48,7 +48,7 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 			require.Nil(t, spec.Subject.Save(ff))
 
 			t.Run(`then searching for it returns the flag entity`, func(t *testing.T) {
-				actually, err := spec.Subject.FindByFlagName(ff.Name)
+				actually, err := spec.Subject.FindFlagByName(ff.Name)
 				require.Nil(t, err)
 				require.Equal(t, ff, actually)
 			})

@@ -45,7 +45,7 @@ func (storage *TestStorage) FindFlagPilotByExternalPilotID(featureFlagID, extern
 	return nil, nil
 }
 
-func (storage *TestStorage) FindByFlagName(name string) (*rollouts.FeatureFlag, error) {
+func (storage *TestStorage) FindFlagByName(name string) (*rollouts.FeatureFlag, error) {
 	var ptr *rollouts.FeatureFlag
 	table := storage.TableFor(ptr)
 
