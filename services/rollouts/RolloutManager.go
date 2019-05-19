@@ -71,7 +71,7 @@ func (manager *RolloutManager) UpdateFeatureFlagRolloutPercentage(featureFlagNam
 
 func (manager *RolloutManager) ListFeatureFlags() ([]*FeatureFlag, error) {
 	iter := manager.Storage.FindAll(FeatureFlag{})
-	var ffs []*FeatureFlag
+	ffs := []*FeatureFlag{} // empty slice required for null object pattern enforcement
 	err := iterators.CollectAll(iter, &ffs)
 	return ffs, err
 }

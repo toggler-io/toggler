@@ -75,6 +75,19 @@ func SpecRolloutManagerListFeatureFlags(s *testcase.Spec) {
 
 		})
 
+		s.When(`no feature present in the system`, func(s *testcase.Spec) {
+			s.Before(func(t *testcase.T) {
+				require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
+			})
+
+			s.Then(`feature flags are returned`, func(t *testcase.T) {
+				flags := onSuccess(t)
+
+				require.Equal(t, []*rollouts.FeatureFlag{}, flags)
+			})
+
+		})
+
 	})
 }
 

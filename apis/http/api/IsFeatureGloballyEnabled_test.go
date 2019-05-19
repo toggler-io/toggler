@@ -2,7 +2,6 @@ package api_test
 
 import (
 	"bytes"
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	. "github.com/adamluzsi/FeatureFlags/testing"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
@@ -37,7 +36,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 
 	s.When(`flag global`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			EnsureFeatureFlagPercentageInStorage(t, 100)
+			UpdateFeatureFlagRolloutPercentage(t, GetFeatureFlagName(t), 100)
 		})
 
 		s.Then(`the request will be accepted with OK`, func(t *testcase.T) {
@@ -49,7 +48,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 
 	s.When(`flag is not global`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			EnsureFeatureFlagPercentageInStorage(t, 50)
+			UpdateFeatureFlagRolloutPercentage(t, GetFeatureFlagName(t), 50)
 		})
 
 		s.Then(`the request will be marked as forbidden`, func(t *testcase.T) {
@@ -61,10 +60,3 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 
 }
 
-func EnsureFeatureFlagPercentageInStorage(t *testcase.T, rolloutPercentage int) {
-	rm := rollouts.NewRolloutManager(GetStorage(t))
-	require.Nil(t, rm.UpdateFeatureFlagRolloutPercentage(
-		GetFeatureFlagName(t),
-		rolloutPercentage,
-	))
-}
