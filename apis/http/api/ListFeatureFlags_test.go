@@ -2,7 +2,6 @@ package api_test
 
 import (
 	"bytes"
-	"encoding/json"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"github.com/adamluzsi/FeatureFlags/services/security"
 	"github.com/adamluzsi/testcase"
@@ -63,8 +62,11 @@ func TestServeMux_Li(t *testing.T) {
 			s.Then(`empty result received`, func(t *testcase.T) {
 				r := subject(t)
 				require.Equal(t, 200, r.Code)
-				require.Equal(t, "application/json", r.Header().Get(`Content-Type`))
+
 				require.Contains(t, r.Body.String(), `[]`)
+				var flags []*rollouts.FeatureFlag
+				IsJsonRespone(t, r, &flags)
+				require.Empty(t, flags)
 			})
 		})
 
@@ -76,11 +78,10 @@ func TestServeMux_Li(t *testing.T) {
 			s.Then(`flags received back`, func(t *testcase.T) {
 				r := subject(t)
 				require.Equal(t, 200, r.Code)
-				require.Equal(t, "application/json", r.Header().Get(`Content-Type`))
 
-				decoder := json.NewDecoder(r.Body)
 				var resps []rollouts.FeatureFlag
-				require.Nil(t, decoder.Decode(&resps))
+				IsJsonRespone(t, r, &resps)
+
 				require.Equal(t, 1, len(resps))
 				require.Equal(t, `a`, resps[0].Name)
 				require.Equal(t, 10, resps[0].Rollout.Strategy.Percentage)
@@ -108,10 +109,8 @@ func TestServeMux_Li(t *testing.T) {
 					require.Equal(t, 200, r.Code)
 					require.Equal(t, "application/json", r.Header().Get(`Content-Type`))
 
-					decoder := json.NewDecoder(r.Body)
-
 					var resps []map[string]interface{}
-					require.Nil(t, decoder.Decode(&resps))
+					IsJsonRespone(t, r, &resps)
 					require.Equal(t, 3, len(resps))
 				})
 			})

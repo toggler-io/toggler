@@ -24,7 +24,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 	SetupSpecCommonVariables(s)
 
 	s.Let(`request`, func(t *testcase.T) interface{} {
-		u, err := url.Parse(`/is-feature-globally-enabled`)
+		u, err := url.Parse(`/is-feature-globally-enabled.json`)
 		require.Nil(t, err)
 
 		values := u.Query()
@@ -40,9 +40,16 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 		})
 
 		s.Then(`the request will be accepted with OK`, func(t *testcase.T) {
-			rr := subject(t)
+			r := subject(t)
 
-			require.Equal(t, 200, rr.Code)
+			require.Equal(t, 200, r.Code)
+
+			var resp struct {
+				Enrollment bool `json:"enrollment"`
+			}
+
+			IsJsonRespone(t, r, &resp)
+			require.Equal(t, true, resp.Enrollment)
 		})
 	})
 
@@ -52,9 +59,16 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 		})
 
 		s.Then(`the request will be marked as forbidden`, func(t *testcase.T) {
-			rr := subject(t)
+			r := subject(t)
 
-			require.Equal(t, 403, rr.Code)
+			require.Equal(t, 403, r.Code)
+
+			var resp struct {
+				Enrollment bool `json:"enrollment"`
+			}
+
+			IsJsonRespone(t, r, &resp)
+			require.Equal(t, false, resp.Enrollment)
 		})
 	})
 

@@ -26,7 +26,7 @@ func TestServeMux_SetPilotEnrollmentForFeature(t *testing.T) {
 	SetupSpecCommonVariables(s)
 
 	s.Let(`request`, func(t *testcase.T) interface{} {
-		u, err := url.Parse(`/set-pilot-enrollment-for-feature`)
+		u, err := url.Parse(`/set-pilot-enrollment-for-feature.json`)
 		require.Nil(t, err)
 
 		values := u.Query()
@@ -64,6 +64,9 @@ func TestServeMux_SetPilotEnrollmentForFeature(t *testing.T) {
 		s.Then(`pilot user enrollment set in the system`, func(t *testcase.T) {
 			r := subject(t)
 			require.Equal(t, 200, r.Code)
+
+			var resp struct{  }
+			IsJsonRespone(t, r, &resp)
 
 			p, err := GetStorage(t).FindFlagPilotByExternalPilotID(FindFeatureFlag(t).ID, GetExternalPilotID(t))
 			require.Nil(t, err)

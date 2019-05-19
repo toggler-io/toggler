@@ -23,6 +23,11 @@ func (sm *ServeMux) IsFeatureEnabledFor(w http.ResponseWriter, r *http.Request) 
 		statusCode = 403
 	}
 
-	w.WriteHeader(statusCode)
+	var resp struct{
+		Enrollment bool `json:"enrollment"`
+	}
+	resp.Enrollment = enrollment
+
+	serveJSON(w, statusCode, &resp)
 
 }

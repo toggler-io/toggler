@@ -1,10 +1,7 @@
 package api
 
 import (
-	"bytes"
-	"encoding/json"
 	"github.com/adamluzsi/FeatureFlags/usecases"
-	"log"
 	"net/http"
 )
 
@@ -23,14 +20,5 @@ func (sm *ServeMux) ListFeatureFlags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	buf := bytes.NewBuffer([]byte{})
-	if err := json.NewEncoder(buf).Encode(flags); err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set(`Content-Type`, `application/json`)
-	if _, err := w.Write(buf.Bytes()); err != nil {
-		log.Println(err)
-	}
+	serveJSON(w, 200, &flags)
 }
