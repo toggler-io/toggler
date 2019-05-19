@@ -43,7 +43,7 @@ func TestServeMux_Li(t *testing.T) {
 			return `invalid`
 		})
 
-		s.Then(`it will return unautorized`, func(t *testcase.T) {
+		s.Then(`it will return unauthorized`, func(t *testcase.T) {
 			r := subject(t)
 
 			require.Equal(t, 401, r.Code)

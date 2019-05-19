@@ -103,3 +103,10 @@ func SpecPilotEnrolmentIs(t *testcase.T, enrollment bool) {
 		enrollment,
 	))
 }
+
+func FindFeatureFlag(t *testcase.T) *rollouts.FeatureFlag {
+	f, err := GetStorage(t).FindFlagByName(GetFeatureFlagName(t))
+	require.Nil(t, err)
+	require.NotNil(t, f)
+	return f
+}

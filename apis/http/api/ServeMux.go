@@ -12,6 +12,7 @@ func NewServeMux(uc *usecases.UseCases) *ServeMux {
 	}
 
 	mux.Handle(`/is-feature-enabled-for`, http.HandlerFunc(mux.IsFeatureEnabledFor))
+	mux.Handle(`/set-pilot-enrollment-for-feature`, http.HandlerFunc(mux.SetPilotEnrollmentForFeature))
 
 	return mux
 }
