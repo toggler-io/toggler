@@ -17,7 +17,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 
 	subject := func(t *testcase.T) *httptest.ResponseRecorder {
 		rr := httptest.NewRecorder()
-		NewServeMux(t).IsFeatureGloballyEnabled(rr, t.I(`request`).(*http.Request))
+		NewServeMux(t).ServeHTTP(rr, t.I(`request`).(*http.Request))
 		return rr
 	}
 

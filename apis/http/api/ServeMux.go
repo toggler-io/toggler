@@ -12,7 +12,9 @@ func NewServeMux(uc *usecases.UseCases) *ServeMux {
 	}
 
 	mux.Handle(`/is-feature-enabled-for`, http.HandlerFunc(mux.IsFeatureEnabledFor))
+	mux.Handle(`/is-feature-globally-enabled`, http.HandlerFunc(mux.IsFeatureGloballyEnabled))
 	mux.Handle(`/set-pilot-enrollment-for-feature`, http.HandlerFunc(mux.SetPilotEnrollmentForFeature))
+	mux.Handle(`/list-feature-flags.json`, http.HandlerFunc(mux.ListFeatureFlags))
 
 	return mux
 }
