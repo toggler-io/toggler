@@ -2,6 +2,7 @@ package rollouts
 
 import (
 	"github.com/adamluzsi/frameless"
+	"net/url"
 	"time"
 
 	"github.com/adamluzsi/frameless/iterators"
@@ -78,6 +79,31 @@ func (manager *RolloutManager) ListFeatureFlags() ([]*FeatureFlag, error) {
 	return ffs, err
 }
 
+const ErrInvalidURL frameless.Error = `url value not acceptable`
+
+func (manager *RolloutManager) SetFeatureFlagRolloutStrategyToUseDecisionLogicAPI(featureFlagName string, decisionAPIURL *url.URL) error {
+
+	if decisionAPIURL == nil {
+		return ErrInvalidURL
+	}
+
+	ff, err := manager.Storage.FindFlagByName(featureFlagName)
+
+	if err != nil {
+		return err
+	}
+
+	if ff == nil {
+		ff = manager.newDefaultFeatureFlag(featureFlagName)
+		ff.Rollout.Strategy.DecisionLogicAPI = decisionAPIURL
+		return manager.Storage.Save(ff)
+	}
+
+	ff.Rollout.Strategy.DecisionLogicAPI = decisionAPIURL
+	return manager.Storage.Update(ff)
+
+}
+
 //----------------------------------------------------------------------------------------------------------------------
 
 func (manager *RolloutManager) ensureFeatureFlag(featureFlagName string) (*FeatureFlag, error) {
@@ -103,7 +129,8 @@ func (manager *RolloutManager) newDefaultFeatureFlag(featureFlagName string) *Fe
 		Rollout: Rollout{
 			RandSeedSalt: manager.RandSeedGenerator(),
 			Strategy: RolloutStrategy{
-				Percentage: 0,
+				Percentage:       0,
+				DecisionLogicAPI: nil,
 			},
 		},
 	}

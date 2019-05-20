@@ -40,6 +40,7 @@ func TestRolloutManager(t *testing.T) {
 	SpecRolloutManagerSetPilotEnrollmentForFeature(s)
 	SpecRolloutManagerUpdateFeatureFlagRolloutPercentage(s)
 	SpecRolloutManagerListFeatureFlags(s)
+	SpecRolloutManagerSetFeatureFlagRolloutStrategyToUseCustomDecisionAPI(s)
 }
 
 func SpecRolloutManagerListFeatureFlags(s *testcase.Spec) {
@@ -91,6 +92,66 @@ func SpecRolloutManagerListFeatureFlags(s *testcase.Spec) {
 	})
 }
 
+func SpecRolloutManagerSetFeatureFlagRolloutStrategyToUseCustomDecisionAPI(s *testcase.Spec) {
+	s.Describe(`SetFeatureFlagRolloutStrategyToUseDecisionLogicAPI`, func(s *testcase.Spec) {
+		subject := func(t *testcase.T) error {
+			return manager(t).SetFeatureFlagRolloutStrategyToUseDecisionLogicAPI(
+				GetFeatureFlagName(t),
+				GetRolloutApiURL(t),
+			)
+		}
+
+		s.When(`url is invalid`, func(s *testcase.Spec) {
+			s.Let(`RolloutURL`, func(t *testcase.T) interface{} { return nil })
+
+			s.Then(`it will be not accepted`, func(t *testcase.T) {
+				require.Error(t, subject(t))
+			})
+		})
+
+		s.When(`url is a valid object`, func(s *testcase.Spec) {
+			s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return `https://golang.org` })
+
+			s.And(`feature flag was undefined until now`, func(s *testcase.Spec) {
+				s.Before(func(t *testcase.T) {
+					require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
+				})
+
+				s.Then(`feature flag entry created with the custom decision api url`, func(t *testcase.T) {
+					require.Nil(t, subject(t))
+					flag, err := GetStorage(t).FindFlagByName(GetFeatureFlagName(t))
+					require.Nil(t, err)
+					require.NotNil(t, flag)
+
+					require.Equal(t, GetFeatureFlagName(t), flag.Name)
+					require.Equal(t, GetRolloutApiURL(t), flag.Rollout.Strategy.DecisionLogicAPI)
+					require.Equal(t, GetRolloutApiURL(t).String(), flag.Rollout.Strategy.DecisionLogicAPI.String())
+					require.Equal(t, GetGeneratedRandomSeed(t), flag.Rollout.RandSeedSalt)
+				})
+			})
+
+			s.And(`feature flag is already exist with a different decision url`, func(s *testcase.Spec) {
+				s.Before(func(t *testcase.T) {
+					require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
+				})
+
+				s.Then(`the same feature flag kept but updated to the new percentage`, func(t *testcase.T) {
+					require.Nil(t, subject(t))
+					flag, err := GetStorage(t).FindFlagByName(GetFeatureFlagName(t))
+					require.Nil(t, err)
+					require.NotNil(t, flag)
+
+					require.Equal(t, GetFeatureFlag(t).ID, flag.ID)
+					require.Equal(t, GetFeatureFlagName(t), flag.Name)
+					require.NotNil(t, flag.Rollout.Strategy.DecisionLogicAPI)
+					require.Equal(t, GetRolloutApiURL(t).String(), flag.Rollout.Strategy.DecisionLogicAPI.String())
+					require.Equal(t, GetRolloutSeedSalt(t), flag.Rollout.RandSeedSalt)
+				})
+			})
+		})
+	})
+}
+
 func SpecRolloutManagerUpdateFeatureFlagRolloutPercentage(s *testcase.Spec) {
 	s.Describe(`UpdateFeatureFlagRolloutPercentage`, func(s *testcase.Spec) {
 		GetNewRolloutPercentage := func(t *testcase.T) int {
@@ -132,7 +193,7 @@ func SpecRolloutManagerUpdateFeatureFlagRolloutPercentage(s *testcase.Spec) {
 					require.NotNil(t, flag)
 
 					require.Equal(t, GetFeatureFlagName(t), flag.Name)
-					require.Equal(t, "", flag.Rollout.Strategy.URL)
+					require.Nil(t, flag.Rollout.Strategy.DecisionLogicAPI)
 					require.Equal(t, GetNewRolloutPercentage(t), flag.Rollout.Strategy.Percentage)
 					require.Equal(t, GetGeneratedRandomSeed(t), flag.Rollout.RandSeedSalt)
 				})
@@ -160,7 +221,7 @@ func SpecRolloutManagerUpdateFeatureFlagRolloutPercentage(s *testcase.Spec) {
 
 					require.Equal(t, GetFeatureFlag(t).ID, flag.ID)
 					require.Equal(t, GetFeatureFlagName(t), flag.Name)
-					require.Equal(t, "", flag.Rollout.Strategy.URL)
+					require.Nil(t, flag.Rollout.Strategy.DecisionLogicAPI)
 					require.Equal(t, GetNewRolloutPercentage(t), flag.Rollout.Strategy.Percentage)
 					require.Equal(t, GetRolloutSeedSalt(t), flag.Rollout.RandSeedSalt)
 				})
@@ -209,7 +270,7 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 				flag := findFlag(t)
 				require.Equal(t, GetFeatureFlagName(t), flag.Name)
-				require.Equal(t, "", flag.Rollout.Strategy.URL)
+				require.Nil(t, flag.Rollout.Strategy.DecisionLogicAPI)
 				require.Equal(t, 0, flag.Rollout.Strategy.Percentage)
 				require.Equal(t, GetGeneratedRandomSeed(t), flag.Rollout.RandSeedSalt)
 			})
