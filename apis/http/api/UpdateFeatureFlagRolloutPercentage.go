@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"github.com/adamluzsi/FeatureFlags/usecases"
 	"net/http"
 	"strconv"
@@ -22,6 +23,11 @@ func (sm *ServeMux) UpdateFeatureFlagRolloutPercentage(w http.ResponseWriter, r 
 
 	if err == usecases.ErrInvalidToken {
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return
+	}
+
+	if err == rollouts.ErrInvalidPercentage {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 

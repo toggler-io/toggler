@@ -14,10 +14,11 @@ func NewServeMux(uc *usecases.UseCases) *ServeMux {
 		UseCases: uc,
 	}
 
+	mux.Handle(`/list-feature-flags.json`, http.HandlerFunc(mux.ListFeatureFlags))
 	mux.Handle(`/is-feature-enabled-for.json`, http.HandlerFunc(mux.IsFeatureEnabledFor))
 	mux.Handle(`/is-feature-globally-enabled.json`, http.HandlerFunc(mux.IsFeatureGloballyEnabled))
 	mux.Handle(`/set-pilot-enrollment-for-feature.json`, http.HandlerFunc(mux.SetPilotEnrollmentForFeature))
-	mux.Handle(`/list-feature-flags.json`, http.HandlerFunc(mux.ListFeatureFlags))
+	mux.Handle(`/update-feature-flag-rollout-percentage.json`, http.HandlerFunc(mux.UpdateFeatureFlagRolloutPercentage))
 
 	return mux
 }
