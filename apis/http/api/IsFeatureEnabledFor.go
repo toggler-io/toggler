@@ -6,7 +6,7 @@ func (sm *ServeMux) IsFeatureEnabledFor(w http.ResponseWriter, r *http.Request) 
 
 	values := r.URL.Query()
 	featureFlagName := values.Get(`feature`)
-	pilotID := values.Get(`user-id`)
+	pilotID := values.Get(`id`)
 
 	enrollment, err := sm.UseCases.IsFeatureEnabledFor(featureFlagName, pilotID)
 

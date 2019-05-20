@@ -9,7 +9,7 @@ import (
 func (sm *ServeMux) SetPilotEnrollmentForFeature(w http.ResponseWriter, r *http.Request) {
 	token := r.URL.Query().Get(`token`)
 	featureFlagName := r.URL.Query().Get(`feature`)
-	extPilotID := r.URL.Query().Get(`user-id`)
+	extPilotID := r.URL.Query().Get(`id`)
 	enrollmentStr := r.URL.Query().Get(`enrollment`)
 
 	enrollment, err := strconv.ParseBool(enrollmentStr)

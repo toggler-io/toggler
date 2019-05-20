@@ -29,7 +29,7 @@ func TestServeMux_IsFeatureEnabledFor(t *testing.T) {
 
 		values := u.Query()
 		values.Set(`feature`, GetFeatureFlagName(t))
-		values.Set(`user-id`, GetExternalPilotID(t))
+		values.Set(`id`, GetExternalPilotID(t))
 		u.RawQuery = values.Encode()
 
 		return httptest.NewRequest(http.MethodGet, u.String(), bytes.NewBuffer([]byte{}))
