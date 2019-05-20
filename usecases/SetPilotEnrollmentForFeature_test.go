@@ -1,6 +1,7 @@
 package usecases_test
 
 import (
+	"github.com/adamluzsi/FeatureFlags/usecases"
 	"math/rand"
 	"testing"
 
@@ -32,7 +33,7 @@ func TestUseCases_SetPilotEnrollmentForFeature(t *testing.T) {
 		s.Let(`TokenString`, func(t *testcase.T) interface{} { return `invalid token` })
 
 		s.Then(`it will be rejected`, func(t *testcase.T) {
-			require.Error(t, subject(t))
+			require.Equal(t, usecases.ErrInvalidToken, subject(t))
 		})
 	})
 

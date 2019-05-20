@@ -33,15 +33,16 @@ func TestUseCases_IsFeatureGloballyEnabled(t *testing.T) {
 
 	s.When(`flag is already configured`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, t.I(`UseCases`).(*usecases.UseCases).
-				UpdateFeatureFlagRolloutPercentage(t.I(`FeatureName`).(string),
-					t.I(`percentage`).(int)))
+			require.Nil(t, GetRolloutManager(t).UpdateFeatureFlagRolloutPercentage(
+				GetFeatureFlagName(t),
+				t.I(`percentage`).(int),
+			))
 		})
 
 		s.And(`with global rollout (100%)`, func(s *testcase.Spec) {
 			s.Let(`percentage`, func(t *testcase.T) interface{} { return int(100) })
 
-			s.Then(`the feature will be reportad to be globally enabled`, func(t *testcase.T) {
+			s.Then(`the feature will be reported to be globally enabled`, func(t *testcase.T) {
 				require.True(t, isEnrolled(t))
 			})
 		})
