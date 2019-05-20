@@ -1,5 +1,7 @@
 package rollouts
 
+import "net/url"
+
 // FeatureFlag is the basic entity with properties that feature flag holds
 type FeatureFlag struct {
 	// ID represent the fact that this object will be persistent in the Storage
@@ -24,7 +26,7 @@ type Rollout struct {
 type RolloutStrategy struct {
 	// Percentage allows you to define how many of your user base should be enrolled pseudo randomly.
 	Percentage int `json:"percentage"`
-	// URL allow you to do rollout based on custom domain needs such as target groups,
+	// DecisionLogicAPI allow you to do rollout based on custom domain needs such as target groups,
 	// which decision logic is available trough an API endpoint call
-	URL string `json:"url"`
+	DecisionLogicAPI *url.URL `json:"decision_logic_api"`
 }

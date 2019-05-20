@@ -2,6 +2,7 @@ package rollouts
 
 import (
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -44,8 +45,8 @@ func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, e
 		return pilot.Enrolled, nil
 	}
 
-	if ff.Rollout.Strategy.URL != "" {
-		return checker.makeCustomDomainAPIDecisionCheck(featureFlagName, externalPilotID, ff.Rollout.Strategy.URL)
+	if ff.Rollout.Strategy.DecisionLogicAPI != nil {
+		return checker.makeCustomDomainAPIDecisionCheck(featureFlagName, externalPilotID, ff.Rollout.Strategy.DecisionLogicAPI)
 	}
 
 	if ff.Rollout.Strategy.Percentage == 0 {
@@ -76,15 +77,15 @@ func (checker *FeatureFlagChecker) IsFeatureGloballyEnabled(featureFlagName stri
 	return ff.Rollout.Strategy.Percentage == 100, nil
 }
 
-func (checker *FeatureFlagChecker) makeCustomDomainAPIDecisionCheck(featureFlagName string, externalPilotID string, url string) (bool, error) {
-	req, err := http.NewRequest(`GET`, url, nil)
+func (checker *FeatureFlagChecker) makeCustomDomainAPIDecisionCheck(featureFlagName string, externalPilotID string, apiURL *url.URL) (bool, error) {
+	req, err := http.NewRequest(`GET`, apiURL.String(), nil)
 	if err != nil {
 		return false, err
 	}
 
 	query := req.URL.Query()
-	query.Set(`feature-flag-name`, featureFlagName)
-	query.Set(`pilot-id`, externalPilotID)
+	query.Set(`feature`, featureFlagName)
+	query.Set(`id`, externalPilotID)
 	req.URL.RawQuery = query.Encode()
 
 	resp, err := checker.HTTPClient.Do(req)

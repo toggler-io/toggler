@@ -6,6 +6,7 @@ import (
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 	"math/rand"
+	"net/url"
 	"time"
 )
 
@@ -41,12 +42,12 @@ func SetupSpecCommonVariables(s *testcase.Spec) {
 
 	s.Let(`RolloutSeedSalt`, func(t *testcase.T) interface{} { return time.Now().Unix() })
 	s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return int(0) })
-	s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return "" })
+	s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return nil })
 	s.Let(`FeatureFlag`, func(t *testcase.T) interface{} {
 		ff := &rollouts.FeatureFlag{Name: t.I(`FeatureName`).(string)}
 		ff.Rollout.RandSeedSalt = t.I(`RolloutSeedSalt`).(int64)
 		ff.Rollout.Strategy.Percentage = t.I(`RolloutPercentage`).(int)
-		ff.Rollout.Strategy.URL = t.I(`RolloutApiURL`).(string)
+		ff.Rollout.Strategy.DecisionLogicAPI = GetRolloutApiURL(t)
 		return ff
 	})
 
@@ -102,6 +103,18 @@ func SpecPilotEnrolmentIs(t *testcase.T, enrollment bool) {
 		GetExternalPilotID(t),
 		enrollment,
 	))
+}
+
+func GetRolloutApiURL(t *testcase.T) *url.URL {
+	rurl := t.I(`RolloutApiURL`)
+
+	if rurl == nil {
+		return nil
+	}
+
+	u, err := url.Parse(rurl.(string))
+	require.Nil(t, err)
+	return u
 }
 
 func FindFeatureFlag(t *testcase.T) *rollouts.FeatureFlag {

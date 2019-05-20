@@ -216,15 +216,15 @@ func SpecFeatureFlagChecker_IsFeatureEnabledFor(s *testcase.Spec) {
 
 		})
 
-		s.And(`by custom decision logic is defined with URL endpoint`, func(s *testcase.Spec) {
+		s.And(`by custom decision logic is defined with DecisionLogicAPI endpoint`, func(s *testcase.Spec) {
 			s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} {
 				return t.I(`httptest.NewServer`).(*httptest.Server).URL
 			})
 
 			handler := func(t *testcase.T) http.Handler {
 				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					require.Equal(t, t.I(`FeatureName`).(string), r.URL.Query().Get(`feature-flag-name`))
-					require.Equal(t, t.I(`ExternalPilotID`).(string), r.URL.Query().Get(`pilot-id`))
+					require.Equal(t, t.I(`FeatureName`).(string), r.URL.Query().Get(`feature`))
+					require.Equal(t, t.I(`ExternalPilotID`).(string), r.URL.Query().Get(`id`))
 					w.WriteHeader(t.I(`replyCode`).(int))
 				})
 			}

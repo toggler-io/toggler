@@ -94,7 +94,7 @@ func TestServeMux_Li(t *testing.T) {
 				require.Contains(t, r.Body.String(), `"rollout":`)
 				require.Contains(t, r.Body.String(), `"strategy":`)
 				require.Contains(t, r.Body.String(), `"percentage":`)
-				require.Contains(t, r.Body.String(), `"url":`)
+				require.Contains(t, r.Body.String(), `"decision_logic_api":`)
 				require.Contains(t, r.Body.String(), `"rand_seed_salt":`)
 			})
 
