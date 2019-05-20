@@ -105,7 +105,7 @@ func SpecRolloutManagerUpdateFeatureFlagRolloutPercentage(s *testcase.Spec) {
 			s.Let(`NewRolloutPercentage`, func(t *testcase.T) interface{} { return -1 + (rand.Intn(1024) * -1) })
 
 			s.Then(`it will report error`, func(t *testcase.T) {
-				require.Error(t, subject(t))
+				require.Equal(t, rollouts.ErrInvalidPercentage, subject(t))
 			})
 		})
 
@@ -113,7 +113,7 @@ func SpecRolloutManagerUpdateFeatureFlagRolloutPercentage(s *testcase.Spec) {
 			s.Let(`NewRolloutPercentage`, func(t *testcase.T) interface{} { return 101 + rand.Intn(1024) })
 
 			s.Then(`it will report error`, func(t *testcase.T) {
-				require.Error(t, subject(t))
+				require.Equal(t, rollouts.ErrInvalidPercentage, subject(t))
 			})
 		})
 

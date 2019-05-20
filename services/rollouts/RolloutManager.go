@@ -1,7 +1,7 @@
 package rollouts
 
 import (
-	"fmt"
+	"github.com/adamluzsi/frameless"
 	"time"
 
 	"github.com/adamluzsi/frameless/iterators"
@@ -46,10 +46,12 @@ func (manager *RolloutManager) SetPilotEnrollmentForFeature(featureFlagName stri
 
 }
 
+const ErrInvalidPercentage frameless.Error = `percentage value not acceptable`
+
 func (manager *RolloutManager) UpdateFeatureFlagRolloutPercentage(featureFlagName string, rolloutPercentage int) error {
 
 	if rolloutPercentage < 0 || 100 < rolloutPercentage {
-		return fmt.Errorf(`validation error, percentage value not acceptable: %d`, rolloutPercentage)
+		return ErrInvalidPercentage
 	}
 
 	ff, err := manager.Storage.FindFlagByName(featureFlagName)
