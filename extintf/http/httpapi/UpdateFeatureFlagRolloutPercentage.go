@@ -1,4 +1,4 @@
-package api
+package httpapi
 
 import (
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"

@@ -1,14 +1,13 @@
-package api
+package httpapi
 
 import "net/http"
 
-func (sm *ServeMux) IsFeatureEnabledFor(w http.ResponseWriter, r *http.Request) {
+func (sm *ServeMux) IsFeatureGloballyEnabled(w http.ResponseWriter, r *http.Request) {
 
 	values := r.URL.Query()
 	featureFlagName := values.Get(`feature`)
-	pilotID := values.Get(`id`)
 
-	enrollment, err := sm.UseCases.IsFeatureEnabledFor(featureFlagName, pilotID)
+	enrollment, err := sm.UseCases.IsFeatureGloballyEnabled(featureFlagName)
 
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -29,5 +28,4 @@ func (sm *ServeMux) IsFeatureEnabledFor(w http.ResponseWriter, r *http.Request) 
 	resp.Enrollment = enrollment
 
 	serveJSON(w, statusCode, &resp)
-
 }
