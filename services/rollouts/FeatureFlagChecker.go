@@ -9,7 +9,7 @@ import (
 func NewFeatureFlagChecker(s Storage) *FeatureFlagChecker {
 	return &FeatureFlagChecker{
 		Storage:                s,
-		IDPercentageCalculator: GeneratePseudoRandPercentageWithFNV1a64,
+		IDPercentageCalculator: PseudoRandPercentageGenerator{}.FNV1a64,
 		HTTPClient:             http.Client{Timeout: 3 * time.Second},
 	}
 }
