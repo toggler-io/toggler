@@ -2,7 +2,6 @@ package httpapi_test
 
 import (
 	"encoding/json"
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"github.com/adamluzsi/FeatureFlags/services/security"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
@@ -13,11 +12,7 @@ import (
 
 
 func UpdateFeatureFlagRolloutPercentage(t *testcase.T, featureFlagName string, rolloutPercentage int) {
-	rm := rollouts.NewRolloutManager(GetStorage(t))
-	require.Nil(t, rm.UpdateFeatureFlagRolloutPercentage(
-		featureFlagName,
-		rolloutPercentage,
-	))
+	EnsureFlag(t, featureFlagName, rolloutPercentage)
 }
 
 func CreateSecurityTokenString(t *testcase.T) string {

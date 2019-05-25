@@ -108,8 +108,7 @@ func TestUseCases_IsFeatureEnabledFor(t *testing.T) {
 				s.Before(func(t *testcase.T) {
 					expectedEnrollMaxPercentage := t.I(`expectedEnrollMaxPercentage`).(int)
 
-					require.Nil(t, GetRolloutManager(t).UpdateFeatureFlagRolloutPercentage(
-						t.I(`FeatureName`).(string), expectedEnrollMaxPercentage))
+					EnsureFlag(t, GetFeatureFlagName(t), expectedEnrollMaxPercentage)
 				})
 
 				s.Then(``, func(t *testcase.T) {

@@ -57,7 +57,7 @@ func TestUseCases_ListFeatureFlags(t *testing.T) {
 		})
 
 		s.And(`there are at least one flag in the system`, func(s *testcase.Spec) {
-			s.Before(func(t *testcase.T) { EnsureFlag(t, `42`) })
+			s.Before(func(t *testcase.T) { EnsureFlag(t, `42`, 0) })
 
 			s.Then(`we receive back the feature flag list`, func(t *testcase.T) {
 				ffs := onSuccess(t)

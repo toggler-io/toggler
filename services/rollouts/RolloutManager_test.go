@@ -2,6 +2,7 @@ package rollouts_test
 
 import (
 	"math/rand"
+	"net/url"
 	"testing"
 	"time"
 
@@ -37,10 +38,190 @@ func TestRolloutManager(t *testing.T) {
 		require.Nil(t, GetStorage(t).Truncate(rollouts.Pilot{}))
 	})
 
-	SpecRolloutManagerSetPilotEnrollmentForFeature(s)
-	SpecRolloutManagerUpdateFeatureFlagRolloutPercentage(s)
+	SpecRolloutManagerSetFeatureFlag(s)
 	SpecRolloutManagerListFeatureFlags(s)
-	SpecRolloutManagerSetFeatureFlagRolloutStrategyToUseCustomDecisionAPI(s)
+	SpecRolloutManagerSetPilotEnrollmentForFeature(s)
+}
+
+func SpecRolloutManagerSetFeatureFlag(s *testcase.Spec) {
+	s.Describe(`SetFeatureFlag`, func(s *testcase.Spec) {
+		subjectWithArgs := func(t *testcase.T, f *rollouts.FeatureFlag) error {
+			return manager(t).SetFeatureFlag(f)
+		}
+
+		subject := func(t *testcase.T) error {
+			return subjectWithArgs(t, GetFeatureFlag(t))
+		}
+
+		s.Let(`FeatureFlagName`, func(t *testcase.T) interface{} { return ExampleFeatureName() })
+		s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return nil })
+		s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return rand.Intn(101) })
+		s.Let(`RolloutSeedSalt`, func(t *testcase.T) interface{} { return int64(42) })
+
+		s.Let(`FeatureFlag`, func(t *testcase.T) interface{} {
+			ff := &rollouts.FeatureFlag{Name: t.I(`FeatureName`).(string)}
+			ff.Rollout.RandSeedSalt = t.I(`RolloutSeedSalt`).(int64)
+			ff.Rollout.Strategy.Percentage = t.I(`RolloutPercentage`).(int)
+			ff.Rollout.Strategy.DecisionLogicAPI = GetRolloutApiURL(t)
+			return ff
+		})
+
+		s.Then(`on valid input the values persisted`, func(t *testcase.T) {
+			require.Nil(t, subject(t))
+			require.NotNil(t, FindStoredFeatureFlag(t))
+			require.Equal(t, GetFeatureFlag(t), FindStoredFeatureFlag(t))
+		})
+
+		s.When(`name is empty`, func(s *testcase.Spec) {
+			s.Let(`FeatureName`, func(t *testcase.T) interface{} { return "" })
+
+			s.Then(`it will fail with invalid feature name`, func(t *testcase.T) {
+				require.Equal(t, rollouts.ErrInvalidFeatureName, subject(t))
+			})
+		})
+
+		s.When(`url`, func(s *testcase.Spec) {
+			s.Context(`is not a valid request url`, func(s *testcase.Spec) {
+				s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return `http//example.com` })
+
+				s.Then(`it will fail with invalid url`, func(t *testcase.T) {
+					require.Equal(t, rollouts.ErrInvalidURL, subject(t))
+				})
+			})
+
+			s.Context(`is not defined or nil`, func(s *testcase.Spec) {
+				s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return nil })
+
+				s.Then(`it will be saved and will represent that no custom domain decision url used`, func(t *testcase.T) {
+					require.Nil(t, subject(t))
+
+					require.Nil(t, FindStoredFeatureFlag(t).Rollout.Strategy.DecisionLogicAPI)
+				})
+			})
+
+			s.Context(`is a valid request URL`, func(s *testcase.Spec) {
+				s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return `https://example.com` })
+
+				s.Then(`it will persist for future usage`, func(t *testcase.T) {
+					require.Nil(t, subject(t))
+
+					require.Equal(t, `https://example.com`, FindStoredFeatureFlag(t).Rollout.Strategy.DecisionLogicAPI.String())
+				})
+			})
+		})
+
+		s.When(`percentage`, func(s *testcase.Spec) {
+			s.Context(`less than 0`, func(s *testcase.Spec) {
+				s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return -1 + (rand.Intn(1024) * -1) })
+
+				s.Then(`it will report error regarding the percentage`, func(t *testcase.T) {
+					require.Equal(t, rollouts.ErrInvalidPercentage, subject(t))
+				})
+			})
+
+			s.Context(`greater than 100`, func(s *testcase.Spec) {
+				s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return 101 + rand.Intn(1024) })
+
+				s.Then(`it will report error regarding the percentage`, func(t *testcase.T) {
+					require.Equal(t, rollouts.ErrInvalidPercentage, subject(t))
+				})
+			})
+
+			s.Context(`is a number between 0 and 100`, func(s *testcase.Spec) {
+				s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return rand.Intn(101) })
+
+				s.Then(`it will persist the received percentage`, func(t *testcase.T) {
+					require.Nil(t, subject(t))
+
+					require.Equal(t, t.I(`RolloutPercentage`).(int), FindStoredFeatureFlag(t).Rollout.Strategy.Percentage)
+				})
+			})
+		})
+
+		s.When(`pseudo random seed salt`, func(s *testcase.Spec) {
+			s.Context(`is 0`, func(s *testcase.Spec) {
+				s.Let(`RolloutSeedSalt`, func(t *testcase.T) interface{} { return int64(0) })
+
+				s.And(`feature is not stored before`, func(s *testcase.Spec) {
+					s.Before(func(t *testcase.T) {
+						require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
+					})
+
+					s.Then(`random seed generator used for setting seed value`, func(t *testcase.T) {
+						require.Nil(t, subject(t))
+
+						require.Equal(t, GetGeneratedRandomSeed(t), FindStoredFeatureFlag(t).Rollout.RandSeedSalt)
+					})
+				})
+
+				s.And(`feature is already stored before`, func(s *testcase.Spec) {
+					s.Before(func(t *testcase.T) {
+						require.Nil(t, subject(t))
+					})
+
+					s.Then(`random seed used from the persisted object`, func(t *testcase.T) {
+						f := *GetFeatureFlag(t) // pass by value copy
+						f.ID = ``
+						f.Rollout.RandSeedSalt = 0
+						require.Nil(t, subjectWithArgs(t, &f))
+						require.Equal(t, GetGeneratedRandomSeed(t), FindStoredFeatureFlag(t).Rollout.RandSeedSalt)
+					})
+				})
+			})
+
+			s.Context(`something else`, func(s *testcase.Spec) {
+				s.Let(`RolloutSeedSalt`, func(t *testcase.T) interface{} { return int64(12) })
+
+				s.Then(`it will persist the value`, func(t *testcase.T) {
+					require.Nil(t, subject(t))
+
+					require.Equal(t, int64(12), FindStoredFeatureFlag(t).Rollout.RandSeedSalt)
+				})
+			})
+		})
+
+		s.When(`feature flag`, func(s *testcase.Spec) {
+			s.Context(`is nil`, func(s *testcase.Spec) {
+				s.Let(`FeatureFlag`, func(t *testcase.T) interface{} { return nil })
+
+				s.Then(`it will return error about it`, func(t *testcase.T) {
+					require.Error(t, subject(t))
+				})
+			})
+
+			s.Context(`was not stored until now`, func(s *testcase.Spec) {
+				s.Before(func(t *testcase.T) {
+					require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
+				})
+
+				s.Then(`it will be persisted`, func(t *testcase.T) {
+					require.Nil(t, subject(t))
+					require.NotNil(t, FindStoredFeatureFlag(t))
+					require.Equal(t, GetFeatureFlag(t), FindStoredFeatureFlag(t))
+				})
+			})
+
+			s.Context(`had been persisted previously`, func(s *testcase.Spec) {
+				s.Before(func(t *testcase.T) {
+					require.Nil(t, subject(t))
+				})
+
+				s.Then(`latest values are persisted`, func(t *testcase.T) {
+					flag := *GetFeatureFlag(t) // pass by value copy
+					flag.Rollout.Strategy.Percentage = 42
+					u, err := url.Parse(`https://example.com`)
+					require.Nil(t, err)
+					flag.Rollout.Strategy.DecisionLogicAPI = u
+					require.Nil(t, subjectWithArgs(t, &flag))
+
+					storedFlag := FindStoredFeatureFlag(t)
+					require.Equal(t, u, storedFlag.Rollout.Strategy.DecisionLogicAPI)
+					require.Equal(t, 42, storedFlag.Rollout.Strategy.Percentage)
+				})
+			})
+		})
+
+	})
 }
 
 func SpecRolloutManagerListFeatureFlags(s *testcase.Spec) {
@@ -58,10 +239,9 @@ func SpecRolloutManagerListFeatureFlags(s *testcase.Spec) {
 		s.When(`features are in the system`, func(s *testcase.Spec) {
 
 			s.Before(func(t *testcase.T) {
-
-				require.Nil(t, manager(t).UpdateFeatureFlagRolloutPercentage(`a`, 42))
-				require.Nil(t, manager(t).UpdateFeatureFlagRolloutPercentage(`b`, 42))
-				require.Nil(t, manager(t).UpdateFeatureFlagRolloutPercentage(`c`, 42))
+				require.Nil(t, manager(t).SetFeatureFlag(&rollouts.FeatureFlag{Name:`a`}))
+				require.Nil(t, manager(t).SetFeatureFlag(&rollouts.FeatureFlag{Name:`b`}))
+				require.Nil(t, manager(t).SetFeatureFlag(&rollouts.FeatureFlag{Name:`c`}))
 			})
 
 			s.Then(`feature flags are returned`, func(t *testcase.T) {
@@ -86,147 +266,8 @@ func SpecRolloutManagerListFeatureFlags(s *testcase.Spec) {
 
 				require.Equal(t, []*rollouts.FeatureFlag{}, flags)
 			})
-
 		})
 
-	})
-}
-
-func SpecRolloutManagerSetFeatureFlagRolloutStrategyToUseCustomDecisionAPI(s *testcase.Spec) {
-	s.Describe(`SetFeatureFlagRolloutStrategyToUseDecisionLogicAPI`, func(s *testcase.Spec) {
-		subject := func(t *testcase.T) error {
-			return manager(t).SetFeatureFlagRolloutStrategyToUseDecisionLogicAPI(
-				GetFeatureFlagName(t),
-				GetRolloutApiURL(t),
-			)
-		}
-
-		s.When(`url is invalid`, func(s *testcase.Spec) {
-			s.Let(`RolloutURL`, func(t *testcase.T) interface{} { return nil })
-
-			s.Then(`it will be not accepted`, func(t *testcase.T) {
-				require.Error(t, subject(t))
-			})
-		})
-
-		s.When(`url is a valid object`, func(s *testcase.Spec) {
-			s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return `https://golang.org` })
-
-			s.And(`feature flag was undefined until now`, func(s *testcase.Spec) {
-				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
-				})
-
-				s.Then(`feature flag entry created with the custom decision api url`, func(t *testcase.T) {
-					require.Nil(t, subject(t))
-					flag, err := GetStorage(t).FindFlagByName(GetFeatureFlagName(t))
-					require.Nil(t, err)
-					require.NotNil(t, flag)
-
-					require.Equal(t, GetFeatureFlagName(t), flag.Name)
-					require.Equal(t, GetRolloutApiURL(t), flag.Rollout.Strategy.DecisionLogicAPI)
-					require.Equal(t, GetRolloutApiURL(t).String(), flag.Rollout.Strategy.DecisionLogicAPI.String())
-					require.Equal(t, GetGeneratedRandomSeed(t), flag.Rollout.RandSeedSalt)
-				})
-			})
-
-			s.And(`feature flag is already exist with a different decision url`, func(s *testcase.Spec) {
-				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
-				})
-
-				s.Then(`the same feature flag kept but updated to the new percentage`, func(t *testcase.T) {
-					require.Nil(t, subject(t))
-					flag, err := GetStorage(t).FindFlagByName(GetFeatureFlagName(t))
-					require.Nil(t, err)
-					require.NotNil(t, flag)
-
-					require.Equal(t, GetFeatureFlag(t).ID, flag.ID)
-					require.Equal(t, GetFeatureFlagName(t), flag.Name)
-					require.NotNil(t, flag.Rollout.Strategy.DecisionLogicAPI)
-					require.Equal(t, GetRolloutApiURL(t).String(), flag.Rollout.Strategy.DecisionLogicAPI.String())
-					require.Equal(t, GetRolloutSeedSalt(t), flag.Rollout.RandSeedSalt)
-				})
-			})
-		})
-	})
-}
-
-func SpecRolloutManagerUpdateFeatureFlagRolloutPercentage(s *testcase.Spec) {
-	s.Describe(`UpdateFeatureFlagRolloutPercentage`, func(s *testcase.Spec) {
-		GetNewRolloutPercentage := func(t *testcase.T) int {
-			return t.I(`NewRolloutPercentage`).(int)
-		}
-
-		subject := func(t *testcase.T) error {
-			return manager(t).UpdateFeatureFlagRolloutPercentage(GetFeatureFlagName(t), GetNewRolloutPercentage(t))
-		}
-
-		s.When(`percentage less than 0`, func(s *testcase.Spec) {
-			s.Let(`NewRolloutPercentage`, func(t *testcase.T) interface{} { return -1 + (rand.Intn(1024) * -1) })
-
-			s.Then(`it will report error`, func(t *testcase.T) {
-				require.Equal(t, rollouts.ErrInvalidPercentage, subject(t))
-			})
-		})
-
-		s.When(`percentage greater than 100`, func(s *testcase.Spec) {
-			s.Let(`NewRolloutPercentage`, func(t *testcase.T) interface{} { return 101 + rand.Intn(1024) })
-
-			s.Then(`it will report error`, func(t *testcase.T) {
-				require.Equal(t, rollouts.ErrInvalidPercentage, subject(t))
-			})
-		})
-
-		s.When(`percentage is a number between 0 and 100`, func(s *testcase.Spec) {
-			s.Let(`NewRolloutPercentage`, func(t *testcase.T) interface{} { return rand.Intn(101) })
-
-			s.And(`feature flag was undefined until now`, func(s *testcase.Spec) {
-				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
-				})
-
-				s.Then(`feature flag entry created with the percentage`, func(t *testcase.T) {
-					require.Nil(t, subject(t))
-					flag, err := GetStorage(t).FindFlagByName(GetFeatureFlagName(t))
-					require.Nil(t, err)
-					require.NotNil(t, flag)
-
-					require.Equal(t, GetFeatureFlagName(t), flag.Name)
-					require.Nil(t, flag.Rollout.Strategy.DecisionLogicAPI)
-					require.Equal(t, GetNewRolloutPercentage(t), flag.Rollout.Strategy.Percentage)
-					require.Equal(t, GetGeneratedRandomSeed(t), flag.Rollout.RandSeedSalt)
-				})
-			})
-
-			s.And(`feature flag is already exist with a different percentage`, func(s *testcase.Spec) {
-				s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} {
-					for {
-						roll := rand.Intn(101)
-						if roll != GetNewRolloutPercentage(t) {
-							return roll
-						}
-					}
-				})
-
-				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
-				})
-
-				s.Then(`the same feature flag kept but updated to the new percentage`, func(t *testcase.T) {
-					require.Nil(t, subject(t))
-					flag, err := GetStorage(t).FindFlagByName(GetFeatureFlagName(t))
-					require.Nil(t, err)
-					require.NotNil(t, flag)
-
-					require.Equal(t, GetFeatureFlag(t).ID, flag.ID)
-					require.Equal(t, GetFeatureFlagName(t), flag.Name)
-					require.Nil(t, flag.Rollout.Strategy.DecisionLogicAPI)
-					require.Equal(t, GetNewRolloutPercentage(t), flag.Rollout.Strategy.Percentage)
-					require.Equal(t, GetRolloutSeedSalt(t), flag.Rollout.RandSeedSalt)
-				})
-			})
-		})
 	})
 }
 

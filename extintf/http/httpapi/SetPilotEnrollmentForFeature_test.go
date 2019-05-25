@@ -88,7 +88,7 @@ func TestServeMux_SetPilotEnrollmentForFeature(t *testing.T) {
 			var resp struct{  }
 			IsJsonRespone(t, r, &resp)
 
-			p, err := GetStorage(t).FindFlagPilotByExternalPilotID(FindFeatureFlag(t).ID, GetExternalPilotID(t))
+			p, err := GetStorage(t).FindFlagPilotByExternalPilotID(FindStoredFeatureFlag(t).ID, GetExternalPilotID(t))
 			require.Nil(t, err)
 			require.NotNil(t, p)
 			require.Equal(t, GetPilotEnrollment(t), p.Enrolled)

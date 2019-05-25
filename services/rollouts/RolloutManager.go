@@ -1,7 +1,6 @@
 package rollouts
 
 import (
-	"github.com/adamluzsi/frameless"
 	"net/url"
 	"time"
 
@@ -24,6 +23,59 @@ type RolloutManager struct {
 	RandSeedGenerator func() int64
 }
 
+func (manager *RolloutManager) SetFeatureFlag(flag *FeatureFlag) error {
+	if flag == nil {
+		return ErrMissingFlag
+	}
+
+	if flag.Name == "" {
+		return ErrInvalidFeatureName
+	}
+
+	if flag.Rollout.Strategy.DecisionLogicAPI != nil {
+		_, err := url.ParseRequestURI(flag.Rollout.Strategy.DecisionLogicAPI.String())
+		if err != nil {
+			return ErrInvalidURL
+		}
+	}
+
+	if flag.Rollout.Strategy.Percentage < 0 || 100 < flag.Rollout.Strategy.Percentage {
+		return ErrInvalidPercentage
+	}
+
+	ff, err := manager.Storage.FindFlagByName(flag.Name)
+
+	if err != nil {
+		return err
+	}
+
+	var persister func(interface{}) error
+
+	if ff == nil {
+		persister = manager.Storage.Save
+	} else {
+		flag.ID = ff.ID
+		persister = manager.Storage.Update
+	}
+
+	if flag.Rollout.RandSeedSalt == 0 {
+		if ff != nil {
+			flag.Rollout.RandSeedSalt = ff.Rollout.RandSeedSalt
+		} else {
+			flag.Rollout.RandSeedSalt = manager.RandSeedGenerator()
+		}
+	}
+
+	return persister(flag)
+}
+
+func (manager *RolloutManager) ListFeatureFlags() ([]*FeatureFlag, error) {
+	iter := manager.Storage.FindAll(FeatureFlag{})
+	ffs := []*FeatureFlag{} // empty slice required for null object pattern enforcement
+	err := iterators.CollectAll(iter, &ffs)
+	return ffs, err
+}
+
 func (manager *RolloutManager) SetPilotEnrollmentForFeature(featureFlagName string, pilotExtID string, isEnrolled bool) error {
 
 	ff, err := manager.ensureFeatureFlag(featureFlagName)
@@ -44,63 +96,6 @@ func (manager *RolloutManager) SetPilotEnrollmentForFeature(featureFlagName stri
 	}
 
 	return manager.Save(&Pilot{FeatureFlagID: ff.ID, ExternalID: pilotExtID, Enrolled: isEnrolled})
-
-}
-
-const ErrInvalidPercentage frameless.Error = `percentage value not acceptable`
-
-func (manager *RolloutManager) UpdateFeatureFlagRolloutPercentage(featureFlagName string, rolloutPercentage int) error {
-
-	if rolloutPercentage < 0 || 100 < rolloutPercentage {
-		return ErrInvalidPercentage
-	}
-
-	ff, err := manager.Storage.FindFlagByName(featureFlagName)
-
-	if err != nil {
-		return err
-	}
-
-	if ff == nil {
-		ff = manager.newDefaultFeatureFlag(featureFlagName)
-		ff.Rollout.Strategy.Percentage = rolloutPercentage
-		return manager.Storage.Save(ff)
-	}
-
-	ff.Rollout.Strategy.Percentage = rolloutPercentage
-	return manager.Storage.Update(ff)
-
-}
-
-func (manager *RolloutManager) ListFeatureFlags() ([]*FeatureFlag, error) {
-	iter := manager.Storage.FindAll(FeatureFlag{})
-	ffs := []*FeatureFlag{} // empty slice required for null object pattern enforcement
-	err := iterators.CollectAll(iter, &ffs)
-	return ffs, err
-}
-
-const ErrInvalidURL frameless.Error = `url value not acceptable`
-
-func (manager *RolloutManager) SetFeatureFlagRolloutStrategyToUseDecisionLogicAPI(featureFlagName string, decisionAPIURL *url.URL) error {
-
-	if decisionAPIURL == nil {
-		return ErrInvalidURL
-	}
-
-	ff, err := manager.Storage.FindFlagByName(featureFlagName)
-
-	if err != nil {
-		return err
-	}
-
-	if ff == nil {
-		ff = manager.newDefaultFeatureFlag(featureFlagName)
-		ff.Rollout.Strategy.DecisionLogicAPI = decisionAPIURL
-		return manager.Storage.Save(ff)
-	}
-
-	ff.Rollout.Strategy.DecisionLogicAPI = decisionAPIURL
-	return manager.Storage.Update(ff)
 
 }
 

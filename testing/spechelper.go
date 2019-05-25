@@ -43,6 +43,7 @@ func SetupSpecCommonVariables(s *testcase.Spec) {
 	s.Let(`RolloutSeedSalt`, func(t *testcase.T) interface{} { return time.Now().Unix() })
 	s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return int(0) })
 	s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return nil })
+
 	s.Let(`FeatureFlag`, func(t *testcase.T) interface{} {
 		ff := &rollouts.FeatureFlag{Name: t.I(`FeatureName`).(string)}
 		ff.Rollout.RandSeedSalt = t.I(`RolloutSeedSalt`).(int64)
@@ -73,7 +74,13 @@ func GetStorage(t *testcase.T) *TestStorage {
 }
 
 func GetFeatureFlag(t *testcase.T) *rollouts.FeatureFlag {
-	return t.I(`FeatureFlag`).(*rollouts.FeatureFlag)
+	ff := t.I(`FeatureFlag`)
+
+	if ff == nil {
+		return nil
+	}
+
+	return ff.(*rollouts.FeatureFlag)
 }
 
 func GetPilot(t *testcase.T) *rollouts.Pilot {
@@ -117,9 +124,21 @@ func GetRolloutApiURL(t *testcase.T) *url.URL {
 	return u
 }
 
-func FindFeatureFlag(t *testcase.T) *rollouts.FeatureFlag {
+func FindStoredFeatureFlag(t *testcase.T) *rollouts.FeatureFlag {
 	f, err := GetStorage(t).FindFlagByName(GetFeatureFlagName(t))
 	require.Nil(t, err)
 	require.NotNil(t, f)
 	return f
+}
+
+func EnsureFlag(t *testcase.T, name string, prc int) {
+	rm := rollouts.NewRolloutManager(GetStorage(t))
+	require.Nil(t, rm.SetFeatureFlag(&rollouts.FeatureFlag{
+		Name: name,
+		Rollout: rollouts.Rollout{
+			Strategy: rollouts.RolloutStrategy{
+				Percentage: prc,
+			},
+		},
+	}))
 }

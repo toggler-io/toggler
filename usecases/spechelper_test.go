@@ -5,7 +5,6 @@ import (
 	. "github.com/adamluzsi/FeatureFlags/testing"
 	"github.com/adamluzsi/FeatureFlags/usecases"
 	"github.com/adamluzsi/testcase"
-	"github.com/stretchr/testify/require"
 )
 
 func SetupSpec(s *testcase.Spec) {
@@ -17,11 +16,6 @@ func SetupSpec(s *testcase.Spec) {
 func GetRolloutManager(t *testcase.T) *rollouts.RolloutManager {
 	rm := rollouts.NewRolloutManager(GetStorage(t))
 	return rm
-}
-
-func EnsureFlag(t *testcase.T, name string) {
-	rm := rollouts.NewRolloutManager(GetStorage(t))
-	require.Nil(t, rm.UpdateFeatureFlagRolloutPercentage(name, 0))
 }
 
 func GetUseCases(t *testcase.T) *usecases.UseCases {
