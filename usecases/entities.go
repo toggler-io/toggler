@@ -13,17 +13,17 @@ import (
 func NewUseCases(s Storage) *UseCases {
 	return &UseCases{
 		FeatureFlagChecker: rollouts.NewFeatureFlagChecker(s),
-		RolloutManager:     rollouts.NewRolloutManager(s),
-		Doorkeeper:         security.NewDoorkeeper(s),
-		Issuer:             security.NewIssuer(s),
+		protectedUsecases: &ProtectedUsecases{
+			RolloutManager: rollouts.NewRolloutManager(s),
+			Doorkeeper:     security.NewDoorkeeper(s),
+			Issuer:         security.NewIssuer(s),
+		},
 	}
 }
 
 type UseCases struct {
 	*rollouts.FeatureFlagChecker
-	*rollouts.RolloutManager
-	*security.Doorkeeper
-	*security.Issuer
+	protectedUsecases *ProtectedUsecases
 }
 
 type Storage interface {

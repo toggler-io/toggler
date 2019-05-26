@@ -1,24 +1,23 @@
 package httpapi
 
 import (
-	"github.com/adamluzsi/FeatureFlags/usecases"
 	"net/http"
 )
 
 func (sm *ServeMux) ListFeatureFlags(w http.ResponseWriter, r *http.Request) {
 	token := r.URL.Query().Get(`token`)
 
-	flags, err := sm.UseCases.ListFeatureFlags(token)
+	pu, err := sm.UseCases.ProtectedUsecases(token)
 
-	if err == usecases.ErrInvalidToken {
-		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+	if errorHandler(w, err, http.StatusInternalServerError) {
 		return
 	}
 
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	ffs, err := pu.ListFeatureFlags()
+
+	if errorHandler(w, err, http.StatusInternalServerError) {
 		return
 	}
 
-	serveJSON(w, 200, &flags)
+	serveJSON(w, 200, &ffs)
 }

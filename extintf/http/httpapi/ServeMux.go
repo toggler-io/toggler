@@ -42,3 +42,17 @@ func serveJSON(w http.ResponseWriter, status int, data interface{}) {
 		log.Println(err)
 	}
 }
+
+func errorHandler(w http.ResponseWriter, err error, errCode int) (errorWasHandled bool) {
+	if err == usecases.ErrInvalidToken {
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return true
+	}
+
+	if err != nil {
+		http.Error(w, http.StatusText(errCode), errCode)
+		return true
+	}
+
+	return false
+}

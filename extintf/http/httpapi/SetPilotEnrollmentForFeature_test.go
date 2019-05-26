@@ -29,6 +29,10 @@ func TestServeMux_SetPilotEnrollmentForFeature(t *testing.T) {
 		return strconv.FormatBool(GetPilotEnrollment(t))
 	})
 
+	s.Let(`TokenString`, func(t *testcase.T) interface{} {
+		return CreateToken(t, `manager`).Token
+	})
+
 	s.Let(`request`, func(t *testcase.T) interface{} {
 		u, err := url.Parse(`/set-pilot-enrollment-for-feature.json`)
 		require.Nil(t, err)
@@ -46,10 +50,6 @@ func TestServeMux_SetPilotEnrollmentForFeature(t *testing.T) {
 	s.When(`invalid enrollment given`, func(s *testcase.Spec) {
 		s.Let(`enrollment query value`, func(t *testcase.T) interface{} {
 			return `invalid`
-		})
-
-		s.Let(`TokenString`, func(t *testcase.T) interface{} {
-			return `irrelevant`
 		})
 
 		s.Then(`it will return bad request`, func(t *testcase.T) {
