@@ -10,7 +10,7 @@ func (sm *ServeMux) SetPilotEnrollmentForFeature(w http.ResponseWriter, r *http.
 	token := r.URL.Query().Get(`token`)
 	pu, err := sm.UseCases.ProtectedUsecases(token)
 
-	if errorHandler(w, err, http.StatusInternalServerError) {
+	if handleError(w, err, http.StatusInternalServerError) {
 		return
 	}
 
@@ -26,7 +26,7 @@ func (sm *ServeMux) SetPilotEnrollmentForFeature(w http.ResponseWriter, r *http.
 
 	err = pu.SetPilotEnrollmentForFeature(featureFlagName, extPilotID, enrollment)
 
-	if errorHandler(w, err, http.StatusInternalServerError) {
+	if handleError(w, err, http.StatusInternalServerError) {
 		return
 	}
 

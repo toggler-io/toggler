@@ -35,7 +35,6 @@ func TestUseCases_ListFeatureFlags(t *testing.T) {
 			require.Equal(t, 1, len(ffs))
 			require.Equal(t, `42`, ffs[0].Name)
 		})
-
 	})
 
 	s.When(`there is no flag in the system`, func(s *testcase.Spec) {

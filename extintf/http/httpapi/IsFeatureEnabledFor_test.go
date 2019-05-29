@@ -24,7 +24,7 @@ func TestServeMux_IsFeatureEnabledFor(t *testing.T) {
 	SetupSpecCommonVariables(s)
 
 	s.Let(`request`, func(t *testcase.T) interface{} {
-		u, err := url.Parse(`/is-feature-enabled-for.json`)
+		u, err := url.Parse(`/feature/is-enabled.json`)
 		require.Nil(t, err)
 
 		values := u.Query()

@@ -24,7 +24,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 	SetupSpecCommonVariables(s)
 
 	s.Let(`request`, func(t *testcase.T) interface{} {
-		u, err := url.Parse(`/is-feature-globally-enabled.json`)
+		u, err := url.Parse(`/feature/is-globally-enabled.json`)
 		require.Nil(t, err)
 
 		values := u.Query()

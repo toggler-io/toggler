@@ -44,7 +44,7 @@ func TestRolloutManager(t *testing.T) {
 }
 
 func SpecRolloutManagerSetFeatureFlag(s *testcase.Spec) {
-	s.Describe(`SetFeatureFlag`, func(s *testcase.Spec) {
+	s.Describe(`SetFeatureFlagJSON`, func(s *testcase.Spec) {
 		subjectWithArgs := func(t *testcase.T, f *rollouts.FeatureFlag) error {
 			return manager(t).SetFeatureFlag(f)
 		}

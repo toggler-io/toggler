@@ -5,6 +5,7 @@ import (
 	"github.com/adamluzsi/FeatureFlags/services/security"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
+	"net/http"
 	"net/http/httptest"
 
 	. "github.com/adamluzsi/FeatureFlags/testing"
@@ -25,3 +26,10 @@ func IsJsonRespone(t *testcase.T, r *httptest.ResponseRecorder, ptr interface{})
 	require.Equal(t, "application/json", r.Header().Get(`Content-Type`))
 	require.Nil(t, json.NewDecoder(r.Body).Decode(ptr))
 }
+
+func newRequest(t *testcase.T) *http.Request {
+
+	return nil
+}
+
+// r.Header.Add("Authorization", "auth_token=\"XXXXXXX\"")

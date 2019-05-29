@@ -14,7 +14,7 @@ import (
 	. "github.com/adamluzsi/FeatureFlags/testing"
 )
 
-func TestServeMux_Li(t *testing.T) {
+func TestServeMux_ListFeatureFlags(t *testing.T) {
 	s := testcase.NewSpec(t)
 	s.Parallel()
 
@@ -27,7 +27,7 @@ func TestServeMux_Li(t *testing.T) {
 	SetupSpecCommonVariables(s)
 
 	s.Let(`request`, func(t *testcase.T) interface{} {
-		u, err := url.Parse(`/list-feature-flags.json`)
+		u, err := url.Parse(`/feature/flag/list.json`)
 		require.Nil(t, err)
 
 		values := u.Query()

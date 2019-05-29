@@ -9,13 +9,13 @@ func (sm *ServeMux) ListFeatureFlags(w http.ResponseWriter, r *http.Request) {
 
 	pu, err := sm.UseCases.ProtectedUsecases(token)
 
-	if errorHandler(w, err, http.StatusInternalServerError) {
+	if handleError(w, err, http.StatusInternalServerError) {
 		return
 	}
 
 	ffs, err := pu.ListFeatureFlags()
 
-	if errorHandler(w, err, http.StatusInternalServerError) {
+	if handleError(w, err, http.StatusInternalServerError) {
 		return
 	}
 
