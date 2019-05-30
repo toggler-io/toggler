@@ -92,6 +92,4 @@ func (sm *ServeMux) SetFeatureFlagFORM(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	serveJSON(w, 200, map[string]interface{}{})
-
 }

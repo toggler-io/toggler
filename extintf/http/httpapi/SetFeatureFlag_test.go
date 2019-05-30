@@ -34,6 +34,24 @@ func TestServeMux_SetFeatureFlag(t *testing.T) {
 		return CreateToken(t, `manager`).Token
 	})
 
+	s.Let(`request`, func(t *testcase.T) interface{} {
+		u, err := url.Parse(`/feature/flag` + t.I(`http path`).(string))
+		require.Nil(t, err)
+
+		values := u.Query()
+		values.Set(`token`, t.I(`TokenString`).(string))
+		values.Set(`feature`, GetFeatureFlagName(t))
+		values.Set(`id`, GetExternalPilotID(t))
+		u.RawQuery = values.Encode()
+
+		payload := bytes.NewBuffer(t.I(`payload bytes`).([]byte))
+		req := httptest.NewRequest(http.MethodPost, u.String(), payload)
+
+		req.Header.Set(`Content-Type`, t.I(`Content-Type`).(string))
+
+		return req
+	})
+
 	s.When(`request is sent to the JSON endpoint`, func(s *testcase.Spec) {
 
 		s.Let(`Content-Type`, func(t *testcase.T) interface{} {
@@ -48,6 +66,12 @@ func TestServeMux_SetFeatureFlag(t *testing.T) {
 
 		s.Let(`http path`, func(t *testcase.T) interface{} {
 			return `/set.json`
+		})
+
+		s.Then(`it will reply back in json format`, func(t *testcase.T) {
+			var resp struct{}
+			r := subject(t)
+			IsJsonRespone(t, r, &resp)
 		})
 
 		SpecServeMux_SetFeatureFlag(s, subject)
@@ -128,24 +152,6 @@ func TestServeMux_SetFeatureFlag(t *testing.T) {
 }
 
 func SpecServeMux_SetFeatureFlag(s *testcase.Spec, subject func(t *testcase.T) *httptest.ResponseRecorder) {
-	s.Let(`request`, func(t *testcase.T) interface{} {
-		u, err := url.Parse(`/feature/flag` + t.I(`http path`).(string))
-		require.Nil(t, err)
-
-		values := u.Query()
-		values.Set(`token`, t.I(`TokenString`).(string))
-		values.Set(`feature`, GetFeatureFlagName(t))
-		values.Set(`id`, GetExternalPilotID(t))
-		u.RawQuery = values.Encode()
-
-		payload := bytes.NewBuffer(t.I(`payload bytes`).([]byte))
-		req := httptest.NewRequest(http.MethodPost, u.String(), payload)
-
-		req.Header.Set(`Content-Type`, t.I(`Content-Type`).(string))
-
-		return req
-	})
-
 	s.And(`invalid token given`, func(s *testcase.Spec) {
 		s.Let(`TokenString`, func(t *testcase.T) interface{} {
 			return `invalid`
@@ -171,9 +177,6 @@ func SpecServeMux_SetFeatureFlag(s *testcase.Spec, subject func(t *testcase.T) *
 		s.Then(`flag stored in the system`, func(t *testcase.T) {
 			r := subject(t)
 			require.Equal(t, 200, r.Code, r.Body.String())
-
-			var resp struct{}
-			IsJsonRespone(t, r, &resp)
 
 			stored := FindStoredFeatureFlag(t)
 			stored.ID = ``

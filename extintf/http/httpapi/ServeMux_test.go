@@ -26,17 +26,19 @@ func TestServeMuxRoutingPOC(t *testing.T) {
 	submux.HandleFunc(`/handler`, func(w http.ResponseWriter, r *http.Request) {
 		t.Log(r.URL.String())
 		t.Log(r.URL.Path)
-		_, err := fmt.Fprintln(w, `Hello, world!`)
+		_, err := fmt.Fprintln(w, `Hello, submux!`)
 		require.Nil(t, err)
 	})
 
 	subsubmux.HandleFunc(`/handler`, func(w http.ResponseWriter, r *http.Request) {
-		_, err := fmt.Fprintln(w, `Hello you`)
+		t.Log(r.URL.String())
+		t.Log(r.URL.Path)
+		_, err := fmt.Fprintln(w, `Hello, subsubmux!`)
 		require.Nil(t, err)
 	})
 
-	rootmux.Handle(`/sub/`, http.StripPrefix(`/sub`, submux)) // this is not working
-	rootmux.Handle(`/sub/sub/`, http.StripPrefix(`/sub/sub`, subsubmux)) // this is not working
+	rootmux.Handle(`/sub/`, http.StripPrefix(`/sub`, submux))
+	submux.Handle(`/sub/`, http.StripPrefix(`/sub`, subsubmux))
 
 	ping := func(urlPath string) {
 		rr := httptest.NewRecorder()
