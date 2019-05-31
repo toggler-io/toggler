@@ -3,7 +3,7 @@ package httpapi_test
 import (
 	"bytes"
 	"fmt"
-	"github.com/adamluzsi/FeatureFlags/extintf/http/httpapi"
+	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/httpapi"
 	. "github.com/adamluzsi/FeatureFlags/testing"
 	"github.com/adamluzsi/FeatureFlags/usecases"
 	"github.com/adamluzsi/testcase"

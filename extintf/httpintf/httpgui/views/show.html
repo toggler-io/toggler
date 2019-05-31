@@ -1,0 +1,85 @@
+<!doctype html>
+<html class="no-js" lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FeatureFlagService</title>
+    <link rel="stylesheet" href="/assets/css/foundation.css">
+    <link rel="stylesheet" href="/assets/css/app.css">
+</head>
+<body>
+<div class="grid-container">
+    <div class="grid-x grid-padding-x">
+        <h1>{{ .Name }}</h1>
+
+        <form action="/update">
+
+            <div class="row">
+                <input type="text"
+                       name="flag.feature"
+                       value="{{ .Name }}"
+                       placeholder="Enter your Feature Name...">
+
+            </div>
+
+            <div class="row">
+                <input type="range"
+                       name="flag.rollout.strategy.percentage"
+                       value="{{ .Rollout.Strategy.Percentage }}"
+                       min="0" max="100">
+            </div>
+
+            <div class="row">
+                <input type="url"
+                       name="flag.rollout.strategy.decisionLogicApi"
+                        {{ if .Rollout.Strategy.DecisionLogicAPI }}
+                            value="{{ .Rollout.Strategy.DecisionLogicAPI }}"
+                        {{ end }}
+                       placeholder="Enter your custom decision logic API URL here">
+            </div>
+
+            <div class="row">
+                <input type="number"
+                       name="flag.rollout.randSeedSalt"
+                        {{ if .Rollout.RandSeedSalt }}
+                            value="{{ .Rollout.RandSeedSalt }}"
+                        {{ end }}
+                       placeholder="Enter your pseudo random rollout seed">
+                <p>this will configure the pseudo random percentage based selection.</p>
+            </div>
+
+
+            {{/* <input type="number"> */}}
+            {{/* <input type="button"> */}}
+            {{/* <input type="checkbox"> */}}
+            {{/* <input type="color"> */}}
+            {{/* <input type="date"> */}}
+            {{/* <input type="datetime-local"> */}}
+            {{/* <input type="email"> */}}
+            {{/* <input type="file"> */}}
+            {{/* <input type="hidden"> */}}
+            {{/* <input type="image"> */}}
+            {{/* <input type="month"> */}}
+            {{/* <input type="password"> */}}
+            {{/* <input type="radio"> */}}
+            {{/* <input type="reset"> */}}
+            {{/* <input type="search"> */}}
+            {{/* <input type="submit"> */}}
+            {{/* <input type="tel"> */}}
+            {{/* <input type="text"> */}}
+            {{/* <input type="time"> */}}
+            {{/* <input type="url"> */}}
+            {{/* <input type="week"> */}}
+
+            <input type="submit" >
+        </form>
+
+    </div>
+
+    <script src="/assets/js/vendor/jquery.js"></script>
+    <script src="/assets/js/vendor/what-input.js"></script>
+    <script src="/assets/js/vendor/foundation.js"></script>
+    <script src="/assets/js/app.js"></script>
+</body>
+</html>
