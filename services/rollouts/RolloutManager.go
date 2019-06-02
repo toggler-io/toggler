@@ -43,27 +43,29 @@ func (manager *RolloutManager) SetFeatureFlag(flag *FeatureFlag) error {
 		return ErrInvalidPercentage
 	}
 
-	ff, err := manager.Storage.FindFlagByName(flag.Name)
+	if flag.ID == `` {
+		ff, err := manager.Storage.FindFlagByName(flag.Name)
+		if err != nil {
+			return err
+		}
 
-	if err != nil {
-		return err
+		if ff != nil {
+			flag.ID = ff.ID
+
+			flag.Rollout.RandSeedSalt = ff.Rollout.RandSeedSalt
+		}
+	}
+
+	if flag.Rollout.RandSeedSalt == 0 {
+		flag.Rollout.RandSeedSalt = manager.RandSeedGenerator()
 	}
 
 	var persister func(interface{}) error
 
-	if ff == nil {
+	if flag.ID == ``{
 		persister = manager.Storage.Save
 	} else {
-		flag.ID = ff.ID
 		persister = manager.Storage.Update
-	}
-
-	if flag.Rollout.RandSeedSalt == 0 {
-		if ff != nil {
-			flag.Rollout.RandSeedSalt = ff.Rollout.RandSeedSalt
-		} else {
-			flag.Rollout.RandSeedSalt = manager.RandSeedGenerator()
-		}
 	}
 
 	return persister(flag)

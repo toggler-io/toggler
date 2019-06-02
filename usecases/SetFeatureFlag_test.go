@@ -21,7 +21,7 @@ func TestUseCases_SetFeatureFlagRolloutStrategyToUseDecisionLogicAPI(t *testing.
 		s.Then(`it will be set/persisted`, func(t *testcase.T) {
 			require.Nil(t, subject(t))
 
-			require.Equal(t, GetFeatureFlag(t), FindStoredFeatureFlag(t))
+			require.Equal(t, GetFeatureFlag(t), FindStoredFeatureFlagByName(t))
 		})
 	})
 

@@ -178,7 +178,7 @@ func SpecServeMux_SetFeatureFlag(s *testcase.Spec, subject func(t *testcase.T) *
 			r := subject(t)
 			require.Equal(t, 200, r.Code, r.Body.String())
 
-			stored := FindStoredFeatureFlag(t)
+			stored := FindStoredFeatureFlagByName(t)
 			stored.ID = ``
 
 			require.Equal(t, GetFeatureFlag(t), stored)

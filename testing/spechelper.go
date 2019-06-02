@@ -124,7 +124,7 @@ func GetRolloutApiURL(t *testcase.T) *url.URL {
 	return u
 }
 
-func FindStoredFeatureFlag(t *testcase.T) *rollouts.FeatureFlag {
+func FindStoredFeatureFlagByName(t *testcase.T) *rollouts.FeatureFlag {
 	f, err := GetStorage(t).FindFlagByName(GetFeatureFlagName(t))
 	require.Nil(t, err)
 	require.NotNil(t, f)
