@@ -1,6 +1,8 @@
 package rollouts
 
-import "net/url"
+import (
+	"net/url"
+)
 
 // FeatureFlag is the basic entity with properties that feature flag holds
 type FeatureFlag struct {
@@ -29,4 +31,31 @@ type RolloutStrategy struct {
 	// DecisionLogicAPI allow you to do rollout based on custom domain needs such as target groups,
 	// which decision logic is available trough an API endpoint call
 	DecisionLogicAPI *url.URL `json:"decision_logic_api"`
+}
+
+func (flag FeatureFlag) Verify() error {
+	if flag.Name == "" {
+		return ErrNameIsEmpty
+	}
+
+	if flag.Rollout.Strategy.Percentage < 0 || 100 < flag.Rollout.Strategy.Percentage {
+		return ErrInvalidPercentage
+	}
+
+	if flag.Rollout.Strategy.DecisionLogicAPI != nil {
+		_, err := url.ParseRequestURI(flag.Rollout.Strategy.DecisionLogicAPI.String())
+		if err != nil {
+			return ErrInvalidRequestURL
+		}
+
+		if flag.Rollout.Strategy.DecisionLogicAPI.Scheme == `` {
+			return ErrInvalidRequestURL
+		}
+
+		if flag.Rollout.Strategy.DecisionLogicAPI.Hostname() == `` {
+			return ErrInvalidRequestURL
+		}
+	}
+
+	return nil
 }
