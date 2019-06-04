@@ -38,10 +38,10 @@ func buildFlagAPI(handlers *ServeMux) http.Handler {
 	//	case http.MethodPost:
 	//		switch r.Header.Get(`Content-Type`) {
 	//		case `application/json`:
-	//			handlers.SetFeatureFlagJSON(w, r)
+	//			handlers.UpdateFeatureFlagJSON(w, r)
 	//
 	//		case `application/x-www-form-urlencoded`:
-	//			handlers.SetFeatureFlagFORM(w, r)
+	//			handlers.UpdateFeatureFlagFORM(w, r)
 	//
 	//		default:
 	//			http.NotFound(w, r)
@@ -52,8 +52,8 @@ func buildFlagAPI(handlers *ServeMux) http.Handler {
 	//	}
 	//})
 
-	mux.Handle(`/set.form`, http.HandlerFunc(handlers.SetFeatureFlagFORM))
-	mux.Handle(`/set.json`, http.HandlerFunc(handlers.SetFeatureFlagJSON))
+	mux.Handle(`/set.form`, http.HandlerFunc(handlers.UpdateFeatureFlagFORM))
+	mux.Handle(`/set.json`, http.HandlerFunc(handlers.UpdateFeatureFlagJSON))
 	mux.Handle(`/list.json`, http.HandlerFunc(handlers.ListFeatureFlags))
 	mux.Handle(`/set-enrollment-manually.json`, http.HandlerFunc(handlers.SetPilotEnrollmentForFeature))
 	return authMiddleware(handlers.UseCases, mux)

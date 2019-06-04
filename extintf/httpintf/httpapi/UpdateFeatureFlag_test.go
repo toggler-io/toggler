@@ -40,8 +40,6 @@ func TestServeMux_SetFeatureFlag(t *testing.T) {
 
 		values := u.Query()
 		values.Set(`token`, t.I(`TokenString`).(string))
-		values.Set(`feature`, GetFeatureFlagName(t))
-		values.Set(`id`, GetExternalPilotID(t))
 		u.RawQuery = values.Encode()
 
 		payload := bytes.NewBuffer(t.I(`payload bytes`).([]byte))
@@ -50,6 +48,11 @@ func TestServeMux_SetFeatureFlag(t *testing.T) {
 		req.Header.Set(`Content-Type`, t.I(`Content-Type`).(string))
 
 		return req
+	})
+
+	s.Before(func(t *testcase.T) {
+		t.Log(`given we have flag already stored`)
+		require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
 	})
 
 	s.When(`request is sent to the JSON endpoint`, func(s *testcase.Spec) {
@@ -86,7 +89,8 @@ func TestServeMux_SetFeatureFlag(t *testing.T) {
 
 		s.Let(`payload bytes`, func(t *testcase.T) interface{} {
 			data := url.Values{}
-			data.Set(`flag.feature`, GetFeatureFlagName(t))
+			data.Set(`flag.id`, GetFeatureFlag(t).ID)
+			data.Set(`flag.feature`, GetFeatureFlag(t).Name)
 			data.Set(`flag.rollout.randSeedSalt`, strconv.FormatInt(GetFeatureFlag(t).Rollout.RandSeedSalt, 10))
 			data.Set(`flag.rollout.strategy.percentage`, strconv.Itoa(GetFeatureFlag(t).Rollout.Strategy.Percentage))
 
@@ -179,7 +183,6 @@ func SpecServeMux_SetFeatureFlag(s *testcase.Spec, subject func(t *testcase.T) *
 			require.Equal(t, 200, r.Code, r.Body.String())
 
 			stored := FindStoredFeatureFlagByName(t)
-			stored.ID = ``
 
 			require.Equal(t, GetFeatureFlag(t), stored)
 		})

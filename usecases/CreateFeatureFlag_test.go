@@ -7,14 +7,14 @@ import (
 	"testing"
 )
 
-func TestUseCases_SetFeatureFlagRolloutStrategyToUseDecisionLogicAPI(t *testing.T) {
+func TestUseCases_CreateFeatureFlagRolloutStrategyToUseDecisionLogicAPI(t *testing.T) {
 	s := testcase.NewSpec(t)
 	SetupSpecCommonVariables(s)
 	SetupSpec(s)
 	s.Parallel()
 
 	subject := func(t *testcase.T) error {
-		return GetProtectedUsecases(t).SetFeatureFlag(GetFeatureFlag(t))
+		return GetProtectedUsecases(t).CreateFeatureFlag(GetFeatureFlag(t))
 	}
 
 	s.When(`with valid values`, func(s *testcase.Spec) {

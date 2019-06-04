@@ -133,7 +133,7 @@ func FindStoredFeatureFlagByName(t *testcase.T) *rollouts.FeatureFlag {
 
 func EnsureFlag(t *testcase.T, name string, prc int) {
 	rm := rollouts.NewRolloutManager(GetStorage(t))
-	require.Nil(t, rm.SetFeatureFlag(&rollouts.FeatureFlag{
+	require.Nil(t, rm.CreateFeatureFlag(&rollouts.FeatureFlag{
 		Name: name,
 		Rollout: rollouts.Rollout{
 			Strategy: rollouts.RolloutStrategy{

@@ -1,7 +1,6 @@
 package rollouts
 
 import (
-	"net/url"
 	"time"
 
 	"github.com/adamluzsi/frameless/iterators"
@@ -23,24 +22,46 @@ type RolloutManager struct {
 	RandSeedGenerator func() int64
 }
 
-func (manager *RolloutManager) SetFeatureFlag(flag *FeatureFlag) error {
+func (manager *RolloutManager) CreateFeatureFlag(flag *FeatureFlag) error {
 	if flag == nil {
 		return ErrMissingFlag
 	}
 
-	if flag.Name == "" {
-		return ErrInvalidFeatureName
+	if err := flag.Verify(); err != nil {
+		return err
 	}
 
-	if flag.Rollout.Strategy.DecisionLogicAPI != nil {
-		_, err := url.ParseRequestURI(flag.Rollout.Strategy.DecisionLogicAPI.String())
-		if err != nil {
-			return ErrInvalidURL
-		}
+	if flag.ID != `` {
+		return ErrInvalidAction
 	}
 
-	if flag.Rollout.Strategy.Percentage < 0 || 100 < flag.Rollout.Strategy.Percentage {
-		return ErrInvalidPercentage
+	if flag.Rollout.RandSeedSalt == 0 {
+		flag.Rollout.RandSeedSalt = manager.RandSeedGenerator()
+	}
+
+	ff, err :=  manager.Storage.FindFlagByName(flag.Name)
+
+	if err != nil {
+		return err
+	}
+
+	if ff != nil {
+		//TODO: this should be handled in transaction!
+		// as mvp solution, it is acceptable for now,
+		// but spec must be moved to the storage specs as `name is uniq across entries`
+		return ErrFlagAlreadyExist
+	}
+
+	return manager.Storage.Save(flag)
+}
+
+func (manager *RolloutManager) UpdateFeatureFlag(flag *FeatureFlag) error {
+	if flag == nil {
+		return ErrMissingFlag
+	}
+
+	if  err := flag.Verify(); err != nil {
+		return err
 	}
 
 	if flag.ID == `` {
@@ -60,15 +81,7 @@ func (manager *RolloutManager) SetFeatureFlag(flag *FeatureFlag) error {
 		flag.Rollout.RandSeedSalt = manager.RandSeedGenerator()
 	}
 
-	var persister func(interface{}) error
-
-	if flag.ID == ``{
-		persister = manager.Storage.Save
-	} else {
-		persister = manager.Storage.Update
-	}
-
-	return persister(flag)
+	return manager.Storage.Update(flag)
 }
 
 func (manager *RolloutManager) ListFeatureFlags() ([]*FeatureFlag, error) {

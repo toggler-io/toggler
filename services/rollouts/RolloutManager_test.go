@@ -38,15 +38,16 @@ func TestRolloutManager(t *testing.T) {
 		require.Nil(t, GetStorage(t).Truncate(rollouts.Pilot{}))
 	})
 
-	SpecRolloutManagerSetFeatureFlag(s)
+	SpecRolloutManagerCreateFeatureFlag(s)
+	SpecRolloutManagerUpdateFeatureFlag(s)
 	SpecRolloutManagerListFeatureFlags(s)
 	SpecRolloutManagerSetPilotEnrollmentForFeature(s)
 }
 
-func SpecRolloutManagerSetFeatureFlag(s *testcase.Spec) {
-	s.Describe(`SetFeatureFlagJSON`, func(s *testcase.Spec) {
+func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
+	s.Describe(`CreateFeatureFlag`, func(s *testcase.Spec) {
 		subjectWithArgs := func(t *testcase.T, f *rollouts.FeatureFlag) error {
-			return manager(t).SetFeatureFlag(f)
+			return manager(t).CreateFeatureFlag(f)
 		}
 
 		subject := func(t *testcase.T) error {
@@ -75,7 +76,7 @@ func SpecRolloutManagerSetFeatureFlag(s *testcase.Spec) {
 			s.Let(`FeatureName`, func(t *testcase.T) interface{} { return "" })
 
 			s.Then(`it will fail with invalid feature name`, func(t *testcase.T) {
-				require.Equal(t, rollouts.ErrInvalidFeatureName, subject(t))
+				require.Equal(t, rollouts.ErrNameIsEmpty, subject(t))
 			})
 		})
 
@@ -84,7 +85,7 @@ func SpecRolloutManagerSetFeatureFlag(s *testcase.Spec) {
 				s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return `http//example.com` })
 
 				s.Then(`it will fail with invalid url`, func(t *testcase.T) {
-					require.Equal(t, rollouts.ErrInvalidURL, subject(t))
+					require.Equal(t, rollouts.ErrInvalidRequestURL, subject(t))
 				})
 			})
 
@@ -141,30 +142,10 @@ func SpecRolloutManagerSetFeatureFlag(s *testcase.Spec) {
 			s.Context(`is 0`, func(s *testcase.Spec) {
 				s.Let(`RolloutSeedSalt`, func(t *testcase.T) interface{} { return int64(0) })
 
-				s.And(`feature is not stored before`, func(s *testcase.Spec) {
-					s.Before(func(t *testcase.T) {
-						require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
-					})
+				s.Then(`random seed generator used for setting seed value`, func(t *testcase.T) {
+					require.Nil(t, subject(t))
 
-					s.Then(`random seed generator used for setting seed value`, func(t *testcase.T) {
-						require.Nil(t, subject(t))
-
-						require.Equal(t, GetGeneratedRandomSeed(t), FindStoredFeatureFlagByName(t).Rollout.RandSeedSalt)
-					})
-				})
-
-				s.And(`feature is already stored before`, func(s *testcase.Spec) {
-					s.Before(func(t *testcase.T) {
-						require.Nil(t, subject(t))
-					})
-
-					s.Then(`random seed used from the persisted object`, func(t *testcase.T) {
-						f := *GetFeatureFlag(t) // pass by value copy
-						f.ID = ``
-						f.Rollout.RandSeedSalt = 0
-						require.Nil(t, subjectWithArgs(t, &f))
-						require.Equal(t, GetGeneratedRandomSeed(t), FindStoredFeatureFlagByName(t).Rollout.RandSeedSalt)
-					})
+					require.Equal(t, GetGeneratedRandomSeed(t), FindStoredFeatureFlagByName(t).Rollout.RandSeedSalt)
 				})
 			})
 
@@ -206,7 +187,91 @@ func SpecRolloutManagerSetFeatureFlag(s *testcase.Spec) {
 					require.NotEmpty(t, GetFeatureFlag(t).ID)
 				})
 
-				s.Then(`latest values are persisted`, func(t *testcase.T) {
+				s.When(`the id is not referring to the existing one`, func(s *testcase.Spec) {
+					s.Before(func(t *testcase.T) {
+						GetFeatureFlag(t).ID = ``
+					})
+
+					s.Then(`it will report feature flag already exists error`, func(t *testcase.T) {
+						require.Equal(t, rollouts.ErrFlagAlreadyExist, subject(t))
+					})
+				})
+
+				s.When(`the ID is set and pointing to an existing flag`, func(s *testcase.Spec) {
+					s.Before(func(t *testcase.T) {
+						require.NotEmpty(t, GetFeatureFlag(t).ID)
+						var ff rollouts.FeatureFlag
+						found, err := GetStorage(t).FindByID(GetFeatureFlag(t).ID, &ff)
+						require.Nil(t, err)
+						require.True(t, found)
+						require.Equal(t, GetFeatureFlag(t), &ff)
+					})
+
+					s.Then(`it will report invalid action error`, func(t *testcase.T) {
+						require.Equal(t, rollouts.ErrInvalidAction, subject(t))
+					})
+				})
+			})
+		})
+	})
+}
+
+func SpecRolloutManagerUpdateFeatureFlag(s *testcase.Spec) {
+	s.Describe(`UpdateFeatureFlag`, func(s *testcase.Spec) {
+		subjectWithArgs := func(t *testcase.T, f *rollouts.FeatureFlag) error {
+			return manager(t).UpdateFeatureFlag(f)
+		}
+
+		subject := func(t *testcase.T) error {
+			return subjectWithArgs(t, GetFeatureFlag(t))
+		}
+
+		s.Let(`FeatureFlagName`, func(t *testcase.T) interface{} { return ExampleFeatureName() })
+		s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return nil })
+		s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return rand.Intn(101) })
+		s.Let(`RolloutSeedSalt`, func(t *testcase.T) interface{} { return int64(42) })
+		s.Let(`FeatureFlag`, func(t *testcase.T) interface{} {
+			ff := &rollouts.FeatureFlag{Name: t.I(`FeatureName`).(string)}
+			ff.Rollout.RandSeedSalt = t.I(`RolloutSeedSalt`).(int64)
+			ff.Rollout.Strategy.Percentage = t.I(`RolloutPercentage`).(int)
+			ff.Rollout.Strategy.DecisionLogicAPI = GetRolloutApiURL(t)
+			return ff
+		})
+
+		s.When(`input is invalid for the feature flag Verify low level domain requirement`, func(s *testcase.Spec) {
+			s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return 128 })
+
+			s.Then(`it will report error`, func(t *testcase.T) {
+				require.Error(t, subject(t))
+			})
+		})
+
+		s.When(`feature flag`, func(s *testcase.Spec) {
+			s.Context(`is nil`, func(s *testcase.Spec) {
+				s.Let(`FeatureFlag`, func(t *testcase.T) interface{} { return nil })
+
+				s.Then(`it will return error about it`, func(t *testcase.T) {
+					require.Error(t, subject(t))
+				})
+			})
+
+			s.Context(`was not stored until now`, func(s *testcase.Spec) {
+				s.Before(func(t *testcase.T) {
+					require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
+				})
+
+				s.Then(`it will report error about the missing ID`, func(t *testcase.T) {
+					require.Error(t, subject(t))
+				})
+			})
+
+			s.Context(`had been persisted previously`, func(s *testcase.Spec) {
+				s.Before(func(t *testcase.T) {
+					require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
+					require.NotEmpty(t, GetFeatureFlag(t).ID)
+				})
+
+				s.Then(`latest values are persisted in the storage`, func(t *testcase.T) {
 					flag := *GetFeatureFlag(t) // pass by value copy
 					newName := flag.Name + ` v2`
 					flag.Name = newName
@@ -245,9 +310,9 @@ func SpecRolloutManagerListFeatureFlags(s *testcase.Spec) {
 		s.When(`features are in the system`, func(s *testcase.Spec) {
 
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, manager(t).SetFeatureFlag(&rollouts.FeatureFlag{Name: `a`}))
-				require.Nil(t, manager(t).SetFeatureFlag(&rollouts.FeatureFlag{Name: `b`}))
-				require.Nil(t, manager(t).SetFeatureFlag(&rollouts.FeatureFlag{Name: `c`}))
+				EnsureFlag(t, `a`, 0)
+				EnsureFlag(t, `b`, 0)
+				EnsureFlag(t, `c`, 0)
 			})
 
 			s.Then(`feature flags are returned`, func(t *testcase.T) {

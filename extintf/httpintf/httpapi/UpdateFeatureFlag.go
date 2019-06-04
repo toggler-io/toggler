@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-func (sm *ServeMux) SetFeatureFlagJSON(w http.ResponseWriter, r *http.Request) {
+func (sm *ServeMux) UpdateFeatureFlagJSON(w http.ResponseWriter, r *http.Request) {
 
 	pu := r.Context().Value(`ProtectedUsecases`).(*usecases.ProtectedUsecases)
 
@@ -24,7 +24,7 @@ func (sm *ServeMux) SetFeatureFlagJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if handleError(w, pu.SetFeatureFlag(&flag), http.StatusInternalServerError) {
+	if handleError(w, pu.UpdateFeatureFlag(&flag), http.StatusInternalServerError) {
 		return
 	}
 
@@ -32,7 +32,7 @@ func (sm *ServeMux) SetFeatureFlagJSON(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (sm *ServeMux) SetFeatureFlagFORM(w http.ResponseWriter, r *http.Request) {
+func (sm *ServeMux) UpdateFeatureFlagFORM(w http.ResponseWriter, r *http.Request) {
 
 	pu := r.Context().Value(`ProtectedUsecases`).(*usecases.ProtectedUsecases)
 
@@ -48,6 +48,13 @@ func (sm *ServeMux) SetFeatureFlagFORM(w http.ResponseWriter, r *http.Request) {
 
 	if flag.Name == `` {
 		handleError(w, fmt.Errorf(`missing feature name`), http.StatusBadRequest)
+		return
+	}
+
+	flag.ID = r.Form.Get(`flag.id`)
+
+	if flag.ID == `` {
+		handleError(w, fmt.Errorf(`missing feature ID`), http.StatusBadRequest)
 		return
 	}
 
@@ -88,7 +95,7 @@ func (sm *ServeMux) SetFeatureFlagFORM(w http.ResponseWriter, r *http.Request) {
 
 	flag.Rollout.Strategy.DecisionLogicAPI = decisionLogicAPI
 
-	if handleError(w, pu.SetFeatureFlag(&flag), http.StatusInternalServerError) {
+	if handleError(w, pu.UpdateFeatureFlag(&flag), http.StatusInternalServerError) {
 		return
 	}
 

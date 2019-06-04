@@ -87,7 +87,7 @@ func (mux *ServeMux) updatePage(w http.ResponseWriter, r *http.Request) {
 	ctx := context.WithValue(r.Context(), `ProtectedUsecases`, pu)
 	r = r.WithContext(ctx)
 
-	httpapi.NewServeMux(mux.UseCases).SetFeatureFlagFORM(rr, r)
+	httpapi.NewServeMux(mux.UseCases).UpdateFeatureFlagFORM(rr, r)
 	http.Redirect(w, r, `/`, http.StatusFound)
 }
 
