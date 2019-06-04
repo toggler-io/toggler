@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+cd ${WDP}
+go generate ./...
+go run cmd/featureflags-server/main.go
