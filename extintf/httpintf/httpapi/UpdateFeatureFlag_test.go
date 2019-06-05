@@ -90,7 +90,7 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 		s.Let(`payload bytes`, func(t *testcase.T) interface{} {
 			data := url.Values{}
 			data.Set(`flag.id`, GetFeatureFlag(t).ID)
-			data.Set(`flag.feature`, GetFeatureFlag(t).Name)
+			data.Set(`flag.name`, GetFeatureFlag(t).Name)
 			data.Set(`flag.rollout.randSeedSalt`, strconv.FormatInt(GetFeatureFlag(t).Rollout.RandSeedSalt, 10))
 			data.Set(`flag.rollout.strategy.percentage`, strconv.Itoa(GetFeatureFlag(t).Rollout.Strategy.Percentage))
 

@@ -44,7 +44,7 @@ func (sm *ServeMux) CreateFeatureFlagFORM(w http.ResponseWriter, r *http.Request
 
 	var flag rollouts.FeatureFlag
 
-	flag.Name = r.Form.Get(`flag.feature`)
+	flag.Name = r.Form.Get(`flag.name`)
 
 	if flag.Name == `` {
 		handleError(w, fmt.Errorf(`missing feature name`), http.StatusBadRequest)

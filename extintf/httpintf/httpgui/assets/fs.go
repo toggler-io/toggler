@@ -209,6 +209,36 @@ func FSMustString(useLocal bool, name string) string {
 
 var _escData = map[string]*_escFile{
 
+	"/ajax/libs/html5shiv/3.7/html5shiv.min.js": {
+		name:    "html5shiv.min.js",
+		local:   "assets/ajax/libs/html5shiv/3.7/html5shiv.min.js",
+		size:    2498,
+		modtime: 1526548793,
+		compressed: `
+H4sIAAAAAAAC/3xWW3PbvBH9KxDSkYERSytN086IRjKTtJ48NHlx+uQ4HYhcirBBgMaFsirwv3fAi0Sr
+yfdCEcRezjnYXYiUXuVOaEWekpoeW27QjuF36d/TNc7iqmBPaeVq+T6EY9d/qdj1z5vwk3zcbL1zWoWa
+N8GChNwFBy+OG+BBbx/jWpSG1xB0E1PEn53RvqF/uhZ9qJxdxzg8bEOuCwiFaEMpQBYWXKjehuovoXoX
+qr+G6n2o/hZEkHwLMkgRtAxNeA624SpYZ7TaBesOEoLj2/jc6uIQXBFcFZwJXp5SPvdPwfB/ela2Eu1A
+lLN1/6vZyBOyszj06MyhV8exOs0NcAf/lFCDcgRzTDOXCqXAfPn+9V8M37wc/vvh5jo+cfbMCK5EUYDC
+SCjkaAbMpXklZPFNF2BTCWrnKsbehjBPSC7y0CFRxNCeMPxD5z5u3hq+68HQzIDzRhF3aECXqE1zqRXE
+TIxhrwoohYICh3A2+GWkP7YeMb0yoh2htMu5yyvi6fGZOeMhkjUeuriXTexQSVzSDtW2j2K81rPBNPHM
+pTtw4zf76fCd777xGgiugBeY3q8fQnBpMaIe7bL9/BhebvqS+IBX7QrfXI+LUSDkU6EsGPcJSm2A7FPJ
+rfscjyXxaSnMuKDdCbUkdCyBxxRGYFO0UZ+oiHVGqB3+6FLbSOEIRphu3DlMQ9wQxzN97+7Fw0MmSrLw
+9Ohj6fHVKotfGc/0PX9gvpsAn0Mosk96BaOjo0fH6k6UBOhxgnOh6Z7G/UXUnMX8XZ8/5m3TnOcV3O8f
+Yv7z6lw3hHYgLcRceerAxmjRdubK5nURt//f21/adCdeac7VF95Cr7cBtVwuqinRxzYtDd+lvGlAFb0F
+8XQz08KQNnkZlOjpXSjR/rZTuhf2EkJD2qGpDuxlSDWDnuzZOvFMEpo45sdOzUptSLa/cdl+taLHw4XU
+Pko5cTuccVriEj/g9INw9Di+xGP3szCXLXHajOBPm5eMMt/jZ3NjQruLWOw0YsbyeUzjDPwKrtKFPck2
+h0PaEx9F2iTS6LLfoWC3U3xcJSVO8Og5m2xRbcXKV0LnTF1wrua4lkuCV5LQ9FELRWhqoJE8B3J9/2P/
+488Pq+tdMud1gX5U5uKg2mlWXuUEX63a1RWmVx1d4ek7Uh2m5DEZvGeDYBs7eNZ6QzPHvoodNQj6+e5u
+uVw8L5cLn1bcfr67i7CGN7ZYxAmIuXEil5BwKwpICsGl3iWl2OW8vy/jqzeQlFo7MEkcfPGnv0KTmguV
+KN4mFnpQx0LYRvLDZit1/tTV3Dwdtzx/itaq2Ly5vV1nuZbabN6s1+vOQd1I7uDkprSCDg9jAuhxqNbp
+2F1P8ZEdp7G3KU4TMATMt1uDRjKoJ4O4L4RG20KgnKuWW1Rwx/uHFNahAhwX0qKBMzpzRgNnNHBGA2c0
+cEaRM4rMUA1xV/EWae8a71Bj9M6AtWiUA1lf19wc0EQUOVEDakUBGictGCu02uyS8ag2pJhObcFYyaUF
+mljfNNo4+2/1pPReTXfRBpJZZU6e4/LsHW+EDS6g5F463LtMvbLZJq9KcaOSXzfTxnTZ+PeLPWZbUtOO
+uErYZLr3KM3+FwAA//9UKXE3wgkAAA==
+`,
+	},
+
 	"/css/font-awesome.css": {
 		name:    "font-awesome.css",
 		local:   "assets/css/font-awesome.css",
@@ -362,6 +392,76 @@ mZ3WzFaqsVRhp2VX43L33PzuqDYHh4DC885LNeu8Z3Mx1y/cLdfNk7eDALlW2vjxAddyemLvPGD9+h6m
 medvxi62V2bYudKWLtzozx2DojxFwwz7/4dtwHajnwmwEfLZuqsGup4l69C3sVKD/spDMWBMds1J95VO
 LhJL8RLYZR2EwopIooUEohRdc8xMwJ0vV0LEu1+3DFv6t1FPe78uH/+1evjyQ/FlqJ61qLrqY0SucVB2
 ZiBH0rTtYdmZM5yaf6TAK6/Ag/yyMmkliC/IXXn7dXynEmdxW4m30f8DAAD//xyTfXyxFAAA
+`,
+	},
+
+	"/css/layouts/side-menu-old-ie.css": {
+		name:    "side-menu-old-ie.css",
+		local:   "assets/css/layouts/side-menu-old-ie.css",
+		size:    4203,
+		modtime: 1559736566,
+		compressed: `
+H4sIAAAAAAAC/5RX3W7bOBO991MMEnxoG1j+Sb42jlIU6O5i0ZsCu919AFPi2CJCcQSSsuMu+u4LkqJ+
+48brXDimqJkzw3NmhhnxE/wzAwDISZJO4fr+/v5x9mM2W1S1xkSU+0SjqUgZccBma8mek6PgtkhhvVr9
+79EvFij2hU2B1Za8geXN7DPnYDVTRlhBCixBTsoyoVAbMAS2wBPkTEFVmwKEAqY4UG0Xs5vlbHYt2Ylq
+O59dl6jq+WzhvhIp1FODIzli9iRs0rlIgUkJq8WtAWQGE6ptQJeU9P2yfeaibXTJrle2hBz9XQgDwrhc
+QMU0Kgvbj1wcPm3BFszGjIUNLgM+Se6He+K2M41skLEmPRVF5xols+KAAZbEnU1hFX5UjHOh9km7+KM1
+s2C5ewl8+hubYdv6/ap6Du9HHoSV6cuTQxtYiCnogomxCwPHAjX6xJ2o1u2OPaEJ4S7iUqSl3guVwqrh
+YC88t3iL5eOYvptVG0h4O8nIWipT6CKUQmES2b1efHBmnD4KZBz12PfjQEx3d3cNFfDZJkyKvUohR2VR
+j/DdLt5j6TBGExlpjrrFs66ewZAUHK4RcYCgWI9BLHp2dqRsYsR3TOEuZsCvHZuQ7larobnbxtx0Vz+0
+PM/HKR4k0lIV+RTPKTF15pyM4LpUu/PxX48XuN5sNn3qbD1Bt33qXCSmbShx4WX3eMaqCpk24GpVgZ6q
+YARHoF1jco+N0nqaaAIOxE562ljewJXfeBVkAjfLFzQzlOpOPCNvONNkcKLZyInm5/dEKI7PvhivWs+h
+vIaKQRqENaDYQeSkwFh2MsAyOgR5RRk18DKWP+011YqncL1+WG/Wm2CVDqh3ko7JKe1JLFbh9qnJNUnp
+KWGpzot4Vm7zZymBqbwgbUAon9sWpSmolhwyBGNPEjlI8eQeC7Pw73Z5Z6Oe9fDw0BdNCooUjtnplAur
++N3quAH2DcuYji7+ZbBn5mCEyhGO6IotsKqSJ6H2DnrpuppHNQbZsWs+WYFaNiFMEffT7ztIIPIgi66v
+Oj5Lp5DGhgNisGKaWQRhsXQZtgTOVmXOo4NavgAw1G1nJuHiIDjyAeAg715R8pWuQ+g+vxZM7TEcUlRQ
+OHtXU5+8zArHmuWO8rpBeBalFMBSv31+5qG3ElH2OTzC5juup1ioAwYl5hZ5YKELGbYfpfi0PZ+zJL4z
+xZK4CufI8QKQ9W7D+Ydxnvp4mE8NHIUt3Dj0GrZX8U2kstvtfpYLb6eJ4CfhD2PstZj1Os6DA4ejFun9
+Q5LAbyfFSpHDL7W1pOB30vCtmza/Oq/JJR8HsukGWTBlCahCtcwlmVBjvDVhIK+NpTIpGUc/SimyrldY
+R9E/ao0L+IIa35hZQUcQFo6kn0w6a1xsu4FmCxorjQaVDcnrDco+YZb2e4lBqaago1kWgqPj/cyUrtKY
+XCOqOM2MJ6UXmwIXppLslEImKX/qqr0D60olkJInp6yBh1jaz7aUtlWF5nT1Yi9o20t/Ve8z9nY193+L
++3eToWPdb4d5KAke6IHJGt05CZVrNxUvOYZ/4hk6AxFIr8kNBs92qhveP0az1RrL/ujWZjoWlN7K2Sqy
+inNSd06mYuqVYXt8XlMD8/FCmuGONE7X2c62A2cHLZko7ezdzA+GL2G4yGUXIssMydridOBLmsYaKoAf
+K1K4gqsXnfaND6bGXnN2VaJXEv4KpertV+SCwZ81aoHm3WVFAhoJf/Ei7K5TFrb/32C5nTveQUlc7E6B
+ohkzyJ2Y/AWEVdUbAwqRR8WGiXk+vogM71QtQ+OyDocRj2J0aRu8Oxwm/Tyak2ymyThbNgoZ3ODOXdl+
+XFpnJv5bIodJ5T/f9P4NAAD//4agrJVrEAAA
+`,
+	},
+
+	"/css/layouts/side-menu.css": {
+		name:    "side-menu.css",
+		local:   "assets/css/layouts/side-menu.css",
+		size:    5028,
+		modtime: 1559736566,
+		compressed: `
+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
+/9KAASmkEwAA
 `,
 	},
 
@@ -1075,6 +1175,23 @@ kwCRbdB4UfMjqPOBa46zoHSlWp5k8nQgmaLbHb5wbQ1MdJs0Cb5aq3cGeLX1EmBnEwRTlG6ehP+8kMyw
 3G5Z39ttDZ75wdBkyMhzKkUV0vIWsnGxGZbHkkFhKVBOwa3tqR4QPdE+nik8gMo5WbU9lz3CgKrrMp+d
 qtdzcrTpsL3b+HW3AMXomskrwl/lN0wyqPWtqPPkWsEDNfM2mInczf83jBeVOPufaPL/rob/16PPEO35
 /UORs/pcpYQoDA4ODk5eBiBdK2kS/P8EAAD//+b3y4LOpgAA
+`,
+	},
+
+	"/js/ui.js": {
+		name:    "ui.js",
+		local:   "assets/js/ui.js",
+		size:    1170,
+		modtime: 1559736566,
+		compressed: `
+H4sIAAAAAAAC/4xUTZOTQBC98yueJ4YKEveMc/DrYJWlF2/qAaFJ2p3MpMKQdcvKf7caBjIJ2VUOqQ7z
+Xvd73T2otre1Z2ehHtg27iFH4+p+R9Zn+JMkAHCsDjDVo+s9AD2fFxvyHwxJ+PbxY6PSEZNm+cCSZ0e2
+H4JnWIK55nxie/8vjmBiXu2sJ+ufr1WxTbNytDU7926zMfTOVF2naITnqOXv52pH0oaphnRiOKAOGgFb
+zNCi2xv2av29W60jZfIYshu/hZ7oxfjiEsTQeBXUDQrdQZVgvA70ErxaxXoAbqFCym/8A1rr28qHDoXS
+orImxTnusvIC8fNA1X386pQso/UaX7d0LgPuYJ1H63rbJLGwybS+tv2Usn3fbdVZfxlVn8NF16Om/nJs
+VYo0ME83B/3GGLWYalV7PkqqdIzSaAxU7A90JOvfU1v1xqtIWLw74/7nIdcTIFnd/4DIdl/BgpvptHC2
+NlzLPTnf4Qtfsd2QIrgKd+VGissMMkSpF60424Z+f2nV1KcML7TGy7vrkS6Ln7dIZJyU33KXQ36L+ZOT
+lcnfAAAA//++wU47kgQAAA==
 `,
 	},
 
@@ -2607,6 +2724,30 @@ IYQIBwAA
 `,
 	},
 
+	"/ajax": {
+		name:  "ajax",
+		local: `assets/ajax`,
+		isDir: true,
+	},
+
+	"/ajax/libs": {
+		name:  "libs",
+		local: `assets/ajax/libs`,
+		isDir: true,
+	},
+
+	"/ajax/libs/html5shiv": {
+		name:  "html5shiv",
+		local: `assets/ajax/libs/html5shiv`,
+		isDir: true,
+	},
+
+	"/ajax/libs/html5shiv/3.7": {
+		name:  "3.7",
+		local: `assets/ajax/libs/html5shiv/3.7`,
+		isDir: true,
+	},
+
 	"/assets": {
 		name:  "assets",
 		local: `./assets`,
@@ -2643,6 +2784,12 @@ IYQIBwAA
 		isDir: true,
 	},
 
+	"/js": {
+		name:  "js",
+		local: `assets/js`,
+		isDir: true,
+	},
+
 	"/purecss": {
 		name:  "purecss",
 		local: `assets/purecss`,
@@ -2652,10 +2799,28 @@ IYQIBwAA
 
 var _escDirs = map[string][]os.FileInfo{
 
+	"assets/ajax": {
+		_escData["/ajax/libs"],
+	},
+
+	"assets/ajax/libs": {
+		_escData["/ajax/libs/html5shiv"],
+	},
+
+	"assets/ajax/libs/html5shiv": {
+		_escData["/ajax/libs/html5shiv/3.7"],
+	},
+
+	"assets/ajax/libs/html5shiv/3.7": {
+		_escData["/ajax/libs/html5shiv/3.7/html5shiv.min.js"],
+	},
+
 	"./assets": {
+		_escData["/ajax"],
 		_escData["/css"],
 		_escData["/fonts"],
 		_escData["/img"],
+		_escData["/js"],
 		_escData["/purecss"],
 	},
 
@@ -2667,6 +2832,8 @@ var _escDirs = map[string][]os.FileInfo{
 	"assets/css/layouts": {
 		_escData["/css/layouts/marketing-old-ie.css"],
 		_escData["/css/layouts/marketing.css"],
+		_escData["/css/layouts/side-menu-old-ie.css"],
+		_escData["/css/layouts/side-menu.css"],
 	},
 
 	"assets/fonts": {},
@@ -2677,6 +2844,10 @@ var _escDirs = map[string][]os.FileInfo{
 
 	"assets/img/common": {
 		_escData["/img/common/file-icons.png"],
+	},
+
+	"assets/js": {
+		_escData["/js/ui.js"],
 	},
 
 	"assets/purecss": {

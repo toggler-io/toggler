@@ -1,32 +1,23 @@
-package httpgui
+package controllers
 
 import (
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	"fmt"
 	"net/http"
 )
 
-func (mux *ServeMux) IndexPage(w http.ResponseWriter, r *http.Request) {
+func (ctrl *Controller) IndexPage(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case `/`, `/index`:
-
-		var flags = []*rollouts.FeatureFlag{
-			{Name: `test-1`},
-			{Name: `test-2`},
-			{Name: `test-3`},
-		}
-
-		fs, err := mux.fakePU().ListFeatureFlags()
+		flags, err := ctrl.GetProtectedUsecases(r).ListFeatureFlags()
 
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 
-		for _, f := range fs {
-			flags = append(flags, f)
-		}
+		fmt.Println(len(flags))
 
-		mux.render(w, `/index.html`, flags)
+		ctrl.Render(w, `/index.html`, flags)
 
 	default:
 		http.NotFound(w, r)

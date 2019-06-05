@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/httputils"
 	"github.com/adamluzsi/FeatureFlags/usecases"
 	"log"
 	"net/http"
@@ -76,22 +77,11 @@ func handleError(w http.ResponseWriter, err error, errCode int) (errorWasHandled
 func authMiddleware(uc *usecases.UseCases, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		token := r.URL.Query().Get(`token`)
+		token, err := httputils.GetAuthToken(r)
 
-		if token == `` {
-			token = r.Header.Get(`X-Auth-Token`)
-		}
-
-		if token == `` {
-			cookie, err := r.Cookie(`token`)
-			if err != nil && err != http.ErrNoCookie {
-				handleError(w, err, http.StatusInternalServerError)
-				return
-			}
-
-			if err != http.ErrNoCookie && cookie != nil {
-				token = cookie.Value
-			}
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
 		}
 
 		pu, err := uc.ProtectedUsecases(token)

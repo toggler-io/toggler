@@ -44,7 +44,7 @@ func (sm *ServeMux) UpdateFeatureFlagFORM(w http.ResponseWriter, r *http.Request
 
 	var flag rollouts.FeatureFlag
 
-	flag.Name = r.Form.Get(`flag.feature`)
+	flag.Name = r.Form.Get(`flag.name`)
 
 	if flag.Name == `` {
 		handleError(w, fmt.Errorf(`missing feature name`), http.StatusBadRequest)
@@ -62,13 +62,17 @@ func (sm *ServeMux) UpdateFeatureFlagFORM(w http.ResponseWriter, r *http.Request
 
 	rawRandSeedSalt := r.Form.Get(`flag.rollout.randSeedSalt`)
 
+
 	if rawRandSeedSalt != `` {
+
 		var err error
 		randSeedSalt, err = strconv.ParseInt(rawRandSeedSalt, 10, 64)
 
 		if handleError(w, err, http.StatusBadRequest) {
 			return
 		}
+
+	} else {
 	}
 
 	flag.Rollout.RandSeedSalt = randSeedSalt
