@@ -14,7 +14,7 @@ import (
 	. "github.com/adamluzsi/FeatureFlags/testing"
 )
 
-func TestServeMux_UpdateFeatureFlag(t *testing.T) {
+func TestServeMux_CreateFeatureFlag(t *testing.T) {
 	s := testcase.NewSpec(t)
 	s.Parallel()
 
@@ -50,11 +50,6 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 		return req
 	})
 
-	s.Before(func(t *testcase.T) {
-		t.Log(`given we have flag already stored`)
-		require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
-	})
-
 	s.When(`request is sent to the JSON endpoint`, func(s *testcase.Spec) {
 
 		s.Let(`Content-Type`, func(t *testcase.T) interface{} {
@@ -68,7 +63,7 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 		})
 
 		s.Let(`http path`, func(t *testcase.T) interface{} {
-			return `/update.json`
+			return `/create.json`
 		})
 
 		s.Then(`it will reply back in json format`, func(t *testcase.T) {
@@ -77,7 +72,7 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 			IsJsonRespone(t, r, &resp)
 		})
 
-		SpecServeMux_UpdateFeatureFlag(s, subject)
+		SpecServeMux_CreateFeatureFlag(s, subject)
 
 	})
 
@@ -89,7 +84,6 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 
 		s.Let(`payload bytes`, func(t *testcase.T) interface{} {
 			data := url.Values{}
-			data.Set(`flag.id`, GetFeatureFlag(t).ID)
 			data.Set(`flag.feature`, GetFeatureFlag(t).Name)
 			data.Set(`flag.rollout.randSeedSalt`, strconv.FormatInt(GetFeatureFlag(t).Rollout.RandSeedSalt, 10))
 			data.Set(`flag.rollout.strategy.percentage`, strconv.Itoa(GetFeatureFlag(t).Rollout.Strategy.Percentage))
@@ -104,7 +98,7 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 		})
 
 		s.Let(`http path`, func(t *testcase.T) interface{} {
-			return `/update.form`
+			return `/create.form`
 		})
 
 		s.And(`the decision api url`, func(s *testcase.Spec) {
@@ -114,7 +108,7 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 				})
 
 				// then it will persist the url
-				SpecServeMux_UpdateFeatureFlag(s, subject)
+				SpecServeMux_CreateFeatureFlag(s, subject)
 			})
 
 			s.Context(`is an invalid url`, func(s *testcase.Spec) {
@@ -129,7 +123,7 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 				s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return nil })
 
 				s.Context(`the flag decision api url will be ereased`, func(s *testcase.Spec) {
-					SpecServeMux_UpdateFeatureFlag(s, subject)
+					SpecServeMux_CreateFeatureFlag(s, subject)
 				})
 			})
 		})
@@ -139,7 +133,7 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 				s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return 42 })
 
 				// then it will persist the url
-				SpecServeMux_UpdateFeatureFlag(s, subject)
+				SpecServeMux_CreateFeatureFlag(s, subject)
 			})
 
 			s.Context(`is an invalid url`, func(s *testcase.Spec) {
@@ -155,7 +149,7 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 
 }
 
-func SpecServeMux_UpdateFeatureFlag(s *testcase.Spec, subject func(t *testcase.T) *httptest.ResponseRecorder) {
+func SpecServeMux_CreateFeatureFlag(s *testcase.Spec, subject func(t *testcase.T) *httptest.ResponseRecorder) {
 	s.And(`invalid token given`, func(s *testcase.Spec) {
 		s.Let(`TokenString`, func(t *testcase.T) interface{} {
 			return `invalid`
@@ -183,6 +177,7 @@ func SpecServeMux_UpdateFeatureFlag(s *testcase.Spec, subject func(t *testcase.T
 			require.Equal(t, 200, r.Code, r.Body.String())
 
 			stored := FindStoredFeatureFlagByName(t)
+			stored.ID = ``
 
 			require.Equal(t, GetFeatureFlag(t), stored)
 		})
