@@ -1,46 +1,30 @@
 {{define "main"}}
-    {{ range . }}
-        <div class="content">
-            <h2 class="content-head is-center">{{ .Name }}</h2>
-            <div class="pure-g">
-                <div class="l-box-lrg pure-u pure-u-1">
-                    <form action="/update" class="pure-form pure-form-aligned" data-bitwarden-watching="1">
-                        <fieldset>
+    <div class="content">
+        <h2 class="content-head is-center">Feature Flag List</h2>
 
-                            <div class="pure-control-group">
-                                <label for="percentage">Rollout Percentage</label>
-                                <input id="percentage"
-                                       name="flag.rollout.strategy.percentage"
-                                       type="range" min="0" max="100"
-                                       value="{{ .Rollout.Strategy.Percentage}}">
-                            </div>
+        <table class="pure-table pure-table-horizontal">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Percentage</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
 
-                            <div class="pure-control-group">
-                                <label for="seed">Seed of the random pseudo random in the rollout</label>
-                                <input id="seed"
-                                       name="flag.rollout.randSeedSalt"
-                                       type="number"
-                                       value="{{ .Rollout.RandSeedSalt }}">
-                                {{/*<span class="pure-form-message-inline"></span>*/}}
-                            </div>
+            <tbody>
+            {{ range . }}
+                <tr>
+                    <td>{{ .Name }}</td>
+                    <td>{{ .Rollout.Strategy.Percentage }}{{ print "%" }}</td>
+                    <td>
+                        <ul>
+                            <li><a href="/edit?id={{ .ID }}">edit</a></li>
+                        </ul>
+                    </td>
+                </tr>
+            {{ end }}
+            </tbody>
+        </table>
 
-                            <div class="pure-control-group">
-                                <label for="decisionApiURL">Decision API URL</label>
-                                <input id="decisionApiURL"
-                                       name="flag.rollout.strategy.decisionLogicApi"
-                                       type="url"
-                                       {{ if .Rollout.Strategy.DecisionLogicAPI }}value="{{ .Rollout.Strategy.DecisionLogicAPI }}"{{end}}
-                                       placeholder="this flag's custom decision logic API URL (optional)">
-                            </div>
-
-                            <input name="flag.name" type="hidden" value="{{ .Name }}">
-                            <input name="flag.id" type="hidden" value="{{ .ID }}">
-                            <button type="submit" class="pure-button pure-button-primary">Update</button>
-
-                        </fieldset>
-                    </form>
-                </div>
-            </div>
-        </div>
-    {{ end }}
+    </div>
 {{end}}

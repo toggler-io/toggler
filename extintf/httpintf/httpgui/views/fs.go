@@ -228,23 +228,41 @@ OpJzwcxe3KHvI8sx3O3Iyv3+dwAAAP//emMeZisIAAA=
 `,
 	},
 
+	"/edit.html": {
+		name:    "edit.html",
+		local:   "views/edit.html",
+		size:    3671,
+		modtime: 1559860444,
+		compressed: `
+H4sIAAAAAAAC/8RWUYuzOBR9n19xycvufmCd73tWYaC7UBiWoWV+QDS3GiYmksTSQfzvS9S2trW2WnbX
+l6be3HPNObknqSqGWy4RSE65JHX9AgAQML6DRFBjQpIoaVFaEjWRJpr9ugh6GVIG3HgJSouaRFUFi78E
+TRd/0xyhrgM/+9UD6MEXpUYv7aFfThBerPae0Ck0U8vux/t5kdPkbZXOgSaWKxkSHxm3BHK0mWIhKZSx
+5KxsM/s48qjgqUQ2gNticxTMoI1eBuODC3P8aCW8VKuyuAF8TBY0RgFbpUNSoHZU0hRJtFZCqNLCx/Fd
+4DdT78BxWZQWODtDG03pHklzDMnWyafb2gtjNbWYfi8mQtnvAkOiqUyRQM5lSF4J5HQfkp+vrw8h7Kgo
+MSTHDdWxsdgcvuhEC9T1CMWBz/juv9DOoNtDG0QGags2Q9BUMpVDYbBk6vCPyzbWrmeqpE2RmWK6D3Cf
+t6HCTlBRlnmM+inR1r3K42q5p6r8H4EpqLxqWi9HY2iKHpeCSyRR4Lt50Q+/M7D/dQMwTLjhSr4V/HP9
+TqJl9x/ePlbwuX6fqvUF3rMtfIB7VylP3go+YQuUWjw0u6qAb2817PKs/scK6vpukw/kkKpCyUb07j2F
+oAlmSjDUIbEZN+Co+c1AUhqrcjhQAsLhH3SC31XhThIq/njGV1ohe4q4IekYzThjKMlVx3Tn5ljdK1zO
+7qGulncw49JaJTsUU8Y5vzgyuwm9sVdonlP9TaLPglGLgd++v0FJ4J/O0YGY0vnFVaClt//qxRnDjOtC
+4w7XyU2BG7EJwJe5N+4jPkrXkbm7Us24mtwsdX5FGV7OFLcbLTTker11RX8exwevewzu5Hk9tIdSz3yv
+4ELZxUyIdu8nGSZfsdo/QMTYBvpXGW+WuVq6028eyQeAuQxzNoNZi/tpgpyZ94crDKsl2IxakIjMgFUQ
+I7RyI/NjoZKvu70ySbn5Vnv/G56y3A3dnQx3fCE9473tV60BD8b7ZA2YczfsDuV/AgAA//8nqIj0Vw4A
+AA==
+`,
+	},
+
 	"/index.html": {
 		name:    "index.html",
 		local:   "views/index.html",
-		size:    2409,
-		modtime: 1559805074,
+		size:    817,
+		modtime: 1559859371,
 		compressed: `
-H4sIAAAAAAAC/8xWzWrrPBDd9ymG2XzfLThuu7YNhW4K5VJS+gCKNbYHZMlIcn8wfveLbCd10jRJf7hc
-baKfo3OUMyONu05SwZoAa8Ea+/4MAKDrwApdEixgmgktkfwEuRLOpZgb7Ul7zDarA6K62gFEFQkJ7KKc
-tCeLWdfB4reoCfo+iaurnf0zhaa1FJU7ArsgFa3MS6RsCQO8nX6iyz37hr2FsTWI3LPRKcZtI4Un3JIc
-EJteJBSXmiSCFF5EK/bPwkrS0bPwecW6TPEjrVGPSUlHPjv7ELP3jwf7rFFRaU3bHBDYECixIgWFsSk2
-ZIPboiTMlkYp03q438wl8QA9gZJ103pgucV4dNvUtKgpxUKJcmHHMyyct8JT+br4Ap1/bSjFISkRatYp
-XiDU4iXFy4uLk1mehGopxZCDkzGLh/Wh3hzq+yOGJ7Hkp78ZUUckMXsgkmAK8BWF6ylNDY2jVpr1iPW4
-Nv61rwR6EPpGiMNBwjEfhPKfjK1u6xXZ74RyOROHo0Ec37n4PHGN0O9egKgm50RJEWvFmjBL4oDLzuPZ
-g/hP5IaknB0bfd3w4/IOs5tpDNf3t/C4vPtKGuxw/sSdX1PemZLz64Y/mR2tVSfv6DrgYs8Nv9k6wv0t
-9P2hB2EPHLuOtDySAbPWKJFTZZQkm6Kv2EEw5z8Heeu8qWFtCqigsY4Y/G+aUKCE+vUTD9EY1llsQhcn
-XyuWkjTOr9NUnY9Jv6NleYD09uYEylXrvdETiWtXNfvt2jwBZv2osVwL+4rZ41DLk3icP2BKEr8V5Q/W
-ja33fHeMZh+Ymg27DkjL8PU0pcyfAAAA///TfDYnaQkAAA==
+H4sIAAAAAAAC/4SS3WrDMAyF7/sUwrDLxNBr12MwCoMxxvYEaqwmAtcpjlLojN99JO3omv7dBX0nOkeS
+U3K05kCgNshB5TwDADCOd1B57LqFqtogFETZkYy0mU9g0RA64K6oKAhFZZeE0keCpcca3rkTo5u5nZ1a
+CK48/XXZ9pGKQ+X0WTRt5J82CPp/3oefB7tpLZ4XjkL7gRsyWprr9JPiEBnrO5qXSrgN3aXA6KnpoBmj
+TbKtWrc/V6YEEUNNUMJx5w+nOQBnU4JymApyNlrcfeFX633bS/ktEYXqfXmaGHJOCbaRg4B6Ug/bXQUj
+7P1tOAo8W4PQRFovlCbH8sxuMcR7e4WclR1KRqM12vMdH33L6Hrwy/ukBBTcdONGTw5k9PgCj2c02vHO
+zlKi4HL+DQAA//8AupN5MQMAAA==
 `,
 	},
 
@@ -281,27 +299,6 @@ XobWSELvfwEAAP//jOQDGCsBAAA=
 `,
 	},
 
-	"/show.html": {
-		name:    "show.html",
-		local:   "views/show.html",
-		size:    2196,
-		modtime: 1559804833,
-		compressed: `
-H4sIAAAAAAAC/7RWzW7zNhC8+ym2PFeSfetBFFCgDVAgKIIYfQCaXEt0KZIhl/6B4XcvaMuJ4sSpky+f
-L7LBmV3ODM1V/YtyknYeoaPeNJM6P0AaESNn1hWryMAI23KGloHSgTNDgWUgCtVMAADqHkmA7ESISJwl
-Wha/sfFSR+QLfEp6zdm2SKKQrveC9MIgA+ksoSXONHJULb5iWtEjZ2uNG+8CjcAbrajjCtdaYnH88Sto
-q0kLU0QpDPJZOT2XIk0GmzsUlALeGdHOMWRiXZ1WTiij7b8Q0HAWaWcwdojEoAu45KwSMSLFSsZYLV2y
-SpB2tpQxsk+yhfcDra5OFtYLp3bNpFZ6fTa+DVoVWavQFsO5xSVgC8eHF0pp2xbbAXfEdrNmv4fyb9Ej
-HA511c2aycvq0oUehMwaOKuSV4Ky78+Ay3bBbUbFnxHa+kSQTw9nhFtibyDD5xTj0oi2zF+v4tbCJORs
-tPOrUG+ExM4ZhYGzPy1hgJ1LAYaUIfPLsnyjqlJ6/WNKg7At3iI1OGNcojJSEITtrvQYJFoS7U0OPA70
-+Zn+8Ez/yJheW86mDHqx5Ww2nV7I+QYDUjBfkq9Q6qidvXetlr97fbUI7Pegl+848MerCg9/weFwtcb/
-uflOrQ83hFZ90O7acZQpkuvhLB1M7ga53T+P99BhwO/Px6Z+geEzEQVh1RxRzYWhm1N5HJG+EMQF/Sd4
-7yMm5SCLcz0MWiEiqvcc9A11OsJGG5PHzFK3+RqhDi/qvPyJYSEiKoho8HiVlnXlbwhzHFVMi14Tg9HN
-XeXLeeCM+XWUQXuCGOTLRFnFao1WuVCtnhKGXbmKrKmrE7S5hbfpBBXHLX2eO5qEt3PzAHyNrqthAlan
-d5D/AgAA///xBHc1lAgAAA==
-`,
-	},
-
 	"/views": {
 		name:  "views",
 		local: `./views`,
@@ -313,9 +310,9 @@ var _escDirs = map[string][]os.FileInfo{
 
 	"./views": {
 		_escData["/create.html"],
+		_escData["/edit.html"],
 		_escData["/index.html"],
 		_escData["/layout.html"],
 		_escData["/login.html"],
-		_escData["/show.html"],
 	},
 }

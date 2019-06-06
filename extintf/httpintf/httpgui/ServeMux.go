@@ -17,8 +17,8 @@ func NewServeMux(uc *usecases.UseCases) *ServeMux {
 	mux := &ServeMux{ServeMux: http.NewServeMux(), UseCases: uc,}
 	mux.Handle(`/assets/`, http.StripPrefix(`/assets`, assetsFS()))
 	mux.Handle(`/`, authorized(uc, ctrl.IndexPage))
-	mux.Handle(`/update`, authorized(uc, ctrl.UpdatePage))
 	mux.Handle(`/create`, authorized(uc, ctrl.CreatePage))
+	mux.Handle(`/edit`, authorized(uc, ctrl.EditPage))
 	mux.HandleFunc(`/login`, ctrl.LoginPage)
 	return mux
 }

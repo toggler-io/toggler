@@ -1,11 +1,9 @@
 package controllers
 
 import (
-	"context"
-	"fmt"
-	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/httpapi"
+	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/httputils"
+	"log"
 	"net/http"
-	"net/http/httptest"
 )
 
 func (ctrl *Controller) CreatePage(w http.ResponseWriter, r *http.Request) {
@@ -14,14 +12,26 @@ func (ctrl *Controller) CreatePage(w http.ResponseWriter, r *http.Request) {
 		ctrl.Render(w, `/create.html`, nil)
 
 	case http.MethodPost:
-		// HACK
-		pu := ctrl.GetProtectedUsecases(r)
-		ctx := context.WithValue(r.Context(), `ProtectedUsecases`, pu)
-		r = r.WithContext(ctx)
-		rr := httptest.NewRecorder()
-		httpapi.NewServeMux(ctrl.UseCases).CreateFeatureFlagFORM(rr, r)
 
-		fmt.Println(rr.Code, rr.Body.String())
+		ff, err := httputils.ParseFlagFromForm(r)
+
+		if err != nil {
+			log.Println(err)
+			http.Redirect(w, r, `/`, http.StatusFound)
+			return
+		}
+
+		if ff.ID != `` {
+			log.Println(`unexpected flag id received`)
+			http.Redirect(w, r, `/`, http.StatusFound)
+			return
+		}
+
+		err = ctrl.GetProtectedUsecases(r).CreateFeatureFlag(ff)
+
+		if err != nil {
+			log.Println(err)
+		}
 
 		http.Redirect(w, r, `/`, http.StatusFound)
 
