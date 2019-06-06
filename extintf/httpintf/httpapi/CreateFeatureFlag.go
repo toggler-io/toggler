@@ -2,12 +2,11 @@ package httpapi
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/httputils"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"github.com/adamluzsi/FeatureFlags/usecases"
+	"github.com/pkg/errors"
 	"net/http"
-	"net/url"
-	"strconv"
 )
 
 func (sm *ServeMux) CreateFeatureFlagJSON(w http.ResponseWriter, r *http.Request) {
@@ -42,53 +41,18 @@ func (sm *ServeMux) CreateFeatureFlagFORM(w http.ResponseWriter, r *http.Request
 
 	defer r.Body.Close() // ignorable
 
-	var flag rollouts.FeatureFlag
-
-	flag.Name = r.Form.Get(`flag.name`)
-
-	if flag.Name == `` {
-		handleError(w, fmt.Errorf(`missing feature name`), http.StatusBadRequest)
-		return
-	}
-
-	var randSeedSalt int64
-
-	rawRandSeedSalt := r.Form.Get(`flag.rollout.randSeedSalt`)
-
-	if rawRandSeedSalt != `` {
-		var err error
-		randSeedSalt, err = strconv.ParseInt(rawRandSeedSalt, 10, 64)
-
-		if handleError(w, err, http.StatusBadRequest) {
-			return
-		}
-	}
-
-	flag.Rollout.RandSeedSalt = randSeedSalt
-
-	percentage, err := strconv.ParseInt(r.Form.Get(`flag.rollout.strategy.percentage`), 10, 32)
+	ff, err := httputils.ParseFlagFromForm(r)
 
 	if handleError(w, err, http.StatusBadRequest) {
 		return
 	}
 
-	flag.Rollout.Strategy.Percentage = int(percentage)
-
-	var decisionLogicAPI *url.URL
-	rawURL := r.Form.Get(`flag.rollout.strategy.decisionLogicApi`)
-
-	if rawURL != `` {
-		var err error
-		decisionLogicAPI, err = url.ParseRequestURI(rawURL)
-
-		if handleError(w, err, http.StatusBadRequest) {
-			return
-		}
+	if ff.ID != `` {
+		handleError(w, errors.New(`unexpected flag id received`), http.StatusBadRequest)
+		return
 	}
 
-	flag.Rollout.Strategy.DecisionLogicAPI = decisionLogicAPI
-
-	if handleError(w, pu.CreateFeatureFlag(&flag), http.StatusInternalServerError) {
+	if handleError(w, pu.CreateFeatureFlag(ff), http.StatusInternalServerError) {
 		return
 	}
 

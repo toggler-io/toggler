@@ -2,12 +2,11 @@ package httpapi
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
+	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/httputils"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"github.com/adamluzsi/FeatureFlags/usecases"
 	"net/http"
-	"net/url"
-	"strconv"
 )
 
 func (sm *ServeMux) UpdateFeatureFlagJSON(w http.ResponseWriter, r *http.Request) {
@@ -42,64 +41,18 @@ func (sm *ServeMux) UpdateFeatureFlagFORM(w http.ResponseWriter, r *http.Request
 
 	defer r.Body.Close() // ignorable
 
-	var flag rollouts.FeatureFlag
-
-	flag.Name = r.Form.Get(`flag.name`)
-
-	if flag.Name == `` {
-		handleError(w, fmt.Errorf(`missing feature name`), http.StatusBadRequest)
-		return
-	}
-
-	flag.ID = r.Form.Get(`flag.id`)
-
-	if flag.ID == `` {
-		handleError(w, fmt.Errorf(`missing feature ID`), http.StatusBadRequest)
-		return
-	}
-
-	var randSeedSalt int64
-
-	rawRandSeedSalt := r.Form.Get(`flag.rollout.randSeedSalt`)
-
-
-	if rawRandSeedSalt != `` {
-
-		var err error
-		randSeedSalt, err = strconv.ParseInt(rawRandSeedSalt, 10, 64)
-
-		if handleError(w, err, http.StatusBadRequest) {
-			return
-		}
-
-	} else {
-	}
-
-	flag.Rollout.RandSeedSalt = randSeedSalt
-
-	percentage, err := strconv.ParseInt(r.Form.Get(`flag.rollout.strategy.percentage`), 10, 32)
+	ff, err := httputils.ParseFlagFromForm(r)
 
 	if handleError(w, err, http.StatusBadRequest) {
 		return
 	}
 
-	flag.Rollout.Strategy.Percentage = int(percentage)
-
-	var decisionLogicAPI *url.URL
-	rawURL := r.Form.Get(`flag.rollout.strategy.decisionLogicApi`)
-
-	if rawURL != `` {
-		var err error
-		decisionLogicAPI, err = url.ParseRequestURI(rawURL)
-
-		if handleError(w, err, http.StatusBadRequest) {
-			return
-		}
+	if ff.ID == `` {
+		handleError(w, errors.New(`expected flag id not received`), http.StatusBadRequest)
+		return
 	}
 
-	flag.Rollout.Strategy.DecisionLogicAPI = decisionLogicAPI
-
-	if handleError(w, pu.UpdateFeatureFlag(&flag), http.StatusInternalServerError) {
+	if handleError(w, pu.UpdateFeatureFlag(ff), http.StatusInternalServerError) {
 		return
 	}
 
