@@ -3,12 +3,14 @@ package controllers
 import (
 	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/httputils"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	"github.com/adamluzsi/frameless/iterators"
 	"log"
 	"net/http"
 )
 
 type edigPageContent struct {
-	Flag rollouts.FeatureFlag
+	Flag   rollouts.FeatureFlag
+	Pilots []rollouts.Pilot
 }
 
 // super hacky implementation for the sake of POC
@@ -33,7 +35,13 @@ func (ctrl *Controller) EditPage(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		ctrl.Render(w, `/edit.html`, edigPageContent{Flag: ff})
+		var pilots []rollouts.Pilot
+
+		if ctrl.handleError(w, r, iterators.CollectAll(ctrl.Storage.FindPilotsByFeatureFlag(&ff), &pilots)) {
+			return
+		}
+
+		ctrl.Render(w, `/edit.html`, edigPageContent{Flag: ff, Pilots: pilots})
 
 	case http.MethodPost:
 		ff, err := httputils.ParseFlagFromForm(r)

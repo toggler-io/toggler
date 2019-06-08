@@ -40,36 +40,58 @@
                 </form>
             </div>
 
-{{/*            <div class="l-box-lrg pure-u pure-u-1">*/}}
-
-{{/*            </div>*/}}
-
-{{/*            <div class="l-box-lrg pure-u pure-u-1">*/}}
-{{/*                <form action="/edit/enrollment" method="post" class="pure-form pure-form-aligned">*/}}
-{{/*                    <fieldset>*/}}
-
-{{/*                        <div class="pure-control-group">*/}}
-{{/*                            <label for="enrollment">Enrollment</label>*/}}
-{{/*                            <input id="enrollment"*/}}
-{{/*                                   name="pilot.enrollment"*/}}
-{{/*                                   type="checkbox">*/}}
-{{/*                        </div>*/}}
-
-{{/*                        <div class="pure-control-group">*/}}
-{{/*                            <label for="pilotID"></label>*/}}
-{{/*                            <input id="pilotID"*/}}
-{{/*                                   name="pilot.id"*/}}
-{{/*                                   type="text"*/}}
-{{/*                                   placeholder="Pilot ID that needs to be enrolled/blocked">*/}}
-{{/*                        </div>*/}}
-
-{{/*                        <input name="flag.id" type="hidden" value="{{ .Flag.ID }}">*/}}
-{{/*                        <button type="submit" class="pure-button pure-button-primary">Save</button>*/}}
-
-{{/*                    </fieldset>*/}}
-{{/*                </form>*/}}
-{{/*            </div>*/}}
-
         </div>
     </div>
+
+    <div class="content">
+        {{ range .Pilots }}
+            <form class="pure-form">
+                <fieldset>
+
+                    <input name="pilot.id" type="hidden" value="{{ .ID }}">
+                    <input name="pilot.extID" type="text" value="{{ .ExternalID }}">
+                    <input name="pilot.flagID" type="text" value="{{ .FeatureFlagID }}">
+
+                    <label for="enrollment.{{ .ID }}">
+                        <input name="pilot.enrolled"
+                               id="enrollment.{{ .ID }}"
+                               type="checkbox"
+                               {{ if .Enrolled }}checked="checked"{{end}}> Enrolled
+                    </label>
+
+                    <button type="submit" class="pure-button pure-button-primary">update</button>
+
+                </fieldset>
+            </form>
+        {{ end }}
+    </div>
+
+    <div class="content">
+        <div class="l-box-lrg pure-u pure-u-1">
+            <form action="/pilot/create" method="post" class="pure-form pure-form-aligned">
+                <fieldset>
+
+                    <div class="pure-control-group">
+                        <label for="enrollment">Enrollment</label>
+                        <input id="enrollment"
+                               name="pilot.enrollment"
+                               type="checkbox">
+                    </div>
+
+                    <div class="pure-control-group">
+                        <label for="pilotID"></label>
+                        <input id="pilotID"
+                               name="pilot.id"
+                               type="text"
+                               placeholder="Pilot ID that needs to be enrolled/blocked">
+                    </div>
+
+                    <input name="flag.id" type="hidden" value="{{ .Flag.ID }}">
+                    <button type="submit" class="pure-button pure-button-primary">Save</button>
+
+                </fieldset>
+            </form>
+        </div>
+    </div>
+
 {{end}}

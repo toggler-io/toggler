@@ -18,6 +18,7 @@ type Controller struct {
 	Render func(http.ResponseWriter, string, interface{})
 }
 
+//TODO: cache templates with closure
 func renderFunc(w http.ResponseWriter, tempName string, data interface{}) {
 	layoutRawStr := views.FSMustString(false, `/layout.html`)
 	pageRawStr := views.FSMustString(false, tempName)

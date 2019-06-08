@@ -34,9 +34,10 @@ func TestUseCases_IsFeatureEnabledFor(t *testing.T) {
 		s.When(`user piloting status registered`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
 				enrollment := t.I(`enrollment`).(bool)
+				require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
 
 				require.Nil(t, GetRolloutManager(t).SetPilotEnrollmentForFeature(
-					t.I(`FeatureName`).(string),
+					GetFeatureFlag(t).ID,
 					t.I(`ExternalPilotID`).(string),
 					enrollment,
 				))

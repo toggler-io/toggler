@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/httputils"
 	"github.com/adamluzsi/FeatureFlags/usecases"
+	"github.com/adamluzsi/frameless"
 	"log"
 	"net/http"
 )
@@ -63,6 +64,11 @@ func serveJSON(w http.ResponseWriter, status int, data interface{}) {
 func handleError(w http.ResponseWriter, err error, errCode int) (errorWasHandled bool) {
 	if err == usecases.ErrInvalidToken {
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return true
+	}
+
+	if err == frameless.ErrNotFound {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return true
 	}
 

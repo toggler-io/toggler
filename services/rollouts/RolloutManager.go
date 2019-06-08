@@ -1,6 +1,7 @@
 package rollouts
 
 import (
+	"github.com/adamluzsi/frameless"
 	"time"
 
 	"github.com/adamluzsi/frameless/iterators"
@@ -91,15 +92,21 @@ func (manager *RolloutManager) ListFeatureFlags() ([]*FeatureFlag, error) {
 	return ffs, err
 }
 
-func (manager *RolloutManager) SetPilotEnrollmentForFeature(featureFlagName string, pilotExtID string, isEnrolled bool) error {
+func (manager *RolloutManager) SetPilotEnrollmentForFeature(flagID, pilotID string, isEnrolled bool) error {
 
-	ff, err := manager.ensureFeatureFlag(featureFlagName)
+	var ff FeatureFlag
+
+	found, err := manager.Storage.FindByID(flagID, &ff)
 
 	if err != nil {
 		return err
 	}
 
-	pilot, err := manager.Storage.FindFlagPilotByExternalPilotID(ff.ID, pilotExtID)
+	if !found {
+		return frameless.ErrNotFound
+	}
+
+	pilot, err := manager.Storage.FindFlagPilotByExternalPilotID(ff.ID, pilotID)
 
 	if err != nil {
 		return err
@@ -110,7 +117,7 @@ func (manager *RolloutManager) SetPilotEnrollmentForFeature(featureFlagName stri
 		return manager.Storage.Update(pilot)
 	}
 
-	return manager.Save(&Pilot{FeatureFlagID: ff.ID, ExternalID: pilotExtID, Enrolled: isEnrolled})
+	return manager.Save(&Pilot{FeatureFlagID: ff.ID, ExternalID: pilotID, Enrolled: isEnrolled})
 
 }
 

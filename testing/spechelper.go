@@ -104,9 +104,13 @@ func GetUniqUserID(t *testcase.T) string {
 }
 
 func SpecPilotEnrolmentIs(t *testcase.T, enrollment bool) {
+	if GetFeatureFlag(t).ID == `` {
+		require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
+	}
+
 	rm := rollouts.NewRolloutManager(GetStorage(t))
 	require.Nil(t, rm.SetPilotEnrollmentForFeature(
-		GetFeatureFlagName(t),
+		GetFeatureFlag(t).ID,
 		GetExternalPilotID(t),
 		enrollment,
 	))

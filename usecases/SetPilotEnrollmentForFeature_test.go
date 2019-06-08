@@ -15,9 +15,13 @@ func TestUseCases_SetPilotEnrollmentForFeature(t *testing.T) {
 	SetupSpec(s)
 	s.Parallel()
 
+	s.Before(func(t *testcase.T) {
+		require.Nil(t, GetProtectedUsecases(t).CreateFeatureFlag(GetFeatureFlag(t)))
+	})
+
 	subject := func(t *testcase.T) error {
 		return GetProtectedUsecases(t).SetPilotEnrollmentForFeature(
-			GetFeatureFlagName(t),
+			GetFeatureFlag(t).ID,
 			GetExternalPilotID(t),
 			t.I(`expected enrollment`).(bool),
 		)
@@ -27,13 +31,10 @@ func TestUseCases_SetPilotEnrollmentForFeature(t *testing.T) {
 		return rand.Intn(2) == 0
 	})
 
-	s.Then(`it will set percentage`, func(t *testcase.T) {
+	s.Then(`it will set enrollment`, func(t *testcase.T) {
 		require.Nil(t, subject(t))
 
-		flag, err := GetStorage(t).FindFlagByName(GetFeatureFlagName(t))
-		require.Nil(t, err)
-
-		pilot, err := GetStorage(t).FindFlagPilotByExternalPilotID(flag.ID, GetExternalPilotID(t))
+		pilot, err := GetStorage(t).FindFlagPilotByExternalPilotID(GetFeatureFlag(t).ID, GetExternalPilotID(t))
 		require.Nil(t, err)
 		require.NotNil(t, pilot)
 		require.Equal(t, t.I(`expected enrollment`).(bool), pilot.Enrolled)

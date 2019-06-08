@@ -351,11 +351,15 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 		subject := func(t *testcase.T) error {
 			return manager(t).SetPilotEnrollmentForFeature(
-				GetFeatureFlagName(t),
+				t.I(`FeatureFlagID`).(string),
 				GetExternalPilotID(t),
 				GetNewEnrollment(t),
 			)
 		}
+
+		s.Let(`FeatureFlagID`, func(t *testcase.T) interface{} {
+			return GetFeatureFlag(t).ID
+		})
 
 		s.Let(`NewEnrollment`, func(t *testcase.T) interface{} {
 			return rand.Intn(2) == 0
@@ -373,29 +377,13 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 		}
 
 		s.When(`no feature flag is seen ever before`, func(s *testcase.Spec) {
+			s.Let(`FeatureFlagID`, func(t *testcase.T) interface{} { return `` })
 			s.Before(func(t *testcase.T) {
 				require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
 			})
 
-			s.Then(`feature flag created`, func(t *testcase.T) {
-				require.Nil(t, subject(t))
-
-				flag := findFlag(t)
-				require.Equal(t, GetFeatureFlagName(t), flag.Name)
-				require.Nil(t, flag.Rollout.Strategy.DecisionLogicAPI)
-				require.Equal(t, 0, flag.Rollout.Strategy.Percentage)
-				require.Equal(t, GetGeneratedRandomSeed(t), flag.Rollout.RandSeedSalt)
-			})
-
-			s.Then(`pilot is enrollment is set for the feature is set`, func(t *testcase.T) {
-				require.Nil(t, subject(t))
-
-				flag := findFlag(t)
-				pilot, err := GetStorage(t).FindFlagPilotByExternalPilotID(flag.ID, GetExternalPilotID(t))
-				require.Nil(t, err)
-				require.NotNil(t, pilot)
-				require.Equal(t, GetNewEnrollment(t), pilot.Enrolled)
-				require.Equal(t, GetExternalPilotID(t), pilot.ExternalID)
+			s.Then(`error returned`, func(t *testcase.T) {
+				require.Error(t, subject(t))
 			})
 		})
 
@@ -467,7 +455,6 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 					})
 				})
 			})
-
 		})
 	})
 }
