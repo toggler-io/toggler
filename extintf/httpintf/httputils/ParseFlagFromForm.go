@@ -2,7 +2,6 @@ package httputils
 
 import (
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
-	"github.com/pkg/errors"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -17,11 +16,6 @@ func ParseFlagFromForm(r *http.Request) (*rollouts.FeatureFlag, error) {
 	var flag rollouts.FeatureFlag
 
 	flag.Name = r.Form.Get(`flag.name`)
-
-	if flag.Name == `` {
-		return nil, errors.New(`missing flag name`)
-	}
-
 	flag.ID = r.Form.Get(`flag.id`)
 
 	var randSeedSalt int64

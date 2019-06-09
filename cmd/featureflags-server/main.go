@@ -2,19 +2,24 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/adamluzsi/FeatureFlags/extintf/httpintf"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"github.com/adamluzsi/FeatureFlags/services/security"
 	"github.com/adamluzsi/FeatureFlags/testing"
 	"github.com/adamluzsi/FeatureFlags/usecases"
-	"log"
-	"net/http"
+	"github.com/unrolled/logger"
 )
 
 func main() {
 	storage := testing.NewTestStorage()
 	useCases := usecases.NewUseCases(storage)
 	mux := httpintf.NewServeMux(useCases)
+
+	loggerMW := logger.New()
+	app := loggerMW.Handler(mux)
 
 	i := security.Issuer{Storage: storage}
 	t, err := i.CreateNewToken(`testing`, nil, nil)
@@ -43,7 +48,7 @@ func main() {
 		panic(err)
 	}
 
-	if err := http.ListenAndServe(`:8080`, mux); err != nil {
+	if err := http.ListenAndServe(`:8080`, app); err != nil {
 		log.Fatal(err)
 	}
 }

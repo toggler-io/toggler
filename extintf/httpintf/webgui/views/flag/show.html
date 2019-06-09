@@ -3,7 +3,7 @@
         <h2 class="content-head is-center">{{ .Flag.Name }}</h2>
         <div class="pure-g">
             <div class="l-box-lrg pure-u pure-u-1">
-                <form action="/edit" method="post" class="pure-form pure-form-aligned">
+                <form action="/flag" method="post" class="pure-form pure-form-aligned">
                     <fieldset>
 
                         <div class="pure-control-group">
@@ -45,21 +45,20 @@
 
     <div class="content">
         {{ range .Pilots }}
-            <form class="pure-form">
+            <form method="post" action="/flag/pilot" class="pure-form">
                 <fieldset>
-
-                    <input name="pilot.id" type="hidden" value="{{ .ID }}">
-                    <input name="pilot.extID" type="text" value="{{ .ExternalID }}">
-                    <input name="pilot.flagID" type="text" value="{{ .FeatureFlagID }}">
 
                     <label for="enrollment.{{ .ID }}">
                         <input name="pilot.enrolled"
                                id="enrollment.{{ .ID }}"
                                type="checkbox"
-                               {{ if .Enrolled }}checked="checked"{{end}}> Enrolled
+                               {{ if .Enrolled }}checked="checked"{{end}}> {{ .ExternalID }}
                     </label>
 
-                    <button type="submit" class="pure-button pure-button-primary">update</button>
+                    <input name="pilot.id" type="hidden" value="{{ .ID }}">
+                    <input name="pilot.extID" type="hidden" value="{{ .ExternalID }}">
+                    <input name="pilot.flagID" type="hidden" value="{{ .FeatureFlagID }}">
+                    <button type="submit" class="pure-button pure-button-primary">set</button>
 
                 </fieldset>
             </form>
@@ -67,31 +66,29 @@
     </div>
 
     <div class="content">
-        <div class="l-box-lrg pure-u pure-u-1">
-            <form action="/pilot/create" method="post" class="pure-form pure-form-aligned">
-                <fieldset>
+        <form method="post" action="/flag/pilot" class="pure-form pure-form-aligned">
+            <fieldset>
 
-                    <div class="pure-control-group">
-                        <label for="enrollment">Enrollment</label>
-                        <input id="enrollment"
-                               name="pilot.enrollment"
-                               type="checkbox">
-                    </div>
+                <div class="pure-control-group">
+                    <label for="pilotExtID">Pilot External ID</label>
+                    <input id="pilotExtID"
+                           name="pilot.extID"
+                           type="text"
+                           placeholder="Pilot ID that needs to be enrolled/blocked">
+                </div>
 
-                    <div class="pure-control-group">
-                        <label for="pilotID"></label>
-                        <input id="pilotID"
-                               name="pilot.id"
-                               type="text"
-                               placeholder="Pilot ID that needs to be enrolled/blocked">
-                    </div>
+                <div class="pure-control-group">
+                    <label for="enrollment">Enrollment Status</label>
+                    <input id="enrollment"
+                           name="pilot.enrolled"
+                           type="checkbox">
+                </div>
 
-                    <input name="flag.id" type="hidden" value="{{ .Flag.ID }}">
-                    <button type="submit" class="pure-button pure-button-primary">Save</button>
+                <input name="pilot.flagID" type="hidden" value="{{ .Flag.ID }}">
+                <button type="submit" class="pure-button pure-button-primary">Save</button>
 
-                </fieldset>
-            </form>
-        </div>
+            </fieldset>
+        </form>
     </div>
 
 {{end}}

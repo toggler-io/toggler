@@ -10,5 +10,6 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/rakyll/statik v0.1.6
 	github.com/stretchr/testify v1.3.0
+	github.com/unrolled/logger v0.0.0-20190327162521-be1a2406c7c9
 	golang.org/x/text v0.3.2 // indirect
 )

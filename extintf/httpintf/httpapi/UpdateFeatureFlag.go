@@ -2,7 +2,6 @@ package httpapi
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/httputils"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"github.com/adamluzsi/FeatureFlags/usecases"
@@ -48,7 +47,12 @@ func (sm *ServeMux) UpdateFeatureFlagFORM(w http.ResponseWriter, r *http.Request
 	}
 
 	if ff.ID == `` {
-		handleError(w, errors.New(`expected flag id not received`), http.StatusBadRequest)
+		http.Error(w, `expected flag id not received`, http.StatusBadRequest)
+		return
+	}
+
+	if ff.Name == `` {
+		http.Error(w, `missing flag name`, http.StatusBadRequest)
 		return
 	}
 

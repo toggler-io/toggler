@@ -1,12 +1,13 @@
-package httpgui
+package webgui
 
 import (
 	"context"
-	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/httpgui/assets"
-	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/httpgui/controllers"
-	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/httputils"
-	"github.com/adamluzsi/FeatureFlags/usecases"
 	"net/http"
+
+	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/httputils"
+	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/webgui/assets"
+	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/webgui/controllers"
+	"github.com/adamluzsi/FeatureFlags/usecases"
 )
 
 //go:generate esc -o ./assets/fs.go -ignore fs.go -pkg assets -prefix assets ./assets
@@ -14,11 +15,11 @@ import (
 
 func NewServeMux(uc *usecases.UseCases) *ServeMux {
 	ctrl := controllers.NewController(uc)
-	mux := &ServeMux{ServeMux: http.NewServeMux(), UseCases: uc,}
+	mux := &ServeMux{ServeMux: http.NewServeMux(), UseCases: uc}
 	mux.Handle(`/assets/`, http.StripPrefix(`/assets`, assetsFS()))
 	mux.Handle(`/`, authorized(uc, ctrl.IndexPage))
-	mux.Handle(`/create`, authorized(uc, ctrl.CreatePage))
-	mux.Handle(`/edit`, authorized(uc, ctrl.EditPage))
+	mux.Handle(`/flag`, authorized(uc, ctrl.FlagPage))
+	mux.Handle(`/flag/`, authorized(uc, ctrl.FlagPage))
 	mux.HandleFunc(`/login`, ctrl.LoginPage)
 	return mux
 }

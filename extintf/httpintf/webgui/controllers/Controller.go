@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"bytes"
-	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/httpgui/views"
+	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/webgui/views"
 	"github.com/adamluzsi/FeatureFlags/usecases"
 	"html/template"
 	"log"

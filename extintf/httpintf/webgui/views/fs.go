@@ -209,46 +209,46 @@ func FSMustString(useLocal bool, name string) string {
 
 var _escData = map[string]*_escFile{
 
-	"/create.html": {
+	"/flag/create.html": {
 		name:    "create.html",
-		local:   "views/create.html",
-		size:    2091,
-		modtime: 1559804833,
+		local:   "views/flag/create.html",
+		size:    2089,
+		modtime: 1560121704,
 		compressed: `
 H4sIAAAAAAAC/8xVTWvcMBC951cMurQ92JvkvDaElkAhlJCQHzBrzdoCfSGN8sGy/73I9iaO2aRxKSV7
 2dHOm/dGb7TSbidpqyyBMKis2O9PAADWUt1DozHGSjTOMlkWdZ/ps935LFl0hBJULBqyTEHUux2Uv9AQ
-7PfrVXc+qZ0w+xSoaCfEc4AuNu6x0KGFHprGr+JsVtPXbV0wgA0rZyuxagIhkwBD3DlZCe8ii1fCPf45
-KlCr1pIUIJGx2Ch+wCDJFg/ITadsW4ljqoOyIi0jcX1yNH9029m44HTRBpf8G8TPxRo3pGHrQiW2hJwC
-ifpyCCC7vF71iD+wKOsTg5IvJGDRUCW2Gtsyh+JdgvHDT54qwfTIH4J7jQ11Tkt66R6yYi9eluU7m1+v
-pLr/H656CvnkYkuivnFau8Rw/fzbUnsnbFOHw0BcRg7I1D6VE9zHjQ9oM69RthKnAgw+VuLs9PRDDPeo
-E+WyT2B5JJKiviWS4LbAHUFAK50BHylJd1gpO+QG75ZOohcZjXs1g8yetW9R8wLzbTIbCn9x7vN5H7UP
-O8u9lWUJX53Pdxbqb59hLJIaFZWzF17d3VyJ+se4hovrn3B3c7V0AjO+d/8PB+yVa1Vz4dWCwaSgl0+F
-OxX7q+hLhCZFdgYOLYDOPRw2/Y9mtEnMzo4dx7QxavYkjYBJXPigDIYnUX/vHzS41NiuV0PyDa316uVB
-OpJzwcxe3KHvI8sx3O3Iyv3+dwAAAP//emMeZisIAAA=
+7PfrVXc+qZ0w+xSoaCfEc4AuNu6x0KGFHprGr+JsVtPXbV0wgA0rZyux2mpsBRjizslKeBdZvJLt0c9R
+gVq1lqQAiYzFRvEDBkm2eEBuOmXbShzTHHQVaRmJ65Oj+aObzrYFp4s2uOTfIH4u1rghDVsXKrEl5BRI
+1JdDANnj9apH/IFFWZ8YlHwhAYuGKpGdKnMo3iUYP/zkqRJMj/whuNfYUOe0pJfuISv24mVZvrP59Uqq
++//hqqeQzy22JOobp7VLDNfPvy21d8I2dTgMxGXkgEztUznBfdz4gDbzGmUrcSrA4GMlzk5PP8RwjzpR
+LvsElkciKepbIgluC9wRBLTSGfCRknSHlbJDbvBu6SR6kdG4VzPI7Fn7FjUvMN8ms6HwF+c+n/dR+7Cz
+3FtZlvDV+Xxjof72GcYiqVFROXvh1d3Nlah/jGu4uP4JdzdXSycw43v3/3DAXrlWNRdeLRhMCnr5VLhT
+sb+KvkRoUmRn4NAC6NzDYdP/aEabxOzs2HFMG6NmT9IImMSFD8pgeBL190DIBJca2/VqSL6htV69PEhH
+ci6Y2Xs79H1kOYa7HVm53/8OAAD//yxuFagpCAAA
 `,
 	},
 
-	"/edit.html": {
-		name:    "edit.html",
-		local:   "views/edit.html",
-		size:    4226,
-		modtime: 1559908989,
+	"/flag/show.html": {
+		name:    "show.html",
+		local:   "views/flag/show.html",
+		size:    4168,
+		modtime: 1560121920,
 		compressed: `
-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
+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
 `,
 	},
 
@@ -256,48 +256,54 @@ XigvCl+I8o0b+/ck5ZW+30JQBtp2I5f/BgAA///7bwKfghAAAA==
 		name:    "index.html",
 		local:   "views/index.html",
 		size:    817,
-		modtime: 1559859371,
+		modtime: 1560121673,
 		compressed: `
 H4sIAAAAAAAC/4SS3WrDMAyF7/sUwrDLxNBr12MwCoMxxvYEaqwmAtcpjlLojN99JO3omv7dBX0nOkeS
 U3K05kCgNshB5TwDADCOd1B57LqFqtogFETZkYy0mU9g0RA64K6oKAhFZZeE0keCpcca3rkTo5u5nZ1a
 CK48/XXZ9pGKQ+X0WTRt5J82CPp/3oefB7tpLZ4XjkL7gRsyWprr9JPiEBnrO5qXSrgN3aXA6KnpoBmj
 TbKtWrc/V6YEEUNNUMJx5w+nOQBnU4JymApyNlrcfeFX633bS/ktEYXqfXmaGHJOCbaRg4B6Ug/bXQUj
-7P1tOAo8W4PQRFovlCbH8sxuMcR7e4WclR1KRqM12vMdH33L6Hrwy/ukBBTcdONGTw5k9PgCj2c02vHO
-zlKi4HL+DQAA//8AupN5MQMAAA==
+7P1tOAo8W4PQRFovlF57rJ/ZLYZ4b6+Qs7LkWIxGa7TnOz76ltH14Jf3SQkouOnGjZ4cyOjxBR7PaLTj
+nZ2lRMHl/BsAAP//69LjNjEDAAA=
 `,
 	},
 
 	"/layout.html": {
 		name:    "layout.html",
 		local:   "views/layout.html",
-		size:    1870,
-		modtime: 1559804403,
+		size:    1875,
+		modtime: 1560121704,
 		compressed: `
 H4sIAAAAAAAC/7yVzW7bOBDH73mKMXNdWru3HCwBi6BGC7SHNscgB0Ycy5NQpMAZ2TAMv3tBSXbkLyBo
-gp48nI///Dgize3W4oI8gmpMhWq3uwEAmE1sKGXTICyldkXvSyY446tcoVd7Jxpb3HR2txYSh8UcjbQR
-Ye5MBQ8YV1TiLOtjo+QaxUC5NJFRctXKQt8Num9hb2rMlUUuIzVCwSsogxf0kqv74CUGB5vQRtj3/IUO
-DSPDmmQJC2cqnsB8/jC5Ir0iXDchykh3TVaWucWErbvFP0CehIzTXBqH+X/Tf9V4J478K0R0uWLZOOQl
-oihYRlzkKjPMKJw1bcSS+19dk5+WzGOm92ik+kXwos0aOdQ4aLyJTLR+pAU4Qfj2Be6eij9jrCJZ1hG5
-CZ5phTo4q+ki9uQRvaXFk9bFGUYlA0VyfBbKJQatjzg+bR4JwJlNaIUzJou6Rt8Ow/hbg7jI8K4JzLL+
-enb2c7Cb4mYIWFoB2Vz1uqcnCH6gb0FCVTmEI14zsN0mBtVJJOs7+VcFpTPMvUOnjY34DspfTf3cxgoj
-UBn8kXiXw43xxSzrft7aZmZMuIfvGE7qU2zg6O/Zec6wkdMsnWZFvtqP/1YV8/nDcetDeevO6x2xXGg1
-fOfzfBKsVXEYaaYuSaYppn9RTiCzzNEHGpQRjeDVNvdd+ON9bq9v5P+f1+VnWetOPmZmaTU+Bd3ywjkw
-5E8Gv90K1o0zgtCHYTo8badKR3b/yADHMlcvnLU0fWGVjmPnP1T0V2m4Yd0Dud2it7vd7wAAAP//AcHd
-0k4HAAA=
+gp40mo///Dgixe3W4oI8gmpMhWq3uwEAmE1sKGXTICyldkXvSyY446tcoVd7Jxpb3HR29y4kDos5Gmkj
+wtyZCh4wrqjEWdbHRsk1ioFyaSKj5KqVhb4bdN/C3tSYK4tcRmqEgldQBi/oJVf3wUsMDjahjbDv+Qsd
+GkaGNckSFs5UPIH5/GFyRXpFuG5ClJHumqwsc4sJW3cv/wB5EjJOc2kc5v9N/1XjlTjyrxDR5Ypl45CX
+iKJgGXGRq8wwo3DWtBFL7p+6Jj8tmcdM79FI9YvgRZs1cqhx0HgTmWj9SAtwgvDtC9w9FX/GWEWyrCNy
+EzzTCnVwVtNF7MkjekuLJ62LM4xKBork+CyUSwxaH3F82jwSgDOb0ApnTBZ1jb4dhvG3BnGR4V0TmGX9
+8ezs52A3xc0QsLQCsrnqdU93EPxA34KEqnIIR7xmYLtNDKqTSNZ38q8KSmeYe4dOCxvxHZS/mvq5jRVG
+oDL4I/Euhxvji1nWPd7aZmZMuIfvGE7qU2zg6M/Zec6wkNMsnWZFvtqP/1YV8/nDcetDeevO6x2xXGg1
+fOfzfBKsVXEYaaYuSaYppr8oJ5BZ5ugDDdK/MCsjGsGrve678Meb3V5fzf8/r8vPstadfNHM0mq8FbrX
+C5vBkD+Z/nYrWDfOCEIfhulwv50qHdn9TQMcy1y9cNbS9IVV2pOd/1DRn6fhmHW35HaL3u52vwMAAP//
+BbzUglMHAAA=
 `,
 	},
 
 	"/login.html": {
 		name:    "login.html",
 		local:   "views/login.html",
-		size:    299,
-		modtime: 1559745144,
+		size:    360,
+		modtime: 1560121673,
 		compressed: `
-H4sIAAAAAAAC/1SPQYrDMAxF9zmF0L7JBeJcYuYCbqy2YmzJ2ApDMb77kLYwyU58/SeeWgt0YyHA5Fmw
-9wEAYL5pSbBGX6vDvBW67AGCX41VHE5R7ywIieyhwWHWari80DfOFEMl+49eMUveDMQncmj6Q4Jgz0wO
-s6/1V0tAyNGv9NAYqDj83jvjOOIynA9dNzOVD1y3a2LDk+6ncJgvuXDy5YnLF98FWObpvThoT2fvedq/
-XobWSELvfwEAAP//jOQDGCsBAAA=
+H4sIAAAAAAAC/2SQUY7yMAyE33sKy+80F2h6if+/QGgMWJvYUeKyQlXvvmrLSrC8JfONRx4vS6QLCwHm
+wILr2gEADJHvMKXQmsdJxUgMx53s9KI1/+IyVzptAkKYjFU8uqRXFoRMdtPosWh7HT8imFJsZO/yjljK
+bCAhk0fTLxIEexTyWEJr31ojQklhopumSNXj/83T9z2O3WfYeTZTeQa0+ZzZ8G31p+HlfSqVc6gPHP/x
+VYBlcAf4U8F9dhjcdonjP7jI97FbFpK4rj8BAAD///JUCoxoAQAA
 `,
+	},
+
+	"/flag": {
+		name:  "flag",
+		local: `views/flag`,
+		isDir: true,
 	},
 
 	"/views": {
@@ -309,9 +315,13 @@ XobWSELvfwEAAP//jOQDGCsBAAA=
 
 var _escDirs = map[string][]os.FileInfo{
 
+	"views/flag": {
+		_escData["/flag/create.html"],
+		_escData["/flag/show.html"],
+	},
+
 	"./views": {
-		_escData["/create.html"],
-		_escData["/edit.html"],
+		_escData["/flag"],
 		_escData["/index.html"],
 		_escData["/layout.html"],
 		_escData["/login.html"],

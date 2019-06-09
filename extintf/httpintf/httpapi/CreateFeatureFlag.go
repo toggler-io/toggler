@@ -5,7 +5,6 @@ import (
 	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/httputils"
 	"github.com/adamluzsi/FeatureFlags/services/rollouts"
 	"github.com/adamluzsi/FeatureFlags/usecases"
-	"github.com/pkg/errors"
 	"net/http"
 )
 
@@ -47,8 +46,13 @@ func (sm *ServeMux) CreateFeatureFlagFORM(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	if ff.Name == `` {
+		http.Error(w, `missing flag name`, http.StatusBadRequest)
+		return
+	}
+
 	if ff.ID != `` {
-		handleError(w, errors.New(`unexpected flag id received`), http.StatusBadRequest)
+		http.Error(w, `unexpected flag id received`, http.StatusBadRequest)
 		return
 	}
 
