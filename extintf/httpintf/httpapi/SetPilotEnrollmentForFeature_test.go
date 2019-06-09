@@ -44,9 +44,9 @@ func TestServeMux_SetPilotEnrollmentForFeature(t *testing.T) {
 
 		values := u.Query()
 		values.Set(`token`, t.I(`TokenString`).(string))
-		values.Set(`flagID`, GetFeatureFlag(t).ID)
-		values.Set(`pilotID`, GetExternalPilotID(t))
-		values.Set(`enrolled`, t.I(`enrollment query value`).(string))
+		values.Set(`pilot.flagID`, GetFeatureFlag(t).ID)
+		values.Set(`pilot.extID`, GetExternalPilotID(t))
+		values.Set(`pilot.enrolled`, t.I(`enrollment query value`).(string))
 		u.RawQuery = values.Encode()
 
 		return httptest.NewRequest(http.MethodGet, u.String(), bytes.NewBuffer([]byte{}))

@@ -35,11 +35,11 @@ func main() {
 		panic(err)
 	}
 
-	if err := pu.SetPilotEnrollmentForFeature(ff.Name, `test-public-pilot-id-1`, true); err != nil {
+	if err := pu.SetPilotEnrollmentForFeature(ff.ID, `test-public-pilot-id-1`, true); err != nil {
 		panic(err)
 	}
 
-	if err := pu.SetPilotEnrollmentForFeature(ff.Name, `test-public-pilot-id-2`, false); err != nil {
+	if err := pu.SetPilotEnrollmentForFeature(ff.ID, `test-public-pilot-id-2`, false); err != nil {
 		panic(err)
 	}
 
