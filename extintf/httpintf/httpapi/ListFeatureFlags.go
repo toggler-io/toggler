@@ -1,17 +1,13 @@
 package httpapi
 
 import (
+	"github.com/adamluzsi/FeatureFlags/usecases"
 	"net/http"
 )
 
 func (sm *ServeMux) ListFeatureFlags(w http.ResponseWriter, r *http.Request) {
-	token := r.URL.Query().Get(`token`)
 
-	pu, err := sm.UseCases.ProtectedUsecases(token)
-
-	if handleError(w, err, http.StatusInternalServerError) {
-		return
-	}
+	pu := r.Context().Value(`ProtectedUsecases`).(*usecases.ProtectedUsecases)
 
 	ffs, err := pu.ListFeatureFlags()
 
