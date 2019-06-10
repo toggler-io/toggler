@@ -63,13 +63,13 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if ff.ID == `` {
-			log.Println(`missing flag id`)
+		if ff.ID != `` {
+			log.Println(`unexpected flag id received`)
 			http.Redirect(w, r, `/`, http.StatusFound)
 			return
 		}
 
-		err = ctrl.GetProtectedUsecases(r).UpdateFeatureFlag(ff)
+		err = ctrl.GetProtectedUsecases(r).CreateFeatureFlag(ff)
 
 		if err != nil {
 			log.Println(err)
