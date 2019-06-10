@@ -1,8 +1,8 @@
 package usecases
 
 import (
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
-	"github.com/adamluzsi/FeatureFlags/services/security"
+	"github.com/adamluzsi/toggler/services/rollouts"
+	"github.com/adamluzsi/toggler/services/security"
 )
 
 type ProtectedUsecases struct {

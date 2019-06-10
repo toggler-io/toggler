@@ -2,9 +2,9 @@ package httpapi
 
 import (
 	"encoding/json"
-	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/httputils"
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
-	"github.com/adamluzsi/FeatureFlags/usecases"
+	"github.com/adamluzsi/toggler/extintf/httpintf/httputils"
+	"github.com/adamluzsi/toggler/services/rollouts"
+	"github.com/adamluzsi/toggler/usecases"
 	"net/http"
 )
 

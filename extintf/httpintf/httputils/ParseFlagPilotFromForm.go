@@ -1,7 +1,7 @@
 package httputils
 
 import (
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/pkg/errors"
 	"net/http"
 	"strings"

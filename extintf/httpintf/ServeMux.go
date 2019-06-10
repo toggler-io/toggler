@@ -3,9 +3,9 @@ package httpintf
 import (
 	"net/http"
 
-	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/httpapi"
-	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/webgui"
-	"github.com/adamluzsi/FeatureFlags/usecases"
+	"github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+	"github.com/adamluzsi/toggler/extintf/httpintf/webgui"
+	"github.com/adamluzsi/toggler/usecases"
 )
 
 func NewServeMux(uc *usecases.UseCases) *ServeMux {

@@ -1,8 +1,8 @@
 package httpapi
 
 import (
-	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/httputils"
-	"github.com/adamluzsi/FeatureFlags/usecases"
+	"github.com/adamluzsi/toggler/extintf/httpintf/httputils"
+	"github.com/adamluzsi/toggler/usecases"
 	"net/http"
 )
 

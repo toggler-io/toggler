@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
-	. "github.com/adamluzsi/FeatureFlags/testing"
+	"github.com/adamluzsi/toggler/services/rollouts"
+	. "github.com/adamluzsi/toggler/testing"
 	"github.com/adamluzsi/testcase"
 
 	"github.com/adamluzsi/frameless/iterators"

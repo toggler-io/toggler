@@ -1,8 +1,8 @@
 package specs
 
 import (
-	"github.com/adamluzsi/FeatureFlags/services/security"
-	testing2 "github.com/adamluzsi/FeatureFlags/testing"
+	"github.com/adamluzsi/toggler/services/security"
+	testing2 "github.com/adamluzsi/toggler/testing"
 	"github.com/adamluzsi/frameless/resources/specs"
 	"testing"
 )

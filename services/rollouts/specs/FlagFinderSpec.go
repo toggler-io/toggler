@@ -1,10 +1,10 @@
 package specs
 
 import (
-	. "github.com/adamluzsi/FeatureFlags/testing"
+	. "github.com/adamluzsi/toggler/testing"
 	"testing"
 
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	"github.com/adamluzsi/toggler/services/rollouts"
 
 	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/stretchr/testify/require"

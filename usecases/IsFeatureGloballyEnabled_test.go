@@ -4,8 +4,8 @@ import (
 	"math/rand"
 	"testing"
 
-	. "github.com/adamluzsi/FeatureFlags/testing"
-	"github.com/adamluzsi/FeatureFlags/usecases"
+	. "github.com/adamluzsi/toggler/testing"
+	"github.com/adamluzsi/toggler/usecases"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 )

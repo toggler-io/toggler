@@ -1,11 +1,11 @@
 package specs
 
 import (
-	. "github.com/adamluzsi/FeatureFlags/testing"
+	. "github.com/adamluzsi/toggler/testing"
 	"strconv"
 	"testing"
 
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	"github.com/adamluzsi/toggler/services/rollouts"
 
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/resources/specs"

@@ -2,7 +2,7 @@ package httpapi_test
 
 import (
 	"bytes"
-	. "github.com/adamluzsi/FeatureFlags/testing"
+	. "github.com/adamluzsi/toggler/testing"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 	"net/http"

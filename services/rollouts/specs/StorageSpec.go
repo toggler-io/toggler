@@ -1,12 +1,12 @@
 package specs
 
 import (
-	testing2 "github.com/adamluzsi/FeatureFlags/testing"
+	testing2 "github.com/adamluzsi/toggler/testing"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 	"testing"
 
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/adamluzsi/frameless/resources/specs"
 )
 

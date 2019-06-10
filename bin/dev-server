@@ -2,4 +2,4 @@
 
 cd ${WDP}
 go generate ./...
-go run cmd/featureflags-server/main.go
+go run cmd/toggler/main.go

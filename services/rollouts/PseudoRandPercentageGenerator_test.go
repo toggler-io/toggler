@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/adamluzsi/testcase"
 
 	"github.com/stretchr/testify/require"

@@ -1,9 +1,9 @@
 package testing_test
 
 import (
-	rollspecs "github.com/adamluzsi/FeatureFlags/services/rollouts/specs"
-	secuspecs "github.com/adamluzsi/FeatureFlags/services/security/specs"
-	tting "github.com/adamluzsi/FeatureFlags/testing"
+	rollspecs "github.com/adamluzsi/toggler/services/rollouts/specs"
+	secuspecs "github.com/adamluzsi/toggler/services/security/specs"
+	tting "github.com/adamluzsi/toggler/testing"
 	"testing"
 )
 

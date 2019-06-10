@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/adamluzsi/FeatureFlags/services/security"
+	"github.com/adamluzsi/toggler/services/security"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 
-	. "github.com/adamluzsi/FeatureFlags/testing"
+	. "github.com/adamluzsi/toggler/testing"
 )
 
 func TestIssuer(t *testing.T) {

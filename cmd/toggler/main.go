@@ -5,11 +5,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/adamluzsi/FeatureFlags/extintf/httpintf"
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
-	"github.com/adamluzsi/FeatureFlags/services/security"
-	"github.com/adamluzsi/FeatureFlags/testing"
-	"github.com/adamluzsi/FeatureFlags/usecases"
+	"github.com/adamluzsi/toggler/extintf/httpintf"
+	"github.com/adamluzsi/toggler/services/rollouts"
+	"github.com/adamluzsi/toggler/services/security"
+	"github.com/adamluzsi/toggler/testing"
+	"github.com/adamluzsi/toggler/usecases"
 	"github.com/unrolled/logger"
 )
 

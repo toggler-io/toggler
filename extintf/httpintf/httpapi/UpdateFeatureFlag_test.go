@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"testing"
 
-	. "github.com/adamluzsi/FeatureFlags/testing"
+	. "github.com/adamluzsi/toggler/testing"
 )
 
 func TestServeMux_UpdateFeatureFlag(t *testing.T) {

@@ -1,8 +1,8 @@
 package testing
 
 import (
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
-	"github.com/adamluzsi/FeatureFlags/services/security"
+	"github.com/adamluzsi/toggler/services/rollouts"
+	"github.com/adamluzsi/toggler/services/security"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 	"math/rand"

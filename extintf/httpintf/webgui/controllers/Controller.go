@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"bytes"
-	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/webgui/views"
-	"github.com/adamluzsi/FeatureFlags/usecases"
+	"github.com/adamluzsi/toggler/extintf/httpintf/webgui/views"
+	"github.com/adamluzsi/toggler/usecases"
 	"html/template"
 	"log"
 	"net/http"

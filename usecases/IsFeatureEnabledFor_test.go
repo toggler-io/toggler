@@ -7,7 +7,7 @@ import (
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 
-	. "github.com/adamluzsi/FeatureFlags/testing"
+	. "github.com/adamluzsi/toggler/testing"
 )
 
 func TestUseCases_IsFeatureEnabledFor(t *testing.T) {

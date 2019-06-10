@@ -3,11 +3,11 @@ package usecases_test
 import (
 	"testing"
 
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 
-	. "github.com/adamluzsi/FeatureFlags/testing"
+	. "github.com/adamluzsi/toggler/testing"
 )
 
 func TestUseCases_ListFeatureFlags(t *testing.T) {

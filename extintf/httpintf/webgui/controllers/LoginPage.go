@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"github.com/adamluzsi/FeatureFlags/usecases"
+	"github.com/adamluzsi/toggler/usecases"
 	"net/http"
 	"time"
 )

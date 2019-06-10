@@ -1,7 +1,7 @@
 package usecases_test
 
 import (
-	. "github.com/adamluzsi/FeatureFlags/testing"
+	. "github.com/adamluzsi/toggler/testing"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 	"testing"

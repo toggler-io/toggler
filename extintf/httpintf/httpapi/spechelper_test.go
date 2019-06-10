@@ -2,13 +2,13 @@ package httpapi_test
 
 import (
 	"encoding/json"
-	"github.com/adamluzsi/FeatureFlags/services/security"
+	"github.com/adamluzsi/toggler/services/security"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 
-	. "github.com/adamluzsi/FeatureFlags/testing"
+	. "github.com/adamluzsi/toggler/testing"
 )
 
 

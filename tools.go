@@ -1,6 +1,6 @@
 // +build tools
 
-package FeatureFlags
+package toggler
 
 import (
 	_ "github.com/mjibson/esc"

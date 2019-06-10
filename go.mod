@@ -1,4 +1,4 @@
-module github.com/adamluzsi/FeatureFlags
+module github.com/adamluzsi/toggler
 
 go 1.12
 

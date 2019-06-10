@@ -98,7 +98,7 @@ therefore it is planned to support multiple one.
 This would remove the burden on your team to introduce a new db,
 which requires new ops experience to maintain.
     
-## [Backlog](https://github.com/adamluzsi/FeatureFlags/projects)
+## [Backlog](https://github.com/adamluzsi/toggler/projects)
 
 I use Github projects for backlog tracking,
 and idea brainstorming.

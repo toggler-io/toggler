@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"github.com/adamluzsi/FeatureFlags/extintf/httpintf/httputils"
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	"github.com/adamluzsi/toggler/extintf/httpintf/httputils"
+	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/adamluzsi/frameless/iterators"
 	"log"
 	"net/http"

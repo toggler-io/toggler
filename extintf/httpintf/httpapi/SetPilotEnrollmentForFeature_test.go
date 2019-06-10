@@ -2,7 +2,7 @@ package httpapi_test
 
 import (
 	"bytes"
-	"github.com/adamluzsi/FeatureFlags/services/rollouts"
+	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 	"net/http"
@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"testing"
 
-	. "github.com/adamluzsi/FeatureFlags/testing"
+	. "github.com/adamluzsi/toggler/testing"
 )
 
 func TestServeMux_SetPilotEnrollmentForFeature(t *testing.T) {
