@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/toggler/services/rollouts"
 	. "github.com/adamluzsi/toggler/testing"
-	"github.com/adamluzsi/testcase"
 
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/stretchr/testify/require"
