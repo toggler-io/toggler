@@ -22,7 +22,7 @@ func TestFeatureFlag(t *testing.T) {
 	s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return nil })
 	s.Let(`FeatureFlag`, func(t *testcase.T) interface{} {
 		ff := &rollouts.FeatureFlag{Name: t.I(`FeatureName`).(string)}
-		ff.Rollout.RandSeedSalt = t.I(`RolloutSeedSalt`).(int64)
+		ff.Rollout.RandSeed = t.I(`RolloutSeedSalt`).(int64)
 		ff.Rollout.Strategy.Percentage = t.I(`RolloutPercentage`).(int)
 		ff.Rollout.Strategy.DecisionLogicAPI = getRolloutApiURL(t)
 		return ff

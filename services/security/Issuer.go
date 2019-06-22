@@ -20,10 +20,10 @@ type Issuer struct {
 func (i *Issuer) CreateNewToken(userUID string, issueAt *time.Time, duration *time.Duration) (*Token, error) {
 
 	if userUID == `` {
-		return nil, errors.New(`UserUID cannot be empty`)
+		return nil, errors.New(`OwnerUID cannot be empty`)
 	}
 
-	token := &Token{UserUID: userUID}
+	token := &Token{OwnerUID: userUID}
 
 	if issueAt == nil {
 		token.IssuedAt = time.Now().UTC()

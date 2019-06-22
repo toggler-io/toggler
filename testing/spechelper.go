@@ -46,7 +46,7 @@ func SetupSpecCommonVariables(s *testcase.Spec) {
 
 	s.Let(`FeatureFlag`, func(t *testcase.T) interface{} {
 		ff := &rollouts.FeatureFlag{Name: t.I(`FeatureName`).(string)}
-		ff.Rollout.RandSeedSalt = t.I(`RolloutSeedSalt`).(int64)
+		ff.Rollout.RandSeed = t.I(`RolloutSeedSalt`).(int64)
 		ff.Rollout.Strategy.Percentage = t.I(`RolloutPercentage`).(int)
 		ff.Rollout.Strategy.DecisionLogicAPI = GetRolloutApiURL(t)
 		return ff

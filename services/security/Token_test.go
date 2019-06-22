@@ -19,7 +19,7 @@ func TestToken(t *testing.T) {
 
 	token := func(t *testcase.T) *security.Token {
 		return &security.Token{
-			UserUID:  UserUID,
+			OwnerUID: UserUID,
 			IssuedAt: t.I(`IssuedAt`).(time.Time),
 			Duration: t.I(`Duration`).(time.Duration),
 		}

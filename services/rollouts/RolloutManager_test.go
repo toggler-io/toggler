@@ -60,7 +60,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 		s.Let(`RolloutSeedSalt`, func(t *testcase.T) interface{} { return int64(42) })
 		s.Let(`FeatureFlag`, func(t *testcase.T) interface{} {
 			ff := &rollouts.FeatureFlag{Name: t.I(`FeatureName`).(string)}
-			ff.Rollout.RandSeedSalt = t.I(`RolloutSeedSalt`).(int64)
+			ff.Rollout.RandSeed = t.I(`RolloutSeedSalt`).(int64)
 			ff.Rollout.Strategy.Percentage = t.I(`RolloutPercentage`).(int)
 			ff.Rollout.Strategy.DecisionLogicAPI = GetRolloutApiURL(t)
 			return ff
@@ -145,7 +145,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 				s.Then(`random seed generator used for setting seed value`, func(t *testcase.T) {
 					require.Nil(t, subject(t))
 
-					require.Equal(t, GetGeneratedRandomSeed(t), FindStoredFeatureFlagByName(t).Rollout.RandSeedSalt)
+					require.Equal(t, GetGeneratedRandomSeed(t), FindStoredFeatureFlagByName(t).Rollout.RandSeed)
 				})
 			})
 
@@ -155,7 +155,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 				s.Then(`it will persist the value`, func(t *testcase.T) {
 					require.Nil(t, subject(t))
 
-					require.Equal(t, int64(12), FindStoredFeatureFlagByName(t).Rollout.RandSeedSalt)
+					require.Equal(t, int64(12), FindStoredFeatureFlagByName(t).Rollout.RandSeed)
 				})
 			})
 		})
@@ -232,7 +232,7 @@ func SpecRolloutManagerUpdateFeatureFlag(s *testcase.Spec) {
 		s.Let(`RolloutSeedSalt`, func(t *testcase.T) interface{} { return int64(42) })
 		s.Let(`FeatureFlag`, func(t *testcase.T) interface{} {
 			ff := &rollouts.FeatureFlag{Name: t.I(`FeatureName`).(string)}
-			ff.Rollout.RandSeedSalt = t.I(`RolloutSeedSalt`).(int64)
+			ff.Rollout.RandSeed = t.I(`RolloutSeedSalt`).(int64)
 			ff.Rollout.Strategy.Percentage = t.I(`RolloutPercentage`).(int)
 			ff.Rollout.Strategy.DecisionLogicAPI = GetRolloutApiURL(t)
 			return ff

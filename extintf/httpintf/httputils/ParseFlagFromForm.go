@@ -33,7 +33,7 @@ func ParseFlagFromForm(r *http.Request) (*rollouts.FeatureFlag, error) {
 
 	}
 
-	flag.Rollout.RandSeedSalt = randSeedSalt
+	flag.Rollout.RandSeed = randSeedSalt
 
 	percentage, err := strconv.ParseInt(r.Form.Get(`flag.rollout.strategy.percentage`), 10, 32)
 

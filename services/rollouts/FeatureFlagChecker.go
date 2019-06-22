@@ -53,7 +53,7 @@ func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, e
 		return false, nil
 	}
 
-	diceRollResultPercentage, err := checker.IDPercentageCalculator(externalPilotID, ff.Rollout.RandSeedSalt)
+	diceRollResultPercentage, err := checker.IDPercentageCalculator(externalPilotID, ff.Rollout.RandSeed)
 
 	if err != nil {
 		return false, err

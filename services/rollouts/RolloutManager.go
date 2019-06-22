@@ -36,8 +36,8 @@ func (manager *RolloutManager) CreateFeatureFlag(flag *FeatureFlag) error {
 		return ErrInvalidAction
 	}
 
-	if flag.Rollout.RandSeedSalt == 0 {
-		flag.Rollout.RandSeedSalt = manager.RandSeedGenerator()
+	if flag.Rollout.RandSeed == 0 {
+		flag.Rollout.RandSeed = manager.RandSeedGenerator()
 	}
 
 	ff, err :=  manager.Storage.FindFlagByName(flag.Name)
@@ -74,12 +74,12 @@ func (manager *RolloutManager) UpdateFeatureFlag(flag *FeatureFlag) error {
 		if ff != nil {
 			flag.ID = ff.ID
 
-			flag.Rollout.RandSeedSalt = ff.Rollout.RandSeedSalt
+			flag.Rollout.RandSeed = ff.Rollout.RandSeed
 		}
 	}
 
-	if flag.Rollout.RandSeedSalt == 0 {
-		flag.Rollout.RandSeedSalt = manager.RandSeedGenerator()
+	if flag.Rollout.RandSeed == 0 {
+		flag.Rollout.RandSeed = manager.RandSeedGenerator()
 	}
 
 	return manager.Storage.Update(flag)
@@ -144,7 +144,7 @@ func (manager *RolloutManager) newDefaultFeatureFlag(featureFlagName string) *Fe
 	return &FeatureFlag{
 		Name: featureFlagName,
 		Rollout: Rollout{
-			RandSeedSalt: manager.RandSeedGenerator(),
+			RandSeed: manager.RandSeedGenerator(),
 			Strategy: RolloutStrategy{
 				Percentage:       0,
 				DecisionLogicAPI: nil,

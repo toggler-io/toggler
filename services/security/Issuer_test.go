@@ -90,7 +90,7 @@ func SpecIssuerCreateNewToken(s *testcase.Spec) {
 
 			s.Then(`we receive a token back`, func(t *testcase.T) {
 				token := onSuccess(t)
-				require.Equal(t, t.I(`userUID`).(string), token.UserUID)
+				require.Equal(t, t.I(`userUID`).(string), token.OwnerUID)
 				require.Equal(t, t.I(`issueAt`).(*time.Time), &token.IssuedAt)
 				require.Equal(t, t.I(`duration`).(*time.Duration), &token.Duration)
 			})

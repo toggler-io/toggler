@@ -24,8 +24,8 @@ func (spec TokenFinderSpec) Test(t *testing.T) {
 	s.Let(`uid`, func(t *testcase.T) interface{} { return ExampleUniqUserID() })
 	s.Let(`token object`, func(t *testcase.T) interface{} {
 		return &security.Token{
-			UserUID: t.I(`uid`).(string),
-			Token:   t.I(`token string`).(string),
+			OwnerUID: t.I(`uid`).(string),
+			Token:    t.I(`token string`).(string),
 		}
 	})
 
