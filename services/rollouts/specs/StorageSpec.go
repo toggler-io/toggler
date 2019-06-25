@@ -1,13 +1,13 @@
 package specs
 
 import (
-	testing2 "github.com/adamluzsi/toggler/testing"
 	"github.com/adamluzsi/testcase"
+	testing2 "github.com/adamluzsi/toggler/testing"
 	"github.com/stretchr/testify/require"
 	"testing"
 
-	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/adamluzsi/frameless/resources/specs"
+	"github.com/adamluzsi/toggler/services/rollouts"
 )
 
 type StorageSpec struct {
@@ -15,47 +15,63 @@ type StorageSpec struct {
 }
 
 func (spec *StorageSpec) Test(t *testing.T) {
-
-	entityTypes := []interface{}{
-		rollouts.FeatureFlag{},
-		rollouts.Pilot{},
-	}
-
+	s := testcase.NewSpec(t)
 	ff := testing2.NewFixtureFactory()
-
-	for _, entityType := range entityTypes {
+	testEntity := func(t *testing.T, entityType interface{}) {
 		specs.TestMinimumRequirements(t, spec.Storage, entityType, ff)
 		specs.TestUpdate(t, spec.Storage, entityType, ff)
 		specs.TestFindAll(t, spec.Storage, entityType, ff)
 	}
 
-	FlagFinderSpec{Subject: spec.Storage}.Test(t)
-	PilotFinderSpec{Subject: spec.Storage}.Test(t)
-
-	s := testcase.NewSpec(t)
-
-	s.Describe(`flag name uniq across storage`, func(s *testcase.Spec) {
-		subject := func(t *testcase.T) error {
-			return spec.Storage.Save(t.I(`flag`).(*rollouts.FeatureFlag))
-		}
-
-		s.Before(func(t *testcase.T) {
-			require.Nil(t, spec.Storage.Truncate(rollouts.FeatureFlag{}))
+	s.Describe(`rollouts.StorageSpec`, func(s *testcase.Spec) {
+		s.Describe(`flag`, func(s *testcase.Spec) {
+			testEntity(t, rollouts.FeatureFlag{})
+			FlagFinderSpec{Subject: spec.Storage}.Test(t)
 		})
 
-		s.Let(`flag`, func(t *testcase.T) interface{} {
-			return &rollouts.FeatureFlag{
-				Name: `my-uniq-flag-name`,
+		s.Describe(`pilot`, func(s *testcase.Spec) {
+			s.Let(`flag`, func(t *testcase.T) interface{} {
+				return ff.Create(rollouts.FeatureFlag{})
+			})
+
+			s.Around(func(t *testcase.T) func() {
+				flag := t.I(`flag`).(*rollouts.FeatureFlag)
+				require.Nil(t, spec.Storage.Save(flag))
+				ff.PilotFeatureFlagID = flag.ID
+				return func() {
+					require.Nil(t, spec.Storage.Truncate(rollouts.FeatureFlag{}))
+					ff.PilotFeatureFlagID = ``
+				}
+			})
+
+			s.Then(`coverage pass`, func(t *testcase.T) {
+				testEntity(t.T, rollouts.Pilot{})
+				PilotFinderSpec{Subject: spec.Storage}.Test(t.T)
+			})
+		})
+
+		s.Describe(`flag name uniq across storage`, func(s *testcase.Spec) {
+			subject := func(t *testcase.T) error {
+				return spec.Storage.Save(t.I(`flag`).(*rollouts.FeatureFlag))
 			}
-		})
 
-		s.When(`flag already stored`, func(s *testcase.Spec) {
-			s.Before(func(t *testcase.T) { require.Nil(t, subject(t)) })
+			s.Before(func(t *testcase.T) {
+				require.Nil(t, spec.Storage.Truncate(rollouts.FeatureFlag{}))
+			})
 
-			s.Then(`saving again will create error`, func(t *testcase.T) {
-				require.Error(t, subject(t))
+			s.Let(`flag`, func(t *testcase.T) interface{} {
+				return &rollouts.FeatureFlag{
+					Name: `my-uniq-flag-name`,
+				}
+			})
+
+			s.When(`flag already stored`, func(s *testcase.Spec) {
+				s.Before(func(t *testcase.T) { require.Nil(t, subject(t)) })
+
+				s.Then(`saving again will create error`, func(t *testcase.T) {
+					require.Error(t, subject(t))
+				})
 			})
 		})
 	})
-
 }

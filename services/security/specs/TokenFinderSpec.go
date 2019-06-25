@@ -1,13 +1,14 @@
 package specs
 
 import (
-	"testing"
-
-	"github.com/adamluzsi/toggler/services/security"
-	. "github.com/adamluzsi/toggler/testing"
+	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/testcase"
+	"github.com/adamluzsi/toggler/services/security"
+	. "github.com/adamluzsi/toggler/testing"
 	"github.com/stretchr/testify/require"
+	"testing"
+	"time"
 )
 
 type TokenFinderSpec struct {
@@ -26,10 +27,16 @@ func (spec TokenFinderSpec) Test(t *testing.T) {
 		return &security.Token{
 			OwnerUID: t.I(`uid`).(string),
 			Token:    t.I(`token string`).(string),
+			IssuedAt: fixtures.RandomTimeUTC(),
+			Duration: 1 * time.Second,
 		}
 	})
 
 	s.Before(func(t *testcase.T) {
+		require.Nil(t, spec.Subject.Truncate(security.Token{}))
+	})
+
+	s.After(func(t *testcase.T) {
 		require.Nil(t, spec.Subject.Truncate(security.Token{}))
 	})
 
@@ -43,7 +50,7 @@ func (spec TokenFinderSpec) Test(t *testing.T) {
 		s.When(`no token stored in the storage yet`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.Truncate(security.Token{})) })
 
-			s.Then(`it will retun nil token without any error`, func(t *testcase.T) {
+			s.Then(`it will return nil token without any error`, func(t *testcase.T) {
 				token, err := subject(t)
 				require.Nil(t, err)
 				require.Nil(t, token)
@@ -56,10 +63,12 @@ func (spec TokenFinderSpec) Test(t *testing.T) {
 			})
 
 			s.Then(`token will be retrieved`, func(t *testcase.T) {
-				token, err := subject(t)
+				actual, err := subject(t)
+				expected := t.I(`token object`).(*security.Token)
+
 				require.Nil(t, err)
-				require.NotNil(t, token)
-				require.Equal(t, t.I(`token object`), token)
+				require.NotNil(t, actual)
+				require.Equal(t, expected, actual)
 			})
 		})
 
