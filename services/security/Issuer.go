@@ -17,13 +17,13 @@ type Issuer struct {
 	Storage
 }
 
-func (i *Issuer) CreateNewToken(userUID string, issueAt *time.Time, duration *time.Duration) (*Token, error) {
+func (i *Issuer) CreateNewToken(ownerUID string, issueAt *time.Time, duration *time.Duration) (*Token, error) {
 
-	if userUID == `` {
+	if ownerUID == `` {
 		return nil, errors.New(`OwnerUID cannot be empty`)
 	}
 
-	token := &Token{OwnerUID: userUID}
+	token := &Token{OwnerUID: ownerUID}
 
 	if issueAt == nil {
 		token.IssuedAt = time.Now().UTC()
