@@ -9,6 +9,7 @@ import (
 	"github.com/adamluzsi/frameless/resources/storages/memorystorage"
 	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/adamluzsi/toggler/services/security"
+	_ "github.com/lib/pq"
 	"net/url"
 	"strconv"
 	"time"
