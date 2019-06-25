@@ -39,6 +39,13 @@
 
                     </fieldset>
                 </form>
+                <form action="/flag" method="post" class="pure-form pure-form-aligned">
+                    <fieldset>
+                        <input name="_method" type="hidden" value="delete">
+                        <input name="flag.id" type="hidden" value="{{ .Flag.ID }}">
+                        <button type="submit" onclick="return confirm('Are you sure?')" class="pure-button">Delete Feature Flag</button>
+                    </fieldset>
+                </form>
             </div>
 
         </div>

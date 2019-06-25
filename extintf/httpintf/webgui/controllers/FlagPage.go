@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/toggler/extintf/httpintf/httputils"
 	"github.com/adamluzsi/toggler/services/rollouts"
@@ -58,27 +59,50 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 		ctrl.Render(w, `/flag/show.html`, edigPageContent{Flag: ff, Pilots: pilots})
 
 	case http.MethodPost:
-		ff, err := httputils.ParseFlagFromForm(r)
+		switch strings.ToUpper(r.FormValue(`_method`)) {
+		case http.MethodPut:
+			ff, err := httputils.ParseFlagFromForm(r)
 
-		if ctrl.handleError(w, r, err) {
-			return
-		}
+			if ctrl.handleError(w, r, err) {
+				return
+			}
 
-		if strings.ToLower(r.Form.Get(`_method`)) == `put` {
 			if ctrl.handleError(w, r, ctrl.GetProtectedUsecases(r).UpdateFeatureFlag(ff)) {
 				return
 			}
-		} else {
-			if ff.ID != `` {
-				log.Println(`unexpected flag id received`)
-				http.Redirect(w, r, `/`, http.StatusFound)
+
+		case http.MethodPost:
+			ff, err := httputils.ParseFlagFromForm(r)
+
+			if ctrl.handleError(w, r, err) {
 				return
 			}
 
 			if ctrl.handleError(w, r, ctrl.GetProtectedUsecases(r).CreateFeatureFlag(ff)) {
 				return
 			}
+
+		case http.MethodDelete:
+			if ctrl.handleError(w, r, r.ParseForm()) {
+				return
+			}
+
+			flagID := r.Form.Get(`flag.id`)
+
+			if flagID == `` && ctrl.handleError(w, r, frameless.ErrIDRequired) {
+				return
+			}
+
+			if ctrl.handleError(w, r, ctrl.GetProtectedUsecases(r).DeleteFeatureFlag(flagID)) {
+				return
+			}
+
+		default:
+			http.NotFound(w, r)
+			return
+
 		}
+
 		http.Redirect(w, r, `/flag`, http.StatusFound)
 
 	default:
