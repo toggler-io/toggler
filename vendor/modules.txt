@@ -1,17 +1,26 @@
-# github.com/Pallinder/go-randomdata v1.1.0
+# github.com/Pallinder/go-randomdata v1.2.0
 github.com/Pallinder/go-randomdata
-# github.com/adamluzsi/frameless v0.0.0-20190512205245-2ba862af3a99
+# github.com/adamluzsi/frameless v0.0.0-20190625002444-aec6cb461a44
 github.com/adamluzsi/frameless
 github.com/adamluzsi/frameless/iterators
 github.com/adamluzsi/frameless/resources/specs
-github.com/adamluzsi/frameless/resources
 github.com/adamluzsi/frameless/resources/storages/memorystorage
-github.com/adamluzsi/frameless/reflects
 github.com/adamluzsi/frameless/fixtures
-# github.com/adamluzsi/testcase v0.0.0-20190525010559-2a9414d6337a
+github.com/adamluzsi/frameless/resources
+github.com/adamluzsi/frameless/reflects
+# github.com/adamluzsi/testcase v0.0.0-20190602214255-4e4b269314e8
 github.com/adamluzsi/testcase
-# github.com/davecgh/go-spew v1.1.0
+# github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
+# github.com/golang/mock v1.3.1
+github.com/golang/mock/mockgen
+github.com/golang/mock/mockgen/model
+# github.com/lib/pq v1.1.1
+github.com/lib/pq
+github.com/lib/pq/oid
+github.com/lib/pq/scram
+# github.com/lopezator/migrator v0.1.0
+github.com/lopezator/migrator
 # github.com/mjibson/esc v0.2.0
 github.com/mjibson/esc
 github.com/mjibson/esc/embed
@@ -24,7 +33,15 @@ github.com/stretchr/testify/require
 github.com/stretchr/testify/assert
 # github.com/unrolled/logger v0.0.0-20190327162521-be1a2406c7c9
 github.com/unrolled/logger
-# golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e
+# golang.org/x/tools v0.0.0-20190624222133-a101b041ded4
 golang.org/x/tools/imports
+golang.org/x/tools/go/packages
+golang.org/x/tools/internal/imports
+golang.org/x/tools/go/gcexportdata
+golang.org/x/tools/go/internal/packagesdriver
+golang.org/x/tools/internal/gopathwalk
+golang.org/x/tools/internal/semver
 golang.org/x/tools/go/ast/astutil
+golang.org/x/tools/internal/module
+golang.org/x/tools/go/internal/gcimporter
 golang.org/x/tools/internal/fastwalk

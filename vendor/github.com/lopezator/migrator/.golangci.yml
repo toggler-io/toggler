@@ -1,0 +1,20 @@
+linters:
+  enable:
+    - errcheck
+    - gocritic
+    - goimports
+    - golint
+    - govet
+    - megacheck
+
+  disable-all: true
+
+linters-settings:
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - style
+      - performance
+
+issues:
+  exclude-use-default: false

@@ -1,0 +1,23 @@
+version: "3.2"
+
+services:
+  migrator:
+    build:
+      context: .
+      dockerfile: Dockerfile.build
+    image: migrator:build
+    depends_on:
+      - postgres
+      - mysql
+    tty: true
+
+  postgres:
+    image: postgres:11.2
+    environment:
+      POSTGRES_DB: migrator
+
+  mysql:
+    image: mysql:8.0.15
+    environment:
+      MYSQL_DATABASE: migrator
+      MYSQL_ROOT_PASSWORD: mysql
