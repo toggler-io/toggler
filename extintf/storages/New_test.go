@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/toggler/extintf/storages"
+	"github.com/adamluzsi/toggler/extintf/storages/inmemory"
 	"github.com/adamluzsi/toggler/extintf/storages/postgres"
 	"github.com/adamluzsi/toggler/usecases"
 	"github.com/stretchr/testify/require"
@@ -57,6 +58,16 @@ func TestNew(t *testing.T) {
 				})
 			}
 
+		})
+
+		s.When(`the connection string is a "memory"`, func(s *testcase.Spec) {
+			s.Let(`connstr`, func(t *testcase.T) interface{} { return `memory` })
+
+			s.Then(`then it will return postgres implementation`, func(t *testcase.T) {
+				_, isThat := onSuccess(t).(*inmemory.InMemory)
+
+				require.True(t, isThat)
+			})
 		})
 	})
 }
