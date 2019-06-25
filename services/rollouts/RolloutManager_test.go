@@ -39,9 +39,56 @@ func TestRolloutManager(t *testing.T) {
 	})
 
 	SpecRolloutManagerCreateFeatureFlag(s)
+	SpecRolloutManagerDeleteFeatureFlag(s)
 	SpecRolloutManagerUpdateFeatureFlag(s)
 	SpecRolloutManagerListFeatureFlags(s)
 	SpecRolloutManagerSetPilotEnrollmentForFeature(s)
+}
+
+func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
+	s.Describe(`DeleteFeatureFlag`, func(s *testcase.Spec) {
+		subject := func(t *testcase.T) error {
+			return manager(t).DeleteFeatureFlag(t.I(`flag ID`).(string))
+		}
+
+		s.Let(`FeatureFlagName`, func(t *testcase.T) interface{} { return ExampleFeatureName() })
+		s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return nil })
+		s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return rand.Intn(101) })
+		s.Let(`RolloutSeedSalt`, func(t *testcase.T) interface{} { return int64(42) })
+		s.Let(`FeatureFlag`, func(t *testcase.T) interface{} {
+			ff := &rollouts.FeatureFlag{Name: t.I(`FeatureName`).(string)}
+			ff.Rollout.RandSeed = t.I(`RolloutSeedSalt`).(int64)
+			ff.Rollout.Strategy.Percentage = t.I(`RolloutPercentage`).(int)
+			ff.Rollout.Strategy.DecisionLogicAPI = GetRolloutApiURL(t)
+			return ff
+		})
+
+		s.When(`feature flag id is empty`, func(s *testcase.Spec) {
+			s.Let(`flag ID`, func(t *testcase.T) interface{} { return `` })
+
+			s.Then(`it will return error about it`, func(t *testcase.T) {
+				require.Error(t, subject(t))
+			})
+		})
+
+		s.When(`it had been persisted previously`, func(s *testcase.Spec) {
+			s.Let(`flag ID`, func(t *testcase.T) interface{} {
+				return GetFeatureFlag(t).ID
+			})
+
+			s.Before(func(t *testcase.T) {
+				require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
+				require.NotEmpty(t, GetFeatureFlag(t).ID)
+			})
+
+			s.Then(`flag will be deleted`, func(t *testcase.T) {
+				id := GetFeatureFlag(t).ID
+				require.NotEmpty(t, id)
+				require.Nil(t, subject(t))
+			})
+		})
+
+	})
 }
 
 func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {

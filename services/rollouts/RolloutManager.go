@@ -121,6 +121,14 @@ func (manager *RolloutManager) SetPilotEnrollmentForFeature(flagID, pilotID stri
 
 }
 
+func (manager *RolloutManager) DeleteFeatureFlag(id string) error {
+	if id == `` {
+		return frameless.ErrIDRequired
+	}
+
+	return manager.Storage.DeleteByID(FeatureFlag{}, id)
+}
+
 //----------------------------------------------------------------------------------------------------------------------
 
 func (manager *RolloutManager) ensureFeatureFlag(featureFlagName string) (*FeatureFlag, error) {
