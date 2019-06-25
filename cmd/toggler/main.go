@@ -42,17 +42,9 @@ func main() {
 
 	ff := rollouts.FeatureFlag{Name: `test`}
 
-	if err := pu.CreateFeatureFlag(&ff); err != nil {
-		panic(err)
-	}
-
-	if err := pu.SetPilotEnrollmentForFeature(ff.ID, `test-public-pilot-id-1`, true); err != nil {
-		panic(err)
-	}
-
-	if err := pu.SetPilotEnrollmentForFeature(ff.ID, `test-public-pilot-id-2`, false); err != nil {
-		panic(err)
-	}
+	pu.CreateFeatureFlag(&ff)
+	pu.SetPilotEnrollmentForFeature(ff.ID, `test-public-pilot-id-1`, true)
+	pu.SetPilotEnrollmentForFeature(ff.ID, `test-public-pilot-id-2`, false)
 
 	if err := http.ListenAndServe(`:8080`, app); err != nil {
 		log.Fatal(err)

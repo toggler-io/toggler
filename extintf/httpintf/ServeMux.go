@@ -11,7 +11,7 @@ import (
 func NewServeMux(uc *usecases.UseCases) *ServeMux {
 	mux := http.NewServeMux()
 
-	mux.Handle(`/api/`, http.StripPrefix(`/api`, httpapi.NewServeMux(uc)))
+	mux.Handle(`/api/v1/`, http.StripPrefix(`/api/v1`, httpapi.NewServeMux(uc)))
 	mux.Handle(`/`, webgui.NewServeMux(uc))
 
 	return &ServeMux{
