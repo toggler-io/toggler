@@ -101,7 +101,7 @@ The API will receive information about:
 ### Storage support
 - [ ] [Redis](https://github.com/antirez/redis)
 - [ ] [BoltDB](https://github.com/boltdb/bolt)
-- [ ] [Postgres](https://github.com/postgres/postgres)
+- [x] [Postgres](https://github.com/postgres/postgres)
 
 The application do don't depend on a certain storage system,
 therefore it is planned to support multiple one.
