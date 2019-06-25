@@ -4,10 +4,11 @@
 package usecases
 
 import (
-	"github.com/adamluzsi/toggler/services/rollouts"
-	"github.com/adamluzsi/toggler/services/security"
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/resources/specs"
+	"github.com/adamluzsi/toggler/services/rollouts"
+	"github.com/adamluzsi/toggler/services/security"
+	"io"
 )
 
 func NewUseCases(s Storage) *UseCases {
@@ -36,6 +37,7 @@ type Storage interface {
 	rollouts.FlagFinder
 	rollouts.PilotFinder
 	security.TokenFinder
+	io.Closer
 }
 
 const ErrInvalidToken frameless.Error = `invalid token error`
