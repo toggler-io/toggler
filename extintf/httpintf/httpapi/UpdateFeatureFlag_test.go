@@ -91,7 +91,7 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 			data := url.Values{}
 			data.Set(`flag.id`, GetFeatureFlag(t).ID)
 			data.Set(`flag.name`, GetFeatureFlag(t).Name)
-			data.Set(`flag.rollout.randSeedSalt`, strconv.FormatInt(GetFeatureFlag(t).Rollout.RandSeed, 10))
+			data.Set(`flag.rollout.randSeed`, strconv.FormatInt(GetFeatureFlag(t).Rollout.RandSeed, 10))
 			data.Set(`flag.rollout.strategy.percentage`, strconv.Itoa(GetFeatureFlag(t).Rollout.Strategy.Percentage))
 
 			var decisionLogicAPI string

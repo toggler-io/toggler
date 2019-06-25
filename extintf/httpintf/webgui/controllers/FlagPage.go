@@ -1,12 +1,13 @@
 package controllers
 
 import (
+	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/toggler/extintf/httpintf/httputils"
 	"github.com/adamluzsi/toggler/services/rollouts"
-	"github.com/adamluzsi/frameless/iterators"
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 type edigPageContent struct {
@@ -63,18 +64,21 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if ff.ID != `` {
-			log.Println(`unexpected flag id received`)
-			http.Redirect(w, r, `/`, http.StatusFound)
-			return
+		if strings.ToLower(r.Form.Get(`_method`)) == `put` {
+			if ctrl.handleError(w, r, ctrl.GetProtectedUsecases(r).UpdateFeatureFlag(ff)) {
+				return
+			}
+		} else {
+			if ff.ID != `` {
+				log.Println(`unexpected flag id received`)
+				http.Redirect(w, r, `/`, http.StatusFound)
+				return
+			}
+
+			if ctrl.handleError(w, r, ctrl.GetProtectedUsecases(r).CreateFeatureFlag(ff)) {
+				return
+			}
 		}
-
-		err = ctrl.GetProtectedUsecases(r).CreateFeatureFlag(ff)
-
-		if err != nil {
-			log.Println(err)
-		}
-
 		http.Redirect(w, r, `/flag`, http.StatusFound)
 
 	default:

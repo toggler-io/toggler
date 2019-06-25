@@ -20,7 +20,7 @@ func ParseFlagFromForm(r *http.Request) (*rollouts.FeatureFlag, error) {
 
 	var randSeedSalt int64
 
-	rawRandSeedSalt := r.Form.Get(`flag.rollout.randSeedSalt`)
+	rawRandSeedSalt := r.Form.Get(`flag.rollout.randSeed`)
 
 	if rawRandSeedSalt != `` {
 

@@ -5,6 +5,7 @@
             <div class="l-box-lrg pure-u pure-u-1">
                 <form action="/flag" method="post" class="pure-form pure-form-aligned">
                     <fieldset>
+                        <input name="_method" type="hidden" value="put">
 
                         <div class="pure-control-group">
                             <label for="percentage">Rollout Percentage</label>
@@ -17,9 +18,9 @@
                         <div class="pure-control-group">
                             <label for="seed">Seed of the random pseudo random in the rollout</label>
                             <input id="seed"
-                                   name="flag.rollout.randSeedSalt"
+                                   name="flag.rollout.randSeed"
                                    type="number"
-                                   value="{{ .Flag.Rollout.RandSeedSalt }}">
+                                   value="{{ .Flag.Rollout.RandSeed }}">
                             {{/*<span class="pure-form-message-inline"></span>*/}}
                         </div>
 
@@ -34,7 +35,7 @@
 
                         <input name="flag.name" type="hidden" value="{{ .Flag.Name }}">
                         <input name="flag.id" type="hidden" value="{{ .Flag.ID }}">
-                        <button type="submit" class="pure-button pure-button-primary">Update</button>
+                        <button type="submit" class="pure-button pure-button-primary">Save Flag Preferences</button>
 
                     </fieldset>
                 </form>
@@ -85,7 +86,7 @@
                 </div>
 
                 <input name="pilot.flagID" type="hidden" value="{{ .Flag.ID }}">
-                <button type="submit" class="pure-button pure-button-primary">Save</button>
+                <button type="submit" class="pure-button pure-button-primary">Register Pilot</button>
 
             </fieldset>
         </form>

@@ -2,19 +2,25 @@ package main
 
 import (
 	"fmt"
+	"github.com/adamluzsi/toggler/extintf/storages"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/adamluzsi/toggler/extintf/httpintf"
 	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/adamluzsi/toggler/services/security"
-	"github.com/adamluzsi/toggler/testing"
 	"github.com/adamluzsi/toggler/usecases"
 	"github.com/unrolled/logger"
 )
 
 func main() {
-	storage := testing.NewTestStorage()
+	storage, err := storages.New(connstr())
+	if err != nil{
+		log.Fatal(err)
+	}
+	defer storage.Close()
+
 	useCases := usecases.NewUseCases(storage)
 	mux := httpintf.NewServeMux(useCases)
 
@@ -51,4 +57,14 @@ func main() {
 	if err := http.ListenAndServe(`:8080`, app); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func connstr() string {
+	connstr, isSet := os.LookupEnv(`DATABASE_URL`)
+
+	if !isSet {
+		log.Fatal(`please set "DATABASE_URL" to use the service`)
+	}
+
+	return connstr
 }
