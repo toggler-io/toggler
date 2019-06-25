@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -e -u
 
-export DATABASE_URL="memory"
+: ${DATABASE_URL:="memory"}
+export DATABASE_URL
 
 cd ${WDP}
 go generate ./...
