@@ -18,8 +18,8 @@ import (
 
 func main() {
 	flagSet := flag.NewFlagSet(`toggler`, flag.ExitOnError)
-	portConfValue := flagSet.String(`port`, os.Getenv(`PORT`), `set http server port (default is "PORT" env variable)`)
-	cmd := flagSet.String(`c`, `http-server`, `cli command, default is "http-server". cmds: "http-server", "create-token"`)
+	portConfValue := flagSet.String(`port`, os.Getenv(`PORT`), `set http server port else the env variable "PORT" value will be used`)
+	cmd := flagSet.String(`cmd`, `http-server`, `cli command. cmds: "http-server", "create-token"`)
 	fixtures := flagSet.Bool(`create-fixtures`, false, `create default fixtures for development purpose`)
 
 	if err := flagSet.Parse(os.Args[1:]); err != nil {
@@ -84,7 +84,7 @@ func httpListenAndServe(storage usecases.Storage, port int) {
 	loggerMW := logger.New()
 	app := loggerMW.Handler(mux)
 
-	if err := http.ListenAndServe(`:8080`, app); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(`:%d`, port), app); err != nil {
 		log.Fatal(err)
 	}
 }

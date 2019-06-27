@@ -6,4 +6,4 @@ export DATABASE_URL
 
 cd ${WDP}
 go generate ./...
-go run cmd/toggler/main.go -c http-server -port 8080 -create-fixtures
+go run cmd/toggler/main.go -cmd http-server -port 8080 -create-fixtures
