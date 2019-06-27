@@ -1,0 +1,1 @@
+web: ./bin/toggler -c http-server -port $PORT
