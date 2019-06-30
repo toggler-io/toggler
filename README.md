@@ -108,6 +108,9 @@ therefore it is planned to support multiple one.
 This would remove the burden on your team to introduce a new db,
 which requires new ops experience to maintain.
 
+## [Directory Layout](docs/DirectoryLayout.md)
+For those who interested in contributing to toggler.
+
 ## [Backlog](https://github.com/adamluzsi/toggler/projects)
 
 I use Github projects for backlog tracking,
