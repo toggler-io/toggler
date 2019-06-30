@@ -13,7 +13,7 @@ type StorageSpec struct {
 	Subject usecases.Storage
 }
 
-func (spec *StorageSpec) Test(t *testing.T) {
-	(&rollspecs.StorageSpec{Storage: spec.Subject}).Test(t)
-	(&secuspecs.StorageSpec{Storage: spec.Subject}).Test(t)
+func (spec StorageSpec) Test(t *testing.T) {
+	(rollspecs.StorageSpec{Storage: spec.Subject}).Test(t)
+	(secuspecs.StorageSpec{Storage: spec.Subject}).Test(t)
 }

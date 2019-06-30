@@ -14,7 +14,7 @@ type StorageSpec struct {
 	Storage rollouts.Storage
 }
 
-func (spec *StorageSpec) Test(t *testing.T) {
+func (spec StorageSpec) Test(t *testing.T) {
 	s := testcase.NewSpec(t)
 	ff := testing2.NewFixtureFactory()
 	testEntity := func(t *testing.T, entityType interface{}) {

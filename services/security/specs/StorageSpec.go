@@ -11,7 +11,7 @@ type StorageSpec struct {
 	Storage security.Storage
 }
 
-func (spec *StorageSpec) Test(t *testing.T) {
+func (spec StorageSpec) Test(t *testing.T) {
 
 	entityTypes := []interface{}{
 		security.Token{},
