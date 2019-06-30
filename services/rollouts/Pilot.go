@@ -4,7 +4,7 @@ package rollouts
 // The Pilot terminology itself means that the user is in charge to try out a given feature,
 // even if the user itself is not aware of this role.
 type Pilot struct {
-	// ID represent the fact that this object will be persistent in the Storage
+	// ID represent the fact that this object will be persistent in the Subject
 	ID string `ext:"ID"`
 	// FeatureFlagID is the reference ID that can tell where this user record belongs to.
 	FeatureFlagID string

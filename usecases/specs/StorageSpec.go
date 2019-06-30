@@ -10,10 +10,10 @@ import (
 )
 
 type StorageSpec struct {
-	Storage usecases.Storage
+	Subject usecases.Storage
 }
 
 func (spec *StorageSpec) Test(t *testing.T) {
-	(&rollspecs.StorageSpec{Storage: spec.Storage}).Test(t)
-	(&secuspecs.StorageSpec{Storage: spec.Storage}).Test(t)
+	(&rollspecs.StorageSpec{Storage: spec.Subject}).Test(t)
+	(&secuspecs.StorageSpec{Storage: spec.Subject}).Test(t)
 }

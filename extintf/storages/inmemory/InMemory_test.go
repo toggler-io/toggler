@@ -7,5 +7,5 @@ import (
 )
 
 func TestInMemory(t *testing.T) {
-	(&specs.StorageSpec{Storage: inmemory.New()}).Test(t)
+	(&specs.StorageSpec{Subject: inmemory.New()}).Test(t)
 }

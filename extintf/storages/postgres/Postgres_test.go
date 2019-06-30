@@ -23,7 +23,7 @@ func TestPostgres(t *testing.T) {
 	storage, err := postgres.NewPostgres(db)
 	require.Nil(t, err)
 
-	(&specs.StorageSpec{Storage: storage}).Test(t)
+	(&specs.StorageSpec{Subject: storage}).Test(t)
 }
 
 func MustOpenDB(t *testing.T) *sql.DB {

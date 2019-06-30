@@ -6,7 +6,7 @@ import (
 
 // FeatureFlag is the basic entity with properties that feature flag holds
 type FeatureFlag struct {
-	// ID represent the fact that this object will be persistent in the Storage
+	// ID represent the fact that this object will be persistent in the Subject
 	ID      string  `ext:"ID" json:"id"`
 	Name    string  `json:"name"`
 	Rollout Rollout `json:"rollout"`
