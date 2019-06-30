@@ -63,7 +63,7 @@ func TestNew(t *testing.T) {
 		s.When(`the connection string is a "memory"`, func(s *testcase.Spec) {
 			s.Let(`connstr`, func(t *testcase.T) interface{} { return `memory` })
 
-			s.Then(`then it will return postgres implementation`, func(t *testcase.T) {
+			s.Then(`then it will return "inmemory" implementation`, func(t *testcase.T) {
 				_, isThat := onSuccess(t).(*inmemory.InMemory)
 
 				require.True(t, isThat)
