@@ -1,6 +1,7 @@
 package usecases_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/adamluzsi/toggler/services/rollouts"
@@ -29,7 +30,7 @@ func TestUseCases_ProtectedUsecases(t *testing.T) {
 		})
 
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Truncate(security.Token{}))
+			require.Nil(t, GetStorage(t).Truncate(context.Background(), security.Token{}))
 		})
 
 		s.Then(`we receive back error`, func(t *testcase.T) {

@@ -1,9 +1,11 @@
 package httpapi
 
 import (
+	context2 "context"
+	"net/http"
+
 	"github.com/adamluzsi/toggler/extintf/httpintf/httputils"
 	"github.com/adamluzsi/toggler/usecases"
-	"net/http"
 )
 
 func (sm *ServeMux) SetPilotEnrollmentForFeature(w http.ResponseWriter, r *http.Request) {
@@ -17,7 +19,7 @@ func (sm *ServeMux) SetPilotEnrollmentForFeature(w http.ResponseWriter, r *http.
 		return
 	}
 
-	err = pu.SetPilotEnrollmentForFeature(pilot.FeatureFlagID, pilot.ExternalID, pilot.Enrolled)
+	err = pu.SetPilotEnrollmentForFeature(context2.TODO(), pilot.FeatureFlagID, pilot.ExternalID, pilot.Enrolled)
 
 	if handleError(w, err, http.StatusInternalServerError) {
 		return

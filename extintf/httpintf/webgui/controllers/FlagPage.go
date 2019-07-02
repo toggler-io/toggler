@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/toggler/extintf/httpintf/httputils"
@@ -39,7 +40,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 		id := r.Form.Get(`id`)
 
 		var ff rollouts.FeatureFlag
-		found, err := ctrl.Storage.FindByID(id, &ff)
+		found, err := ctrl.Storage.FindByID(r.Context(), &ff, id)
 
 		if ctrl.handleError(w, r, err) {
 			return
@@ -52,7 +53,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 
 		var pilots []rollouts.Pilot
 
-		if ctrl.handleError(w, r, iterators.CollectAll(ctrl.Storage.FindPilotsByFeatureFlag(&ff), &pilots)) {
+		if ctrl.handleError(w, r, iterators.CollectAll(ctrl.Storage.FindPilotsByFeatureFlag(r.Context(), &ff), &pilots)) {
 			return
 		}
 
@@ -67,7 +68,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			if ctrl.handleError(w, r, ctrl.GetProtectedUsecases(r).UpdateFeatureFlag(ff)) {
+			if ctrl.handleError(w, r, ctrl.GetProtectedUsecases(r).UpdateFeatureFlag(r.Context(), ff)) {
 				return
 			}
 
@@ -78,7 +79,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			if ctrl.handleError(w, r, ctrl.GetProtectedUsecases(r).CreateFeatureFlag(ff)) {
+			if ctrl.handleError(w, r, ctrl.GetProtectedUsecases(r).CreateFeatureFlag(r.Context(), ff)) {
 				return
 			}
 
@@ -93,7 +94,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			if ctrl.handleError(w, r, ctrl.GetProtectedUsecases(r).DeleteFeatureFlag(flagID)) {
+			if ctrl.handleError(w, r, ctrl.GetProtectedUsecases(r).DeleteFeatureFlag(r.Context(), flagID)) {
 				return
 			}
 
@@ -121,8 +122,7 @@ func (ctrl *Controller) flagSetPilotAction(w http.ResponseWriter, r *http.Reques
 			return
 		}
 
-		if ctrl.handleError(w, r, ctrl.GetProtectedUsecases(r).SetPilotEnrollmentForFeature(
-			p.FeatureFlagID, p.ExternalID, p.Enrolled)) {
+		if ctrl.handleError(w, r, ctrl.GetProtectedUsecases(r).SetPilotEnrollmentForFeature(r.Context(), p.FeatureFlagID, p.ExternalID, p.Enrolled)) {
 			return
 		}
 
@@ -165,7 +165,7 @@ func (ctrl *Controller) flagCreateNewAction(w http.ResponseWriter, r *http.Reque
 			return
 		}
 
-		err = ctrl.GetProtectedUsecases(r).CreateFeatureFlag(ff)
+		err = ctrl.GetProtectedUsecases(r).CreateFeatureFlag(context.TODO(), ff)
 
 		if err != nil {
 			log.Println(err)

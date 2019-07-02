@@ -22,7 +22,7 @@ func (sm *ServeMux) IsFeatureGloballyEnabled(w http.ResponseWriter, r *http.Requ
 		statusCode = 403
 	}
 
-	var resp struct{
+	var resp struct {
 		Enrollment bool `json:"enrollment"`
 	}
 	resp.Enrollment = enrollment

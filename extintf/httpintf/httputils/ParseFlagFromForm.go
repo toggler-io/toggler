@@ -1,10 +1,11 @@
 package httputils
 
 import (
-	"github.com/adamluzsi/toggler/services/rollouts"
 	"net/http"
 	"net/url"
 	"strconv"
+
+	"github.com/adamluzsi/toggler/services/rollouts"
 )
 
 func ParseFlagFromForm(r *http.Request) (*rollouts.FeatureFlag, error) {

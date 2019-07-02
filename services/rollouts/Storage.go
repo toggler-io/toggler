@@ -1,6 +1,8 @@
 package rollouts
 
 import (
+	"context"
+
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/resources/specs"
 )
@@ -18,10 +20,10 @@ type Storage interface {
 }
 
 type FlagFinder interface {
-	FindFlagByName(name string) (*FeatureFlag, error)
+	FindFlagByName(ctx context.Context, name string) (*FeatureFlag, error)
 }
 
 type PilotFinder interface {
-	FindFlagPilotByExternalPilotID(FeatureFlagID, ExternalPilotID string) (*Pilot, error)
-	FindPilotsByFeatureFlag(*FeatureFlag) frameless.Iterator
+	FindFlagPilotByExternalPilotID(ctx context.Context, FeatureFlagID, ExternalPilotID string) (*Pilot, error)
+	FindPilotsByFeatureFlag(ctx context.Context, ff *FeatureFlag) frameless.Iterator
 }

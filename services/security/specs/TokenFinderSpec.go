@@ -1,6 +1,7 @@
 package specs
 
 import (
+	"context"
 	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/testcase"
@@ -33,22 +34,22 @@ func (spec TokenFinderSpec) Test(t *testing.T) {
 	})
 
 	s.Before(func(t *testcase.T) {
-		require.Nil(t, spec.Subject.Truncate(security.Token{}))
+		require.Nil(t, spec.Subject.Truncate(context.Background(),security.Token{}))
 	})
 
 	s.After(func(t *testcase.T) {
-		require.Nil(t, spec.Subject.Truncate(security.Token{}))
+		require.Nil(t, spec.Subject.Truncate(context.Background(),security.Token{}))
 	})
 
 	s.Describe(`FindTokenByTokenString`, func(s *testcase.Spec) {
 		subject := func(t *testcase.T) (*security.Token, error) {
-			return spec.Subject.FindTokenByTokenString(t.I(`token string`).(string))
+			return spec.Subject.FindTokenByTokenString(context.TODO(), t.I(`token string`).(string))
 		}
 
 		s.Let(`token string`, func(t *testcase.T) interface{} { return `the answer is 42` })
 
 		s.When(`no token stored in the storage yet`, func(s *testcase.Spec) {
-			s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.Truncate(security.Token{})) })
+			s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.Truncate(context.Background(),security.Token{})) })
 
 			s.Then(`it will return nil token without any error`, func(t *testcase.T) {
 				token, err := subject(t)
@@ -59,7 +60,7 @@ func (spec TokenFinderSpec) Test(t *testing.T) {
 
 		s.When(`token is stored in the storage already`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, spec.Subject.Save(t.I(`token object`).(*security.Token)))
+				require.Nil(t, spec.Subject.Save(context.Background(), t.I(`token object`).(*security.Token)))
 			})
 
 			s.Then(`token will be retrieved`, func(t *testcase.T) {

@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/adamluzsi/testcase"
+	"github.com/adamluzsi/toggler/services/rollouts"
 
 	"github.com/stretchr/testify/require"
 )

@@ -1,8 +1,9 @@
 package httputils
 
 import (
-	"github.com/adamluzsi/toggler/usecases"
 	"net/http"
+
+	"github.com/adamluzsi/toggler/usecases"
 )
 
 func GetAuthToken(r *http.Request) (string, error) {

@@ -8,9 +8,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/toggler/services/rollouts"
 	. "github.com/adamluzsi/toggler/testing"
-	"github.com/adamluzsi/testcase"
 )
 
 func TestFeatureFlag(t *testing.T) {

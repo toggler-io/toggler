@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/adamluzsi/toggler/services/security"
 	"github.com/adamluzsi/testcase"
+	"github.com/adamluzsi/toggler/services/security"
 	"github.com/stretchr/testify/require"
 )
 

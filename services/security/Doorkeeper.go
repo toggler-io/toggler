@@ -1,5 +1,7 @@
 package security
 
+import "context"
+
 func NewDoorkeeper(s Storage) *Doorkeeper {
 	return &Doorkeeper{Storage: s}
 }
@@ -9,7 +11,7 @@ type Doorkeeper struct {
 }
 
 func (dk *Doorkeeper) VerifyTokenString(tokenString string) (bool, error) {
-	token, err := dk.Storage.FindTokenByTokenString(tokenString)
+	token, err := dk.Storage.FindTokenByTokenString(context.TODO(), tokenString)
 
 	if token == nil {
 		return false, nil

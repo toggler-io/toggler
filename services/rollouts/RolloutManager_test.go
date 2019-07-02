@@ -1,6 +1,7 @@
 package rollouts_test
 
 import (
+	"context"
 	"math/rand"
 	"net/url"
 	"testing"
@@ -34,8 +35,8 @@ func TestRolloutManager(t *testing.T) {
 	})
 
 	s.Before(func(t *testcase.T) {
-		require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
-		require.Nil(t, GetStorage(t).Truncate(rollouts.Pilot{}))
+		require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
+		require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.Pilot{}))
 	})
 
 	SpecRolloutManagerCreateFeatureFlag(s)
@@ -48,7 +49,7 @@ func TestRolloutManager(t *testing.T) {
 func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
 	s.Describe(`DeleteFeatureFlag`, func(s *testcase.Spec) {
 		subject := func(t *testcase.T) error {
-			return manager(t).DeleteFeatureFlag(t.I(`flag ID`).(string))
+			return manager(t).DeleteFeatureFlag(context.TODO(), t.I(`flag ID`).(string))
 		}
 
 		s.Let(`FeatureFlagName`, func(t *testcase.T) interface{} { return ExampleFeatureName() })
@@ -77,7 +78,7 @@ func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
 			})
 
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
+				require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
 				require.NotEmpty(t, GetFeatureFlag(t).ID)
 			})
 
@@ -94,7 +95,7 @@ func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
 func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 	s.Describe(`CreateFeatureFlag`, func(s *testcase.Spec) {
 		subjectWithArgs := func(t *testcase.T, f *rollouts.FeatureFlag) error {
-			return manager(t).CreateFeatureFlag(f)
+			return manager(t).CreateFeatureFlag(context.TODO(), f)
 		}
 
 		subject := func(t *testcase.T) error {
@@ -218,7 +219,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 
 			s.Context(`was not stored until now`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
+					require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
 				})
 
 				s.Then(`it will be persisted`, func(t *testcase.T) {
@@ -230,7 +231,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 
 			s.Context(`had been persisted previously`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
+					require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
 					require.NotEmpty(t, GetFeatureFlag(t).ID)
 				})
 
@@ -248,7 +249,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 					s.Before(func(t *testcase.T) {
 						require.NotEmpty(t, GetFeatureFlag(t).ID)
 						var ff rollouts.FeatureFlag
-						found, err := GetStorage(t).FindByID(GetFeatureFlag(t).ID, &ff)
+						found, err := GetStorage(t).FindByID(context.Background(), &ff, GetFeatureFlag(t).ID)
 						require.Nil(t, err)
 						require.True(t, found)
 						require.Equal(t, GetFeatureFlag(t), &ff)
@@ -266,7 +267,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 func SpecRolloutManagerUpdateFeatureFlag(s *testcase.Spec) {
 	s.Describe(`UpdateFeatureFlag`, func(s *testcase.Spec) {
 		subjectWithArgs := func(t *testcase.T, f *rollouts.FeatureFlag) error {
-			return manager(t).UpdateFeatureFlag(f)
+			return manager(t).UpdateFeatureFlag(context.TODO(), f)
 		}
 
 		subject := func(t *testcase.T) error {
@@ -304,7 +305,7 @@ func SpecRolloutManagerUpdateFeatureFlag(s *testcase.Spec) {
 
 			s.Context(`was not stored until now`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
+					require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
 				})
 
 				s.Then(`it will report error about the missing ID`, func(t *testcase.T) {
@@ -314,7 +315,7 @@ func SpecRolloutManagerUpdateFeatureFlag(s *testcase.Spec) {
 
 			s.Context(`had been persisted previously`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
+					require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
 					require.NotEmpty(t, GetFeatureFlag(t).ID)
 				})
 
@@ -329,7 +330,7 @@ func SpecRolloutManagerUpdateFeatureFlag(s *testcase.Spec) {
 					require.Nil(t, subjectWithArgs(t, &flag))
 
 					var storedFlag rollouts.FeatureFlag
-					found, err := GetStorage(t).FindByID(GetFeatureFlag(t).ID, &storedFlag)
+					found, err := GetStorage(t).FindByID(context.Background(), &storedFlag, GetFeatureFlag(t).ID)
 					require.Nil(t, err)
 					require.True(t, found)
 					require.Equal(t, u, storedFlag.Rollout.Strategy.DecisionLogicAPI)
@@ -345,7 +346,7 @@ func SpecRolloutManagerUpdateFeatureFlag(s *testcase.Spec) {
 func SpecRolloutManagerListFeatureFlags(s *testcase.Spec) {
 	s.Describe(`ListFeatureFlags`, func(s *testcase.Spec) {
 		subject := func(t *testcase.T) ([]*rollouts.FeatureFlag, error) {
-			return manager(t).ListFeatureFlags()
+			return manager(t).ListFeatureFlags(context.TODO())
 		}
 
 		onSuccess := func(t *testcase.T) []*rollouts.FeatureFlag {
@@ -376,7 +377,7 @@ func SpecRolloutManagerListFeatureFlags(s *testcase.Spec) {
 
 		s.When(`no feature present in the system`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
+				require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
 			})
 
 			s.Then(`feature flags are returned`, func(t *testcase.T) {
@@ -397,11 +398,7 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 		}
 
 		subject := func(t *testcase.T) error {
-			return manager(t).SetPilotEnrollmentForFeature(
-				t.I(`FeatureFlagID`).(string),
-				GetExternalPilotID(t),
-				GetNewEnrollment(t),
-			)
+			return manager(t).SetPilotEnrollmentForFeature(context.TODO(), t.I(`FeatureFlagID`).(string), GetExternalPilotID(t), GetNewEnrollment(t))
 		}
 
 		s.Let(`FeatureFlagID`, func(t *testcase.T) interface{} {
@@ -413,7 +410,7 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 		})
 
 		findFlag := func(t *testcase.T) *rollouts.FeatureFlag {
-			iter := GetStorage(t).FindAll(&rollouts.FeatureFlag{})
+			iter := GetStorage(t).FindAll(context.Background(), &rollouts.FeatureFlag{})
 			require.NotNil(t, iter)
 			require.True(t, iter.Next())
 			var ff rollouts.FeatureFlag
@@ -426,7 +423,7 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 		s.When(`no feature flag is seen ever before`, func(s *testcase.Spec) {
 			s.Let(`FeatureFlagID`, func(t *testcase.T) interface{} { return `` })
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
+				require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
 			})
 
 			s.Then(`error returned`, func(t *testcase.T) {
@@ -436,13 +433,13 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 		s.When(`feature flag already configured`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
+				require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
 			})
 
 			s.Then(`flag is will not be recreated`, func(t *testcase.T) {
 				require.Nil(t, subject(t))
 
-				count, err := iterators.Count(GetStorage(t).FindAll(rollouts.FeatureFlag{}))
+				count, err := iterators.Count(GetStorage(t).FindAll(context.Background(), rollouts.FeatureFlag{}))
 				require.Nil(t, err)
 				require.Equal(t, 1, count)
 
@@ -452,7 +449,7 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 			s.And(`pilot already exists`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Save(GetPilot(t)))
+					require.Nil(t, GetStorage(t).Save(context.TODO(), GetPilot(t)))
 				})
 
 				s.And(`and pilot is has the opposite enrollment status`, func(s *testcase.Spec) {
@@ -464,7 +461,7 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 						require.Nil(t, subject(t))
 						flag := findFlag(t)
 
-						pilot, err := GetStorage(t).FindFlagPilotByExternalPilotID(flag.ID, GetExternalPilotID(t))
+						pilot, err := GetStorage(t).FindFlagPilotByExternalPilotID(context.Background(), flag.ID, GetExternalPilotID(t))
 						require.Nil(t, err)
 
 						require.NotNil(t, pilot)
@@ -472,7 +469,7 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 						require.Equal(t, GetExternalPilotID(t), pilot.ExternalID)
 						require.Equal(t, GetPilot(t), pilot)
 
-						count, err := iterators.Count(GetStorage(t).FindAll(rollouts.Pilot{}))
+						count, err := iterators.Count(GetStorage(t).FindAll(context.Background(), rollouts.Pilot{}))
 						require.Nil(t, err)
 						require.Equal(t, 1, count)
 					})
@@ -488,14 +485,14 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 						require.Nil(t, subject(t))
 						ff := findFlag(t)
 
-						pilot, err := GetStorage(t).FindFlagPilotByExternalPilotID(ff.ID, GetExternalPilotID(t))
+						pilot, err := GetStorage(t).FindFlagPilotByExternalPilotID(context.Background(), ff.ID, GetExternalPilotID(t))
 						require.Nil(t, err)
 
 						require.NotNil(t, pilot)
 						require.Equal(t, GetNewEnrollment(t), pilot.Enrolled)
 						require.Equal(t, GetExternalPilotID(t), pilot.ExternalID)
 
-						count, err := iterators.Count(GetStorage(t).FindAll(rollouts.Pilot{}))
+						count, err := iterators.Count(GetStorage(t).FindAll(context.Background(), rollouts.Pilot{}))
 						require.Nil(t, err)
 						require.Equal(t, 1, count)
 

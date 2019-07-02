@@ -1,6 +1,6 @@
 # github.com/Pallinder/go-randomdata v1.2.0
 github.com/Pallinder/go-randomdata
-# github.com/adamluzsi/frameless v0.0.0-20190625002444-aec6cb461a44
+# github.com/adamluzsi/frameless v0.0.0-20190702205530-f0d79e10a135
 github.com/adamluzsi/frameless
 github.com/adamluzsi/frameless/iterators
 github.com/adamluzsi/frameless/resources/specs

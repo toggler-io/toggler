@@ -1,6 +1,7 @@
 package specs
 
 import (
+	"context"
 	"github.com/adamluzsi/testcase"
 	testing2 "github.com/adamluzsi/toggler/testing"
 	"github.com/stretchr/testify/require"
@@ -36,10 +37,10 @@ func (spec StorageSpec) Test(t *testing.T) {
 
 			s.Around(func(t *testcase.T) func() {
 				flag := t.I(`flag`).(*rollouts.FeatureFlag)
-				require.Nil(t, spec.Storage.Save(flag))
+				require.Nil(t, spec.Storage.Save(context.Background(),flag))
 				ff.PilotFeatureFlagID = flag.ID
 				return func() {
-					require.Nil(t, spec.Storage.Truncate(rollouts.FeatureFlag{}))
+					require.Nil(t, spec.Storage.Truncate(context.Background(), rollouts.FeatureFlag{}))
 					ff.PilotFeatureFlagID = ``
 				}
 			})
@@ -52,11 +53,11 @@ func (spec StorageSpec) Test(t *testing.T) {
 
 		s.Describe(`flag name uniq across storage`, func(s *testcase.Spec) {
 			subject := func(t *testcase.T) error {
-				return spec.Storage.Save(t.I(`flag`).(*rollouts.FeatureFlag))
+				return spec.Storage.Save(context.Background(), t.I(`flag`).(*rollouts.FeatureFlag))
 			}
 
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, spec.Storage.Truncate(rollouts.FeatureFlag{}))
+				require.Nil(t, spec.Storage.Truncate(context.Background(), rollouts.FeatureFlag{}))
 			})
 
 			s.Let(`flag`, func(t *testcase.T) interface{} {

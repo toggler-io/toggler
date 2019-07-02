@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"github.com/adamluzsi/frameless"
@@ -31,29 +32,29 @@ type Postgres struct {
 	testEntities *memorystorage.Memory
 }
 
-func (pg *Postgres) Save(entity interface{}) error {
+func (pg *Postgres) Save(ctx context.Context, entity interface{}) error {
 	if currentID, ok := specs.LookupID(entity); !ok || currentID != "" {
 		return fmt.Errorf("entity already have an ID: %s", currentID)
 	}
 
 	switch e := entity.(type) {
 	case *rollouts.FeatureFlag:
-		return pg.featureFlagInsertNew(e)
+		return pg.featureFlagInsertNew(ctx, e)
 	case *rollouts.Pilot:
-		return pg.pilotInsertNew(e)
+		return pg.pilotInsertNew(ctx, e)
 	case *security.Token:
-		return pg.tokenInsertNew(e)
+		return pg.tokenInsertNew(ctx, e)
 	case *specs.TestEntity:
-		return pg.testEntities.Save(entity)
+		return pg.testEntities.Save(ctx, entity)
 	default:
 		return frameless.ErrNotImplemented
 	}
 }
 
-func (pg *Postgres) FindByID(ID string, ptr interface{}) (bool, error) {
+func (pg *Postgres) FindByID(ctx context.Context, ptr interface{}, ID string) (bool, error) {
 	switch ptr.(type) {
 	case *specs.TestEntity:
-		return pg.testEntities.FindByID(ID, ptr)
+		return pg.testEntities.FindByID(ctx, ptr, ID)
 	}
 
 	id, err := strconv.ParseInt(ID, 10, 64)
@@ -64,23 +65,23 @@ func (pg *Postgres) FindByID(ID string, ptr interface{}) (bool, error) {
 
 	switch e := ptr.(type) {
 	case *rollouts.FeatureFlag:
-		return pg.featureFlagFindByID(id, e)
+		return pg.featureFlagFindByID(ctx, e, id)
 
 	case *rollouts.Pilot:
-		return pg.pilotFindByID(id, e)
+		return pg.pilotFindByID(ctx, e, id)
 
 	case *security.Token:
-		return pg.tokenFindByID(id, e)
+		return pg.tokenFindByID(ctx, e, id)
 
 	default:
 		return false, frameless.ErrNotImplemented
 	}
 }
 
-func (pg *Postgres) Truncate(Type interface{}) error {
+func (pg *Postgres) Truncate(ctx context.Context, Type interface{}) error {
 	switch Type.(type) {
 	case specs.TestEntity, *specs.TestEntity:
-		return pg.testEntities.Truncate(Type)
+		return pg.testEntities.Truncate(ctx, Type)
 	}
 
 	var tableName string
@@ -95,14 +96,14 @@ func (pg *Postgres) Truncate(Type interface{}) error {
 		return frameless.ErrNotImplemented
 	}
 
-	_, err := pg.DB.Exec(fmt.Sprintf(`TRUNCATE TABLE "%s"`, tableName))
+	_, err := pg.DB.ExecContext(ctx, fmt.Sprintf(`TRUNCATE TABLE "%s"`, tableName))
 	return err
 }
 
-func (pg *Postgres) DeleteByID(Type interface{}, ID string) error {
+func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, ID string) error {
 	switch Type.(type) {
 	case specs.TestEntity, *specs.TestEntity:
-		return pg.testEntities.DeleteByID(Type, ID)
+		return pg.testEntities.DeleteByID(ctx, Type, ID)
 	}
 
 	id, err := strconv.ParseInt(ID, 10, 64)
@@ -113,15 +114,15 @@ func (pg *Postgres) DeleteByID(Type interface{}, ID string) error {
 
 	switch Type.(type) {
 	case rollouts.FeatureFlag, *rollouts.FeatureFlag:
-		_, err := pg.DB.Exec(`DELETE FROM "feature_flags" WHERE id = $1`, id)
+		_, err := pg.DB.ExecContext(ctx, `DELETE FROM "feature_flags" WHERE id = $1`, id)
 		return err
 
 	case rollouts.Pilot, *rollouts.Pilot:
-		_, err := pg.DB.Exec(`DELETE FROM "pilots" WHERE id = $1`, id)
+		_, err := pg.DB.ExecContext(ctx, `DELETE FROM "pilots" WHERE id = $1`, id)
 		return err
 
 	case security.Token, *security.Token:
-		_, err := pg.DB.Exec(`DELETE FROM "tokens" WHERE id = $1`, id)
+		_, err := pg.DB.ExecContext(ctx, `DELETE FROM "tokens" WHERE id = $1`, id)
 		return err
 
 	default:
@@ -129,38 +130,38 @@ func (pg *Postgres) DeleteByID(Type interface{}, ID string) error {
 	}
 }
 
-func (pg *Postgres) Update(ptr interface{}) error {
+func (pg *Postgres) Update(ctx context.Context, ptr interface{}) error {
 	switch e := ptr.(type) {
 	case *rollouts.FeatureFlag:
-		return pg.featureFlagUpdate(e)
+		return pg.featureFlagUpdate(ctx, e)
 
 	case *rollouts.Pilot:
-		return pg.pilotUpdate(e)
+		return pg.pilotUpdate(ctx, e)
 
 	case *security.Token:
-		return pg.tokenUpdate(e)
+		return pg.tokenUpdate(ctx, e)
 
 	case *specs.TestEntity:
-		return pg.testEntities.Update(ptr)
+		return pg.testEntities.Update(ctx, ptr)
 
 	default:
 		return frameless.ErrNotImplemented
 	}
 }
 
-func (pg *Postgres) FindAll(Type interface{}) frameless.Iterator {
+func (pg *Postgres) FindAll(ctx context.Context, Type interface{}) frameless.Iterator {
 	switch Type.(type) {
 	case rollouts.FeatureFlag, *rollouts.FeatureFlag:
-		return pg.featureFlagFindAll()
+		return pg.featureFlagFindAll(ctx)
 
 	case rollouts.Pilot, *rollouts.Pilot:
-		return pg.pilotFindAll()
+		return pg.pilotFindAll(ctx)
 
 	case security.Token, *security.Token:
-		return pg.tokenFindAll()
+		return pg.tokenFindAll(ctx)
 
 	case specs.TestEntity, *specs.TestEntity:
-		return pg.FindAll(Type)
+		return pg.FindAll(ctx, Type)
 
 	default:
 		return iterators.NewError(frameless.ErrNotImplemented)
@@ -173,9 +174,9 @@ FROM feature_flags
 WHERE name = $1;
 `
 
-func (pg *Postgres) FindFlagByName(name string) (*rollouts.FeatureFlag, error) {
+func (pg *Postgres) FindFlagByName(ctx context.Context, name string) (*rollouts.FeatureFlag, error) {
 
-	row := pg.DB.QueryRow(featureFlagFindByNameQuery, name)
+	row := pg.DB.QueryRowContext(ctx, featureFlagFindByNameQuery, name)
 
 	var ff rollouts.FeatureFlag
 	var DecisionLogicAPI sql.NullString
@@ -219,14 +220,14 @@ WHERE feature_flag_id = $1
   AND external_id = $2
 `
 
-func (pg *Postgres) FindFlagPilotByExternalPilotID(FeatureFlagID, ExternalPilotID string) (*rollouts.Pilot, error) {
+func (pg *Postgres) FindFlagPilotByExternalPilotID(ctx context.Context, FeatureFlagID, ExternalPilotID string) (*rollouts.Pilot, error) {
 	flagID, err := strconv.ParseInt(FeatureFlagID, 10, 64)
 
 	if err != nil {
 		return nil, nil
 	}
 
-	row := pg.DB.QueryRow(findFlagPilotByExternalPilotIDQuery, flagID, ExternalPilotID)
+	row := pg.DB.QueryRowContext(ctx, findFlagPilotByExternalPilotIDQuery, flagID, ExternalPilotID)
 
 	var p rollouts.Pilot
 
@@ -254,7 +255,7 @@ FROM "pilots"
 WHERE feature_flag_id = $1
 `
 
-func (pg *Postgres) FindPilotsByFeatureFlag(ff *rollouts.FeatureFlag) frameless.Iterator {
+func (pg *Postgres) FindPilotsByFeatureFlag(ctx context.Context, ff *rollouts.FeatureFlag) frameless.Iterator {
 
 	if ff == nil {
 		return iterators.NewEmpty()
@@ -270,7 +271,7 @@ func (pg *Postgres) FindPilotsByFeatureFlag(ff *rollouts.FeatureFlag) frameless.
 		return iterators.NewEmpty()
 	}
 
-	rows, err := pg.DB.Query(findPilotsByFeatureFlagQuery, ffID)
+	rows, err := pg.DB.QueryContext(ctx, findPilotsByFeatureFlagQuery, ffID)
 
 	if err != nil {
 		return iterators.NewError(err)
@@ -323,8 +324,8 @@ FROM "tokens"
 WHERE token = $1;
 `
 
-func (pg *Postgres) FindTokenByTokenString(token string) (*security.Token, error) {
-	row := pg.DB.QueryRow(tokenFindByTokenStringQuery, token)
+func (pg *Postgres) FindTokenByTokenString(ctx context.Context, token string) (*security.Token, error) {
+	row := pg.DB.QueryRowContext(ctx, tokenFindByTokenStringQuery, token)
 	var t security.Token
 
 	err := row.Scan(
@@ -361,7 +362,7 @@ VALUES ($1, $2, $3, $4)
 RETURNING id;
 `
 
-func (pg *Postgres) featureFlagInsertNew(flag *rollouts.FeatureFlag) error {
+func (pg *Postgres) featureFlagInsertNew(ctx context.Context, flag *rollouts.FeatureFlag) error {
 
 	var DecisionLogicAPI sql.NullString
 
@@ -370,7 +371,7 @@ func (pg *Postgres) featureFlagInsertNew(flag *rollouts.FeatureFlag) error {
 		DecisionLogicAPI.String = flag.Rollout.Strategy.DecisionLogicAPI.String()
 	}
 
-	row := pg.DB.QueryRow(featureFlagInsertNewQuery,
+	row := pg.DB.QueryRowContext(ctx, featureFlagInsertNewQuery,
 		flag.Name,
 		flag.Rollout.RandSeed,
 		flag.Rollout.Strategy.Percentage,
@@ -391,7 +392,7 @@ VALUES ($1, $2, $3)
 RETURNING id;
 `
 
-func (pg *Postgres) pilotInsertNew(pilot *rollouts.Pilot) error {
+func (pg *Postgres) pilotInsertNew(ctx context.Context, pilot *rollouts.Pilot) error {
 
 	flagID, err := strconv.ParseInt(pilot.FeatureFlagID, 10, 64)
 
@@ -399,7 +400,7 @@ func (pg *Postgres) pilotInsertNew(pilot *rollouts.Pilot) error {
 		return fmt.Errorf(`invalid Feature Flag ID: ` + pilot.FeatureFlagID)
 	}
 
-	row := pg.DB.QueryRow(pilotInsertNewQuery,
+	row := pg.DB.QueryRowContext(ctx, pilotInsertNewQuery,
 		flagID,
 		pilot.ExternalID,
 		pilot.Enrolled,
@@ -419,8 +420,8 @@ VALUES ($1, $2, $3, $4)
 RETURNING id;
 `
 
-func (pg *Postgres) tokenInsertNew(token *security.Token) error {
-	row := pg.DB.QueryRow(tokenInsertNewQuery,
+func (pg *Postgres) tokenInsertNew(ctx context.Context, token *security.Token) error {
+	row := pg.DB.QueryRowContext(ctx, tokenInsertNewQuery,
 		token.Token,
 		token.OwnerUID,
 		token.IssuedAt,
@@ -441,8 +442,8 @@ FROM feature_flags
 WHERE id = $1;
 `
 
-func (pg *Postgres) featureFlagFindByID(id int64, flag *rollouts.FeatureFlag) (bool, error) {
-	row := pg.DB.QueryRow(featureFlagFindByIDQuery, id)
+func (pg *Postgres) featureFlagFindByID(ctx context.Context, flag *rollouts.FeatureFlag, id int64) (bool, error) {
+	row := pg.DB.QueryRowContext(ctx, featureFlagFindByIDQuery, id)
 	var ff rollouts.FeatureFlag
 
 	var DecisionLogicAPI sql.NullString
@@ -485,8 +486,8 @@ FROM "pilots"
 WHERE id = $1;
 `
 
-func (pg *Postgres) pilotFindByID(id int64, pilot *rollouts.Pilot) (bool, error) {
-	row := pg.DB.QueryRow(pilotFindByIDQuery, id)
+func (pg *Postgres) pilotFindByID(ctx context.Context, pilot *rollouts.Pilot, id int64) (bool, error) {
+	row := pg.DB.QueryRowContext(ctx, pilotFindByIDQuery, id)
 	var p rollouts.Pilot
 
 	err := row.Scan(
@@ -514,8 +515,8 @@ FROM "tokens"
 WHERE id = $1;
 `
 
-func (pg *Postgres) tokenFindByID(id int64, token *security.Token) (bool, error) {
-	row := pg.DB.QueryRow(tokenFindByIDQuery, id)
+func (pg *Postgres) tokenFindByID(ctx context.Context, token *security.Token, id int64) (bool, error) {
+	row := pg.DB.QueryRowContext(ctx, tokenFindByIDQuery, id)
 	var t security.Token
 
 	err := row.Scan(
@@ -553,8 +554,8 @@ SELECT id, name, rollout_rand_seed, rollout_strategy_percentage, rollout_strateg
 FROM feature_flags 
 `
 
-func (pg *Postgres) featureFlagFindAll() frameless.Iterator {
-	rows, err := pg.DB.Query(featureFlagFindAllQuery)
+func (pg *Postgres) featureFlagFindAll(ctx context.Context) frameless.Iterator {
+	rows, err := pg.DB.QueryContext(ctx, featureFlagFindAllQuery)
 
 	if err != nil {
 		return iterators.NewError(err)
@@ -622,8 +623,8 @@ SELECT id, feature_flag_id, external_id, enrolled
 FROM "pilots"
 `
 
-func (pg *Postgres) pilotFindAll() frameless.Iterator {
-	rows, err := pg.DB.Query(pilotFindAllQuery)
+func (pg *Postgres) pilotFindAll(ctx context.Context) frameless.Iterator {
+	rows, err := pg.DB.QueryContext(ctx, pilotFindAllQuery)
 
 	if err != nil {
 		return iterators.NewError(err)
@@ -675,8 +676,8 @@ SELECT id, token, duration, issued_at, owner_uid
 FROM "tokens"
 `
 
-func (pg *Postgres) tokenFindAll() frameless.Iterator {
-	rows, err := pg.DB.Query(tokenFindAllQuery)
+func (pg *Postgres) tokenFindAll(ctx context.Context) frameless.Iterator {
+	rows, err := pg.DB.QueryContext(ctx, tokenFindAllQuery)
 
 	if err != nil {
 		return iterators.NewError(err)
@@ -738,7 +739,7 @@ SET name = $1,
 WHERE id = $5;
 `
 
-func (pg *Postgres) featureFlagUpdate(flag *rollouts.FeatureFlag) error {
+func (pg *Postgres) featureFlagUpdate(ctx context.Context, flag *rollouts.FeatureFlag) error {
 	var DecisionLogicAPI sql.NullString
 
 	if flag.Rollout.Strategy.DecisionLogicAPI != nil {
@@ -746,7 +747,7 @@ func (pg *Postgres) featureFlagUpdate(flag *rollouts.FeatureFlag) error {
 		DecisionLogicAPI.String = flag.Rollout.Strategy.DecisionLogicAPI.String()
 	}
 
-	_, err := pg.DB.Exec(featureFlagUpdateQuery,
+	_, err := pg.DB.ExecContext(ctx, featureFlagUpdateQuery,
 		flag.Name,
 		flag.Rollout.RandSeed,
 		flag.Rollout.Strategy.Percentage,
@@ -765,8 +766,8 @@ SET feature_flag_id = $1,
 WHERE id = $4;
 `
 
-func (pg *Postgres) pilotUpdate(pilot *rollouts.Pilot) error {
-	_, err := pg.DB.Exec(pilotUpdateQuery,
+func (pg *Postgres) pilotUpdate(ctx context.Context, pilot *rollouts.Pilot) error {
+	_, err := pg.DB.ExecContext(ctx, pilotUpdateQuery,
 		pilot.FeatureFlagID,
 		pilot.ExternalID,
 		pilot.Enrolled,
@@ -785,8 +786,8 @@ SET token = $1,
 WHERE id = $5;
 `
 
-func (pg *Postgres) tokenUpdate(t *security.Token) error {
-	_, err := pg.DB.Exec(tokenUpdateQuery,
+func (pg *Postgres) tokenUpdate(ctx context.Context, t *security.Token) error {
+	_, err := pg.DB.ExecContext(ctx, tokenUpdateQuery,
 		t.Token,
 		t.OwnerUID,
 		t.IssuedAt,

@@ -2,14 +2,16 @@ package httpapi_test
 
 import (
 	"bytes"
-	"github.com/adamluzsi/toggler/services/rollouts"
-	"github.com/adamluzsi/toggler/services/security"
-	"github.com/adamluzsi/testcase"
-	"github.com/stretchr/testify/require"
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	"github.com/adamluzsi/testcase"
+	"github.com/adamluzsi/toggler/services/rollouts"
+	"github.com/adamluzsi/toggler/services/security"
+	"github.com/stretchr/testify/require"
 
 	. "github.com/adamluzsi/toggler/testing"
 )
@@ -56,7 +58,7 @@ func TestServeMux_ListFeatureFlags(t *testing.T) {
 
 		s.And(`no flag present in the system`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, GetStorage(t).Truncate(security.Token{}))
+				require.Nil(t, GetStorage(t).Truncate(context.Background(), security.Token{}))
 			})
 
 			s.Then(`empty result received`, func(t *testcase.T) {

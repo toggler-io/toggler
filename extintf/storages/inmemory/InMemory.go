@@ -1,6 +1,7 @@
 package inmemory
 
 import (
+	"context"
 	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/adamluzsi/toggler/services/security"
 	"github.com/adamluzsi/frameless"
@@ -14,7 +15,7 @@ func New() *InMemory {
 
 type InMemory struct{ *memorystorage.Memory }
 
-func (s *InMemory) FindPilotsByFeatureFlag(ff *rollouts.FeatureFlag) frameless.Iterator {
+func (s *InMemory) FindPilotsByFeatureFlag(ctx context.Context, ff *rollouts.FeatureFlag) frameless.Iterator {
 	table := s.TableFor(rollouts.Pilot{})
 
 	var pilots []*rollouts.Pilot
@@ -30,7 +31,7 @@ func (s *InMemory) FindPilotsByFeatureFlag(ff *rollouts.FeatureFlag) frameless.I
 	return iterators.NewSlice(pilots)
 }
 
-func (s *InMemory) FindFlagPilotByExternalPilotID(featureFlagID, externalPilotID string) (*rollouts.Pilot, error) {
+func (s *InMemory) FindFlagPilotByExternalPilotID(ctx context.Context, featureFlagID, externalPilotID string) (*rollouts.Pilot, error) {
 	table := s.TableFor(rollouts.Pilot{})
 
 	for _, v := range table {
@@ -44,7 +45,7 @@ func (s *InMemory) FindFlagPilotByExternalPilotID(featureFlagID, externalPilotID
 	return nil, nil
 }
 
-func (s *InMemory) FindFlagByName(name string) (*rollouts.FeatureFlag, error) {
+func (s *InMemory) FindFlagByName(ctx context.Context, name string) (*rollouts.FeatureFlag, error) {
 	var ptr *rollouts.FeatureFlag
 	table := s.TableFor(ptr)
 
@@ -60,13 +61,13 @@ func (s *InMemory) FindFlagByName(name string) (*rollouts.FeatureFlag, error) {
 	return ptr, nil
 }
 
-func (s *InMemory) FindTokenByTokenString(tokenStr string) (*security.Token, error) {
+func (s *InMemory) FindTokenByTokenString(ctx context.Context, t string) (*security.Token, error) {
 	table := s.TableFor(security.Token{})
 
 	for _, token := range table {
 		token := token.(*security.Token)
 
-		if token.Token == tokenStr {
+		if token.Token == t {
 			return token, nil
 		}
 	}

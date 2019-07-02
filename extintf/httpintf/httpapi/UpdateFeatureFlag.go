@@ -1,11 +1,13 @@
 package httpapi
 
 import (
+	context2 "context"
 	"encoding/json"
+	"net/http"
+
 	"github.com/adamluzsi/toggler/extintf/httpintf/httputils"
 	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/adamluzsi/toggler/usecases"
-	"net/http"
 )
 
 func (sm *ServeMux) UpdateFeatureFlagJSON(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +24,7 @@ func (sm *ServeMux) UpdateFeatureFlagJSON(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if handleError(w, pu.UpdateFeatureFlag(&flag), http.StatusInternalServerError) {
+	if handleError(w, pu.UpdateFeatureFlag(context2.TODO(), &flag), http.StatusInternalServerError) {
 		return
 	}
 
@@ -56,7 +58,7 @@ func (sm *ServeMux) UpdateFeatureFlagFORM(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if handleError(w, pu.UpdateFeatureFlag(ff), http.StatusInternalServerError) {
+	if handleError(w, pu.UpdateFeatureFlag(context2.TODO(), ff), http.StatusInternalServerError) {
 		return
 	}
 

@@ -1,6 +1,7 @@
 package security
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"strings"
@@ -17,7 +18,7 @@ type Issuer struct {
 	Storage
 }
 
-func (i *Issuer) CreateNewToken(ownerUID string, issueAt *time.Time, duration *time.Duration) (*Token, error) {
+func (i *Issuer) CreateNewToken(ctx context.Context, ownerUID string, issueAt *time.Time, duration *time.Duration) (*Token, error) {
 
 	if ownerUID == `` {
 		return nil, errors.New(`OwnerUID cannot be empty`)
@@ -43,12 +44,12 @@ func (i *Issuer) CreateNewToken(ownerUID string, issueAt *time.Time, duration *t
 
 	token.Token = tToken
 
-	return token, i.Storage.Save(token)
+	return token, i.Storage.Save(ctx, token)
 
 }
 
-func (i *Issuer) RevokeToken(token *Token) error {
-	return i.Storage.DeleteByID(token, token.ID)
+func (i *Issuer) RevokeToken(ctx context.Context, token *Token) error {
+	return i.Storage.DeleteByID(ctx, token, token.ID)
 }
 
 const tokenRawLength = 128

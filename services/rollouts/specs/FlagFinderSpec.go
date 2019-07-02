@@ -1,6 +1,7 @@
 package specs
 
 import (
+	"context"
 	"github.com/adamluzsi/testcase"
 	. "github.com/adamluzsi/toggler/testing"
 	"testing"
@@ -26,22 +27,22 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 
 	s.Describe(`FlagFinderSpec`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, spec.Subject.Truncate(rollouts.FeatureFlag{}))
+			require.Nil(t, spec.Subject.Truncate(context.Background(), rollouts.FeatureFlag{}))
 		})
 
 		s.After(func(t *testcase.T) {
-			require.Nil(t, spec.Subject.Truncate(rollouts.FeatureFlag{}))
+			require.Nil(t, spec.Subject.Truncate(context.Background(), rollouts.FeatureFlag{}))
 		})
 
 		s.Describe(`FindFlagByName`, func(s *testcase.Spec) {
 			subject := func(t *testcase.T) *rollouts.FeatureFlag {
-				ff, err := spec.Subject.FindFlagByName(featureName)
+				ff, err := spec.Subject.FindFlagByName(context.Background(), featureName)
 				require.Nil(t, err)
 				return ff
 			}
 
 			s.When(`we don't have feature flag yet`, func(s *testcase.Spec) {
-				s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.Truncate(rollouts.FeatureFlag{})) })
+				s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.Truncate(context.Background(), rollouts.FeatureFlag{})) })
 
 				s.Then(`we receive back nil pointer`, func(t *testcase.T) {
 					require.Nil(t, subject(t))
@@ -54,12 +55,12 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 				})
 
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, spec.Subject.Save(t.I(`ff`).(*rollouts.FeatureFlag)))
+					require.Nil(t, spec.Subject.Save(context.Background(), t.I(`ff`).(*rollouts.FeatureFlag)))
 				})
 
 				s.Then(`searching for it returns the flag entity`, func(t *testcase.T) {
 					ff := t.I(`ff`).(*rollouts.FeatureFlag)
-					actually, err := spec.Subject.FindFlagByName(ff.Name)
+					actually, err := spec.Subject.FindFlagByName(context.Background(), ff.Name)
 					require.Nil(t, err)
 					require.Equal(t, ff, actually)
 				})

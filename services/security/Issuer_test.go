@@ -1,12 +1,13 @@
 package security_test
 
 import (
+	"context"
 	"strconv"
 	"testing"
 	"time"
 
-	"github.com/adamluzsi/toggler/services/security"
 	"github.com/adamluzsi/testcase"
+	"github.com/adamluzsi/toggler/services/security"
 	"github.com/stretchr/testify/require"
 
 	. "github.com/adamluzsi/toggler/testing"
@@ -31,13 +32,13 @@ func SpecIssuerRevokeToken(s *testcase.Spec) {
 		subject := func(t *testcase.T) error {
 			token, _ := t.I(`Token`).(*security.Token)
 			issuer := t.I(`issuer`).(*security.Issuer)
-			return issuer.RevokeToken(token)
+			return issuer.RevokeToken(context.TODO(), token)
 		}
 
 		s.When(`token exists`, func(s *testcase.Spec) {
 			s.Let(`Token`, func(t *testcase.T) interface{} {
 				issuer := t.I(`issuer`).(*security.Issuer)
-				token, err := issuer.CreateNewToken(GetUniqUserID(t), nil, nil)
+				token, err := issuer.CreateNewToken(context.TODO(), GetUniqUserID(t), nil, nil)
 				require.Nil(t, err)
 				return token
 			})
@@ -66,7 +67,7 @@ func SpecIssuerCreateNewToken(s *testcase.Spec) {
 			userUID := t.I(`userUID`).(string)
 			issueAt, _ := t.I(`issueAt`).(*time.Time)
 			duration, _ := t.I(`duration`).(*time.Duration)
-			return issuer.CreateNewToken(userUID, issueAt, duration)
+			return issuer.CreateNewToken(context.TODO(), userUID, issueAt, duration)
 		}
 		onSuccess := func(t *testcase.T) *security.Token {
 			token, err := subject(t)
@@ -104,7 +105,7 @@ func SpecIssuerCreateNewToken(s *testcase.Spec) {
 				t1 := onSuccess(t)
 				t2 := security.Token{}
 
-				found, err := t.I(`TestStorage`).(*TestStorage).FindByID(t1.ID, &t2)
+				found, err := t.I(`TestStorage`).(*TestStorage).FindByID(context.Background(), &t2, t1.ID)
 				require.Nil(t, err)
 				require.True(t, found)
 				require.Equal(t, t1, &t2)
@@ -117,7 +118,7 @@ func SpecIssuerCreateNewToken(s *testcase.Spec) {
 
 				var last string
 				for i := 0; i < 1024; i++ {
-					token, err := issuer.CreateNewToken(strconv.Itoa(i), issueAt, duration)
+					token, err := issuer.CreateNewToken(context.TODO(), strconv.Itoa(i), issueAt, duration)
 					require.Nil(t, err)
 					require.NotNil(t, token)
 

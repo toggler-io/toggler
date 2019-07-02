@@ -3,13 +3,14 @@ package httpapi_test
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/adamluzsi/testcase"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strconv"
 	"testing"
+
+	"github.com/adamluzsi/testcase"
+	"github.com/stretchr/testify/require"
 
 	. "github.com/adamluzsi/toggler/testing"
 )

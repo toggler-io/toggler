@@ -1,9 +1,10 @@
 package testing
 
 import (
+	"context"
+	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/adamluzsi/toggler/services/security"
-	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 	"math/rand"
 	"net/url"
@@ -56,7 +57,7 @@ func SetupSpecCommonVariables(s *testcase.Spec) {
 
 func CreateToken(t *testcase.T, tokenOwner string) *security.Token {
 	i := security.NewIssuer(GetStorage(t))
-	token, err := i.CreateNewToken(tokenOwner, nil, nil)
+	token, err := i.CreateNewToken(context.TODO(), tokenOwner, nil, nil)
 	require.Nil(t, err)
 	return token
 }
@@ -105,15 +106,11 @@ func GetUniqUserID(t *testcase.T) string {
 
 func SpecPilotEnrolmentIs(t *testcase.T, enrollment bool) {
 	if GetFeatureFlag(t).ID == `` {
-		require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
+		require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
 	}
 
 	rm := rollouts.NewRolloutManager(GetStorage(t))
-	require.Nil(t, rm.SetPilotEnrollmentForFeature(
-		GetFeatureFlag(t).ID,
-		GetExternalPilotID(t),
-		enrollment,
-	))
+	require.Nil(t, rm.SetPilotEnrollmentForFeature(context.TODO(), GetFeatureFlag(t).ID, GetExternalPilotID(t), enrollment, ))
 }
 
 func GetRolloutApiURL(t *testcase.T) *url.URL {
@@ -129,7 +126,7 @@ func GetRolloutApiURL(t *testcase.T) *url.URL {
 }
 
 func FindStoredFeatureFlagByName(t *testcase.T) *rollouts.FeatureFlag {
-	f, err := GetStorage(t).FindFlagByName(GetFeatureFlagName(t))
+	f, err := GetStorage(t).FindFlagByName(context.TODO(), GetFeatureFlagName(t))
 	require.Nil(t, err)
 	require.NotNil(t, f)
 	return f
@@ -137,7 +134,7 @@ func FindStoredFeatureFlagByName(t *testcase.T) *rollouts.FeatureFlag {
 
 func EnsureFlag(t *testcase.T, name string, prc int) {
 	rm := rollouts.NewRolloutManager(GetStorage(t))
-	require.Nil(t, rm.CreateFeatureFlag(&rollouts.FeatureFlag{
+	require.Nil(t, rm.CreateFeatureFlag(context.TODO(), &rollouts.FeatureFlag{
 		Name: name,
 		Rollout: rollouts.Rollout{
 			Strategy: rollouts.RolloutStrategy{

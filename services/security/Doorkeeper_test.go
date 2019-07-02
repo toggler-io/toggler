@@ -1,11 +1,12 @@
 package security_test
 
 import (
+	"context"
 	"testing"
 
+	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/toggler/services/security"
 	testing2 "github.com/adamluzsi/toggler/testing"
-	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,7 +21,7 @@ func TestDoorkeeper(t *testing.T) {
 
 	s.Let(`Token`, func(t *testcase.T) interface{} {
 		issuer := security.NewIssuer(testing2.GetStorage(t))
-		token, err := issuer.CreateNewToken(testing2.GetUniqUserID(t), nil, nil)
+		token, err := issuer.CreateNewToken(context.TODO(), testing2.GetUniqUserID(t), nil, nil)
 		require.Nil(t, err)
 		return token
 	})
@@ -42,7 +43,7 @@ func SpecDoorkeeperVerifyTokenString(s *testcase.Spec) {
 
 		s.When(`token is a known resource`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				persisted, err := testing2.GetStorage(t).FindByID(GetToken(t).ID, &security.Token{})
+				persisted, err := testing2.GetStorage(t).FindByID(context.Background(), &security.Token{}, GetToken(t).ID)
 				require.Nil(t, err)
 				require.True(t, persisted)
 			})
@@ -54,7 +55,7 @@ func SpecDoorkeeperVerifyTokenString(s *testcase.Spec) {
 
 		s.When(`token is unknown`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, testing2.GetStorage(t).DeleteByID(GetToken(t), GetToken(t).ID))
+				require.Nil(t, testing2.GetStorage(t).DeleteByID(context.Background(), GetToken(t), GetToken(t).ID))
 			})
 
 			s.Then(`it will reject it`, func(t *testcase.T) {

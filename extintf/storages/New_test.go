@@ -2,13 +2,14 @@ package storages_test
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/toggler/extintf/storages"
 	"github.com/adamluzsi/toggler/extintf/storages/inmemory"
 	"github.com/adamluzsi/toggler/extintf/storages/postgres"
 	"github.com/adamluzsi/toggler/usecases"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestNew(t *testing.T) {
@@ -19,7 +20,7 @@ func TestNew(t *testing.T) {
 			return storages.New(t.I(`connstr`).(string))
 		}
 
-		onSuccess := func(t *testcase.T) (usecases.Storage) {
+		onSuccess := func(t *testcase.T) usecases.Storage {
 			s, err := subject(t)
 			require.Nil(t, err)
 			return s

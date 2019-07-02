@@ -1,8 +1,10 @@
 package rollouts
 
 import (
-	"github.com/adamluzsi/frameless"
+	"context"
 	"time"
+
+	"github.com/adamluzsi/frameless"
 
 	"github.com/adamluzsi/frameless/iterators"
 )
@@ -23,7 +25,7 @@ type RolloutManager struct {
 	RandSeedGenerator func() int64
 }
 
-func (manager *RolloutManager) CreateFeatureFlag(flag *FeatureFlag) error {
+func (manager *RolloutManager) CreateFeatureFlag(ctx context.Context, flag *FeatureFlag) error {
 	if flag == nil {
 		return ErrMissingFlag
 	}
@@ -40,7 +42,7 @@ func (manager *RolloutManager) CreateFeatureFlag(flag *FeatureFlag) error {
 		flag.Rollout.RandSeed = manager.RandSeedGenerator()
 	}
 
-	ff, err :=  manager.Storage.FindFlagByName(flag.Name)
+	ff, err := manager.Storage.FindFlagByName(ctx, flag.Name)
 
 	if err != nil {
 		return err
@@ -53,20 +55,20 @@ func (manager *RolloutManager) CreateFeatureFlag(flag *FeatureFlag) error {
 		return ErrFlagAlreadyExist
 	}
 
-	return manager.Storage.Save(flag)
+	return manager.Storage.Save(ctx, flag)
 }
 
-func (manager *RolloutManager) UpdateFeatureFlag(flag *FeatureFlag) error {
+func (manager *RolloutManager) UpdateFeatureFlag(ctx context.Context, flag *FeatureFlag) error {
 	if flag == nil {
 		return ErrMissingFlag
 	}
 
-	if  err := flag.Verify(); err != nil {
+	if err := flag.Verify(); err != nil {
 		return err
 	}
 
 	if flag.ID == `` {
-		ff, err := manager.Storage.FindFlagByName(flag.Name)
+		ff, err := manager.Storage.FindFlagByName(ctx, flag.Name)
 		if err != nil {
 			return err
 		}
@@ -82,21 +84,21 @@ func (manager *RolloutManager) UpdateFeatureFlag(flag *FeatureFlag) error {
 		flag.Rollout.RandSeed = manager.RandSeedGenerator()
 	}
 
-	return manager.Storage.Update(flag)
+	return manager.Storage.Update(ctx, flag)
 }
 
-func (manager *RolloutManager) ListFeatureFlags() ([]*FeatureFlag, error) {
-	iter := manager.Storage.FindAll(FeatureFlag{})
+func (manager *RolloutManager) ListFeatureFlags(ctx context.Context) ([]*FeatureFlag, error) {
+	iter := manager.Storage.FindAll(ctx, FeatureFlag{})
 	ffs := []*FeatureFlag{} // empty slice required for null object pattern enforcement
 	err := iterators.CollectAll(iter, &ffs)
 	return ffs, err
 }
 
-func (manager *RolloutManager) SetPilotEnrollmentForFeature(flagID, pilotID string, isEnrolled bool) error {
+func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context, flagID, pilotID string, isEnrolled bool) error {
 
 	var ff FeatureFlag
 
-	found, err := manager.Storage.FindByID(flagID, &ff)
+	found, err := manager.Storage.FindByID(ctx, &ff, flagID)
 
 	if err != nil {
 		return err
@@ -106,7 +108,7 @@ func (manager *RolloutManager) SetPilotEnrollmentForFeature(flagID, pilotID stri
 		return frameless.ErrNotFound
 	}
 
-	pilot, err := manager.Storage.FindFlagPilotByExternalPilotID(ff.ID, pilotID)
+	pilot, err := manager.Storage.FindFlagPilotByExternalPilotID(ctx, ff.ID, pilotID)
 
 	if err != nil {
 		return err
@@ -114,39 +116,22 @@ func (manager *RolloutManager) SetPilotEnrollmentForFeature(flagID, pilotID stri
 
 	if pilot != nil {
 		pilot.Enrolled = isEnrolled
-		return manager.Storage.Update(pilot)
+		return manager.Storage.Update(ctx, pilot)
 	}
 
-	return manager.Save(&Pilot{FeatureFlagID: ff.ID, ExternalID: pilotID, Enrolled: isEnrolled})
+	return manager.Save(ctx, &Pilot{FeatureFlagID: ff.ID, ExternalID: pilotID, Enrolled: isEnrolled})
 
 }
 
-func (manager *RolloutManager) DeleteFeatureFlag(id string) error {
+func (manager *RolloutManager) DeleteFeatureFlag(ctx context.Context, id string) error {
 	if id == `` {
 		return frameless.ErrIDRequired
 	}
 
-	return manager.Storage.DeleteByID(FeatureFlag{}, id)
+	return manager.Storage.DeleteByID(ctx, FeatureFlag{}, id)
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-
-func (manager *RolloutManager) ensureFeatureFlag(featureFlagName string) (*FeatureFlag, error) {
-
-	ff, err := manager.Storage.FindFlagByName(featureFlagName)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if ff == nil {
-		ff = manager.newDefaultFeatureFlag(featureFlagName)
-		err = manager.Storage.Save(ff)
-	}
-
-	return ff, nil
-
-}
 
 func (manager *RolloutManager) newDefaultFeatureFlag(featureFlagName string) *FeatureFlag {
 	return &FeatureFlag{

@@ -1,6 +1,7 @@
 package rollouts
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 	"time"
@@ -25,7 +26,7 @@ type FeatureFlagChecker struct {
 // check whether a pilot is enrolled or not for the feature flag in subject.
 func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, externalPilotID string) (bool, error) {
 
-	ff, err := checker.Storage.FindFlagByName(featureFlagName)
+	ff, err := checker.Storage.FindFlagByName(context.TODO(), featureFlagName)
 
 	if err != nil {
 		return false, err
@@ -35,7 +36,7 @@ func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, e
 		return false, nil
 	}
 
-	pilot, err := checker.Storage.FindFlagPilotByExternalPilotID(ff.ID, externalPilotID)
+	pilot, err := checker.Storage.FindFlagPilotByExternalPilotID(context.TODO(), ff.ID, externalPilotID)
 
 	if err != nil {
 		return false, err
@@ -64,7 +65,7 @@ func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, e
 }
 
 func (checker *FeatureFlagChecker) IsFeatureGloballyEnabled(featureFlagName string) (bool, error) {
-	ff, err := checker.Storage.FindFlagByName(featureFlagName)
+	ff, err := checker.Storage.FindFlagByName(context.TODO(), featureFlagName)
 
 	if err != nil {
 		return false, err

@@ -2,14 +2,16 @@ package httpapi_test
 
 import (
 	"bytes"
-	"github.com/adamluzsi/toggler/services/rollouts"
-	"github.com/adamluzsi/testcase"
-	"github.com/stretchr/testify/require"
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strconv"
 	"testing"
+
+	"github.com/adamluzsi/testcase"
+	"github.com/adamluzsi/toggler/services/rollouts"
+	"github.com/stretchr/testify/require"
 
 	. "github.com/adamluzsi/toggler/testing"
 )
@@ -35,7 +37,7 @@ func TestServeMux_SetPilotEnrollmentForFeature(t *testing.T) {
 	})
 
 	s.Before(func(t *testcase.T) {
-		require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
+		require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
 	})
 
 	s.Let(`request`, func(t *testcase.T) interface{} {
@@ -93,7 +95,7 @@ func TestServeMux_SetPilotEnrollmentForFeature(t *testing.T) {
 			var resp struct{}
 			IsJsonRespone(t, r, &resp)
 
-			p, err := GetStorage(t).FindFlagPilotByExternalPilotID(FindStoredFeatureFlagByName(t).ID, GetExternalPilotID(t))
+			p, err := GetStorage(t).FindFlagPilotByExternalPilotID(context.Background(), FindStoredFeatureFlagByName(t).ID, GetExternalPilotID(t))
 			require.Nil(t, err)
 			require.NotNil(t, p)
 			require.Equal(t, GetPilotEnrollment(t), p.Enrolled)
@@ -101,7 +103,7 @@ func TestServeMux_SetPilotEnrollmentForFeature(t *testing.T) {
 
 		s.And(`flag id is not existing`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, GetStorage(t).DeleteByID(rollouts.FeatureFlag{}, GetFeatureFlag(t).ID))
+				require.Nil(t, GetStorage(t).DeleteByID(context.Background(), rollouts.FeatureFlag{}, GetFeatureFlag(t).ID))
 			})
 
 			s.Then(`bad request replied`, func(t *testcase.T) {

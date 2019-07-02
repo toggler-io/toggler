@@ -1,6 +1,7 @@
 package usecases_test
 
 import (
+	"context"
 	. "github.com/adamluzsi/toggler/testing"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
@@ -14,7 +15,7 @@ func TestUseCases_CreateFeatureFlagRolloutStrategyToUseDecisionLogicAPI(t *testi
 	s.Parallel()
 
 	subject := func(t *testcase.T) error {
-		return GetProtectedUsecases(t).CreateFeatureFlag(GetFeatureFlag(t))
+		return GetProtectedUsecases(t).CreateFeatureFlag(context.TODO(), GetFeatureFlag(t))
 	}
 
 	s.When(`with valid values`, func(s *testcase.Spec) {

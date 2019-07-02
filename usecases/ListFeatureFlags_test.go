@@ -1,6 +1,7 @@
 package usecases_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/adamluzsi/toggler/services/rollouts"
@@ -18,7 +19,7 @@ func TestUseCases_ListFeatureFlags(t *testing.T) {
 	s.Parallel()
 
 	subject := func(t *testcase.T) ([]*rollouts.FeatureFlag, error) {
-		return GetProtectedUsecases(t).ListFeatureFlags()
+		return GetProtectedUsecases(t).ListFeatureFlags(context.TODO())
 	}
 
 	onSuccess := func(t *testcase.T) []*rollouts.FeatureFlag {
@@ -39,7 +40,7 @@ func TestUseCases_ListFeatureFlags(t *testing.T) {
 
 	s.When(`there is no flag in the system`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
+			require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
 		})
 
 		s.Then(`we receive back empty list`, func(t *testcase.T) {

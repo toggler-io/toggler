@@ -1,6 +1,8 @@
 package security
 
 import (
+	"context"
+
 	"github.com/adamluzsi/frameless/resources/specs"
 )
 
@@ -15,5 +17,5 @@ type Storage interface {
 }
 
 type TokenFinder interface {
-	FindTokenByTokenString(token string) (*Token, error)
+	FindTokenByTokenString(ctx context.Context, token string) (*Token, error)
 }

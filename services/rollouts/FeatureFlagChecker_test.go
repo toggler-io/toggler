@@ -1,14 +1,15 @@
 package rollouts_test
 
 import (
+	"context"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/toggler/services/rollouts"
 	. "github.com/adamluzsi/toggler/testing"
-	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,8 +23,8 @@ func TestFeatureFlagChecker(t *testing.T) {
 	s.Let(`PseudoRandPercentage`, func(t *testcase.T) interface{} { return int(0) })
 
 	s.Before(func(t *testcase.T) {
-		require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
-		require.Nil(t, GetStorage(t).Truncate(rollouts.Pilot{}))
+		require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
+		require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.Pilot{}))
 	})
 
 	s.Describe(`IsFeatureEnabledFor`, func(s *testcase.Spec) {
@@ -58,7 +59,7 @@ func SpecFeatureFlagChecker_IsFeatureGloballyEnabledFor(s *testcase.Spec) {
 
 	s.When(`feature flag is not seen before`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
+			require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
 		})
 
 		thenItWillReportThatFeatureNotGlobballyEnabled(s)
@@ -66,7 +67,7 @@ func SpecFeatureFlagChecker_IsFeatureGloballyEnabledFor(s *testcase.Spec) {
 
 	s.When(`feature flag is given`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
+			require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
 		})
 
 		s.And(`it is not yet rolled out globally`, func(s *testcase.Spec) {
@@ -93,7 +94,7 @@ func SpecFeatureFlagChecker_IsFeatureEnabledFor(s *testcase.Spec) {
 
 	s.When(`feature was never enabled before`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Truncate(rollouts.FeatureFlag{}))
+			require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
 		})
 
 		s.Then(`it will tell that feature flag is not enabled`, func(t *testcase.T) {
@@ -105,7 +106,7 @@ func SpecFeatureFlagChecker_IsFeatureEnabledFor(s *testcase.Spec) {
 
 	s.When(`feature is configured with rollout strategy`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
+			require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
 		})
 
 		s.And(`by rollout percentage`, func(s *testcase.Spec) {
@@ -159,7 +160,7 @@ func SpecFeatureFlagChecker_IsFeatureEnabledFor(s *testcase.Spec) {
 								Enrolled:      false,
 							}
 
-							require.Nil(t, GetStorage(t).Save(pilot))
+							require.Nil(t, GetStorage(t).Save(context.TODO(), pilot))
 
 						})
 
@@ -188,7 +189,7 @@ func SpecFeatureFlagChecker_IsFeatureEnabledFor(s *testcase.Spec) {
 						s.Let(`PilotEnrollment`, func(t *testcase.T) interface{} { return true })
 
 						s.Before(func(t *testcase.T) {
-							require.Nil(t, GetStorage(t).Save(GetPilot(t)))
+							require.Nil(t, GetStorage(t).Save(context.TODO(), GetPilot(t)))
 						})
 
 						s.Then(`the pilot is enrolled for the feature`, func(t *testcase.T) {

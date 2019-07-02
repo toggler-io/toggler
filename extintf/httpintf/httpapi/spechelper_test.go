@@ -1,23 +1,24 @@
 package httpapi_test
 
 import (
+	"context"
 	"encoding/json"
-	"github.com/adamluzsi/toggler/services/security"
-	"github.com/adamluzsi/testcase"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 
+	"github.com/adamluzsi/testcase"
+	"github.com/adamluzsi/toggler/services/security"
+	"github.com/stretchr/testify/require"
+
 	. "github.com/adamluzsi/toggler/testing"
 )
-
 
 func UpdateFeatureFlagRolloutPercentage(t *testcase.T, featureFlagName string, rolloutPercentage int) {
 	EnsureFlag(t, featureFlagName, rolloutPercentage)
 }
 
 func CreateSecurityTokenString(t *testcase.T) string {
-	token, err := security.NewIssuer(GetStorage(t)).CreateNewToken(GetUniqUserID(t), nil, nil)
+	token, err := security.NewIssuer(GetStorage(t)).CreateNewToken(context.TODO(), GetUniqUserID(t), nil, nil)
 	require.Nil(t, err)
 	return token.Token
 }

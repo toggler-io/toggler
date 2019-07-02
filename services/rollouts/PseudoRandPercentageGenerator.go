@@ -7,7 +7,7 @@ import (
 
 // PseudoRandPercentageGenerator implements pseudo random percentage calculations with different algorithms.
 // This is mainly used for pilot enrollments when percentage strategy is used for rollout.
-type PseudoRandPercentageGenerator struct {}
+type PseudoRandPercentageGenerator struct{}
 
 // FNV1a64 implements pseudo random percentage calculation with FNV-1a64.
 func (g PseudoRandPercentageGenerator) FNV1a64(id string, seedSalt int64) (int, error) {

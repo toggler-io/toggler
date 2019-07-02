@@ -23,7 +23,7 @@ func (sm *ServeMux) IsFeatureEnabledFor(w http.ResponseWriter, r *http.Request) 
 		statusCode = 403
 	}
 
-	var resp struct{
+	var resp struct {
 		Enrollment bool `json:"enrollment"`
 	}
 	resp.Enrollment = enrollment

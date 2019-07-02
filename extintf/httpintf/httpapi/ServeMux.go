@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/adamluzsi/toggler/extintf/httpintf/httputils"
-	"github.com/adamluzsi/toggler/usecases"
-	"github.com/adamluzsi/frameless"
 	"log"
 	"net/http"
+
+	"github.com/adamluzsi/frameless"
+	"github.com/adamluzsi/toggler/extintf/httpintf/httputils"
+	"github.com/adamluzsi/toggler/usecases"
 )
 
 func NewServeMux(uc *usecases.UseCases) *ServeMux {
-	mux := &ServeMux{ServeMux: http.NewServeMux(), UseCases: uc,}
+	mux := &ServeMux{ServeMux: http.NewServeMux(), UseCases: uc}
 	featureAPI := buildFeatureAPI(mux)
 	flagsAPI := buildFlagAPI(mux)
 

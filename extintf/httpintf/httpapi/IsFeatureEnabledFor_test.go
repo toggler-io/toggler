@@ -2,13 +2,14 @@ package httpapi_test
 
 import (
 	"bytes"
-	. "github.com/adamluzsi/toggler/testing"
-	"github.com/adamluzsi/testcase"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	"github.com/adamluzsi/testcase"
+	. "github.com/adamluzsi/toggler/testing"
+	"github.com/stretchr/testify/require"
 )
 
 func TestServeMux_IsFeatureEnabledFor(t *testing.T) {

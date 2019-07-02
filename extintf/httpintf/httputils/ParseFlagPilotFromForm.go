@@ -1,10 +1,11 @@
 package httputils
 
 import (
-	"github.com/adamluzsi/toggler/services/rollouts"
-	"github.com/pkg/errors"
 	"net/http"
 	"strings"
+
+	"github.com/adamluzsi/toggler/services/rollouts"
+	"github.com/pkg/errors"
 )
 
 func ParseFlagPilotFromForm(r *http.Request) (*rollouts.Pilot, error) {

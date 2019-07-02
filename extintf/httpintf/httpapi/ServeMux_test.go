@@ -3,14 +3,15 @@ package httpapi_test
 import (
 	"bytes"
 	"fmt"
-	"github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
-	. "github.com/adamluzsi/toggler/testing"
-	"github.com/adamluzsi/toggler/usecases"
-	"github.com/adamluzsi/testcase"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/adamluzsi/testcase"
+	"github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+	. "github.com/adamluzsi/toggler/testing"
+	"github.com/adamluzsi/toggler/usecases"
+	"github.com/stretchr/testify/require"
 )
 
 func NewServeMux(t *testcase.T) *httpapi.ServeMux {

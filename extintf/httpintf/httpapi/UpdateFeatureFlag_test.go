@@ -2,14 +2,16 @@ package httpapi_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
-	"github.com/adamluzsi/testcase"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strconv"
 	"testing"
+
+	"github.com/adamluzsi/testcase"
+	"github.com/stretchr/testify/require"
 
 	. "github.com/adamluzsi/toggler/testing"
 )
@@ -52,7 +54,7 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 
 	s.Before(func(t *testcase.T) {
 		t.Log(`given we have flag already stored`)
-		require.Nil(t, GetStorage(t).Save(GetFeatureFlag(t)))
+		require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
 	})
 
 	s.When(`request is sent to the JSON endpoint`, func(s *testcase.Spec) {

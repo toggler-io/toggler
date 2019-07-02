@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"github.com/adamluzsi/toggler/extintf/caches"
@@ -95,7 +96,7 @@ func createFixtures(s usecases.Storage) {
 	useCases := usecases.NewUseCases(s)
 	issuer := security.Issuer{Storage: s}
 
-	t, err := issuer.CreateNewToken(`testing`, nil, nil)
+	t, err := issuer.CreateNewToken(context.TODO(), `testing`, nil, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -108,9 +109,9 @@ func createFixtures(s usecases.Storage) {
 	}
 
 	ff := rollouts.FeatureFlag{Name: `test`}
-	pu.CreateFeatureFlag(&ff)
-	pu.SetPilotEnrollmentForFeature(ff.ID, `test-public-pilot-id-1`, true)
-	pu.SetPilotEnrollmentForFeature(ff.ID, `test-public-pilot-id-2`, false)
+	pu.CreateFeatureFlag(context.TODO(), &ff)
+	pu.SetPilotEnrollmentForFeature(context.TODO(), ff.ID, `test-public-pilot-id-1`, true)
+	pu.SetPilotEnrollmentForFeature(context.TODO(), ff.ID, `test-public-pilot-id-2`, false)
 }
 
 func httpListenAndServe(storage usecases.Storage, port int) {
@@ -132,7 +133,7 @@ func createToken(s usecases.Storage, ownerUID string) {
 
 	issuer := security.Issuer{Storage: s}
 
-	t, err := issuer.CreateNewToken(ownerUID, nil, nil)
+	t, err := issuer.CreateNewToken(context.TODO(), ownerUID, nil, nil)
 
 	if err != nil {
 		panic(err)
