@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/Pallinder/go-randomdata v1.2.0
-	github.com/adamluzsi/frameless v0.0.0-20190704114734-4bae8fc4195d
+	github.com/adamluzsi/frameless v0.0.0-20190706091623-cfd388b71680
 	github.com/adamluzsi/testcase v0.0.0-20190602214255-4e4b269314e8
 	github.com/lib/pq v1.1.1
 	github.com/lopezator/migrator v0.1.0
@@ -17,5 +17,6 @@ require (
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4 // indirect
 	golang.org/x/net v0.0.0-20190628185345-da137c7871d7 // indirect
 	golang.org/x/sys v0.0.0-20190626221950-04f50cda93cb // indirect
-	golang.org/x/tools v0.0.0-20190703212419-2214986f1668 // indirect
+	golang.org/x/tools v0.0.0-20190706070813-72ffa07ba3db // indirect
+	google.golang.org/appengine v1.6.1 // indirect
 )
