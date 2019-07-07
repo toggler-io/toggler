@@ -1,9 +1,10 @@
 package caches
 
 import (
+	"net/url"
+
 	"github.com/adamluzsi/toggler/extintf/caches/nullcache"
 	"github.com/adamluzsi/toggler/usecases"
-	"net/url"
 )
 
 func New(connstr string, storage usecases.Storage) (usecases.Storage, error) {

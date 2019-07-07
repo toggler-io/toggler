@@ -1,13 +1,14 @@
 package caches_test
 
 import (
+	"testing"
+
 	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/toggler/extintf/caches"
 	"github.com/adamluzsi/toggler/extintf/caches/nullcache"
 	. "github.com/adamluzsi/toggler/testing"
 	"github.com/adamluzsi/toggler/usecases"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestNew(t *testing.T) {
@@ -19,7 +20,7 @@ func TestNew(t *testing.T) {
 			return caches.New(t.I(`connstr`).(string), GetStorage(t))
 		}
 
-		onSuccess := func(t *testcase.T) (usecases.Storage) {
+		onSuccess := func(t *testcase.T) usecases.Storage {
 			s, err := subject(t)
 			require.Nil(t, err)
 			return s

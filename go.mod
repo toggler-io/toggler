@@ -6,6 +6,8 @@ require (
 	github.com/Pallinder/go-randomdata v1.2.0
 	github.com/adamluzsi/frameless v0.0.0-20190706091623-cfd388b71680
 	github.com/adamluzsi/testcase v0.0.0-20190602214255-4e4b269314e8
+	github.com/go-redis/redis v6.15.2+incompatible
+	github.com/golang/mock v1.3.1
 	github.com/lib/pq v1.1.1
 	github.com/lopezator/migrator v0.1.0
 	github.com/mjibson/esc v0.2.0

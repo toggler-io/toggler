@@ -10,3 +10,22 @@ services:
     image: "postgres"
     ports:
       - 8100:5432
+
+  redis:
+    image: redis:4.0.5-alpine
+    ports:
+      - 6379:6379
+
+
+
+#    hostname: redis
+#    networks:
+#      - redis-net
+#    volumes:
+#      - redis-data:/data
+#
+#networks:
+#  redis-net:
+#
+#volumes:
+#  redis-data:
