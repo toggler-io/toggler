@@ -2,7 +2,9 @@ package httpapi_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"github.com/adamluzsi/toggler/services/security"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -32,7 +34,8 @@ func TestServeMux_CreateFeatureFlag(t *testing.T) {
 	})
 
 	s.Let(`TokenString`, func(t *testcase.T) interface{} {
-		return CreateToken(t, `manager`).Token
+		tt, _ := CreateToken(t, `manager`)
+		return tt
 	})
 
 	s.Let(`request`, func(t *testcase.T) interface{} {
@@ -70,7 +73,7 @@ func TestServeMux_CreateFeatureFlag(t *testing.T) {
 		s.Then(`it will reply back in json format`, func(t *testcase.T) {
 			var resp struct{}
 			r := subject(t)
-			IsJsonRespone(t, r, &resp)
+			IsJsonResponse(t, r, &resp)
 		})
 
 		SpecServeMux_CreateFeatureFlag(s, subject)
@@ -165,7 +168,10 @@ func SpecServeMux_CreateFeatureFlag(s *testcase.Spec, subject func(t *testcase.T
 
 	s.And(`valid token provided`, func(s *testcase.Spec) {
 		s.Let(`TokenString`, func(t *testcase.T) interface{} {
-			return CreateToken(t, `test`).Token
+			issuer := security.NewIssuer(GetStorage(t))
+			textToken, _, err := issuer.CreateNewToken(context.Background(), `test`, nil, nil)
+			require.Nil(t, err)
+			return textToken
 		})
 
 		s.Then(`call succeed`, func(t *testcase.T) {

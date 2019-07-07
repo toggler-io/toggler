@@ -3,7 +3,6 @@ package httpapi_test
 import (
 	"context"
 	"encoding/json"
-	"net/http"
 	"net/http/httptest"
 
 	"github.com/adamluzsi/testcase"
@@ -18,19 +17,14 @@ func UpdateFeatureFlagRolloutPercentage(t *testcase.T, featureFlagName string, r
 }
 
 func CreateSecurityTokenString(t *testcase.T) string {
-	token, err := security.NewIssuer(GetStorage(t)).CreateNewToken(context.TODO(), GetUniqUserID(t), nil, nil)
+	textToken, token, err := security.NewIssuer(GetStorage(t)).CreateNewToken(context.TODO(), GetUniqUserID(t), nil, nil)
 	require.Nil(t, err)
-	return token.Token
+	require.NotNil(t, token)
+	require.NotEmpty(t, token.SHA512)
+	return textToken
 }
 
-func IsJsonRespone(t *testcase.T, r *httptest.ResponseRecorder, ptr interface{}) {
+func IsJsonResponse(t *testcase.T, r *httptest.ResponseRecorder, ptr interface{}) {
 	require.Equal(t, "application/json", r.Header().Get(`Content-Type`))
 	require.Nil(t, json.NewDecoder(r.Body).Decode(ptr))
 }
-
-func newRequest(t *testcase.T) *http.Request {
-
-	return nil
-}
-
-// r.Header.Add("Authorization", "auth_token=\"XXXXXXX\"")

@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
+	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/adamluzsi/toggler/services/security"
 	"github.com/adamluzsi/toggler/usecases"
-	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 
 	. "github.com/adamluzsi/toggler/testing"
@@ -21,7 +21,7 @@ func TestUseCases_ProtectedUsecases(t *testing.T) {
 	s.Parallel()
 
 	subject := func(t *testcase.T) (*usecases.ProtectedUsecases, error) {
-		return GetUseCases(t).ProtectedUsecases(t.I(`TokenString`).(string))
+		return GetUseCases(t).ProtectedUsecases(context.TODO(), t.I(`TokenString`).(string))
 	}
 
 	s.When(`token doesn't exist`, func(s *testcase.Spec) {
@@ -41,7 +41,10 @@ func TestUseCases_ProtectedUsecases(t *testing.T) {
 	})
 
 	s.When(`token exist`, func(s *testcase.Spec) {
-		s.Let(`TokenString`, func(t *testcase.T) interface{} { return CreateToken(t, `manager`).Token })
+		s.Let(`TokenString`, func(t *testcase.T) interface{} {
+			tt, _ := CreateToken(t, `manager`)
+			return tt
+		})
 
 		s.Then(`protected use-cases returned`, func(t *testcase.T) {
 			pu, err := subject(t)

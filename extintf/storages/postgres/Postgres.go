@@ -319,18 +319,18 @@ func (pg *Postgres) FindPilotsByFeatureFlag(ctx context.Context, ff *rollouts.Fe
 }
 
 const tokenFindByTokenStringQuery = `
-SELECT id, token, duration, issued_at, owner_uid
+SELECT id, sha512, duration, issued_at, owner_uid
 FROM "tokens" 
-WHERE token = $1;
+WHERE sha512 = $1;
 `
 
-func (pg *Postgres) FindTokenByTokenString(ctx context.Context, token string) (*security.Token, error) {
+func (pg *Postgres) FindTokenBySHA512Hex(ctx context.Context, token string) (*security.Token, error) {
 	row := pg.DB.QueryRowContext(ctx, tokenFindByTokenStringQuery, token)
 	var t security.Token
 
 	err := row.Scan(
 		&t.ID,
-		&t.Token,
+		&t.SHA512,
 		&t.Duration,
 		&t.IssuedAt,
 		&t.OwnerUID,
@@ -415,14 +415,14 @@ func (pg *Postgres) pilotInsertNew(ctx context.Context, pilot *rollouts.Pilot) e
 }
 
 const tokenInsertNewQuery = `
-INSERT INTO "tokens" (token, owner_uid, issued_at, duration)
+INSERT INTO "tokens" (sha512, owner_uid, issued_at, duration)
 VALUES ($1, $2, $3, $4)
 RETURNING id;
 `
 
 func (pg *Postgres) tokenInsertNew(ctx context.Context, token *security.Token) error {
 	row := pg.DB.QueryRowContext(ctx, tokenInsertNewQuery,
-		token.Token,
+		token.SHA512,
 		token.OwnerUID,
 		token.IssuedAt,
 		token.Duration,
@@ -510,7 +510,7 @@ func (pg *Postgres) pilotFindByID(ctx context.Context, pilot *rollouts.Pilot, id
 }
 
 const tokenFindByIDQuery = `
-SELECT id, token, duration, issued_at, owner_uid
+SELECT id, sha512, duration, issued_at, owner_uid
 FROM "tokens" 
 WHERE id = $1;
 `
@@ -521,7 +521,7 @@ func (pg *Postgres) tokenFindByID(ctx context.Context, token *security.Token, id
 
 	err := row.Scan(
 		&t.ID,
-		&t.Token,
+		&t.SHA512,
 		&t.Duration,
 		&t.IssuedAt,
 		&t.OwnerUID,
@@ -672,7 +672,7 @@ func (pg *Postgres) pilotFindAll(ctx context.Context) frameless.Iterator {
 }
 
 const tokenFindAllQuery = `
-SELECT id, token, duration, issued_at, owner_uid
+SELECT id, sha512, duration, issued_at, owner_uid
 FROM "tokens"
 `
 
@@ -695,7 +695,7 @@ func (pg *Postgres) tokenFindAll(ctx context.Context) frameless.Iterator {
 
 			err := rows.Scan(
 				&t.ID,
-				&t.Token,
+				&t.SHA512,
 				&t.Duration,
 				&t.IssuedAt,
 				&t.OwnerUID,
@@ -779,7 +779,7 @@ func (pg *Postgres) pilotUpdate(ctx context.Context, pilot *rollouts.Pilot) erro
 
 const tokenUpdateQuery = `
 UPDATE "tokens"
-SET token = $1,
+SET sha512 = $1,
     owner_uid = $2,
     issued_at = $3,
     duration = $4
@@ -788,7 +788,7 @@ WHERE id = $5;
 
 func (pg *Postgres) tokenUpdate(ctx context.Context, t *security.Token) error {
 	_, err := pg.DB.ExecContext(ctx, tokenUpdateQuery,
-		t.Token,
+		t.SHA512,
 		t.OwnerUID,
 		t.IssuedAt,
 		t.Duration,

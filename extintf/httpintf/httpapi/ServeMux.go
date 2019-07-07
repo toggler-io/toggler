@@ -91,7 +91,7 @@ func authMiddleware(uc *usecases.UseCases, next http.Handler) http.Handler {
 			return
 		}
 
-		pu, err := uc.ProtectedUsecases(token)
+		pu, err := uc.ProtectedUsecases(context.TODO(), token)
 
 		if err == usecases.ErrInvalidToken {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)

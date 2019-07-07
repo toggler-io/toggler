@@ -67,7 +67,7 @@ func TestServeMux_ListFeatureFlags(t *testing.T) {
 
 				require.Contains(t, r.Body.String(), `[]`)
 				var flags []*rollouts.FeatureFlag
-				IsJsonRespone(t, r, &flags)
+				IsJsonResponse(t, r, &flags)
 				require.Empty(t, flags)
 			})
 		})
@@ -82,7 +82,7 @@ func TestServeMux_ListFeatureFlags(t *testing.T) {
 				require.Equal(t, 200, r.Code)
 
 				var resps []rollouts.FeatureFlag
-				IsJsonRespone(t, r, &resps)
+				IsJsonResponse(t, r, &resps)
 
 				require.Equal(t, 1, len(resps))
 				require.Equal(t, `a`, resps[0].Name)
@@ -112,7 +112,7 @@ func TestServeMux_ListFeatureFlags(t *testing.T) {
 					require.Equal(t, "application/json", r.Header().Get(`Content-Type`))
 
 					var resps []map[string]interface{}
-					IsJsonRespone(t, r, &resps)
+					IsJsonResponse(t, r, &resps)
 					require.Equal(t, 3, len(resps))
 				})
 			})

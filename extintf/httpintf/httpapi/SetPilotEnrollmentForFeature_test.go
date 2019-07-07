@@ -33,7 +33,8 @@ func TestServeMux_SetPilotEnrollmentForFeature(t *testing.T) {
 	})
 
 	s.Let(`TokenString`, func(t *testcase.T) interface{} {
-		return CreateToken(t, `manager`).Token
+		tt, _ := CreateToken(t, `manager`)
+		return tt
 	})
 
 	s.Before(func(t *testcase.T) {
@@ -93,7 +94,7 @@ func TestServeMux_SetPilotEnrollmentForFeature(t *testing.T) {
 			require.Equal(t, 200, r.Code)
 
 			var resp struct{}
-			IsJsonRespone(t, r, &resp)
+			IsJsonResponse(t, r, &resp)
 
 			p, err := GetStorage(t).FindFlagPilotByExternalPilotID(context.Background(), FindStoredFeatureFlagByName(t).ID, GetExternalPilotID(t))
 			require.Nil(t, err)

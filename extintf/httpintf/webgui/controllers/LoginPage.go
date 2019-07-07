@@ -20,7 +20,7 @@ func (ctrl *Controller) LoginPage(w http.ResponseWriter, r *http.Request) {
 
 		token := r.FormValue(`token`)
 
-		_, err := ctrl.ProtectedUsecases(token)
+		_, err := ctrl.ProtectedUsecases(r.Context(), token)
 
 		if err == usecases.ErrInvalidToken {
 			http.Redirect(w, r, `/login`, http.StatusFound)

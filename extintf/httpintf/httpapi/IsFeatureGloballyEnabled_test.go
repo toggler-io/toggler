@@ -49,7 +49,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 				Enrollment bool `json:"enrollment"`
 			}
 
-			IsJsonRespone(t, r, &resp)
+			IsJsonResponse(t, r, &resp)
 			require.Equal(t, true, resp.Enrollment)
 		})
 	})
@@ -68,7 +68,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 				Enrollment bool `json:"enrollment"`
 			}
 
-			IsJsonRespone(t, r, &resp)
+			IsJsonResponse(t, r, &resp)
 			require.Equal(t, false, resp.Enrollment)
 		})
 	})

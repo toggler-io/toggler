@@ -27,29 +27,29 @@ func (spec TokenFinderSpec) Test(t *testing.T) {
 	s.Let(`token object`, func(t *testcase.T) interface{} {
 		return &security.Token{
 			OwnerUID: t.I(`uid`).(string),
-			Token:    t.I(`token string`).(string),
+			SHA512:   t.I(`token SHA512`).(string),
 			IssuedAt: fixtures.RandomTimeUTC(),
 			Duration: 1 * time.Second,
 		}
 	})
 
 	s.Before(func(t *testcase.T) {
-		require.Nil(t, spec.Subject.Truncate(context.Background(),security.Token{}))
+		require.Nil(t, spec.Subject.Truncate(context.Background(), security.Token{}))
 	})
 
 	s.After(func(t *testcase.T) {
-		require.Nil(t, spec.Subject.Truncate(context.Background(),security.Token{}))
+		require.Nil(t, spec.Subject.Truncate(context.Background(), security.Token{}))
 	})
 
-	s.Describe(`FindTokenByTokenString`, func(s *testcase.Spec) {
+	s.Describe(`FindTokenBySHA512Hex`, func(s *testcase.Spec) {
 		subject := func(t *testcase.T) (*security.Token, error) {
-			return spec.Subject.FindTokenByTokenString(context.TODO(), t.I(`token string`).(string))
+			return spec.Subject.FindTokenBySHA512Hex(context.TODO(), t.I(`token SHA512`).(string))
 		}
 
-		s.Let(`token string`, func(t *testcase.T) interface{} { return `the answer is 42` })
+		s.Let(`token SHA512`, func(t *testcase.T) interface{} { return `the answer is 42` })
 
 		s.When(`no token stored in the storage yet`, func(s *testcase.Spec) {
-			s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.Truncate(context.Background(),security.Token{})) })
+			s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.Truncate(context.Background(), security.Token{})) })
 
 			s.Then(`it will return nil token without any error`, func(t *testcase.T) {
 				token, err := subject(t)

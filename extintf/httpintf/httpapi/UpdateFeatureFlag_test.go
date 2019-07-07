@@ -33,7 +33,7 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 	})
 
 	s.Let(`TokenString`, func(t *testcase.T) interface{} {
-		return CreateToken(t, `manager`).Token
+		return GetTextToken(t)
 	})
 
 	s.Let(`request`, func(t *testcase.T) interface{} {
@@ -76,7 +76,7 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 		s.Then(`it will reply back in json format`, func(t *testcase.T) {
 			var resp struct{}
 			r := subject(t)
-			IsJsonRespone(t, r, &resp)
+			IsJsonResponse(t, r, &resp)
 		})
 
 		SpecServeMux_UpdateFeatureFlag(s, subject)
@@ -172,7 +172,7 @@ func SpecServeMux_UpdateFeatureFlag(s *testcase.Spec, subject func(t *testcase.T
 
 	s.And(`valid token provided`, func(s *testcase.Spec) {
 		s.Let(`TokenString`, func(t *testcase.T) interface{} {
-			return CreateToken(t, `test`).Token
+			return GetTextToken(t)
 		})
 
 		s.Then(`call succeed`, func(t *testcase.T) {

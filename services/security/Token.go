@@ -4,7 +4,7 @@ import "time"
 
 type Token struct {
 	ID       string `ext:"ID"`
-	Token    string
+	SHA512   string
 	OwnerUID string
 	IssuedAt time.Time
 	Duration time.Duration

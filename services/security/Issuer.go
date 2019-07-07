@@ -18,10 +18,10 @@ type Issuer struct {
 	Storage
 }
 
-func (i *Issuer) CreateNewToken(ctx context.Context, ownerUID string, issueAt *time.Time, duration *time.Duration) (*Token, error) {
+func (i *Issuer) CreateNewToken(ctx context.Context, ownerUID string, issueAt *time.Time, duration *time.Duration) (string, *Token, error) {
 
 	if ownerUID == `` {
-		return nil, errors.New(`OwnerUID cannot be empty`)
+		return "", nil, errors.New(`OwnerUID cannot be empty`)
 	}
 
 	token := &Token{OwnerUID: ownerUID}
@@ -36,15 +36,19 @@ func (i *Issuer) CreateNewToken(ctx context.Context, ownerUID string, issueAt *t
 		token.Duration = *duration
 	}
 
-	tToken, err := i.generateToken()
+	textToken, err := i.generateToken()
 
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 
-	token.Token = tToken
+	token.SHA512, err = ToSHA512Hex(textToken)
 
-	return token, i.Storage.Save(ctx, token)
+	if err != nil {
+		return textToken, token, err
+	}
+
+	return textToken, token, i.Storage.Save(ctx, token)
 
 }
 

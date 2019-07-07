@@ -240,13 +240,13 @@ zZy84WJOIbi/9kprJTiuuAk8a2xMzceyyZyG6L/oLX12PtriU4QW5WsrYL9RPC5dDuxwYuw5hMQXcYWQ
 	"/assets/migrations/03_create_tokens_table.sql": {
 		name:    "03_create_tokens_table.sql",
 		local:   "assets/migrations/03_create_tokens_table.sql",
-		size:    332,
-		modtime: 1561423897,
+		size:    334,
+		modtime: 1562463129,
 		compressed: `
-H4sIAAAAAAAC/3zQwWoDIRAG4LtP8ZNTAn2DnEw6BGEz2+7OQuhFEtaDpGi7Km3fvtSaQ3OoF0G//0dn
-P5AWguhdR1jleHUhrdRaAYCf0dbOHEYajO4AcC/gqeseqqmJaoROcvN/TfwIbrHFz/8Yn1Jxsz1niDnS
-KPr4JC93Zi7LOfsY6nsMy31PRfueRxn0z/Xvb2zdrE+2BP+Oic3zRFjX043abJVqMzD8SCe8xngtb7Zl
-L18tnt1nRs+tE9No+IBLXpy7VW3VdwAAAP//eNF9b0wBAAA=
+H4sIAAAAAAAC/3yQQUsDMRCF7/kVj55a8KLgqae0DiWwndXdWShewpYNGCob3SSo/166jYI9OJcZmO89
+3sy2IS0E0ZuKsEjh5Ma4UEsFAH5AqY3ZtdQYXQHgWsBdVd3MTHzp72/vzpPQQX74v0z4GN1ksx/+YXyM
+2Q22TxCzp1b0/lGer5ghT33yYZzzGJZrnxna1txKo8/ryzV2btZHm0f/jo7NU0dYXoKv1GqtVHmC4Qc6
+4DWEU36zRXz8KvrkPhNqLqboWsM7HNPk3K/XWn0HAAD//+wxzmJOAQAA
 `,
 	},
 

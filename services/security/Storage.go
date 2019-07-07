@@ -12,10 +12,9 @@ type Storage interface {
 	specs.Truncate
 	specs.DeleteByID
 	specs.Update
-
 	TokenFinder
 }
 
 type TokenFinder interface {
-	FindTokenByTokenString(ctx context.Context, token string) (*Token, error)
+	FindTokenBySHA512Hex(ctx context.Context, sha512hex string) (*Token, error)
 }

@@ -10,7 +10,7 @@ func GetAuthToken(r *http.Request) (string, error) {
 	token := r.URL.Query().Get(`token`)
 
 	if token == `` {
-		token = r.Header.Get(`X-Auth-Token`)
+		token = r.Header.Get(`X-Auth-SHA512`)
 	}
 
 	if token == `` {

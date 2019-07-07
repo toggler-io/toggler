@@ -43,7 +43,7 @@ func authorized(uc *usecases.UseCases, next http.HandlerFunc) http.Handler {
 			return
 		}
 
-		pu, err := uc.ProtectedUsecases(token)
+		pu, err := uc.ProtectedUsecases(context.TODO(), token)
 
 		if err == usecases.ErrInvalidToken {
 			http.Redirect(w, r, `/login`, http.StatusFound)

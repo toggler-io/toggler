@@ -6,33 +6,44 @@ import (
 
 	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/toggler/services/security"
-	testing2 "github.com/adamluzsi/toggler/testing"
+	. "github.com/adamluzsi/toggler/testing"
 	"github.com/stretchr/testify/require"
 )
 
 func TestDoorkeeper(t *testing.T) {
 	s := testcase.NewSpec(t)
-	testing2.SetupSpecCommonVariables(s)
+	SetupSpecCommonVariables(s)
 	s.Parallel()
 
 	s.Let(`doorkeeper`, func(t *testcase.T) interface{} {
-		return security.NewDoorkeeper(testing2.GetStorage(t))
+		return security.NewDoorkeeper(GetStorage(t))
 	})
 
 	s.Let(`Token`, func(t *testcase.T) interface{} {
-		issuer := security.NewIssuer(testing2.GetStorage(t))
-		token, err := issuer.CreateNewToken(context.TODO(), testing2.GetUniqUserID(t), nil, nil)
+		issuer := security.NewIssuer(GetStorage(t))
+		textToken, token, err := issuer.CreateNewToken(context.TODO(), GetUniqUserID(t), nil, nil)
+		*(t.I(`*TextToken`).(*string)) = textToken
 		require.Nil(t, err)
 		return token
 	})
 
-	SpecDoorkeeperVerifyTokenString(s)
+	s.Let(`*TextToken`, func(t *testcase.T) interface{} {
+		var textToken string
+		return &textToken
+	})
+
+	s.Let(`TextToken`, func(t *testcase.T) interface{} {
+		t.I(`Token`)
+		return *(t.I(`*TextToken`).(*string))
+	})
+
+	SpecDoorkeeperVerifyTextToken(s)
 }
 
-func SpecDoorkeeperVerifyTokenString(s *testcase.Spec) {
-	s.Describe(`VerifyTokenString`, func(s *testcase.Spec) {
+func SpecDoorkeeperVerifyTextToken(s *testcase.Spec) {
+	s.Describe(`VerifyTextToken`, func(s *testcase.Spec) {
 		subject := func(t *testcase.T) (bool, error) {
-			return doorkeeper(t).VerifyTokenString(GetToken(t).Token)
+			return doorkeeper(t).VerifyTextToken(context.TODO(), GetTextToken(t))
 		}
 
 		onSuccess := func(t *testcase.T) bool {
@@ -43,7 +54,7 @@ func SpecDoorkeeperVerifyTokenString(s *testcase.Spec) {
 
 		s.When(`token is a known resource`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				persisted, err := testing2.GetStorage(t).FindByID(context.Background(), &security.Token{}, GetToken(t).ID)
+				persisted, err := GetStorage(t).FindByID(context.Background(), &security.Token{}, GetToken(t).ID)
 				require.Nil(t, err)
 				require.True(t, persisted)
 			})
@@ -55,7 +66,7 @@ func SpecDoorkeeperVerifyTokenString(s *testcase.Spec) {
 
 		s.When(`token is unknown`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, testing2.GetStorage(t).DeleteByID(context.Background(), GetToken(t), GetToken(t).ID))
+				require.Nil(t, GetStorage(t).DeleteByID(context.Background(), security.Token{}, GetToken(t).ID))
 			})
 
 			s.Then(`it will reject it`, func(t *testcase.T) {
@@ -68,8 +79,4 @@ func SpecDoorkeeperVerifyTokenString(s *testcase.Spec) {
 
 func doorkeeper(t *testcase.T) *security.Doorkeeper {
 	return t.I(`doorkeeper`).(*security.Doorkeeper)
-}
-
-func GetToken(t *testcase.T) *security.Token {
-	return t.I(`Token`).(*security.Token)
 }

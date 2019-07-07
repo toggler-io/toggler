@@ -61,13 +61,13 @@ func (s *InMemory) FindFlagByName(ctx context.Context, name string) (*rollouts.F
 	return ptr, nil
 }
 
-func (s *InMemory) FindTokenByTokenString(ctx context.Context, t string) (*security.Token, error) {
+func (s *InMemory) FindTokenBySHA512Hex(ctx context.Context, t string) (*security.Token, error) {
 	table := s.TableFor(security.Token{})
 
 	for _, token := range table {
 		token := token.(*security.Token)
 
-		if token.Token == t {
+		if token.SHA512 == t {
 			return token, nil
 		}
 	}

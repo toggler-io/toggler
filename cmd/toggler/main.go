@@ -96,22 +96,22 @@ func createFixtures(s usecases.Storage) {
 	useCases := usecases.NewUseCases(s)
 	issuer := security.Issuer{Storage: s}
 
-	t, err := issuer.CreateNewToken(context.TODO(), `testing`, nil, nil)
+	tt, _, err := issuer.CreateNewToken(context.Background(), `testing`, nil, nil)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(t.Token)
+	fmt.Println(tt)
 
-	pu, err := useCases.ProtectedUsecases(t.Token)
+	pu, err := useCases.ProtectedUsecases(context.Background(), tt)
 
 	if err != nil {
 		panic(err)
 	}
 
 	ff := rollouts.FeatureFlag{Name: `test`}
-	pu.CreateFeatureFlag(context.TODO(), &ff)
-	pu.SetPilotEnrollmentForFeature(context.TODO(), ff.ID, `test-public-pilot-id-1`, true)
-	pu.SetPilotEnrollmentForFeature(context.TODO(), ff.ID, `test-public-pilot-id-2`, false)
+	_ = pu.CreateFeatureFlag(context.TODO(), &ff)
+	_ = pu.SetPilotEnrollmentForFeature(context.Background(), ff.ID, `test-public-pilot-id-1`, true)
+	_ = pu.SetPilotEnrollmentForFeature(context.Background(), ff.ID, `test-public-pilot-id-2`, false)
 }
 
 func httpListenAndServe(storage usecases.Storage, port int) {
@@ -133,13 +133,13 @@ func createToken(s usecases.Storage, ownerUID string) {
 
 	issuer := security.Issuer{Storage: s}
 
-	t, err := issuer.CreateNewToken(context.TODO(), ownerUID, nil, nil)
+	t, _, err := issuer.CreateNewToken(context.TODO(), ownerUID, nil, nil)
 
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(t.Token)
+	fmt.Println(t)
 }
 
 func connstr() string {

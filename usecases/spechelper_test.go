@@ -1,6 +1,7 @@
 package usecases_test
 
 import (
+	"context"
 	"github.com/adamluzsi/toggler/services/rollouts"
 	. "github.com/adamluzsi/toggler/testing"
 	"github.com/adamluzsi/toggler/usecases"
@@ -26,7 +27,8 @@ func GetUseCases(t *testcase.T) *usecases.UseCases {
 }
 
 func GetProtectedUsecases(t *testcase.T) *usecases.ProtectedUsecases {
-	pu, err := GetUseCases(t).ProtectedUsecases(CreateToken(t, strconv.Itoa(rand.Int())).Token)
+	tt, _ := CreateToken(t, strconv.Itoa(rand.Int()))
+	pu, err := GetUseCases(t).ProtectedUsecases(context.Background(), tt)
 	require.Nil(t, err)
 	require.NotNil(t, pu)
 	return pu

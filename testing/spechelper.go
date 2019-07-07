@@ -53,13 +53,43 @@ func SetupSpecCommonVariables(s *testcase.Spec) {
 		return ff
 	})
 
+	SetupSpecTokenVariables(s)
+
 }
 
-func CreateToken(t *testcase.T, tokenOwner string) *security.Token {
-	i := security.NewIssuer(GetStorage(t))
-	token, err := i.CreateNewToken(context.TODO(), tokenOwner, nil, nil)
+func SetupSpecTokenVariables(s *testcase.Spec) {
+
+	s.Let(`Token`, func(t *testcase.T) interface{} {
+		textToken, objectToken := CreateToken(t, GetUniqUserID(t))
+		*(t.I(`*TextToken`).(*string)) = textToken
+		return objectToken
+	})
+
+	s.Let(`*TextToken`, func(t *testcase.T) interface{} {
+		var textToken string
+		return &textToken
+	})
+
+	s.Let(`TextToken`, func(t *testcase.T) interface{} {
+		t.I(`Token`) // trigger *TextTokenSetup
+		return *(t.I(`*TextToken`).(*string))
+	})
+
+}
+
+func GetTextToken(t *testcase.T) string {
+	return t.I(`TextToken`).(string)
+}
+
+func GetToken(t *testcase.T) *security.Token {
+	return t.I(`Token`).(*security.Token)
+}
+
+func CreateToken(t *testcase.T, tokenOwner string) (string, *security.Token) {
+	issuer := security.NewIssuer(GetStorage(t))
+	textToken, token, err := issuer.CreateNewToken(context.Background(), tokenOwner, nil, nil)
 	require.Nil(t, err)
-	return token
+	return textToken, token
 }
 
 func GetExternalPilotID(t *testcase.T) string {

@@ -1,6 +1,8 @@
 package security
 
-import "context"
+import (
+	"context"
+)
 
 func NewDoorkeeper(s Storage) *Doorkeeper {
 	return &Doorkeeper{Storage: s}
@@ -10,8 +12,14 @@ type Doorkeeper struct {
 	Storage
 }
 
-func (dk *Doorkeeper) VerifyTokenString(tokenString string) (bool, error) {
-	token, err := dk.Storage.FindTokenByTokenString(context.TODO(), tokenString)
+func (dk *Doorkeeper) VerifyTextToken(ctx context.Context, textToken string) (bool, error) {
+	sha512hex, err := ToSHA512Hex(textToken)
+
+	if err != nil {
+		return false, err
+	}
+
+	token, err := dk.Storage.FindTokenBySHA512Hex(ctx, sha512hex)
 
 	if token == nil {
 		return false, nil

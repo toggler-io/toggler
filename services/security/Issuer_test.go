@@ -38,7 +38,7 @@ func SpecIssuerRevokeToken(s *testcase.Spec) {
 		s.When(`token exists`, func(s *testcase.Spec) {
 			s.Let(`Token`, func(t *testcase.T) interface{} {
 				issuer := t.I(`issuer`).(*security.Issuer)
-				token, err := issuer.CreateNewToken(context.TODO(), GetUniqUserID(t), nil, nil)
+				_, token, err := issuer.CreateNewToken(context.TODO(), GetUniqUserID(t), nil, nil)
 				require.Nil(t, err)
 				return token
 			})
@@ -52,7 +52,7 @@ func SpecIssuerRevokeToken(s *testcase.Spec) {
 				token := t.I(`Token`).(*security.Token)
 
 				dk := security.NewDoorkeeper(GetStorage(t))
-				valid, err := dk.VerifyTokenString(token.Token)
+				valid, err := dk.VerifyTextToken(context.TODO(), token.SHA512)
 				require.Nil(t, err)
 				require.False(t, valid)
 			})
@@ -62,7 +62,7 @@ func SpecIssuerRevokeToken(s *testcase.Spec) {
 
 func SpecIssuerCreateNewToken(s *testcase.Spec) {
 	s.Describe(`CreateNewToken`, func(s *testcase.Spec) {
-		subject := func(t *testcase.T) (*security.Token, error) {
+		subject := func(t *testcase.T) (string, *security.Token, error) {
 			issuer := t.I(`issuer`).(*security.Issuer)
 			userUID := t.I(`userUID`).(string)
 			issueAt, _ := t.I(`issueAt`).(*time.Time)
@@ -70,13 +70,17 @@ func SpecIssuerCreateNewToken(s *testcase.Spec) {
 			return issuer.CreateNewToken(context.TODO(), userUID, issueAt, duration)
 		}
 		onSuccess := func(t *testcase.T) *security.Token {
-			token, err := subject(t)
+			textToken, token, err := subject(t)
 			require.Nil(t, err)
 			require.NotNil(t, token)
+			hashed, err := security.ToSHA512Hex(textToken)
+			require.Nil(t, err)
+			require.Equal(t, hashed, token.SHA512)
 			return token
 		}
 		onFailure := func(t *testcase.T) error {
-			token, err := subject(t)
+			textToken, token, err := subject(t)
+			require.Empty(t, textToken)
 			require.Nil(t, token)
 			require.NotNil(t, err)
 			return err
@@ -98,7 +102,7 @@ func SpecIssuerCreateNewToken(s *testcase.Spec) {
 
 			s.Then(`the token generated with a long token key`, func(t *testcase.T) {
 				token := onSuccess(t)
-				require.True(t, 128 <= len(token.Token))
+				require.True(t, 128 <= len(token.SHA512))
 			})
 
 			s.Then(`token is stored in the storage`, func(t *testcase.T) {
@@ -118,17 +122,17 @@ func SpecIssuerCreateNewToken(s *testcase.Spec) {
 
 				var last string
 				for i := 0; i < 1024; i++ {
-					token, err := issuer.CreateNewToken(context.TODO(), strconv.Itoa(i), issueAt, duration)
+					_, token, err := issuer.CreateNewToken(context.TODO(), strconv.Itoa(i), issueAt, duration)
 					require.Nil(t, err)
 					require.NotNil(t, token)
 
 					if last == "" {
-						last = token.Token
+						last = token.SHA512
 						continue
 					}
 
-					t.Log(token.Token)
-					require.NotEqual(t, last, token.Token)
+					t.Log(token.SHA512)
+					require.NotEqual(t, last, token.SHA512)
 				}
 			})
 		})
