@@ -20,18 +20,18 @@ import (
 
 func main() {
 	flagSet := flag.NewFlagSet(`toggler`, flag.ExitOnError)
-	portConfValue := flagSet.String(`port`, os.Getenv(`PORT`), `set http server port else the env variable "PORT" value will be used`)
-	cmd := flagSet.String(`cmd`, `http-server`, `cli command. cmds: "http-server", "create-token"`)
-	fixtures := flagSet.Bool(`create-fixtures`, false, `create default fixtures for development purpose`)
+	portConfValue := flagSet.String(`port`, os.Getenv(`PORT`), `set http server port else the env variable "PORT" value will be used.`)
+	cmd := flagSet.String(`cmd`, `http-server`, `cli command. cmds: "http-server", "create-token".`)
+	fixtures := flagSet.Bool(`create-fixtures`, false, `create default fixtures for development purpose.`)
 	dbURL := flagSet.String(`database-url`, ``, `define what url should be used for the db connection. Default value used from ENV[DATABASE_URL].`)
-	cacheURL := flagSet.String(`cache-url`, ``, `define what url should be used for the cache connection. Primary the CACHE_URL will be checked, then the DATABASE_URL value if no/empty value is given here`)
+	cacheURL := flagSet.String(`cache-url`, ``, `define what url should be used for the cache connection. default value is taken from ENV[CACHE_URL].`)
 
 	if err := flagSet.Parse(os.Args[1:]); err != nil {
 		panic(err)
 	}
 
 	setupDatabaseURL(dbURL)
-	setupCacheURL(cacheURL, dbURL)
+	setupCacheURL(cacheURL)
 
 	storage, err := storages.New(*dbURL)
 	if err != nil {
@@ -82,13 +82,9 @@ func setupDatabaseURL(dbURL *string) {
 	*dbURL = connstr
 }
 
-func setupCacheURL(cacheURL *string, dbURL *string) {
+func setupCacheURL(cacheURL *string) {
 	if *cacheURL == `` {
 		*cacheURL = os.Getenv(`CACHE_URL`)
-	}
-
-	if *cacheURL == `` {
-		*cacheURL = *dbURL
 	}
 }
 
