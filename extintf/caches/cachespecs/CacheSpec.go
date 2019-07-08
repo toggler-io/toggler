@@ -144,7 +144,7 @@ func (spec CacheSpec) Test(t *testing.T) {
 									})
 
 								storage.EXPECT().Truncate(gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
-								
+
 								storage.EXPECT().Close().AnyTimes().Return(nil)
 							})
 

@@ -1,40 +1,65 @@
 package postgres
 
 import (
-	"database/sql"
 	"github.com/adamluzsi/toggler/extintf/storages/postgres/assets"
-
-	"github.com/lopezator/migrator"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	bindata "github.com/golang-migrate/migrate/v4/source/go_bindata"
+	_ "github.com/lib/pq"
 )
 
-//go:generate esc -o ./assets/fs.go -ignore fs.go -pkg assets ./assets
+//go:generate esc -o ./assets/fs.go -pkg assets -prefix assets/migrations ./assets/migrations
+const migrationsDirectory = `/assets/migrations`
 
 func (pg *Postgres) Migrate() error {
 
-	m := migrator.New(
-		&migrator.Migration{
-			Name: `create Feature Flags table`,
-			Func: queryToMigrationFunc(assets.FSMustString(false, `/assets/migrations/01_create_feature_flags_table.sql`)),
-		},
-		&migrator.Migration{
-			Name: `create Pilots table`,
-			Func: queryToMigrationFunc(assets.FSMustString(false, `/assets/migrations/02_create_pilots_table.sql`)),
-		},
-		&migrator.Migration{
-			Name: `create tokens table`,
-			Func: queryToMigrationFunc(assets.FSMustString(false, `/assets/migrations/03_create_tokens_table.sql`)),
-		},
-	)
+	f, err := assets.FS(false).Open(migrationsDirectory)
 
-	return m.Migrate(pg.DB)
-
-}
-
-func queryToMigrationFunc(q string) func(tx *sql.Tx) error {
-	return func(tx *sql.Tx) error {
-		if _, err := tx.Exec(q); err != nil {
-			return err
-		}
-		return nil
+	if err != nil {
+		return err
 	}
+
+	fis, err := f.Readdir(-1)
+
+	if err != nil {
+		return err
+	}
+
+	var names []string
+
+	for _, fi := range fis {
+		if !fi.IsDir() {
+			names = append(names, fi.Name())
+		}
+	}
+
+	s := bindata.Resource(names, func(name string) ([]byte, error) {
+		return assets.FSByte(false, `/`+name)
+	})
+
+	srcDriver, err := bindata.WithInstance(s)
+
+	if err != nil {
+		return err
+	}
+
+	dbDriver, err := postgres.WithInstance(pg.DB, &postgres.Config{})
+
+	if err != nil {
+		return err
+	}
+
+	m, err := migrate.NewWithInstance(`esc`, srcDriver, `postgres`, dbDriver)
+
+	if err != nil {
+		return err
+	}
+
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		return err
+	}
+
+	return nil
+
 }

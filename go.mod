@@ -7,9 +7,11 @@ require (
 	github.com/adamluzsi/frameless v0.0.0-20190706091623-cfd388b71680
 	github.com/adamluzsi/testcase v0.0.0-20190602214255-4e4b269314e8
 	github.com/go-redis/redis v6.15.2+incompatible
+	github.com/golang-migrate/migrate v3.5.4+incompatible // indirect
+	github.com/golang-migrate/migrate/v4 v4.4.0
 	github.com/golang/mock v1.3.1
 	github.com/lib/pq v1.1.1
-	github.com/lopezator/migrator v0.1.0
+	github.com/lopezator/migrator v0.1.0 // indirect
 	github.com/mjibson/esc v0.2.0
 	github.com/pkg/errors v0.8.1
 	github.com/rakyll/statik v0.1.6 // indirect

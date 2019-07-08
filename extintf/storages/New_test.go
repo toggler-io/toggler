@@ -1,7 +1,6 @@
 package storages_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/adamluzsi/testcase"
@@ -38,27 +37,16 @@ func TestNew(t *testing.T) {
 			})
 		})
 
-		s.When(`the connection string is a postgres db`, func(s *testcase.Spec) {
+		s.When(`the connection string is a "postgres"`, func(s *testcase.Spec) {
 			s.Let(`connstr`, func(t *testcase.T) interface{} {
-				return fmt.Sprintf(`%s://postgres@localhost:8100/postgres?sslmode=disable`, t.I(`driver name`).(string))
+				return `postgres://postgres@localhost:8100/postgres?sslmode=disable`
 			})
 
-			for _, driverName := range []string{
-				`postgres`,
-			} {
-				s.And(fmt.Sprintf(`with the driver name is %s`, driverName), func(s *testcase.Spec) {
-					driverName := driverName // pass by value copy to remove loop variable dependency in the callbacks
-					s.Let(`driver name`, func(t *testcase.T) interface{} { return driverName })
+			s.Then(`then it will return postgres implementation`, func(t *testcase.T) {
+				_, isPG := onSuccess(t).(*postgres.Postgres)
 
-					s.Then(`then it will return postgres implementation`, func(t *testcase.T) {
-						_, isPG := onSuccess(t).(*postgres.Postgres)
-
-						require.True(t, isPG)
-					})
-
-				})
-			}
-
+				require.True(t, isPG)
+			})
 		})
 
 		s.When(`the connection string is a "memory"`, func(s *testcase.Spec) {

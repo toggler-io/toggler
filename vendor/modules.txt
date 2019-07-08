@@ -2,25 +2,43 @@
 github.com/Pallinder/go-randomdata
 # github.com/adamluzsi/frameless v0.0.0-20190706091623-cfd388b71680
 github.com/adamluzsi/frameless
+github.com/adamluzsi/frameless/fixtures
+github.com/adamluzsi/frameless/reflects
+github.com/adamluzsi/frameless/resources/specs
 github.com/adamluzsi/frameless/iterators
 github.com/adamluzsi/frameless/resources/storages/memorystorage
-github.com/adamluzsi/frameless/resources/specs
-github.com/adamluzsi/frameless/fixtures
 github.com/adamluzsi/frameless/resources
-github.com/adamluzsi/frameless/reflects
 # github.com/adamluzsi/testcase v0.0.0-20190602214255-4e4b269314e8
 github.com/adamluzsi/testcase
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
+# github.com/go-redis/redis v6.15.2+incompatible
+github.com/go-redis/redis
+github.com/go-redis/redis/internal
+github.com/go-redis/redis/internal/consistenthash
+github.com/go-redis/redis/internal/hashtag
+github.com/go-redis/redis/internal/pool
+github.com/go-redis/redis/internal/proto
+github.com/go-redis/redis/internal/util
+# github.com/golang-migrate/migrate/v4 v4.4.0
+github.com/golang-migrate/migrate/v4
+github.com/golang-migrate/migrate/v4/database/postgres
+github.com/golang-migrate/migrate/v4/source/file
+github.com/golang-migrate/migrate/v4/source/go_bindata
+github.com/golang-migrate/migrate/v4/database
+github.com/golang-migrate/migrate/v4/source
 # github.com/golang/mock v1.3.1
+github.com/golang/mock/gomock
 github.com/golang/mock/mockgen
 github.com/golang/mock/mockgen/model
+# github.com/hashicorp/errwrap v1.0.0
+github.com/hashicorp/errwrap
+# github.com/hashicorp/go-multierror v1.0.0
+github.com/hashicorp/go-multierror
 # github.com/lib/pq v1.1.1
 github.com/lib/pq
 github.com/lib/pq/oid
 github.com/lib/pq/scram
-# github.com/lopezator/migrator v0.1.0
-github.com/lopezator/migrator
 # github.com/mjibson/esc v0.2.0
 github.com/mjibson/esc
 github.com/mjibson/esc/embed
