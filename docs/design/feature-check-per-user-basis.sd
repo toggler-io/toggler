@@ -1,0 +1,32 @@
+#![feature toggle verification per user basis - v1]
+
+u:Actor
+f:Feature
+t:toggler
+c:Cache
+s:Storage
+
+u:f.start use the feature 
+f:feature enrollment status=t. is feature enabled for the given user id ?
+t:flag received=c.get feature flag
+c:check feature flag
+
+[c:if flag value not cached]
+	c:s.get flag
+	c:cache flag
+[/c]
+
+t:c.get piloting status
+c:s.get piloting status
+
+[c:if piloting status was manually set]
+ 	t:use piloting status
+--[else]
+	t:calculate pilot enrollment based on psudo random dice roll using the feature flag pseudo random
+[/c]
+
+[c:if pilot enrolled]
+	f:use new feature
+--[else]
+	f:use old behavior
+[/c]

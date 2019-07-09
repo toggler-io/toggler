@@ -29,9 +29,8 @@ Can my team…
 * complete its work without needing fine-grained communication and coordination with people outside of the team?
 * deploy and release its product or service on demand, independently of other services the product or service depend upon?
 
-If your answer yes to most of them, then you can stop here,
-because adding this service to your stack would just only introduce not necessary complexity.
-
+If your answer yes to most of them,
+then you can stop here, because adding this service to your stack would not solve too much.
 else, please continue...
 
 ## Features
@@ -96,24 +95,99 @@ The API will receive information about:
 * pilot-id
   * uniq id that was received by the FeatureFlag service
 
-### Feature Status check
+## Quick Start / Setup
 
-### Storage support
-- [ ] [Redis](https://github.com/antirez/redis)
-- [ ] [BoltDB](https://github.com/boltdb/bolt)
+### Configuration
+The application can be configured trough either CLI option or with environment variables.
+It follows the convention that works easily with SaaS platforms or containerization based solutions.
+
+#### Storage
+The storage external resource will be used to persist data,
+and then using as source of facts.
+
+The toggler doesn't depend on a certain storage system.
+It use behavior based specification, and has multiple implementation that fulfil this contract.
+This could potentially remove the burden on your team to introduce a new db just for the sake of the project.
+
+You can choose from the following
+- [X] [Redis](https://github.com/antirez/redis)
 - [x] [Postgres](https://github.com/postgres/postgres)
+- [x] InMemory (for testing purposes only)
 
-The application do don't depend on a certain storage system,
-therefore it is planned to support multiple one.
-This would remove the burden on your team to introduce a new db,
-which requires new ops experience to maintain.
+The Storage connection can be configured trough the `DATABASE_URL` environment variable
+or by providing the `-database-url` cli option to the executable.
 
-## [Directory Layout](docs/DirectoryLayout.md)
-For those who interested in contributing to toggler.
+To use one of the implementation, all you have to do is
+to provide the connection string in the CLI option or in the environment variable.
 
-## [Backlog](https://github.com/adamluzsi/toggler/projects)
+example connection strings:
+> redis://user:passwd@ec2-111.eu-west-1.compute.amazonaws.com:17379
 
-I use Github projects for backlog tracking,
-and idea brainstorming.
+> postgres://user:passwd@ec2-111.eu-west-1.compute.amazonaws.com:5432/dbname
+
+```bash
+export DATABASE_URL="postgres://user:passwd@ec2-111.eu-west-1.compute.amazonaws.com:5432/dbname"
+```
+
+#### Cache
+The cache external resource is an optional addition.
+By default, the service don't try to be smart, and use no cache at all.
+
+You choose to have a trade off for your storage system to use a traditional database
+that can provide your fact data with cost effectiveness, stability and maintainability perspectives.
+But then you don't want to sacrifice the service response times, so you can use a cache system to solve this.
+The Caching system do automatic cache invalidation with TTL and on Update/Delete storage operations.
+
+Currently only redis is available, but additional solutions in progress.
+
+To setup the application to use the cache, either provide the `-cache-url` cli option
+or the `CACHE_URL` environment variable.
+
+To setup the cache TTL, you can use the `-cache-ttl` cli option or the `CACHE_TTL` environment variable.
+A cache ttl duration in string format must be a unsigned sequence of
+decimal numbers, each with optional fraction and a unit suffix,
+such as "300ms", "1.5h" or "2h45m".
+Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+
+### Deployment
+* [heroku](docs/deploy/heroku.md)
+* [on-premises](docs/deploy/on-prem.md)
+* [Docker](docs/deploy/docker.md)
+
+### Usage
+
+#### Security token creation
+To gain access to write and update related actions in the system,
+you must create a security token that will be used even on the webGUI.
+
+To create a token, execute the following command on the server:
+```bash
+./toggler -cmd create-token "token-owner-uid"
+```
+
+the uniq id of the owner could be a email address for example.
+The token will be printed on the STDOUT.
+The token cannot be regained if it is not saved after token creation.
+
+#### Calling the API
+
+checking a flag individually for
+```bash
+curl -X GET 'http://localhost:8080/api/v1/feature/is-enabled.json?feature=myfeature&id=public-uniq-id-of-rour-user'
+#> {"enrollment":false}
+```
+
+checking a flag is globally enabled
+```bash
+curl -X GET 'http://localhost:8080/api/v1/feature/is-globally-enabled.json?feature=myfeature'
+#> {"enrollment":false}
+```
+
+## For Contributors
+* [Please read the design section of the project](docs/design)
+* [Backlog](https://github.com/adamluzsi/toggler/projects)
 
 Feel free to open an issue if you see anything
+
+## Thank you for reading about this project! :)
+ 
