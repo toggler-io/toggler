@@ -31,6 +31,10 @@ github.com/adamluzsi/frameless v0.0.0-20190704114734-4bae8fc4195d h1:kldI8E9edmi
 github.com/adamluzsi/frameless v0.0.0-20190704114734-4bae8fc4195d/go.mod h1:5sDxqSyC2+wwmrdO6jwgVn//BrqN0weIXRyh+WMDGYw=
 github.com/adamluzsi/frameless v0.0.0-20190706091623-cfd388b71680 h1:72ZlEq4+Gu4y4mxCWU1+zO8VFY8O/KndPhm6HJl4Y4U=
 github.com/adamluzsi/frameless v0.0.0-20190706091623-cfd388b71680/go.mod h1:5sDxqSyC2+wwmrdO6jwgVn//BrqN0weIXRyh+WMDGYw=
+github.com/adamluzsi/frameless v0.0.0-20190709215304-33cdc58dfea0 h1:BfxUqFwsW1ka+48J+slZa5CJsu0rd7QDYYKM0Y1q1SI=
+github.com/adamluzsi/frameless v0.0.0-20190709215304-33cdc58dfea0/go.mod h1:5sDxqSyC2+wwmrdO6jwgVn//BrqN0weIXRyh+WMDGYw=
+github.com/adamluzsi/frameless v0.0.0-20190709215835-9b00c6fb6277 h1:9Hmr8OpLTCwLfpU26zr6JKwCUr3zWo3ItOvybaeWQpI=
+github.com/adamluzsi/frameless v0.0.0-20190709215835-9b00c6fb6277/go.mod h1:5sDxqSyC2+wwmrdO6jwgVn//BrqN0weIXRyh+WMDGYw=
 github.com/adamluzsi/testcase v0.0.0-20190525010559-2a9414d6337a h1:tTIJDPSi35kASAoPYUkTF5gP5rhddR1c1W2AEZ0D0P0=
 github.com/adamluzsi/testcase v0.0.0-20190525010559-2a9414d6337a/go.mod h1:v7gx5uOqLnIsGEIZf4ve0HqzpCS36W6at4JTRsZTJpA=
 github.com/adamluzsi/testcase v0.0.0-20190602214255-4e4b269314e8 h1:Sg/hIlApTxh/4ZY6QIwLXG8Jf7zWA0Wx2k8Tg7XJvlU=
@@ -104,6 +108,8 @@ github.com/google/go-github v17.0.0+incompatible/go.mod h1:zLgOLi98H3fifZn+44m+u
 github.com/google/go-querystring v1.0.0/go.mod h1:odCYkC5MyYFN7vkCjXpyrEuKhc/BUO6wN/zVPAxq5ck=
 github.com/google/martian v2.1.0+incompatible/go.mod h1:9I4somxYTbIHy5NJKHRl3wXiIaQGbYVAs8BPL6v8lEs=
 github.com/google/pprof v0.0.0-20181206194817-3ea8567a2e57/go.mod h1:zfwlbNMJ+OItoe0UupaVj+oy1omPYYDuagoSzA8v9mc=
+github.com/google/uuid v1.1.1 h1:Gkbcsh/GbpXz7lPftLA3P6TYMwjCLYm83jiFQZF/3gY=
+github.com/google/uuid v1.1.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+vpHVxEJEs9eg=
 github.com/gorilla/context v1.1.1/go.mod h1:kBGZzfjB9CEq2AlWe17Uuf7NDRt0dE0s8S51q0aT7Yg=
 github.com/gorilla/mux v1.6.2/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=

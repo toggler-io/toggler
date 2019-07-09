@@ -1,6 +1,7 @@
 package storages_test
 
 import (
+	"github.com/adamluzsi/toggler/extintf/storages/redis"
 	"testing"
 
 	"github.com/adamluzsi/testcase"
@@ -46,6 +47,18 @@ func TestNew(t *testing.T) {
 				_, isPG := onSuccess(t).(*postgres.Postgres)
 
 				require.True(t, isPG)
+			})
+		})
+
+		s.When(`the connection string is "redis"`, func(s *testcase.Spec) {
+			s.Let(`connstr`, func(t *testcase.T) interface{} {
+				return `redis://localhost:6379/1`
+			})
+
+			s.Then(`then it will return "redis" storage implementation`, func(t *testcase.T) {
+				_, isThat := onSuccess(t).(*redis.Redis)
+
+				require.True(t, isThat)
 			})
 		})
 

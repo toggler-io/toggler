@@ -21,10 +21,10 @@ func TestRedis(t *testing.T) {
 }
 
 func getTestRedisConnstr(t *testing.T) string {
-	value, isSet := os.LookupEnv(`TEST_REDIS_URL`)
+	value, isSet := os.LookupEnv(`TEST_CACHE_URL_REDIS`)
 
 	if !isSet {
-		t.Skip(`redis url is not set in "TEST_REDIS_URL"`)
+		t.Skip(`redis url is not set in "TEST_CACHE_URL_REDIS"`)
 	}
 
 	return value

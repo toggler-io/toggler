@@ -1,6 +1,6 @@
 # github.com/Pallinder/go-randomdata v1.2.0
 github.com/Pallinder/go-randomdata
-# github.com/adamluzsi/frameless v0.0.0-20190706091623-cfd388b71680
+# github.com/adamluzsi/frameless v0.0.0-20190709215835-9b00c6fb6277
 github.com/adamluzsi/frameless
 github.com/adamluzsi/frameless/fixtures
 github.com/adamluzsi/frameless/reflects
@@ -31,6 +31,8 @@ github.com/golang-migrate/migrate/v4/source
 github.com/golang/mock/gomock
 github.com/golang/mock/mockgen
 github.com/golang/mock/mockgen/model
+# github.com/google/uuid v1.1.1
+github.com/google/uuid
 # github.com/hashicorp/errwrap v1.0.0
 github.com/hashicorp/errwrap
 # github.com/hashicorp/go-multierror v1.0.0

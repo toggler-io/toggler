@@ -2,6 +2,7 @@ package storages
 
 import (
 	"database/sql"
+	"github.com/adamluzsi/toggler/extintf/storages/redis"
 	"net/url"
 
 	"github.com/adamluzsi/frameless"
@@ -29,6 +30,9 @@ func New(connstr string) (usecases.Storage, error) {
 			return nil, err
 		}
 		return postgres.NewPostgres(db)
+
+	case `redis`:
+		return redis.New(connstr)
 
 	case `memory`:
 		return inmemory.New(), nil

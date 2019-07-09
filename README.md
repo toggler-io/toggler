@@ -1,6 +1,6 @@
 # toggler
 
-`toggler` is a Feature Toggle Service.
+`toggler` is a Self hosted Feature Toggle Service.
 
 The service designed to be hosted on public web.
 The service expects that public web request will be received from all kind of sources.

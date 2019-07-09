@@ -35,10 +35,10 @@ func MustOpenDB(t *testing.T) *sql.DB {
 }
 
 func getDatabaseConnectionString(t *testing.T) string {
-	databaseURL, isSet := os.LookupEnv("TEST_POSTGRES_URL")
+	databaseURL, isSet := os.LookupEnv("TEST_STORAGE_URL_POSTGRES")
 
 	if !isSet {
-		t.Skip("TEST_POSTGRES_URL not set, therefore skipping this test")
+		t.Skip(`"TEST_STORAGE_URL_POSTGRES" env var is not set, therefore skipping this test`)
 	}
 
 	return databaseURL
