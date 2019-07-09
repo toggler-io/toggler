@@ -7,7 +7,7 @@ import (
 	"github.com/adamluzsi/toggler/usecases"
 )
 
-func New(connstr string, storage usecases.Storage) (usecases.Storage, error) {
+func New(connstr string, storage usecases.Storage) (Interface, error) {
 	var driver string = connstr
 
 	u, err := url.Parse(connstr)

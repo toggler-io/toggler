@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/adamluzsi/toggler/extintf/httpintf"
 	"github.com/adamluzsi/toggler/services/rollouts"
@@ -25,13 +26,14 @@ func main() {
 	fixtures := flagSet.Bool(`create-fixtures`, false, `create default fixtures for development purpose.`)
 	dbURL := flagSet.String(`database-url`, ``, `define what url should be used for the db connection. Default value used from ENV[DATABASE_URL].`)
 	cacheURL := flagSet.String(`cache-url`, ``, `define what url should be used for the cache connection. default value is taken from ENV[CACHE_URL].`)
+	cacheTTL := flagSet.Duration(`cache-ttl`, 30*time.Minute, `define the time-to-live duration for the cached objects (if cache used)`)
 
 	if err := flagSet.Parse(os.Args[1:]); err != nil {
 		panic(err)
 	}
 
 	setupDatabaseURL(dbURL)
-	setupCacheURL(cacheURL)
+	setupCacheURL(cacheURL, cacheTTL)
 
 	storage, err := storages.New(*dbURL)
 	if err != nil {
@@ -44,6 +46,10 @@ func main() {
 		log.Fatal(err)
 	}
 	defer cache.Close()
+
+	if err := cache.SetTimeToLiveForValuesToCache(*cacheTTL); err != nil {
+		log.Fatal(err)
+	}
 
 	if *fixtures {
 		createFixtures(storage)
@@ -82,9 +88,20 @@ func setupDatabaseURL(dbURL *string) {
 	*dbURL = connstr
 }
 
-func setupCacheURL(cacheURL *string) {
+func setupCacheURL(cacheURL *string, cacheTTL *time.Duration) {
 	if *cacheURL == `` {
 		*cacheURL = os.Getenv(`CACHE_URL`)
+	}
+
+	serializedTTL, isSet := os.LookupEnv(`CACHE_TTL`)
+
+	if isSet {
+		d, err := time.ParseDuration(serializedTTL)
+		if err != nil {
+			log.Println(`parsing CACHE_TTL failed`)
+			log.Fatal(err)
+		}
+		*cacheTTL = d
 	}
 }
 
