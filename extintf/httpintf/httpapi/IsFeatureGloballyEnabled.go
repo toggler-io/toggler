@@ -10,27 +10,38 @@ type IsFeatureGloballyEnabledPayload struct {
 }
 
 func (sm *ServeMux) IsFeatureGloballyEnabled(w http.ResponseWriter, r *http.Request) {
-
 	defer r.Body.Close()
-	jsondec := json.NewDecoder(r.Body)
+	var featureName string
 
-	var payload IsFeatureEnabledForReqBody
+	q := r.URL.Query()
+	featureName = q.Get(`feature`)
 
-	if handleError(w, jsondec.Decode(&payload), http.StatusBadRequest) {
-		return
+	if featureName == `` {
+		if handleError(w, parseJSONPayloadForIsFeatureGloballyEnabled(r, &featureName), http.StatusBadRequest) {
+			return
+		}
 	}
 
-	enrollment, err := sm.UseCases.IsFeatureGloballyEnabled(payload.Feature)
+	enrollment, err := sm.UseCases.IsFeatureGloballyEnabled(featureName)
 
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	var resp struct {
-		Enrollment bool `json:"enrollment"`
-	}
+	var resp struct{ Enrollment bool `json:"enrollment"` }
 	resp.Enrollment = enrollment
 
 	serveJSON(w, &resp)
+}
+
+func parseJSONPayloadForIsFeatureGloballyEnabled(r *http.Request, featureName *string) error {
+	jsondec := json.NewDecoder(r.Body)
+	var payload IsFeatureGloballyEnabledPayload
+	if err := jsondec.Decode(&payload); err != nil {
+		return err
+	}
+
+	*featureName = payload.Feature
+	return nil
 }
