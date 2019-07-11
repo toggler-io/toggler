@@ -1,25 +1,30 @@
 package httpapi
 
-import "net/http"
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type IsFeatureGloballyEnabledPayload struct {
+	Feature string `json:"feature"`
+}
 
 func (sm *ServeMux) IsFeatureGloballyEnabled(w http.ResponseWriter, r *http.Request) {
 
-	values := r.URL.Query()
-	featureFlagName := values.Get(`feature`)
+	defer r.Body.Close()
+	jsondec := json.NewDecoder(r.Body)
 
-	enrollment, err := sm.UseCases.IsFeatureGloballyEnabled(featureFlagName)
+	var payload IsFeatureEnabledForReqBody
+
+	if handleError(w, jsondec.Decode(&payload), http.StatusBadRequest) {
+		return
+	}
+
+	enrollment, err := sm.UseCases.IsFeatureGloballyEnabled(payload.Feature)
 
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
-	}
-
-	var statusCode int
-
-	if enrollment {
-		statusCode = 200
-	} else {
-		statusCode = 403
 	}
 
 	var resp struct {
@@ -27,5 +32,5 @@ func (sm *ServeMux) IsFeatureGloballyEnabled(w http.ResponseWriter, r *http.Requ
 	}
 	resp.Enrollment = enrollment
 
-	serveJSON(w, statusCode, &resp)
+	serveJSON(w, &resp)
 }

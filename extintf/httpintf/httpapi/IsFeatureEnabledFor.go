@@ -1,26 +1,30 @@
 package httpapi
 
-import "net/http"
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type IsFeatureEnabledForReqBody struct {
+	Feature string `json:"feature"`
+	PilotID string `json:"id"`
+}
 
 func (sm *ServeMux) IsFeatureEnabledFor(w http.ResponseWriter, r *http.Request) {
 
-	values := r.URL.Query()
-	featureFlagName := values.Get(`feature`)
-	pilotID := values.Get(`id`)
+	defer r.Body.Close()
+	jsondec := json.NewDecoder(r.Body)
 
-	enrollment, err := sm.UseCases.IsFeatureEnabledFor(featureFlagName, pilotID)
+	var payload IsFeatureEnabledForReqBody
+	if handleError(w, jsondec.Decode(&payload), http.StatusBadRequest) {
+		return
+	}
+
+	enrollment, err := sm.UseCases.IsFeatureEnabledFor(payload.Feature, payload.PilotID)
 
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
-	}
-
-	var statusCode int
-
-	if enrollment {
-		statusCode = 200
-	} else {
-		statusCode = 403
 	}
 
 	var resp struct {
@@ -28,6 +32,6 @@ func (sm *ServeMux) IsFeatureEnabledFor(w http.ResponseWriter, r *http.Request) 
 	}
 	resp.Enrollment = enrollment
 
-	serveJSON(w, statusCode, &resp)
+	serveJSON(w, &resp)
 
 }

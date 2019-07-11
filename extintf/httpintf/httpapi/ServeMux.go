@@ -46,7 +46,7 @@ type ServeMux struct {
 	*usecases.UseCases
 }
 
-func serveJSON(w http.ResponseWriter, status int, data interface{}) {
+func serveJSON(w http.ResponseWriter, data interface{}) {
 	buf := bytes.NewBuffer([]byte{})
 
 	if err := json.NewEncoder(buf).Encode(data); err != nil {
@@ -55,7 +55,7 @@ func serveJSON(w http.ResponseWriter, status int, data interface{}) {
 	}
 
 	w.Header().Set(`Content-Type`, `application/json`)
-	w.WriteHeader(status)
+	w.WriteHeader(200)
 
 	if _, err := w.Write(buf.Bytes()); err != nil {
 		log.Println(err)

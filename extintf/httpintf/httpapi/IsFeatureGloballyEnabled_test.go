@@ -2,6 +2,8 @@ package httpapi_test
 
 import (
 	"bytes"
+	"encoding/json"
+	"github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -28,11 +30,14 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 		u, err := url.Parse(`/feature/is-globally-enabled.json`)
 		require.Nil(t, err)
 
-		values := u.Query()
-		values.Set(`feature`, GetFeatureFlagName(t))
-		u.RawQuery = values.Encode()
+		payload := bytes.NewBuffer([]byte{})
+		jsonenc := json.NewEncoder(payload)
 
-		return httptest.NewRequest(http.MethodGet, u.String(), bytes.NewBuffer([]byte{}))
+		require.Nil(t, jsonenc.Encode(httpapi.IsFeatureGloballyEnabledPayload{
+			Feature: GetFeatureFlagName(t),
+		}))
+
+		return httptest.NewRequest(http.MethodGet, u.String(), payload)
 	})
 
 	s.When(`flag global`, func(s *testcase.Spec) {
@@ -62,7 +67,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 		s.Then(`the request will be marked as forbidden`, func(t *testcase.T) {
 			r := subject(t)
 
-			require.Equal(t, 403, r.Code)
+			require.Equal(t, 200, r.Code)
 
 			var resp struct {
 				Enrollment bool `json:"enrollment"`

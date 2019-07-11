@@ -17,5 +17,6 @@ func (sm *ServeMux) ListFeatureFlags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	serveJSON(w, 200, &ffs)
+	serveJSON(w, &ffs)
+
 }

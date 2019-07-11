@@ -173,13 +173,15 @@ The token cannot be regained if it is not saved after token creation.
 
 checking a flag individually for
 ```bash
-curl -X GET 'http://localhost:8080/api/v1/feature/is-enabled.json?feature=myfeature&id=public-uniq-id-of-rour-user'
+curl -X GET 'http://localhost:8080/api/v1/feature/is-enabled.json' \
+    -d '{"feature":"myfeature", "id":"public-uniq-id-of-four-user"}'
 #> {"enrollment":false}
 ```
 
 checking a flag is globally enabled
 ```bash
-curl -X GET 'http://localhost:8080/api/v1/feature/is-globally-enabled.json?feature=myfeature'
+curl -X GET 'http://localhost:8080/api/v1/feature/is-globally-enabled.json?feature=myfeature' \
+    -d '{"feature":"myfeature", "id":"public-uniq-id-of-four-user"}'
 #> {"enrollment":false}
 ```
 

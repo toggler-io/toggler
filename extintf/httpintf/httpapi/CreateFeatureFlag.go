@@ -28,7 +28,7 @@ func (sm *ServeMux) CreateFeatureFlagJSON(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	serveJSON(w, 200, map[string]interface{}{})
+	serveJSON(w, map[string]interface{}{})
 
 }
 

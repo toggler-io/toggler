@@ -2,6 +2,8 @@ package httpapi_test
 
 import (
 	"bytes"
+	"encoding/json"
+	"github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -27,13 +29,13 @@ func TestServeMux_IsFeatureEnabledFor(t *testing.T) {
 	s.Let(`request`, func(t *testcase.T) interface{} {
 		u, err := url.Parse(`/feature/is-enabled.json`)
 		require.Nil(t, err)
-
-		values := u.Query()
-		values.Set(`feature`, GetFeatureFlagName(t))
-		values.Set(`id`, GetExternalPilotID(t))
-		u.RawQuery = values.Encode()
-
-		return httptest.NewRequest(http.MethodGet, u.String(), bytes.NewBuffer([]byte{}))
+		payload := bytes.NewBuffer([]byte{})
+		jsonenc := json.NewEncoder(payload)
+		require.Nil(t, jsonenc.Encode(httpapi.IsFeatureEnabledForReqBody{
+			Feature: GetFeatureFlagName(t),
+			PilotID: GetExternalPilotID(t),
+		}))
+		return httptest.NewRequest(http.MethodGet, u.String(), payload)
 	})
 
 	s.When(`pilot is enrolled`, func(s *testcase.Spec) {
@@ -63,7 +65,7 @@ func TestServeMux_IsFeatureEnabledFor(t *testing.T) {
 		s.Then(`the request will be marked as forbidden`, func(t *testcase.T) {
 			r := subject(t)
 
-			require.Equal(t, 403, r.Code)
+			require.Equal(t, 200, r.Code)
 
 			var resp struct {
 				Enrollment bool `json:"enrollment"`

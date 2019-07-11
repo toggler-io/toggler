@@ -25,5 +25,6 @@ func (sm *ServeMux) SetPilotEnrollmentForFeature(w http.ResponseWriter, r *http.
 		return
 	}
 
-	serveJSON(w, 200, map[string]interface{}{})
+	serveJSON(w,  map[string]interface{}{})
+
 }
