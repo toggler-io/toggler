@@ -10,6 +10,37 @@ type IsFeatureEnabledForReqBody struct {
 	PilotID string `json:"id"`
 }
 
+// swagger:operation GET /api/v1/feature/is-enabled.json is-enabled
+//
+// Returns a single flag state
+// ---
+// description:
+// parameters:
+//   - name: feature
+//	 in: query
+//	 schema:
+//	   type: string
+//	 example: feature-name
+//   - name: id
+//	 in: query
+//	 schema:
+//	   type: string
+//	 example: public-uniq-id-of-the-pilot
+// responses:
+//   '200':
+//	 description: Auto generated using Swagger Inspector
+//	 content:
+//	   application/json:
+//		 schema:
+//		   type: object
+//		   properties:
+//			 enrollment:
+//			   type: boolean
+//		 examples:
+//		   '0':
+//			 value: |
+//			   {"enrollment":false}
+//
 func (sm *ServeMux) IsFeatureEnabledFor(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var featureName, pilotID string
