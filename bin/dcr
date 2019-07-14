@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-set -e -u
-docker-compose down
-docker-compose up -d
