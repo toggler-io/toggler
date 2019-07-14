@@ -17,6 +17,7 @@ func NewServeMux(uc *usecases.UseCases) *ServeMux {
 	featureAPI := buildFeatureAPI(mux)
 	flagsAPI := buildFlagAPI(mux)
 
+	mux.HandleFunc(`/client/config.json`, mux.ClientConfig)
 	mux.Handle(`/feature/`, http.StripPrefix(`/feature`, featureAPI))
 	featureAPI.Handle(`/flag/`, http.StripPrefix(`/flag`, flagsAPI))
 
