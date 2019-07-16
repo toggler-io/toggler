@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
+	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/frameless/resources/storages/memorystorage"
 	"github.com/adamluzsi/toggler/services/rollouts"
@@ -13,6 +14,7 @@ import (
 	_ "github.com/lib/pq"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -168,26 +170,17 @@ func (pg *Postgres) FindAll(ctx context.Context, Type interface{}) frameless.Ite
 	}
 }
 
-const featureFlagFindByNameQuery = `
-SELECT id, name, rollout_rand_seed, rollout_strategy_percentage, rollout_strategy_decision_logic_api 
-FROM feature_flags 
-WHERE name = $1;
-`
-
 func (pg *Postgres) FindFlagByName(ctx context.Context, name string) (*rollouts.FeatureFlag, error) {
 
-	row := pg.DB.QueryRowContext(ctx, featureFlagFindByNameQuery, name)
+	mapper := featureFlagMapper{}
+	query := fmt.Sprintf(`%s FROM "feature_flags" WHERE "name" = $1`,
+		mapper.SelectClause())
+
+	row := pg.DB.QueryRowContext(ctx, query, name)
 
 	var ff rollouts.FeatureFlag
-	var DecisionLogicAPI sql.NullString
 
-	err := row.Scan(
-		&ff.ID,
-		&ff.Name,
-		&ff.Rollout.RandSeed,
-		&ff.Rollout.Strategy.Percentage,
-		&DecisionLogicAPI,
-	)
+	err := mapper.Map(row, &ff)
 
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -195,18 +188,6 @@ func (pg *Postgres) FindFlagByName(ctx context.Context, name string) (*rollouts.
 
 	if err != nil {
 		return nil, err
-	}
-
-	if DecisionLogicAPI.Valid {
-
-		u, err := url.ParseRequestURI(DecisionLogicAPI.String)
-
-		if err != nil {
-			return nil, err
-		}
-
-		ff.Rollout.Strategy.DecisionLogicAPI = u
-
 	}
 
 	return &ff, nil
@@ -351,6 +332,32 @@ func (pg *Postgres) FindTokenBySHA512Hex(ctx context.Context, token string) (*se
 	return &t, nil
 }
 
+func (pg *Postgres) FindFlagsByName(ctx context.Context, flagNames ...string) frameless.Iterator {
+
+	var namesInClause []string
+	var args []interface{}
+
+	namesInClause = append(namesInClause)
+	for i, arg := range flagNames {
+		namesInClause = append(namesInClause, fmt.Sprintf(`$%d`, i+1))
+		args = append(args, arg)
+	}
+
+	mapper := featureFlagMapper{}
+
+	query := fmt.Sprintf(`%s FROM "feature_flags" WHERE "name" IN (%s)`,
+		mapper.SelectClause(),
+		strings.Join(namesInClause, `,`))
+
+	flags, err := pg.DB.QueryContext(ctx, query, args...)
+
+	if err != nil {
+		return iterators.NewError(err)
+	}
+
+	return iterators.NewSQLRows(flags, mapper)
+}
+
 const featureFlagInsertNewQuery = `
 INSERT INTO "feature_flags" (
 	name,
@@ -436,25 +443,14 @@ func (pg *Postgres) tokenInsertNew(ctx context.Context, token *security.Token) e
 	return specs.SetID(token, strconv.FormatInt(id.Int64, 10))
 }
 
-const featureFlagFindByIDQuery = `
-SELECT id, name, rollout_rand_seed, rollout_strategy_percentage, rollout_strategy_decision_logic_api 
-FROM feature_flags 
-WHERE id = $1;
-`
-
 func (pg *Postgres) featureFlagFindByID(ctx context.Context, flag *rollouts.FeatureFlag, id int64) (bool, error) {
-	row := pg.DB.QueryRowContext(ctx, featureFlagFindByIDQuery, id)
+
+	mapper := featureFlagMapper{}
+	query := fmt.Sprintf(`%s FROM "feature_flags" WHERE "id" = $1`, mapper.SelectClause())
+	row := pg.DB.QueryRowContext(ctx, query, id)
+
 	var ff rollouts.FeatureFlag
-
-	var DecisionLogicAPI sql.NullString
-
-	err := row.Scan(
-		&ff.ID,
-		&ff.Name,
-		&ff.Rollout.RandSeed,
-		&ff.Rollout.Strategy.Percentage,
-		&DecisionLogicAPI,
-	)
+	err := mapper.Map(row, &ff)
 
 	if err == sql.ErrNoRows {
 		return false, nil
@@ -464,20 +460,9 @@ func (pg *Postgres) featureFlagFindByID(ctx context.Context, flag *rollouts.Feat
 		return false, err
 	}
 
-	if DecisionLogicAPI.Valid {
-
-		u, err := url.ParseRequestURI(DecisionLogicAPI.String)
-
-		if err != nil {
-			return false, err
-		}
-
-		ff.Rollout.Strategy.DecisionLogicAPI = u
-
-	}
-
 	*flag = ff
 	return true, nil
+
 }
 
 const pilotFindByIDQuery = `
@@ -555,67 +540,14 @@ FROM feature_flags
 `
 
 func (pg *Postgres) featureFlagFindAll(ctx context.Context) frameless.Iterator {
-	rows, err := pg.DB.QueryContext(ctx, featureFlagFindAllQuery)
-
+	mapper := featureFlagMapper{}
+	query := fmt.Sprintf(`%s FROM "feature_flags"`, mapper.SelectClause())
+	rows, err := pg.DB.QueryContext(ctx, query)
 	if err != nil {
 		return iterators.NewError(err)
 	}
 
-	receiver, sender := iterators.NewPipe()
-
-	go func() {
-		defer sender.Close()
-
-	wrk:
-		for rows.Next() {
-
-			var ff rollouts.FeatureFlag
-
-			var DecisionLogicAPI sql.NullString
-
-			err := rows.Scan(
-				&ff.ID,
-				&ff.Name,
-				&ff.Rollout.RandSeed,
-				&ff.Rollout.Strategy.Percentage,
-				&DecisionLogicAPI,
-			)
-
-			if err == sql.ErrNoRows {
-				break wrk
-			}
-
-			if err != nil {
-				sender.Error(err)
-				break wrk
-			}
-
-			if DecisionLogicAPI.Valid {
-
-				u, err := url.ParseRequestURI(DecisionLogicAPI.String)
-
-				if err != nil {
-					sender.Error(err)
-					break wrk
-				}
-
-				ff.Rollout.Strategy.DecisionLogicAPI = u
-
-			}
-
-			if err := sender.Encode(&ff); err != nil {
-				sender.Error(err)
-				break wrk
-			}
-		}
-
-		if err := rows.Err(); err != nil {
-			sender.Error(err)
-		}
-
-	}()
-
-	return receiver
+	return iterators.NewSQLRows(rows, mapper)
 }
 
 const pilotFindAllQuery = `
@@ -808,4 +740,37 @@ func (pg *Postgres) ensureTimeLocation(t time.Time) (time.Time, error) {
 	}
 
 	return t.In(pg.timeLocation), nil
+}
+
+type featureFlagMapper struct{}
+
+func (featureFlagMapper) SelectClause() string {
+	return `SELECT id, name, rollout_rand_seed, rollout_strategy_percentage, rollout_strategy_decision_logic_api`
+}
+
+func (featureFlagMapper) Map(scanner iterators.SQLRowScanner, ptr frameless.Entity) error {
+	var ff rollouts.FeatureFlag
+	var DecisionLogicAPI sql.NullString
+
+	err := scanner.Scan(
+		&ff.ID,
+		&ff.Name,
+		&ff.Rollout.RandSeed,
+		&ff.Rollout.Strategy.Percentage,
+		&DecisionLogicAPI,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	if DecisionLogicAPI.Valid {
+		u, err := url.ParseRequestURI(DecisionLogicAPI.String)
+		if err != nil {
+			return err
+		}
+		ff.Rollout.Strategy.DecisionLogicAPI = u
+	}
+
+	return reflects.Link(&ff, ptr)
 }
