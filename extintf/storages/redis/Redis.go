@@ -38,6 +38,23 @@ type Redis struct {
 	keyMapping map[string]string
 }
 
+func (r *Redis) FindFlagsByName(ctx context.Context, names ...string) frameless.Iterator {
+	flags := r.FindAll(ctx, rollouts.FeatureFlag{})
+
+	nameIndex := make(map[string]struct{})
+
+	for _, name := range names {
+		nameIndex[name] = struct{}{}
+	}
+
+	flagsByName := iterators.Filter(flags, func(flag frameless.Entity) bool {
+		_, ok := nameIndex[flag.(rollouts.FeatureFlag).Name]
+		return ok
+	})
+
+	return flagsByName
+}
+
 func (r *Redis) Close() error {
 	return r.client.Close()
 }
