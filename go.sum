@@ -16,6 +16,8 @@ github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWX
 github.com/Shopify/toxiproxy v2.1.4+incompatible/go.mod h1:OXgGpZ6Cli1/URJOF1DMxUHB2q5Ap20/P/eIdh4G0pI=
 github.com/adamluzsi/frameless v0.0.0-20190709215835-9b00c6fb6277 h1:9Hmr8OpLTCwLfpU26zr6JKwCUr3zWo3ItOvybaeWQpI=
 github.com/adamluzsi/frameless v0.0.0-20190709215835-9b00c6fb6277/go.mod h1:5sDxqSyC2+wwmrdO6jwgVn//BrqN0weIXRyh+WMDGYw=
+github.com/adamluzsi/frameless v0.0.0-20190714213939-58e1307f5589 h1:V7IAR9iAp98DHCarE8OVFzVtovJwDWQfGP3nlmSPlYc=
+github.com/adamluzsi/frameless v0.0.0-20190714213939-58e1307f5589/go.mod h1:5sDxqSyC2+wwmrdO6jwgVn//BrqN0weIXRyh+WMDGYw=
 github.com/adamluzsi/testcase v0.0.0-20190602214255-4e4b269314e8 h1:Sg/hIlApTxh/4ZY6QIwLXG8Jf7zWA0Wx2k8Tg7XJvlU=
 github.com/adamluzsi/testcase v0.0.0-20190602214255-4e4b269314e8/go.mod h1:v7gx5uOqLnIsGEIZf4ve0HqzpCS36W6at4JTRsZTJpA=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
