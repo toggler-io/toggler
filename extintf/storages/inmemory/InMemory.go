@@ -2,11 +2,11 @@ package inmemory
 
 import (
 	"context"
-	"github.com/adamluzsi/toggler/services/rollouts"
-	"github.com/adamluzsi/toggler/services/security"
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/resources/storages/memorystorage"
+	"github.com/adamluzsi/toggler/services/rollouts"
+	"github.com/adamluzsi/toggler/services/security"
 )
 
 func New() *InMemory {
@@ -14,6 +14,26 @@ func New() *InMemory {
 }
 
 type InMemory struct{ *memorystorage.Memory }
+
+func (s *InMemory) FindFlagsByName(ctx context.Context, names ...string) frameless.Iterator {
+	var flags []*rollouts.FeatureFlag
+
+	nameIndex := make(map[string]bool)
+
+	for _, name := range names {
+		nameIndex[name] = true
+	}
+
+	for _, e := range s.TableFor(rollouts.FeatureFlag{}) {
+		flag := e.(*rollouts.FeatureFlag)
+
+		if _, ok := nameIndex[flag.Name] ; ok {
+			flags = append(flags, flag)
+		}
+	}
+
+	return iterators.NewSlice(flags)
+}
 
 func (s *InMemory) FindPilotsByFeatureFlag(ctx context.Context, ff *rollouts.FeatureFlag) frameless.Iterator {
 	table := s.TableFor(rollouts.Pilot{})

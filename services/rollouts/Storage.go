@@ -21,6 +21,7 @@ type Storage interface {
 
 type FlagFinder interface {
 	FindFlagByName(ctx context.Context, name string) (*FeatureFlag, error)
+	FindFlagsByName(ctx context.Context, names ...string) frameless.Iterator
 }
 
 type PilotFinder interface {
