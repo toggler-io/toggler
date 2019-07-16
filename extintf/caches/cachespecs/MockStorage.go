@@ -136,6 +136,25 @@ func (mr *MockStorageMockRecorder) FindFlagByName(ctx, name interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindFlagByName", reflect.TypeOf((*MockStorage)(nil).FindFlagByName), ctx, name)
 }
 
+// FindFlagsByName mocks base method
+func (m *MockStorage) FindFlagsByName(ctx context.Context, names ...string) frameless.Iterator {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range names {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "FindFlagsByName", varargs...)
+	ret0, _ := ret[0].(frameless.Iterator)
+	return ret0
+}
+
+// FindFlagsByName indicates an expected call of FindFlagsByName
+func (mr *MockStorageMockRecorder) FindFlagsByName(ctx interface{}, names ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, names...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindFlagsByName", reflect.TypeOf((*MockStorage)(nil).FindFlagsByName), varargs...)
+}
+
 // FindFlagPilotByExternalPilotID mocks base method
 func (m *MockStorage) FindFlagPilotByExternalPilotID(ctx context.Context, FeatureFlagID, ExternalPilotID string) (*rollouts.Pilot, error) {
 	m.ctrl.T.Helper()
