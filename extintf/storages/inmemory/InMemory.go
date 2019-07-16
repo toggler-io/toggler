@@ -18,10 +18,10 @@ type InMemory struct{ *memorystorage.Memory }
 func (s *InMemory) FindFlagsByName(ctx context.Context, names ...string) frameless.Iterator {
 	var flags []*rollouts.FeatureFlag
 
-	nameIndex := make(map[string]bool)
+	nameIndex := make(map[string]struct{})
 
 	for _, name := range names {
-		nameIndex[name] = true
+		nameIndex[name] = struct{}{}
 	}
 
 	for _, e := range s.TableFor(rollouts.FeatureFlag{}) {
