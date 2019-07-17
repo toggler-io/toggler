@@ -34,6 +34,125 @@ func TestFeatureFlagChecker(t *testing.T) {
 	s.Describe(`IsFeatureGloballyEnabled`, func(s *testcase.Spec) {
 		SpecFeatureFlagChecker_IsFeatureGloballyEnabledFor(s)
 	})
+
+	s.Describe(`GetPilotFlagStates`, func(s *testcase.Spec) {
+		SpecFeatureFlagChecker_GetPilotFlagStates(s)
+	})
+}
+
+func SpecFeatureFlagChecker_GetPilotFlagStates(s *testcase.Spec) {
+	subject := func(t *testcase.T) (map[string]bool, error) {
+		ctx := context.Background()
+		return featureFlagChecker(t).GetPilotFlagStates(ctx,
+			GetExternalPilotID(t), t.I(`flag names`).([]string)...)
+	}
+
+	stateIs := func(t testing.TB, states map[string]bool, key string, expectedValue bool) {
+		actual, ok := states[key]
+		require.True(t, ok)
+		require.Equal(t, expectedValue, actual)
+	}
+
+	cleanup := func(t *testcase.T) {
+		ctx := context.Background()
+		require.Nil(t, GetStorage(t).Truncate(ctx, rollouts.Pilot{}))
+		require.Nil(t, GetStorage(t).Truncate(ctx, rollouts.FeatureFlag{}))
+	}
+
+	s.Let(`flag names`, func(t *testcase.T) interface{} {
+		return []string{GetFeatureFlagName(t), `non-existent`}
+	})
+
+	s.Before(cleanup)
+	s.After(cleanup)
+
+	s.When(`no feature flag is set`, func(s *testcase.Spec) {
+		s.Before(func(t *testcase.T) {
+			require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
+		})
+
+		s.Then(`it will return with flipped off states`, func(t *testcase.T) {
+			states, err := subject(t)
+			require.Nil(t, err)
+			t.Log(states)
+			require.Equal(t, 2, len(states))
+			stateIs(t, states, GetFeatureFlagName(t), false)
+			stateIs(t, states, `non-existent`, false)
+		})
+	})
+
+	s.When(`some of the feature flag exists`, func(s *testcase.Spec) {
+		s.Before(func(t *testcase.T) {
+			require.Nil(t, GetStorage(t).Save(context.Background(), GetFeatureFlag(t)))
+		})
+
+		// fix the value, so the dependency sub context can work with an assumption
+		s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return int(42) })
+
+		s.And(`the pilot win the enrollment dice roll`, func(s *testcase.Spec) {
+			s.Let(`PseudoRandPercentage`, func(t *testcase.T) interface{} { return int(0) })
+
+			s.Then(`it is expected to receive switched ON state for the flag`, func(t *testcase.T) {
+				states, err := subject(t)
+				require.Nil(t, err)
+				stateIs(t, states, GetFeatureFlagName(t), true)
+			})
+
+			s.And(`the pilot is black listed`, func(s *testcase.Spec) {
+				s.Before(func(t *testcase.T) {
+					require.Nil(t, GetStorage(t).Save(context.Background(), &rollouts.Pilot{
+						ExternalID:    GetExternalPilotID(t),
+						FeatureFlagID: GetFeatureFlag(t).ID,
+						Enrolled:      false,
+					}))
+				})
+
+				s.Then(`the pilot flag state will be set to OFF`, func(t *testcase.T) {
+					states, err := subject(t)
+					require.Nil(t, err)
+					stateIs(t, states, GetFeatureFlagName(t), false)
+				})
+			})
+		})
+
+		s.And(`the pilot lose the enrollment dice roll`, func(s *testcase.Spec) {
+			s.Let(`PseudoRandPercentage`, func(t *testcase.T) interface{} { return int(100) })
+
+			s.Then(`it is expected to receive switched OFF state for the flag`, func(t *testcase.T) {
+				states, err := subject(t)
+				require.Nil(t, err)
+				stateIs(t, states, GetFeatureFlagName(t), false)
+			})
+
+			s.And(`the pilot is white listed`, func(s *testcase.Spec) {
+				s.Before(func(t *testcase.T) {
+					require.Nil(t, GetStorage(t).Save(context.Background(), &rollouts.Pilot{
+						ExternalID:    GetExternalPilotID(t),
+						FeatureFlagID: GetFeatureFlag(t).ID,
+						Enrolled:      true,
+					}))
+				})
+
+				s.Then(`the pilot flag state will be set to ON`, func(t *testcase.T) {
+					states, err := subject(t)
+					require.Nil(t, err)
+					stateIs(t, states, GetFeatureFlagName(t), true)
+				})
+			})
+		})
+
+		s.Then(`it will return with flipped states`, func(t *testcase.T) {
+			states, err := subject(t)
+			require.Nil(t, err)
+			require.Equal(t, 2, len(states))
+
+			for _, flagName := range t.I(`flag names`).([]string) {
+				if _, ok := states[flagName]; !ok {
+					t.Fatalf(`feature flag not included in the return states: %s`, flagName)
+				}
+			}
+		})
+	})
 }
 
 func SpecFeatureFlagChecker_IsFeatureGloballyEnabledFor(s *testcase.Spec) {

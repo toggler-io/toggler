@@ -2,6 +2,9 @@ package rollouts
 
 import (
 	"context"
+	"fmt"
+	"github.com/adamluzsi/frameless"
+	"github.com/adamluzsi/frameless/iterators"
 	"net/http"
 	"net/url"
 	"time"
@@ -54,13 +57,7 @@ func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, e
 		return false, nil
 	}
 
-	diceRollResultPercentage, err := checker.IDPercentageCalculator(externalPilotID, ff.Rollout.RandSeed)
-
-	if err != nil {
-		return false, err
-	}
-
-	return diceRollResultPercentage <= ff.Rollout.Strategy.Percentage, nil
+	return checker.isEnrolled(ff, externalPilotID)
 
 }
 
@@ -96,4 +93,61 @@ func (checker *FeatureFlagChecker) makeCustomDomainAPIDecisionCheck(featureFlagN
 
 	code := resp.StatusCode
 	return 200 <= code && code < 300, nil
+}
+
+func (checker *FeatureFlagChecker) GetPilotFlagStates(ctx context.Context, externalPilotID string, featureFlagNames ...string) (map[string]bool, error) {
+	states := make(map[string]bool)
+
+	for _, flagName := range featureFlagNames {
+		states[flagName] = false
+	}
+
+	flagIndexByID := make(map[string]*FeatureFlag)
+
+	flags := checker.Storage.FindFlagsByName(ctx, featureFlagNames...)
+
+	for flags.Next() {
+		var ff FeatureFlag
+		if err := flags.Decode(&ff); err != nil {
+			return nil, err
+		}
+		flagIndexByID[ff.ID] = &ff
+
+		enrollment, err := checker.isEnrolled(&ff, externalPilotID)
+
+		if err != nil {
+			return nil, err
+		}
+
+		fmt.Println(ff.Name, enrollment, ff)
+		states[ff.Name] = enrollment
+	}
+
+	pilotEntries := checker.Storage.FindPilotEntriesByExtID(ctx, externalPilotID)
+	pilotEntriesThatAreRelevant := iterators.Filter(pilotEntries, func(p frameless.Entity) bool {
+		_, ok := flagIndexByID[p.(Pilot).FeatureFlagID]
+		return ok
+	})
+
+	for pilotEntriesThatAreRelevant.Next() {
+		var p Pilot
+		if err := pilotEntriesThatAreRelevant.Decode(&p); err != nil {
+			return nil, err
+		}
+		states[flagIndexByID[p.FeatureFlagID].Name] = p.Enrolled
+	}
+
+	return states, nil
+}
+
+func (checker *FeatureFlagChecker) isEnrolled(ff *FeatureFlag, externalPilotID string) (bool, error) {
+	diceRollResultPercentage, err := checker.IDPercentageCalculator(externalPilotID, ff.Rollout.RandSeed)
+
+	fmt.Println(diceRollResultPercentage, ff.Rollout.Strategy.Percentage, err)
+
+	if err != nil {
+		return false, err
+	}
+
+	return diceRollResultPercentage <= ff.Rollout.Strategy.Percentage, nil
 }
