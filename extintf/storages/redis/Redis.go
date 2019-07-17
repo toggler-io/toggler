@@ -193,6 +193,13 @@ func (r *Redis) FindPilotsByFeatureFlag(ctx context.Context, ff *rollouts.Featur
 	})
 }
 
+func (r *Redis) FindPilotEntriesByExtID(ctx context.Context, pilotExtID string) rollouts.PilotEntries {
+	pilots := r.FindAll(ctx, rollouts.Pilot{})
+	return iterators.Filter(pilots, func(pilot frameless.Entity) bool {
+		return pilot.(rollouts.Pilot).ExternalID == pilotExtID
+	})
+}
+
 func (r *Redis) FindTokenBySHA512Hex(ctx context.Context, sha512hex string) (*security.Token, error) {
 	tokens := r.FindAll(ctx, security.Token{})
 	tokensBySHA512 := iterators.Filter(tokens, func(token frameless.Entity) bool {

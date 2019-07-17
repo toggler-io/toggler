@@ -194,13 +194,6 @@ func (pg *Postgres) FindFlagByName(ctx context.Context, name string) (*rollouts.
 
 }
 
-const findFlagPilotByExternalPilotIDQuery = `
-SELECT id, feature_flag_id, external_id, enrolled 
-FROM "pilots"
-WHERE feature_flag_id = $1
-  AND external_id = $2
-`
-
 func (pg *Postgres) FindFlagPilotByExternalPilotID(ctx context.Context, FeatureFlagID, ExternalPilotID string) (*rollouts.Pilot, error) {
 	flagID, err := strconv.ParseInt(FeatureFlagID, 10, 64)
 
@@ -208,16 +201,15 @@ func (pg *Postgres) FindFlagPilotByExternalPilotID(ctx context.Context, FeatureF
 		return nil, nil
 	}
 
-	row := pg.DB.QueryRowContext(ctx, findFlagPilotByExternalPilotIDQuery, flagID, ExternalPilotID)
+	m := pilotMapper{}
+	q := fmt.Sprintf(`SELECT %s FROM "pilots" WHERE "feature_flag_id" = $1 AND "external_id" = $2`,
+		m.SelectClause())
+
+	row := pg.DB.QueryRowContext(ctx, q, flagID, ExternalPilotID)
 
 	var p rollouts.Pilot
 
-	err = row.Scan(
-		&p.ID,
-		&p.FeatureFlagID,
-		&p.ExternalID,
-		&p.Enrolled,
-	)
+	err = m.Map(row, &p)
 
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -230,14 +222,7 @@ func (pg *Postgres) FindFlagPilotByExternalPilotID(ctx context.Context, FeatureF
 	return &p, nil
 }
 
-const findPilotsByFeatureFlagQuery = `
-SELECT id, feature_flag_id, external_id, enrolled 
-FROM "pilots"
-WHERE feature_flag_id = $1
-`
-
 func (pg *Postgres) FindPilotsByFeatureFlag(ctx context.Context, ff *rollouts.FeatureFlag) frameless.Iterator {
-
 	if ff == nil {
 		return iterators.NewEmpty()
 	}
@@ -252,51 +237,15 @@ func (pg *Postgres) FindPilotsByFeatureFlag(ctx context.Context, ff *rollouts.Fe
 		return iterators.NewEmpty()
 	}
 
-	rows, err := pg.DB.QueryContext(ctx, findPilotsByFeatureFlagQuery, ffID)
+	m := pilotMapper{}
+	query := fmt.Sprintf(`SELECT %s FROM "pilots" WHERE "feature_flag_id" = $1`, m.SelectClause())
+	rows, err := pg.DB.QueryContext(ctx, query, ffID)
 
 	if err != nil {
 		return iterators.NewError(err)
 	}
 
-	receiver, sender := iterators.NewPipe()
-
-	go func() {
-		defer sender.Close()
-
-	wrk:
-		for rows.Next() {
-
-			var p rollouts.Pilot
-
-			err := rows.Scan(
-				&p.ID,
-				&p.FeatureFlagID,
-				&p.ExternalID,
-				&p.Enrolled,
-			)
-
-			if err == sql.ErrNoRows {
-				break wrk
-			}
-
-			if err != nil {
-				sender.Error(err)
-				break wrk
-			}
-
-			if err := sender.Encode(&p); err != nil {
-				sender.Error(err)
-				break wrk
-			}
-		}
-
-		if err := rows.Err(); err != nil {
-			sender.Error(err)
-		}
-
-	}()
-
-	return receiver
+	return iterators.NewSQLRows(rows, m)
 }
 
 const tokenFindByTokenStringQuery = `
@@ -330,6 +279,16 @@ func (pg *Postgres) FindTokenBySHA512Hex(ctx context.Context, token string) (*se
 	}
 
 	return &t, nil
+}
+
+func (pg *Postgres) FindPilotEntriesByExtID(ctx context.Context, pilotExtID string) rollouts.PilotEntries {
+	m := pilotMapper{}
+	q := fmt.Sprintf(`SELECT %s FROM "pilots" WHERE "external_id" = $1`, m.SelectClause())
+	rows, err := pg.DB.QueryContext(ctx, q, pilotExtID)
+	if err != nil {
+		return iterators.NewError(err)
+	}
+	return iterators.NewSQLRows(rows, m)
 }
 
 func (pg *Postgres) FindFlagsByName(ctx context.Context, flagNames ...string) frameless.Iterator {
@@ -465,22 +424,13 @@ func (pg *Postgres) featureFlagFindByID(ctx context.Context, flag *rollouts.Feat
 
 }
 
-const pilotFindByIDQuery = `
-SELECT id, feature_flag_id, external_id, enrolled 
-FROM "pilots" 
-WHERE id = $1;
-`
-
 func (pg *Postgres) pilotFindByID(ctx context.Context, pilot *rollouts.Pilot, id int64) (bool, error) {
-	row := pg.DB.QueryRowContext(ctx, pilotFindByIDQuery, id)
-	var p rollouts.Pilot
+	m := pilotMapper{}
+	query := fmt.Sprintf(`SELECT %s FROM "pilots" WHERE "id" = $1`, m.SelectClause())
+	row := pg.DB.QueryRowContext(ctx, query, id)
 
-	err := row.Scan(
-		&p.ID,
-		&p.FeatureFlagID,
-		&p.ExternalID,
-		&p.Enrolled,
-	)
+	var p rollouts.Pilot
+	err := m.Map(row, &p)
 
 	if err == sql.ErrNoRows {
 		return false, nil
@@ -534,11 +484,6 @@ func (pg *Postgres) tokenFindByID(ctx context.Context, token *security.Token, id
 	return true, nil
 }
 
-const featureFlagFindAllQuery = `
-SELECT id, name, rollout_rand_seed, rollout_strategy_percentage, rollout_strategy_decision_logic_api 
-FROM feature_flags 
-`
-
 func (pg *Postgres) featureFlagFindAll(ctx context.Context) frameless.Iterator {
 	mapper := featureFlagMapper{}
 	query := fmt.Sprintf(`%s FROM "feature_flags"`, mapper.SelectClause())
@@ -550,57 +495,15 @@ func (pg *Postgres) featureFlagFindAll(ctx context.Context) frameless.Iterator {
 	return iterators.NewSQLRows(rows, mapper)
 }
 
-const pilotFindAllQuery = `
-SELECT id, feature_flag_id, external_id, enrolled 
-FROM "pilots"
-`
-
 func (pg *Postgres) pilotFindAll(ctx context.Context) frameless.Iterator {
-	rows, err := pg.DB.QueryContext(ctx, pilotFindAllQuery)
-
+	m := pilotMapper{}
+	q := fmt.Sprintf(`SELECT %s FROM "pilots"`, m.SelectClause())
+	rows, err := pg.DB.QueryContext(ctx, q)
 	if err != nil {
 		return iterators.NewError(err)
 	}
 
-	receiver, sender := iterators.NewPipe()
-
-	go func() {
-		defer sender.Close()
-
-	wrk:
-		for rows.Next() {
-
-			var p rollouts.Pilot
-
-			err := rows.Scan(
-				&p.ID,
-				&p.FeatureFlagID,
-				&p.ExternalID,
-				&p.Enrolled,
-			)
-
-			if err == sql.ErrNoRows {
-				break wrk
-			}
-
-			if err != nil {
-				sender.Error(err)
-				break wrk
-			}
-
-			if err := sender.Encode(&p); err != nil {
-				sender.Error(err)
-				break wrk
-			}
-		}
-
-		if err := rows.Err(); err != nil {
-			sender.Error(err)
-		}
-
-	}()
-
-	return receiver
+	return iterators.NewSQLRows(rows, m)
 }
 
 const tokenFindAllQuery = `
@@ -773,4 +676,28 @@ func (featureFlagMapper) Map(scanner iterators.SQLRowScanner, ptr frameless.Enti
 	}
 
 	return reflects.Link(&ff, ptr)
+}
+
+type pilotMapper struct{}
+
+func (pilotMapper) SelectClause() string {
+	const query = `id, feature_flag_id, external_id, enrolled`
+	return query
+}
+
+func (pilotMapper) Map(s iterators.SQLRowScanner, ptr frameless.Entity) error {
+	var p rollouts.Pilot
+
+	err := s.Scan(
+		&p.ID,
+		&p.FeatureFlagID,
+		&p.ExternalID,
+		&p.Enrolled,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return reflects.Link(&p, ptr)
 }

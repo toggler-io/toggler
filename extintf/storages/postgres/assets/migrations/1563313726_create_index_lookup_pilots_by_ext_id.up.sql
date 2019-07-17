@@ -1,0 +1,1 @@
+CREATE INDEX "lookup_pilots_by_ext_id" ON "pilots" USING btree ("external_id");

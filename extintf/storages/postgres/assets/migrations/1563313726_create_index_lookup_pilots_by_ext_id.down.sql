@@ -1,0 +1,1 @@
+DROP INDEX "lookup_pilots_by_ext_id";

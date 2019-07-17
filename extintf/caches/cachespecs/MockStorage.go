@@ -137,14 +137,14 @@ func (mr *MockStorageMockRecorder) FindFlagByName(ctx, name interface{}) *gomock
 }
 
 // FindFlagsByName mocks base method
-func (m *MockStorage) FindFlagsByName(ctx context.Context, names ...string) frameless.Iterator {
+func (m *MockStorage) FindFlagsByName(ctx context.Context, names ...string) rollouts.FlagEntries {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range names {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "FindFlagsByName", varargs...)
-	ret0, _ := ret[0].(frameless.Iterator)
+	ret0, _ := ret[0].(rollouts.FlagEntries)
 	return ret0
 }
 
@@ -182,6 +182,20 @@ func (m *MockStorage) FindPilotsByFeatureFlag(ctx context.Context, ff *rollouts.
 func (mr *MockStorageMockRecorder) FindPilotsByFeatureFlag(ctx, ff interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindPilotsByFeatureFlag", reflect.TypeOf((*MockStorage)(nil).FindPilotsByFeatureFlag), ctx, ff)
+}
+
+// FindPilotEntriesByExtID mocks base method
+func (m *MockStorage) FindPilotEntriesByExtID(ctx context.Context, pilotExtID string) rollouts.PilotEntries {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindPilotEntriesByExtID", ctx, pilotExtID)
+	ret0, _ := ret[0].(rollouts.PilotEntries)
+	return ret0
+}
+
+// FindPilotEntriesByExtID indicates an expected call of FindPilotEntriesByExtID
+func (mr *MockStorageMockRecorder) FindPilotEntriesByExtID(ctx, pilotExtID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindPilotEntriesByExtID", reflect.TypeOf((*MockStorage)(nil).FindPilotEntriesByExtID), ctx, pilotExtID)
 }
 
 // FindTokenBySHA512Hex mocks base method

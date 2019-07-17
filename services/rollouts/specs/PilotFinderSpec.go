@@ -2,7 +2,8 @@ package specs
 
 import (
 	"context"
-	context2 "context"
+	"github.com/adamluzsi/frameless/iterators"
+	"math/rand"
 	"strconv"
 	"testing"
 
@@ -54,7 +55,7 @@ func (spec PilotFinderSpec) Test(t *testing.T) {
 			}
 
 			subject := func(t *testcase.T) frameless.Iterator {
-				return spec.Subject.FindPilotsByFeatureFlag(context2.TODO(), getFF(t))
+				return spec.Subject.FindPilotsByFeatureFlag(context.TODO(), getFF(t))
 			}
 
 			thenNoPilotsFound := func(s *testcase.Spec) {
@@ -85,7 +86,7 @@ func (spec PilotFinderSpec) Test(t *testing.T) {
 			s.When(`feature flag exists`, func(s *testcase.Spec) {
 				s.Let(`ff`, func(t *testcase.T) interface{} {
 					ff := &rollouts.FeatureFlag{Name: t.I(`flagName`).(string)}
-					require.Nil(t, spec.Subject.Save(context.Background(),ff))
+					require.Nil(t, spec.Subject.Save(context.Background(), ff))
 					return ff
 				})
 
@@ -96,7 +97,7 @@ func (spec PilotFinderSpec) Test(t *testing.T) {
 						expectedPilots := t.I(`expectedPilots`).([]*rollouts.Pilot)
 
 						for _, pilot := range expectedPilots {
-							require.Nil(t, spec.Subject.Save(context.Background(),pilot))
+							require.Nil(t, spec.Subject.Save(context.Background(), pilot))
 						}
 					})
 
@@ -143,7 +144,7 @@ func (spec PilotFinderSpec) Test(t *testing.T) {
 			const ExternalPublicPilotID = `42`
 
 			subject := func(t *testcase.T) (*rollouts.Pilot, error) {
-				return spec.Subject.FindFlagPilotByExternalPilotID(context2.TODO(), t.I(`featureFlagID`).(string), ExternalPublicPilotID)
+				return spec.Subject.FindFlagPilotByExternalPilotID(context.TODO(), t.I(`featureFlagID`).(string), ExternalPublicPilotID)
 			}
 
 			ThenNoPilotsFound := func(s *testcase.Spec) {
@@ -166,7 +167,7 @@ func (spec PilotFinderSpec) Test(t *testing.T) {
 				s.Let(`featureFlagID`, func(t *testcase.T) interface{} {
 					ff := &rollouts.FeatureFlag{Name: t.I(`flagName`).(string)}
 					ff.Rollout.Strategy.Percentage = 100
-					require.Nil(t, spec.Subject.Save(context.Background(),ff))
+					require.Nil(t, spec.Subject.Save(context.Background(), ff))
 					return ff.ID
 				})
 
@@ -177,7 +178,7 @@ func (spec PilotFinderSpec) Test(t *testing.T) {
 						require.Nil(t, spec.Subject.Truncate(context.Background(), rollouts.Pilot{}))
 						featureFlagID := t.I(`featureFlagID`).(string)
 						pilot := &rollouts.Pilot{FeatureFlagID: featureFlagID, ExternalID: ExternalPublicPilotID}
-						require.Nil(t, spec.Subject.Save(context.Background(),pilot))
+						require.Nil(t, spec.Subject.Save(context.Background(), pilot))
 					})
 
 					s.Then(`asd`, func(t *testcase.T) {
@@ -191,6 +192,71 @@ func (spec PilotFinderSpec) Test(t *testing.T) {
 					})
 				})
 			})
+		})
+
+		s.Describe(`FindPilotEntriesByExtID`, func(s *testcase.Spec) {
+			subject := func(t *testcase.T) frameless.Iterator {
+				ctx := context.Background()
+				return spec.Subject.FindPilotEntriesByExtID(ctx, GetExternalPilotID(t))
+			}
+
+			s.Let(`ExternalPilotID`, func(t *testcase.T) interface{} {
+				return ExampleExternalPilotID()
+			})
+
+			s.When(`there is no pilot records`, func(s *testcase.Spec) {
+				s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.Truncate(context.Background(), rollouts.Pilot{})) })
+
+				s.Then(`it will return an empty result set`, func(t *testcase.T) {
+					count, err := iterators.Count(subject(t))
+					require.Nil(t, err)
+					require.Equal(t, 0, count)
+				})
+			})
+
+			s.When(`the given pilot id has no records`, func(s *testcase.Spec) {
+				s.Before(func(t *testcase.T) {
+					ctx := context.Background()
+					extID := ExampleExternalPilotID()
+					require.Nil(t, spec.Subject.Save(ctx, &rollouts.Pilot{FeatureFlagID: `1`, ExternalID: extID, Enrolled: true}))
+					require.Nil(t, spec.Subject.Save(ctx, &rollouts.Pilot{FeatureFlagID: `2`, ExternalID: extID, Enrolled: true}))
+					require.Nil(t, spec.Subject.Save(ctx, &rollouts.Pilot{FeatureFlagID: `3`, ExternalID: extID, Enrolled: false}))
+				})
+
+				s.Then(`it will return an empty result set`, func(t *testcase.T) {
+					count, err := iterators.Count(subject(t))
+					require.Nil(t, err)
+					require.Equal(t, 0, count)
+				})
+			})
+
+			s.When(`pilot ext id has multiple records`, func(s *testcase.Spec) {
+				s.Let(`expected pilots`, func(t *testcase.T) interface{} {
+					var pilots []rollouts.Pilot
+
+					for i := 0; i < rand.Intn(5)+5; i++ {
+						pilot := rollouts.Pilot{
+							FeatureFlagID: strconv.Itoa(i),
+							ExternalID:    GetExternalPilotID(t),
+							Enrolled:      rand.Intn(1) == 0,
+						}
+
+						require.Nil(t, spec.Subject.Save(context.Background(), &pilot))
+						pilots = append(pilots, pilot)
+					}
+
+					return pilots
+				})
+
+				s.Before(func(t *testcase.T) { t.I(`expected pilots`) }) // eager load let value
+
+				s.Then(`it will return all of them`, func(t *testcase.T) {
+					var pilots []rollouts.Pilot
+					require.Nil(t, iterators.CollectAll(subject(t), &pilots))
+					require.ElementsMatch(t, t.I(`expected pilots`).([]rollouts.Pilot), pilots)
+				})
+			})
+
 		})
 	})
 }

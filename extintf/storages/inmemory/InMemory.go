@@ -15,6 +15,20 @@ func New() *InMemory {
 
 type InMemory struct{ *memorystorage.Memory }
 
+func (s *InMemory) FindPilotEntriesByExtID(ctx context.Context, pilotExtID string) rollouts.PilotEntries {
+	var pilots []*rollouts.Pilot
+
+	for _, e := range s.TableFor(rollouts.Pilot{}) {
+		p := e.(*rollouts.Pilot)
+
+		if p.ExternalID == pilotExtID {
+			pilots = append(pilots, p)
+		}
+	}
+
+	return iterators.NewSlice(pilots)
+}
+
 func (s *InMemory) FindFlagsByName(ctx context.Context, names ...string) frameless.Iterator {
 	var flags []*rollouts.FeatureFlag
 

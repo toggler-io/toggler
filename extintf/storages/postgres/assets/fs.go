@@ -213,7 +213,7 @@ var _escData = map[string]*_escFile{
 		name:    "1561423897_create_feature_flags_table.down.sql",
 		local:   "assets/migrations/1561423897_create_feature_flags_table.down.sql",
 		size:    69,
-		modtime: 1562626143,
+		modtime: 1562852312,
 		compressed: `
 H4sIAAAAAAAC/3IJ8g9Q8PRzcY1QUMrJz8+OT0tNLCktSo1Py0lML45PqozPS8xNVbLmAisMcXTycVVQ
 QlGjZM0FCAAA//9Q/JbBRQAAAA==
@@ -224,7 +224,7 @@ QlGjZM0FCAAA//9Q/JbBRQAAAA==
 		name:    "1561423897_create_feature_flags_table.up.sql",
 		local:   "assets/migrations/1561423897_create_feature_flags_table.up.sql",
 		size:    560,
-		modtime: 1562626143,
+		modtime: 1562852312,
 		compressed: `
 H4sIAAAAAAAC/4SRwW7qMBBF9/mKK1YgPfZPYhWohawG0yaOBCvLIUNiNdg0dqry91VSWhGJCi9nfI7u
 zKxSFksGGS8ThsmRdOhaUsdGV34STSMAMCUevoylPE4gthIiTxK8pHwTp3s8s/2/QWL1iR5JJNtJ4Ffy
@@ -239,7 +239,7 @@ AAA=
 		name:    "1562536633_create_pilots_table.down.sql",
 		local:   "assets/migrations/1562536633_create_pilots_table.down.sql",
 		size:    84,
-		modtime: 1562626143,
+		modtime: 1562852312,
 		compressed: `
 H4sIAAAAAAAC/3IJ8g9Q8PRzcY1QUMrJz88uLYgvyMzJLymOT6qMT0tNLCktSo1Py0lMj89MiU/MS4lP
 rShJLcpLzInPTFGy5gJrD3F08nFVUILoU7LmAgQAAP//3ZtLD1QAAAA=
@@ -250,7 +250,7 @@ rShJLcpLzInPTFGy5gJrD3F08nFVUILoU7LmAgQAAP//3ZtLD1QAAAA=
 		name:    "1562536633_create_pilots_table.up.sql",
 		local:   "assets/migrations/1562536633_create_pilots_table.up.sql",
 		size:    381,
-		modtime: 1562626143,
+		modtime: 1562852312,
 		compressed: `
 H4sIAAAAAAAC/4SQQWvDIBiG7/6Kj55a6D/oyXRSBPlkiYHePsxih8xpZw1s/34kKSPJZV59fN/H91wL
 bgQYXikBu7sPqTx2bM8AAHwPq1PJSyNqyRWgNoCtUseJuzlbhuzoFuw7+X7kJJrxZs257+JytIGewUZc
@@ -263,7 +263,7 @@ zZy84WJOIbi/9kprJTiuuAk8a2xMzceyyZyG6L/oLX12PtriU4QW5WsrYL9RPC5dDuxwYuw5hMQXcYWQ
 		name:    "1562584482_create_tokens_table.down.sql",
 		local:   "assets/migrations/1562584482_create_tokens_table.down.sql",
 		size:    63,
-		modtime: 1562626143,
+		modtime: 1562852312,
 		compressed: `
 H4sIAAAAAAAC/3IJ8g9Q8PRzcY1QUMrJz88uLYgvyc9OzSuOT6qEsOJLUitKlKy5wCpDHJ18XBWUIEqU
 rLkAAQAA//97cxxbPwAAAA==
@@ -274,12 +274,34 @@ rLkAAQAA//97cxxbPwAAAA==
 		name:    "1562584482_create_tokens_table.up.sql",
 		local:   "assets/migrations/1562584482_create_tokens_table.up.sql",
 		size:    334,
-		modtime: 1562626143,
+		modtime: 1562852312,
 		compressed: `
 H4sIAAAAAAAC/3yQQUsDMRCF7/kVj55a8KLgqae0DiWwndXdWShewpYNGCob3SSo/166jYI9OJcZmO89
 3sy2IS0E0ZuKsEjh5Ma4UEsFAH5AqY3ZtdQYXQHgWsBdVd3MTHzp72/vzpPQQX74v0z4GN1ksx/+YXyM
 2Q22TxCzp1b0/lGer5ghT33yYZzzGJZrnxna1txKo8/ryzV2btZHm0f/jo7NU0dYXoKv1GqtVHmC4Qc6
 4DWEU36zRXz8KvrkPhNqLqboWsM7HNPk3K/XWn0HAAD//+wxzmJOAQAA
+`,
+	},
+
+	"/1563313726_create_index_lookup_pilots_by_ext_id.down.sql": {
+		name:    "1563313726_create_index_lookup_pilots_by_ext_id.down.sql",
+		local:   "assets/migrations/1563313726_create_index_lookup_pilots_by_ext_id.down.sql",
+		size:    37,
+		modtime: 1563313769,
+		compressed: `
+H4sIAAAAAAAC/3IJ8g9Q8PRzcY1QUMrJz88uLYgvyMzJLymOT6qMT60oic9MUbIGBAAA//8cIMYUJQAA
+AA==
+`,
+	},
+
+	"/1563313726_create_index_lookup_pilots_by_ext_id.up.sql": {
+		name:    "1563313726_create_index_lookup_pilots_by_ext_id.up.sql",
+		local:   "assets/migrations/1563313726_create_index_lookup_pilots_by_ext_id.up.sql",
+		size:    79,
+		modtime: 1563313831,
+		compressed: `
+H4sIAAAAAAAC/3IOcnUMcVXw9HNxjVBQysnPzy4tiC/IzMkvKY5PqoxPrSiJz0xRUvD3U1CCiCophAZ7
++rkrJJUUpaYqaCilVpSkFuUl5oCUaVoDAgAA//9FwpxlTwAAAA==
 `,
 	},
 
@@ -299,5 +321,7 @@ var _escDirs = map[string][]os.FileInfo{
 		_escData["/1562536633_create_pilots_table.up.sql"],
 		_escData["/1562584482_create_tokens_table.down.sql"],
 		_escData["/1562584482_create_tokens_table.up.sql"],
+		_escData["/1563313726_create_index_lookup_pilots_by_ext_id.down.sql"],
+		_escData["/1563313726_create_index_lookup_pilots_by_ext_id.up.sql"],
 	},
 }
