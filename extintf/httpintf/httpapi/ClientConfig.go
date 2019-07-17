@@ -30,16 +30,10 @@ func (sm *ServeMux) ClientConfig(w http.ResponseWriter, r *http.Request) {
 		requestData.Features = append(requestData.Features, q[`feature[]`]...)
 	}
 
-	states := make(map[string]bool)
+	states, err := sm.UseCases.GetPilotFlagStates(r.Context(), requestData.PilotID, requestData.Features...)
 
-	for _, feature := range requestData.Features {
-
-		state, err := sm.UseCases.IsFeatureEnabledFor(feature, requestData.PilotID)
-		if handleError(w, err, http.StatusInternalServerError) {
-			return
-		}
-
-		states[feature] = state
+	if handleError(w, err , http.StatusInternalServerError) {
+		return
 	}
 
 	serveJSON(w, ClientConfigResponseBody{States: states})
