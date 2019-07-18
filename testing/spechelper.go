@@ -53,6 +53,10 @@ func SetupSpecCommonVariables(s *testcase.Spec) {
 		return ff
 	})
 
+	s.Let(`ctx`, func(t *testcase.T) interface{} {
+		return context.Background()
+	})
+
 	SetupSpecTokenVariables(s)
 
 }
@@ -102,6 +106,10 @@ func GetFeatureFlagName(t *testcase.T) string {
 
 func GetStorage(t *testcase.T) *TestStorage {
 	return t.I(`TestStorage`).(*TestStorage)
+}
+
+func CTX(t *testcase.T) context.Context {
+	return t.I(`ctx`).(context.Context)
 }
 
 func GetFeatureFlag(t *testcase.T) *rollouts.FeatureFlag {

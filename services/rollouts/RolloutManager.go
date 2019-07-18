@@ -123,9 +123,40 @@ func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context,
 
 }
 
+//TODO: replace with Tx
 func (manager *RolloutManager) DeleteFeatureFlag(ctx context.Context, id string) error {
 	if id == `` {
 		return frameless.ErrIDRequired
+	}
+
+	var ff FeatureFlag
+	found, err := manager.Storage.FindByID(ctx, &ff, id)
+
+	if err != nil {
+		return err
+	}
+
+	if !found {
+		return frameless.ErrNotFound
+	}
+
+	pilots := manager.Storage.FindPilotsByFeatureFlag(ctx, &ff)
+	defer pilots.Close()
+
+	for pilots.Next() {
+		var pilot Pilot
+
+		if err := pilots.Decode(&pilot); err != nil {
+			return err
+		}
+
+		if err := manager.Storage.DeleteByID(ctx, pilot, pilot.ID); err != nil {
+			return err
+		}
+	}
+
+	if err := pilots.Err(); err != nil {
+		return err
 	}
 
 	return manager.Storage.DeleteByID(ctx, FeatureFlag{}, id)

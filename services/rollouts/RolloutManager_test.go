@@ -87,6 +87,40 @@ func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
 				require.NotEmpty(t, id)
 				require.Nil(t, subject(t))
 			})
+
+			s.And(`there are pilots manually set for the feature`, func(s *testcase.Spec) {
+				s.Before(func(t *testcase.T) {
+					require.Nil(t, manager(t).SetPilotEnrollmentForFeature(CTX(t), t.I(`flag ID`).(string), ExampleExternalPilotID(), true))
+					require.Nil(t, manager(t).SetPilotEnrollmentForFeature(CTX(t), t.I(`flag ID`).(string), ExampleExternalPilotID(), false))
+				})
+
+				s.Then(`it will remove the pilots as well for the feature`, func(t *testcase.T) {
+					require.Nil(t, subject(t))
+					pilotCount, err := iterators.Count(GetStorage(t).FindAll(CTX(t), rollouts.Pilot{}))
+					require.Nil(t, err)
+					require.Equal(t, 0, pilotCount)
+				})
+
+				s.And(`if other flags have pilots enrolled as well`, func(s *testcase.Spec) {
+					s.Before(func(t *testcase.T) {
+						othFlag := *GetFeatureFlag(t)
+						othFlag.Name = `oth flag`
+						othFlag.ID = ``
+
+						require.Nil(t, GetStorage(t).Save(CTX(t), &othFlag))
+						require.Nil(t, manager(t).SetPilotEnrollmentForFeature(CTX(t), othFlag.ID, ExampleExternalPilotID(), true))
+						require.Nil(t, manager(t).SetPilotEnrollmentForFeature(CTX(t), othFlag.ID, ExampleExternalPilotID(), false))
+					})
+
+					s.Then(`they will be unaffected by the subject flag removal`, func(t *testcase.T) {
+						require.Nil(t, subject(t))
+						pilotCount, err := iterators.Count(GetStorage(t).FindAll(CTX(t), rollouts.Pilot{}))
+
+						require.Nil(t, err)
+						require.Equal(t, 2, pilotCount)
+					})
+				})
+			})
 		})
 
 	})
