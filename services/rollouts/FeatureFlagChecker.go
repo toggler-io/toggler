@@ -2,7 +2,6 @@ package rollouts
 
 import (
 	"context"
-	"fmt"
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
 	"net/http"
@@ -119,7 +118,6 @@ func (checker *FeatureFlagChecker) GetPilotFlagStates(ctx context.Context, exter
 			return nil, err
 		}
 
-		fmt.Println(ff.Name, enrollment, ff)
 		states[ff.Name] = enrollment
 	}
 
@@ -142,12 +140,8 @@ func (checker *FeatureFlagChecker) GetPilotFlagStates(ctx context.Context, exter
 
 func (checker *FeatureFlagChecker) isEnrolled(ff *FeatureFlag, externalPilotID string) (bool, error) {
 	diceRollResultPercentage, err := checker.IDPercentageCalculator(externalPilotID, ff.Rollout.RandSeed)
-
-	fmt.Println(diceRollResultPercentage, ff.Rollout.Strategy.Percentage, err)
-
 	if err != nil {
 		return false, err
 	}
-
 	return diceRollResultPercentage <= ff.Rollout.Strategy.Percentage, nil
 }
