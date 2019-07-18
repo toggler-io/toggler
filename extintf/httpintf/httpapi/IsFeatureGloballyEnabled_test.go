@@ -48,7 +48,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 
 		s.And(`flag is not global`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				UpdateFeatureFlagRolloutPercentage(t, GetFeatureFlagName(t), 50)
+				UpdateFeatureFlagRolloutPercentage(t, GetFeatureFlagName(t), 99)
 			})
 
 			s.Then(`the request will be marked as forbidden`, func(t *testcase.T) {
@@ -69,7 +69,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 	s.When(`params sent trough query string content`, func(s *testcase.Spec) {
 
 		s.Let(`request`, func(t *testcase.T) interface{} {
-			u, err := url.Parse(`/feature/is-globally-enabled.json`)
+			u, err := url.Parse(`/rollout/is-globally-enabled.json`)
 			require.Nil(t, err)
 
 			q := u.Query()
@@ -86,7 +86,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 	s.When(`params sent trough json body content`, func(s *testcase.Spec) {
 
 		s.Let(`request`, func(t *testcase.T) interface{} {
-			u, err := url.Parse(`/feature/is-globally-enabled.json`)
+			u, err := url.Parse(`/rollout/is-globally-enabled.json`)
 			require.Nil(t, err)
 
 			payload := bytes.NewBuffer([]byte{})

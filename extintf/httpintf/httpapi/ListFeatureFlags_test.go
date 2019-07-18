@@ -29,7 +29,7 @@ func TestServeMux_ListFeatureFlags(t *testing.T) {
 	SetupSpecCommonVariables(s)
 
 	s.Let(`request`, func(t *testcase.T) interface{} {
-		u, err := url.Parse(`/feature/flag/list.json`)
+		u, err := url.Parse(`/rollout/flag/list.json`)
 		require.Nil(t, err)
 
 		values := u.Query()

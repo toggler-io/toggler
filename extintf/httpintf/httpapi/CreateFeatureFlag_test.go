@@ -39,7 +39,7 @@ func TestServeMux_CreateFeatureFlag(t *testing.T) {
 	})
 
 	s.Let(`request`, func(t *testcase.T) interface{} {
-		u, err := url.Parse(`/feature/flag` + t.I(`http path`).(string))
+		u, err := url.Parse(`/rollout/flag` + t.I(`http path`).(string))
 		require.Nil(t, err)
 
 		values := u.Query()

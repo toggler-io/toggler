@@ -14,7 +14,7 @@ type ClientConfigResponseBody struct {
 	States map[string]bool `json:"states"`
 }
 
-func (sm *ServeMux) ClientConfig(w http.ResponseWriter, r *http.Request) {
+func (sm *ServeMux) RolloutConfig(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	payloadDecoder := json.NewDecoder(r.Body)
 

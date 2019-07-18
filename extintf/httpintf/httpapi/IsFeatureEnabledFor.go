@@ -10,7 +10,7 @@ type IsFeatureEnabledForReqBody struct {
 	PilotID string `json:"id"`
 }
 
-// swagger:operation GET /api/v1/feature/is-enabled.json is-enabled
+// swagger:operation GET /rollout/is-feature-enabled.json is-feature-enabled
 //
 // Returns a single flag state
 // ---

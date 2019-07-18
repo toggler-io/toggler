@@ -42,7 +42,7 @@ func TestServeMux_SetPilotEnrollmentForFeature(t *testing.T) {
 	})
 
 	s.Let(`request`, func(t *testcase.T) interface{} {
-		u, err := url.Parse(`/feature/flag/set-enrollment-manually.json`)
+		u, err := url.Parse(`/rollout/flag/set-enrollment-manually.json`)
 		require.Nil(t, err)
 
 		values := u.Query()

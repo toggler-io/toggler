@@ -69,7 +69,7 @@ func TestServeMux_ClientConfig(t *testing.T) {
 		s.Context(`query string`, func(s *testcase.Spec) {
 			s.And(`the feature query string key`, func(s *testcase.Spec) {
 				s.Let(`request`, func(t *testcase.T) interface{} {
-					u, err := url.Parse(`/client/config.json`)
+					u, err := url.Parse(`/rollout/config.json`)
 					require.Nil(t, err)
 
 					q := u.Query()
@@ -101,7 +101,7 @@ func TestServeMux_ClientConfig(t *testing.T) {
 
 		s.Context(`payload serialized as json`, func(s *testcase.Spec) {
 			s.Let(`request`, func(t *testcase.T) interface{} {
-				u, err := url.Parse(`/client/config.json`)
+				u, err := url.Parse(`/rollout/config.json`)
 				require.Nil(t, err)
 				payload := bytes.NewBuffer([]byte{})
 				jsonenc := json.NewEncoder(payload)

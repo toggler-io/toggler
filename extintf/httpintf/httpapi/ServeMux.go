@@ -14,20 +14,19 @@ import (
 
 func NewServeMux(uc *usecases.UseCases) *ServeMux {
 	mux := &ServeMux{ServeMux: http.NewServeMux(), UseCases: uc}
-	featureAPI := buildFeatureAPI(mux)
-	flagsAPI := buildFlagAPI(mux)
 
-	mux.HandleFunc(`/client/config.json`, mux.ClientConfig)
-	mux.Handle(`/feature/`, http.StripPrefix(`/feature`, featureAPI))
-	featureAPI.Handle(`/flag/`, http.StripPrefix(`/flag`, flagsAPI))
+	featureAPI := buildFeatureAPI(mux)
+	mux.Handle(`/rollout/`, http.StripPrefix(`/rollout`, featureAPI))
 
 	return mux
 }
 
 func buildFeatureAPI(handlers *ServeMux) *http.ServeMux {
 	mux := http.NewServeMux()
+	mux.Handle(`/config.json`, http.HandlerFunc(handlers.RolloutConfig))
 	mux.Handle(`/is-enabled.json`, http.HandlerFunc(handlers.IsFeatureEnabledFor))
 	mux.Handle(`/is-globally-enabled.json`, http.HandlerFunc(handlers.IsFeatureGloballyEnabled))
+	mux.Handle(`/flag/`, http.StripPrefix(`/flag`, buildFlagAPI(handlers)))
 	return mux
 }
 

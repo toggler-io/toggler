@@ -171,16 +171,29 @@ The token cannot be regained if it is not saved after token creation.
 
 #### Calling the API
 
-checking a flag individually for
+example calls to get started easily
+
+##### checking rollout related flags in one request:
+
 ```bash
-curl -X GET 'http://localhost:8080/api/v1/feature/is-enabled.json' \
+curl -X GET 'http://localhost:8080/api/v1/rollout/config.json?id=pilotExtID&feature=newFeature' 
+#> {"states":{"newFeature":false}}
+
+curl -X GET 'http://localhost:8080/api/v1/rollout/config.json' \
+    -d '{"id":"x", "features": ["a", "b", "c"]}' 
+#> {"states":{"a":false,"b":false,"c":false}}
+```
+
+##### checking a flag individually for
+```bash
+curl -X GET 'http://localhost:8080/api/v1/rollout/is-enabled.json' \
     -d '{"feature":"myfeature", "id":"public-uniq-id-of-four-user"}'
 #> {"enrollment":false}
 ```
 
-checking a flag is globally enabled
+##### checking a flag is globally enabled
 ```bash
-curl -X GET 'http://localhost:8080/api/v1/feature/is-globally-enabled.json?feature=myfeature' \
+curl -X GET 'http://localhost:8080/api/v1/rollout/is-globally-enabled.json?feature=myfeature' \
     -d '{"feature":"myfeature", "id":"public-uniq-id-of-four-user"}'
 #> {"enrollment":false}
 ```
