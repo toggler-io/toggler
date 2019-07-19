@@ -213,9 +213,7 @@ func addNeededOverlayPackages(cfg *Config, driver driver, response *responseDedu
 	if err != nil {
 		return err
 	}
-	if err := addNeededOverlayPackages(cfg, driver, response, needPkgs); err != nil {
-		return err
-	}
+	addNeededOverlayPackages(cfg, driver, response, needPkgs)
 	return nil
 }
 
@@ -230,10 +228,8 @@ func runContainsQueries(cfg *Config, driver driver, response *responseDeduper, q
 			return fmt.Errorf("could not determine absolute path of file= query path %q: %v", query, err)
 		}
 		dirResponse, err := driver(cfg, pattern)
-		if err != nil || (len(dirResponse.Packages) == 1 && len(dirResponse.Packages[0].Errors) == 1) {
-			// There was an error loading the package. Try to load the file as an ad-hoc package.
-			// Usually the error will appear in a returned package, but may not if we're in modules mode
-			// and the ad-hoc is located outside a module.
+		if err != nil {
+			// Couldn't find a package for the directory. Try to load the file as an ad-hoc package.
 			var queryErr error
 			dirResponse, queryErr = driver(cfg, query)
 			if queryErr != nil {
