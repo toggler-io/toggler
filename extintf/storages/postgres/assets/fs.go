@@ -287,7 +287,7 @@ H4sIAAAAAAAC/3yQQUsDMRCF7/kVj55a8KLgqae0DiWwndXdWShewpYNGCob3SSo/166jYI9OJcZmO89
 		name:    "1563313726_create_index_lookup_pilots_by_ext_id.down.sql",
 		local:   "assets/migrations/1563313726_create_index_lookup_pilots_by_ext_id.down.sql",
 		size:    37,
-		modtime: 1563313769,
+		modtime: 1563484215,
 		compressed: `
 H4sIAAAAAAAC/3IJ8g9Q8PRzcY1QUMrJz88uLYgvyMzJLymOT6qMT60oic9MUbIGBAAA//8cIMYUJQAA
 AA==
@@ -298,7 +298,7 @@ AA==
 		name:    "1563313726_create_index_lookup_pilots_by_ext_id.up.sql",
 		local:   "assets/migrations/1563313726_create_index_lookup_pilots_by_ext_id.up.sql",
 		size:    79,
-		modtime: 1563313831,
+		modtime: 1563484215,
 		compressed: `
 H4sIAAAAAAAC/3IOcnUMcVXw9HNxjVBQysnPzy4tiC/IzMkvKY5PqoxPrSiJz0xRUvD3U1CCiCophAZ7
 +rkrJJUUpaYqaCilVpSkFuUl5oCUaVoDAgAA//9FwpxlTwAAAA==

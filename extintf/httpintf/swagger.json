@@ -1,0 +1,58 @@
+{
+  "swagger": "2.0",
+  "paths": {
+    "/api/v1/rollout/is-enabled.json": {
+      "get": {
+        "description": "Reply back whether the feature for a given pilot id is enabled or not.\nBy Default, this will be determined whether the flag exist,\nthe pseudo random dice roll enrolls the pilot,\nor if there any manually set enrollment status for the pilot.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "feature-flag",
+          "pilot"
+        ],
+        "summary": "Check Rollout Feature Status For Pilot",
+        "operationId": "IsFeatureEnabled",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/enrollmentResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponseBody"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponseBody"
+          }
+        }
+      }
+    }
+  },
+  "responses": {
+    "errorResponseBody": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "description": "The constant code of the error that can be used for localisation",
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "Code",
+            "example": 401
+          },
+          "message": {
+            "description": "The message that describe the error to the developer who do the integration.\nNot meant to be propagated to the end-user.\nThe Message may change in the future, it it helps readability,\nplease do not rely on the content in any way other than just reading it.",
+            "type": "string",
+            "x-go-name": "Message"
+          }
+        }
+      }
+    }
+  }
+}
