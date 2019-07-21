@@ -54,8 +54,8 @@ func TestWebsocket(t *testing.T) {
 
 	s.When(`request has pilotID`, func(s *testcase.Spec) {
 		s.Let(`request`, func(t *testcase.T) interface{} {
-			return httpapi.IsFeatureEnabledForReqBody{
-				Feature: GetFeatureFlagName(t), PilotID: GetExternalPilotID(t)}
+			return httpapi.IsFeatureEnabledRequestPayload{Feature: GetFeatureFlagName(t),
+				PilotID: GetExternalPilotID(t)}
 		})
 
 		s.Before(func(t *testcase.T) {

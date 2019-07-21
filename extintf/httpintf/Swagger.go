@@ -5,6 +5,7 @@ import (
 )
 
 //go:generate swagger generate spec -o swagger.json
+//go:generate swagger validate swagger.json
 //go:generate esc -private -o ./swagger-assets.go -pkg httpintf ./swagger.json
 
 func HandleSwaggerJSON(w http.ResponseWriter, r *http.Request) {

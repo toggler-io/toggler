@@ -5,29 +5,13 @@ import (
 	"net/http"
 )
 
-type IsFeatureEnabledForReqBody struct {
+type IsFeatureEnabledRequestPayload struct {
 	Feature string `json:"feature"`
 	PilotID string `json:"id"`
 }
 
-/*
-	swagger:response enrollmentResponse
+type IsFeatureEnabledResponseBody = EnrollmentResponseBody
 
-		  content:
-		    application/json:
-		      examples:
-		        '0':
-		          value: |
-		            {"enrollment":false}
-
- */
-
-type EnrollmentResponse struct {
-	// The status that tells the calller's enrollment state in the feature if the enrollment.
-	// in: body
-	// example: true
-	Enrollment bool `json:"enrollment"`
-}
 /*
 
 	swagger:route GET /api/v1/rollout/is-enabled.json feature-flag pilot IsFeatureEnabled
@@ -49,8 +33,8 @@ type EnrollmentResponse struct {
 
 		Responses:
 		  200: enrollmentResponse
-		  400: errorResponseBody
-		  500: errorResponseBody
+		  400: errorResponse
+		  500: errorResponse
 
 */
 
@@ -75,9 +59,7 @@ func (sm *ServeMux) IsFeatureEnabledFor(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	var resp struct {
-		Enrollment bool `json:"enrollment"`
-	}
+	var resp IsFeatureEnabledResponseBody
 	resp.Enrollment = enrollment
 
 	serveJSON(w, &resp)
@@ -86,7 +68,7 @@ func (sm *ServeMux) IsFeatureEnabledFor(w http.ResponseWriter, r *http.Request) 
 
 func parseJSONPayloadForIsFeatureenabled(r *http.Request, featureName, pilotID *string) error {
 	jsondec := json.NewDecoder(r.Body)
-	var payload IsFeatureEnabledForReqBody
+	var payload IsFeatureEnabledRequestPayload
 	if err := jsondec.Decode(&payload); err != nil {
 		return err
 	}

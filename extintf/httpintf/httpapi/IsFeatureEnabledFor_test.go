@@ -93,7 +93,7 @@ func TestServeMux_IsFeatureEnabledFor(t *testing.T) {
 			require.Nil(t, err)
 			payload := bytes.NewBuffer([]byte{})
 			jsonenc := json.NewEncoder(payload)
-			require.Nil(t, jsonenc.Encode(httpapi.IsFeatureEnabledForReqBody{
+			require.Nil(t, jsonenc.Encode(httpapi.IsFeatureEnabledRequestPayload{
 				Feature: GetFeatureFlagName(t),
 				PilotID: GetExternalPilotID(t),
 			}))

@@ -92,7 +92,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 			payload := bytes.NewBuffer([]byte{})
 			jsonenc := json.NewEncoder(payload)
 
-			require.Nil(t, jsonenc.Encode(httpapi.IsFeatureGloballyEnabledPayload{
+			require.Nil(t, jsonenc.Encode(httpapi.IsFeatureGloballyEnabledRequestPayload{
 				Feature: GetFeatureFlagName(t),
 			}))
 
