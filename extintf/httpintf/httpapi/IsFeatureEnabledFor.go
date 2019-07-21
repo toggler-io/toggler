@@ -5,8 +5,23 @@ import (
 	"net/http"
 )
 
+// IsFeatureEnabledRequestParameters defines the parameters that
+// swagger:parameters IsFeatureEnabled
+type IsFeatureEnabledRequestParameters struct {
+	// in: body
+	Body IsFeatureEnabledRequestPayload
+}
+
 type IsFeatureEnabledRequestPayload struct {
+	// Feature is the Feature Flag name that is needed to be checked for enrollment
+	//
+	// required: true
+	// example: rollout-feature-flag
 	Feature string `json:"feature"`
+	// PilotID is the public unique ID of the pilot who's enrollment needs to be checked.
+	//
+	// required: true
+	// example: pilot-public-id
 	PilotID string `json:"id"`
 }
 
@@ -37,7 +52,6 @@ type IsFeatureEnabledResponseBody = EnrollmentResponseBody
 		  500: errorResponse
 
 */
-
 func (sm *ServeMux) IsFeatureEnabledFor(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var featureName, pilotID string

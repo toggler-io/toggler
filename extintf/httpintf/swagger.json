@@ -37,6 +37,15 @@
         ],
         "summary": "Check Rollout Feature Status For Pilot",
         "operationId": "IsFeatureEnabled",
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/IsFeatureEnabledRequestPayload"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "$ref": "#/responses/enrollmentResponse"
@@ -69,6 +78,15 @@
         ],
         "summary": "Check Rollout Feature Status for Global use",
         "operationId": "IsFeatureGloballyEnabled",
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/IsFeatureGloballyEnabledRequestPayload"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "$ref": "#/responses/enrollmentResponse"
@@ -78,6 +96,48 @@
           },
           "500": {
             "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/api/v1/ws": {
+      "get": {
+        "description": "The\nReply back whether the feature for a given pilot id is enabled or not.\nBy Default, this will be determined whether the flag exist,\nthe pseudo random dice roll enrolls the pilot,\nor if there any manually set enrollment status for the pilot.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "ws"
+        ],
+        "tags": [
+          "feature-flag",
+          "pilot",
+          "global",
+          "websocket"
+        ],
+        "summary": "Socket API to check Rollout Feature Flag Status",
+        "operationId": "Websocket",
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/WebsocketRequestPayload"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/enrollmentResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "503": {
+            "$ref": "#/responses/wsLoadBalanceErrResponse"
           }
         }
       }
@@ -122,6 +182,64 @@
         }
       },
       "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+    },
+    "IsFeatureEnabledRequestPayload": {
+      "type": "object",
+      "required": [
+        "feature",
+        "id"
+      ],
+      "properties": {
+        "feature": {
+          "description": "Feature is the Feature Flag name that is needed to be checked for enrollment",
+          "type": "string",
+          "x-go-name": "Feature",
+          "example": "rollout-feature-flag"
+        },
+        "id": {
+          "description": "PilotID is the public unique ID of the pilot who's enrollment needs to be checked.",
+          "type": "string",
+          "x-go-name": "PilotID",
+          "example": "pilot-public-id"
+        }
+      },
+      "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+    },
+    "IsFeatureGloballyEnabledRequestPayload": {
+      "type": "object",
+      "required": [
+        "feature"
+      ],
+      "properties": {
+        "feature": {
+          "description": "Feature is the Feature Flag name that is needed to be checked for enrollment",
+          "type": "string",
+          "x-go-name": "Feature",
+          "example": "rollout-feature-flag"
+        }
+      },
+      "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+    },
+    "WebsocketRequestPayload": {
+      "type": "object",
+      "required": [
+        "feature"
+      ],
+      "properties": {
+        "feature": {
+          "description": "Feature is the Feature Flag name that is needed to be checked for enrollment",
+          "type": "string",
+          "x-go-name": "Feature",
+          "example": "rollout-feature-flag"
+        },
+        "id": {
+          "description": "PilotID is the public unique ID of the pilot who's enrollment needs to be checked.\n\nin: body",
+          "type": "string",
+          "x-go-name": "PilotID",
+          "example": "pilot-public-id"
+        }
+      },
+      "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
     }
   },
   "responses": {
@@ -133,6 +251,12 @@
     },
     "errorResponse": {
       "description": "ErrorResponse will contains a response about request that had some kind of problem.\nThe details will be included in the body.",
+      "schema": {
+        "$ref": "#/definitions/ErrorResponseBody"
+      }
+    },
+    "wsLoadBalanceErrResponse": {
+      "description": "WSLoadBalanceErrResp will be received in case the receiver server cannot take more ws connections.\nThis error must be handled by retrying the call until it succeed.\nThis error meant to be a recoverable error.\nThe main purpose for this is to gain control over how  much ws connection can be open on a single server instance,\nso scaling the service can be easily achieved.\nIn case there is a load balancer that handle this transparently, this error may not be received.",
       "schema": {
         "$ref": "#/definitions/ErrorResponseBody"
       }
