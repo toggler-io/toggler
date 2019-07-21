@@ -1,6 +1,8 @@
 package httpapi
 
 import (
+	"fmt"
+	"github.com/pkg/errors"
 	"net/http"
 )
 
@@ -13,16 +15,14 @@ type WebsocketRequestParameter struct {
 }
 
 type WebsocketRequestPayload struct {
-	// Feature is the Feature Flag name that is needed to be checked for enrollment
-	//
+	// Operation describe the chosen operation that needs to be executed.
 	// required: true
-	// example: rollout-feature-flag
-	Feature string  `json:"feature"`
-	// PilotID is the public unique ID of the pilot who's enrollment needs to be checked.
-	//
-	// in: body
-	// example: pilot-public-id
-	PilotID *string `json:"id,omitempty"`
+	// enum: IsFeatureEnabled,IsFeatureGloballyEnabled
+	// example: IsFeatureEnabled
+	Operation string `json:"operation"`
+	// Data content correspond with the api payloads of the given operations.
+	// example: {"feature":"my-feature","id":"pilot-id-name"}
+	Data interface{} `json:"data"`
 }
 
 type WebsocketResponseBody = EnrollmentResponseBody
@@ -40,7 +40,6 @@ type WSLoadBalanceErrResp struct {
 	// in: body
 	Body ErrorResponseBody
 }
-
 
 /*
 
@@ -79,37 +78,60 @@ func (sm *ServeMux) WebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	defer c.Close()
 
+	handle := func(err error, code int) bool {
+		if err == nil {
+			return false
+		}
+		var errResp ErrorResponseBody
+		errResp.Error.Code = code
+		errResp.Error.Message = err.Error()
+		return c.WriteJSON(errResp) != nil
+	}
+
 subscription:
 	for {
+
 		var req WebsocketRequestPayload
 
 		if err := c.ReadJSON(&req); err != nil {
 			break // err from Read is permanent
 		}
 
-		var res WebsocketResponseBody
+		switch req.Operation {
+		case `IsFeatureEnabled`:
+			data := req.Data.(map[string]interface{})
+			enr, err := sm.UseCases.IsFeatureEnabledFor(data[`feature`].(string), data[`id`].(string))
+			if handle(err, http.StatusInternalServerError) {
+				continue subscription
+			}
 
-		var enr bool
-		if req.PilotID == nil {
-			enr, err = sm.UseCases.IsFeatureGloballyEnabled(req.Feature)
-		} else {
-			enr, err = sm.UseCases.IsFeatureEnabledFor(req.Feature, *req.PilotID)
-		}
+			var resp IsFeatureEnabledResponseBody
+			resp.Enrollment = enr
 
-		if err != nil {
-			var errResp ErrorResponseBody
-			errResp.Error.Code = http.StatusInternalServerError
-			errResp.Error.Message = err.Error()
-			if werr := c.WriteJSON(errResp); werr != nil {
+			if handle(c.WriteJSON(&resp), http.StatusInternalServerError) {
 				break subscription
 			}
-			continue subscription
+
+		case `IsFeatureGloballyEnabled`:
+			data := req.Data.(map[string]interface{})
+			enr, err := sm.UseCases.IsFeatureGloballyEnabled(data[`feature`].(string))
+			if handle(err, http.StatusInternalServerError) {
+				continue subscription
+			}
+
+			var resp IsFeatureGloballyEnabledResponseBody
+			resp.Enrollment = enr
+
+			fmt.Println(resp)
+			if handle(c.WriteJSON(&resp), http.StatusInternalServerError) {
+				break subscription
+			}
+
+		default:
+			if handle(errors.New(http.StatusText(http.StatusNotFound)), http.StatusNotFound) {
+				break subscription
+			}
 		}
 
-		res.Enrollment = enr
-
-		if err := c.WriteJSON(res); err != nil {
-			break
-		}
 	}
 }

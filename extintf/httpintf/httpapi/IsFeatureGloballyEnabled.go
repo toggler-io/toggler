@@ -21,7 +21,7 @@ type IsFeatureGloballyEnabledRequestPayload struct {
 	Feature string  `json:"feature"`
 }
 
-type IsFeatureGloballyEnabledResponseBody = IsFeatureEnabledRequestPayload
+type IsFeatureGloballyEnabledResponseBody = EnrollmentResponseBody
 
 /*
 
@@ -69,7 +69,7 @@ func (sm *ServeMux) IsFeatureGloballyEnabled(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var resp struct{ Enrollment bool `json:"enrollment"` }
+	var resp IsFeatureGloballyEnabledResponseBody
 	resp.Enrollment = enrollment
 
 	serveJSON(w, &resp)

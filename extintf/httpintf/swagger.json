@@ -223,20 +223,27 @@
     "WebsocketRequestPayload": {
       "type": "object",
       "required": [
-        "feature"
+        "operation"
       ],
       "properties": {
-        "feature": {
-          "description": "Feature is the Feature Flag name that is needed to be checked for enrollment",
-          "type": "string",
-          "x-go-name": "Feature",
-          "example": "rollout-feature-flag"
+        "data": {
+          "description": "Data content correspond with the api payloads of the given operations.",
+          "type": "object",
+          "x-go-name": "Data",
+          "example": {
+            "feature": "my-feature",
+            "id": "pilot-id-name"
+          }
         },
-        "id": {
-          "description": "PilotID is the public unique ID of the pilot who's enrollment needs to be checked.\n\nin: body",
+        "operation": {
+          "description": "Operation describe the chosen operation that needs to be executed.",
           "type": "string",
-          "x-go-name": "PilotID",
-          "example": "pilot-public-id"
+          "enum": [
+            "IsFeatureEnabled",
+            "IsFeatureGloballyEnabled"
+          ],
+          "x-go-name": "Operation",
+          "example": "IsFeatureEnabled"
         }
       },
       "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
