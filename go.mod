@@ -13,6 +13,7 @@ require (
 	github.com/golang/mock v1.3.1
 	github.com/google/go-cmp v0.3.0 // indirect
 	github.com/google/uuid v1.1.1
+	github.com/gorilla/websocket v1.4.0
 	github.com/lib/pq v1.2.0
 	github.com/mjibson/esc v0.2.0
 	github.com/onsi/ginkgo v1.8.0 // indirect
