@@ -2,6 +2,7 @@ package storages_test
 
 import (
 	"github.com/adamluzsi/toggler/extintf/storages/redis"
+	"os"
 	"testing"
 
 	"github.com/adamluzsi/testcase"
@@ -40,7 +41,7 @@ func TestNew(t *testing.T) {
 
 		s.When(`the connection string is a "postgres"`, func(s *testcase.Spec) {
 			s.Let(`connstr`, func(t *testcase.T) interface{} {
-				return `postgres://postgres@localhost:8100/postgres?sslmode=disable`
+				return os.Getenv(`TEST_STORAGE_URL_POSTGRES`)
 			})
 
 			s.Then(`then it will return postgres implementation`, func(t *testcase.T) {
@@ -52,7 +53,7 @@ func TestNew(t *testing.T) {
 
 		s.When(`the connection string is "redis"`, func(s *testcase.Spec) {
 			s.Let(`connstr`, func(t *testcase.T) interface{} {
-				return `redis://localhost:6379/1`
+				return os.Getenv(`TEST_STORAGE_URL_REDIS`)
 			})
 
 			s.Then(`then it will return "redis" storage implementation`, func(t *testcase.T) {
