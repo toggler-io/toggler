@@ -31,8 +31,8 @@ func NewServeMux(uc *usecases.UseCases) *ServeMux {
 func buildFeatureAPI(handlers *ServeMux) *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.Handle(`/config.json`, http.HandlerFunc(handlers.RolloutConfigJSON))
-	mux.Handle(`/is-enabled.json`, http.HandlerFunc(handlers.IsFeatureEnabledFor))
-	mux.Handle(`/is-globally-enabled.json`, http.HandlerFunc(handlers.IsFeatureGloballyEnabled))
+	mux.Handle(`/is-feature-enabled.json`, http.HandlerFunc(handlers.IsFeatureEnabledFor))
+	mux.Handle(`/is-feature-globally-enabled.json`, http.HandlerFunc(handlers.IsFeatureGloballyEnabled))
 	mux.Handle(`/flag/`, http.StripPrefix(`/flag`, buildFlagAPI(handlers)))
 	return mux
 }
