@@ -213,7 +213,7 @@ var _escData = map[string]*_escFile{
 		name:    "create.html",
 		local:   "views/flag/create.html",
 		size:    2159,
-		modtime: 1562852312,
+		modtime: 1563916815,
 		compressed: `
 H4sIAAAAAAAC/8xVT2vbThC951MMc/n9epDk5CwJQkugEEpIybmMtWNpYbW77J/8wfi7l5XkRBV2apdS
 4otnNbPvvXmz0m63gjdSM2BPUuNudwEAUAr5CI0i7ytsjA6sA9ZDZsh2V4tk1jEJkD5rWAd2WG+3kH+j
@@ -302,9 +302,33 @@ VYBlcAf4U8F9dhjcdonjP7jI97FbFpK4rj8BAAD///JUCoxoAQAA
 `,
 	},
 
+	"/pilot/edit.html": {
+		name:    "edit.html",
+		local:   "views/pilot/edit.html",
+		size:    1780,
+		modtime: 1563916844,
+		compressed: `
+H4sIAAAAAAAC/7RVzY6bMBC+5ylGVk8rEat7Bi7dbLWXaqX2Xjl4AKvGpvaQbIV498o4RbAtpI26nEhm
++H7GM+O+53fw8fAFONzxYdj1vcRSGQTWCGXYMOwAAFKpTlBo4X3GCmsIDbF8jIzR+v5VMKlRSFA+KdAQ
+OpY/K20JPlhDzmp4FgZ1yuv7fDeB9D04YSqE/aMWlYcL88QxU9B2DpNqJmBKKq1rQBSkrMkYL7WoeBuY
+ubNa2464R0rQhF9N8AANUm1lxlrriS3wR6jpLRFaVQYl+40zPlKQSI6KzsJJNMlZUFErU2Xs/R9kRqkK
+tfRI+QoiQKpM2xEY0WDGvkalDOhHixmrlZRoGJyE7vAi/y+RxoLs8YWeHlbQ+h7e7ccT2z89wDC8CfLh
+hdAZoW9gCOe6RTGpXgd93U1F7MykcrZrN9SMH2txRA2ldRmb9VJ+mN5TPqZcgfGosSBQcgGzrOUMfhNs
+BLRtaPxfhTjXilArTyhZmC5VAn6HWP3PJAhhmTIMURDKvkcjh+E6Y3iia5TX5fGo75+NHLUovm0bWaTc
+aOTRugLhAcP6OAl6S0ediUt21c8s4UY3nyyBb7FQpfpvTlIepWwMK5fqtDV3cZjj4Pru2Ki1xk75+oJM
+eVjJy/8vzLPbBI0Ml8huFr1U8GcAAAD//6kBxIr0BgAA
+`,
+	},
+
 	"/flag": {
 		name:  "flag",
 		local: `views/flag`,
+		isDir: true,
+	},
+
+	"/pilot": {
+		name:  "pilot",
+		local: `views/pilot`,
 		isDir: true,
 	},
 
@@ -322,10 +346,15 @@ var _escDirs = map[string][]os.FileInfo{
 		_escData["/flag/show.html"],
 	},
 
+	"views/pilot": {
+		_escData["/pilot/edit.html"],
+	},
+
 	"./views": {
 		_escData["/flag"],
 		_escData["/index.html"],
 		_escData["/layout.html"],
 		_escData["/login.html"],
+		_escData["/pilot"],
 	},
 }

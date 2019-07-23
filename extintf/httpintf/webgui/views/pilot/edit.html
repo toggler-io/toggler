@@ -1,0 +1,38 @@
+{{/* GET /pilot/edit */}}
+{{define "main"}}
+    <div class="content">
+        <h2 class="content-head is-center">Pilot Control Panel</h2>
+
+        {{ range .FeatureFlags }}
+            <div class="pure-g">
+                <form action="/pilot/flag/set-rollout" method="post" class="pure-form pure-form-aligned"
+                      data-bitwarden-watching="1">
+                    <fieldset>
+                        <input name="_method" type="hidden" value="post">
+                        <input name="pilot.extID" type="hidden" value="{{ $.Pilot.ID }}">
+                        <input name="pilot.extID" type="hidden" value="{{ $.Pilot.ExternalID }}">
+                        <input name="pilot.flagID" type="hidden" value="{{ .FeatureFlagID }}">
+
+                        <div class="pure-control-group">
+                            <label for="enrollment">Enrollment</label>
+                            <select id="enrollment" name="pilot.enrollment">
+                                <option value="whitelisted" {{ if eq .PilotState "whitelisted" }}selected{{end}}>
+                                    Enrolled
+                                </option>
+                                <option value="blacklisted" {{ if eq .PilotState "blacklisted" }}selected{{end}}>
+                                    Force Deactivated
+                                </option>
+                                <option value="undefined" {{ if eq .PilotState "undefined" }}selected{{end}}>
+                                    Not specified
+                                </option>
+                            </select>
+                        </div>
+
+                        <input type="submit">
+                    </fieldset>
+                </form>
+            </div>
+        {{ end }}
+
+    </div>
+{{end}}
