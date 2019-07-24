@@ -272,20 +272,20 @@ nZ2lRMHl/BsAAP//69LjNjEDAAA=
 	"/layout.html": {
 		name:    "layout.html",
 		local:   "views/layout.html",
-		size:    1885,
-		modtime: 1561469597,
+		size:    2004,
+		modtime: 1563994978,
 		compressed: `
-H4sIAAAAAAAC/7yVTW/bPAzH7/0UjHp9FD+7FUNsYChWbMB22Mut6EG1GIetLBkinSAI8t0H2U7qvAHF
-WuxkmqT+/IkWrc3G4pw8gmpMhWq7vQIAmE1sKGXdICykdkXvSyY446tcoVc7JxpbXHV29y4kDos7NNJG
-hDtnKviFcUklzrI+NkquUQyUCxMZJVetzPXNoPsS9qbGXFnkMlIjFLyCMnhBL7n6HarKYfwIt8FLDA7W
-oY2wK/4THRpGhhXJAqTL5cmFAkvCVROijNRXZGWRW0zwunv5D8iTkHGaS+Mw/zD9X43348g/Q0SXK5a1
-Q14gioJFxHmuMsOMwlnTRiy5f+qa/LRkHjO9RiOtnwcv2qyQQ42DxovIROt7moMThK+f4eah+DvGKpJl
-HZGb4JmWqIOzms5iT+7RW5o/aF2cYFQyUCTHe6GcY9D6gOPd+pEAnFmHVjhjsqhr9O3QjH/ViLMMr+rA
-LOuHtLMfg10XV0PA0hLI5qrXPT5B8B19O8wNHPCage06MahOIlnfyD8rKJ1h7h06bWzEt1f+YurHNlYY
-gcrgD8S7HG6ML2ZZ93gpm5kx4Q6+Yzhan2IDRz9npznDRo6zdOoV+WrX/mtVDH+Zw/J7idadajhiOVNu
-+Nan+SRYq2Lf1kydk0ydTP9TTiCzzNEbCsydqbIyohG8WOu2C7+92PXl3Xz6cVl+lrXu6Ktmlpbj49C9
-njkQhvxR9zcbwbpxRhD6MEyHm+5Y6cDu7xzgWObqibOWpk+s0rns/PsV/UwNo9bdl5sNervd/gkAAP//
-0tiw110HAAA=
+H4sIAAAAAAAC/7yVXWvjOhCG7/srJurtUXTOXTnEhqVs2YUu7EfvSi9Ua+xMK0tGGieEkP++yHYS5wvK
+tuyVZc3ofR+NNdZ6bbAkhyAaXaHYbK4AAGYT4wteNQhzrm3ez6UhWO2qTKAT20nUJr/qxt07E1vM71Bz
+GxDurK7gF4YFFThTfWyUXCNrKOY6RORMtFzKm0F3H3a6xkwYjEWghsk7AYV3jI4z8eCrymL4H2694+At
+rHwbYGv+Ey3qiBGWxHPgLjdOLhgsCJeNDzxSX5LheWYwwcvu5R8gR0zaylhoi9l/03/FeD+W3CsEtJmI
+vLIY54gsYB6wzITSMSJH1bQBi9g/ZU1uWsQ4ZnqLRlpfesdSLzH6GgeNvchEykcqwTLC189w85T/GWMV
+yEQZMDbeRVqg9NZIOos9eURnqHySMj/BqHigSBMfhXKOQcoDjg+rRwKweuVbjiqSQVmja4di/K1CnGV4
+UwVmqm/SbvzszSq/GgKGFkAmE73u8QmCb+jaoW/ggFcPbNeJQXQSaXRP7lVAYXWM/YRMGxvx7ZS/6Pq5
+DRUGoMK7A/EuJzba5TPVPfa2So8Jt/Adw9H6FBs4+j47zRk2cpwlU63IVdvyX4t8+Msc2u8kWnuqYSny
+GbvhW5/mE2Mt8l1ZlTgnmSqZ/qcxgcyUpXcYNGQ9q5KcuWj1PaXA7cP9B9iVVleqCKgZL/rdduH3m11f
+Lt6nH5flZ6q1R4dIGVqMT1/3eub8aXJHH3u9ZqwbqxmhD8N0uFiPlQ7G/RUHMRT7tn+JqqXpSxSpHbr4
+bmXfykOHd9f0eo3ObDa/AwAA//9Ax1381AcAAA==
 `,
 	},
 
@@ -305,18 +305,33 @@ VYBlcAf4U8F9dhjcdonjP7jI97FbFpK4rj8BAAD///JUCoxoAQAA
 	"/pilot/edit.html": {
 		name:    "edit.html",
 		local:   "views/pilot/edit.html",
-		size:    1780,
-		modtime: 1563916844,
+		size:    1777,
+		modtime: 1563994875,
 		compressed: `
-H4sIAAAAAAAC/7RVzY6bMBC+5ylGVk8rEat7Bi7dbLWXaqX2Xjl4AKvGpvaQbIV498o4RbAtpI26nEhm
-+H7GM+O+53fw8fAFONzxYdj1vcRSGQTWCGXYMOwAAFKpTlBo4X3GCmsIDbF8jIzR+v5VMKlRSFA+KdAQ
-OpY/K20JPlhDzmp4FgZ1yuv7fDeB9D04YSqE/aMWlYcL88QxU9B2DpNqJmBKKq1rQBSkrMkYL7WoeBuY
-ubNa2464R0rQhF9N8AANUm1lxlrriS3wR6jpLRFaVQYl+40zPlKQSI6KzsJJNMlZUFErU2Xs/R9kRqkK
-tfRI+QoiQKpM2xEY0WDGvkalDOhHixmrlZRoGJyE7vAi/y+RxoLs8YWeHlbQ+h7e7ccT2z89wDC8CfLh
-hdAZoW9gCOe6RTGpXgd93U1F7MykcrZrN9SMH2txRA2ldRmb9VJ+mN5TPqZcgfGosSBQcgGzrOUMfhNs
-BLRtaPxfhTjXilArTyhZmC5VAn6HWP3PJAhhmTIMURDKvkcjh+E6Y3iia5TX5fGo75+NHLUovm0bWaTc
-aOTRugLhAcP6OAl6S0ediUt21c8s4UY3nyyBb7FQpfpvTlIepWwMK5fqtDV3cZjj4Pru2Ki1xk75+oJM
-eVjJy/8vzLPbBI0Ml8huFr1U8GcAAAD//6kBxIr0BgAA
+H4sIAAAAAAAC/7RVy27bOhDd+ysGxF0FUIibZSF509hFNkWAdl+MxZFElCJVcmSnIPTvhR4RpLS2Ubfl
+ivaMzpwzL8Yo7+DD7jPIRhvHkpRmuJNdt4lRUaEtgahRW9F1GwCAVOkj5AZDyETuLJNlsR0sg7V6eGNM
+KkIFOiQ5WSYvts99GHjvLHtn4BktmXcQI9wPht0Lk7donh6h61JZPWw3M3iM4NGWBPd7Qm497Q2WASZi
+M4UFwab1lJQLfrNT4XwNmLN2NhOT9MJgKQNx4p0xrmUBNXHlVCYaF1j8BDKeZagBdb4laHRpSQlQyJgc
+NJ/QK7LJCTmvtC0z8b9Y6FsT1GRUIN6eCQuQatu0DPy9oUxUWimyAizWlIkvI3EBRzQtTfxvQhoyc08v
+/PQ4o8UI//2iWn8SoE/9OsKyxq/w5/Hf1jwf2yspvWubC8SGjw0eyEDhfCbI9rWvh6bezXf4xMhtSOXg
+eQUtkKGcQasV2jqdiygXwQZA1/Rd+pqaU6WZjA7c91WMoAugb9Pw9DQJ1i5dNxIiFSNZ1XXXI/ZnFE/q
+Oj058vttIQeD+dfLQlYuNwrZO58TPFI/60fkf6motePCPKtn4XCjmo+OITSU60L/NSWpHKlcmK/B7dAy
+OzsNcWgPtWaxGrrRQWwDHimV468LO0EqfTy3/eT59ZfKfreu/5+wFg8FWdU/DJuFdUr0jwAAAP//+g4/
+tfEGAAA=
+`,
+	},
+
+	"/pilot/find.html": {
+		name:    "find.html",
+		local:   "views/pilot/find.html",
+		size:    460,
+		modtime: 1563994919,
+		compressed: `
+H4sIAAAAAAAC/2yQz27CMAzG7zyF5SNSG+3ecgJNSDtw2Au4jQFLqROlLn9U9d0nCpsY283JL/l++TKO
+bgnvm09wSUI0txf1sHTTtBhHz3tRBuxIFKdpAQBQeTlBG6jva2yjGqvhaiYz3cfcAbUmUWt8ikTo2I7R
+15hib/idkIbMxXznZyooyEHZI3gyKhqxM2XPWpzJ2qPooca3J+PdKhx8z/Z7e0aiaTCwa+IajS+GoNRx
+jfPTSr7Ydo2QArV8jMFzrnF3I7AbmiAtbC7GWSnAdl2WJf4jaAazqA9DPzSdvNR7HHiai5Slo3zF1Uck
+D7Owcnf20sz9rVa52zfd15XzclotxpHVT9NXAAAA//+9jaN8zAEAAA==
 `,
 	},
 
@@ -348,6 +363,7 @@ var _escDirs = map[string][]os.FileInfo{
 
 	"views/pilot": {
 		_escData["/pilot/edit.html"],
+		_escData["/pilot/find.html"],
 	},
 
 	"./views": {

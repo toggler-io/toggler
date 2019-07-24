@@ -1,20 +1,20 @@
 {{/* GET /pilot/edit */}}
 {{define "main"}}
     <div class="content">
-        <h2 class="content-head is-center">Pilot Control Panel</h2>
+        <h2 class="content-head is-center">Pilot Control Panel: {{ .PilotExternalID }}</h2>
 
         {{ range .FeatureFlags }}
             <div class="pure-g">
-                <form action="/pilot/flag/set-rollout" method="post" class="pure-form pure-form-aligned"
-                      data-bitwarden-watching="1">
+                <form action="/pilot/flag/set-rollout" method="post"
+                      class="pure-form pure-form-aligned" data-bitwarden-watching="1">
+
                     <fieldset>
-                        <input name="_method" type="hidden" value="post">
-                        <input name="pilot.extID" type="hidden" value="{{ $.Pilot.ID }}">
-                        <input name="pilot.extID" type="hidden" value="{{ $.Pilot.ExternalID }}">
-                        <input name="pilot.flagID" type="hidden" value="{{ .FeatureFlagID }}">
+                        <input type="hidden" name="_method" value="post">
+                        <input type="hidden" name="pilot.extID" value="{{ $.PilotExternalID }}">
+                        <input type="hidden" name="pilot.flagID" value="{{ .FeatureFlagID }}">
 
                         <div class="pure-control-group">
-                            <label for="enrollment">Enrollment</label>
+                            <label for="enrollment">Enrollment Status</label>
                             <select id="enrollment" name="pilot.enrollment">
                                 <option value="whitelisted" {{ if eq .PilotState "whitelisted" }}selected{{end}}>
                                     Enrolled
@@ -26,9 +26,10 @@
                                     Not specified
                                 </option>
                             </select>
+
+                            <button type="submit" class="pure-button">save</button>
                         </div>
 
-                        <input type="submit">
                     </fieldset>
                 </form>
             </div>

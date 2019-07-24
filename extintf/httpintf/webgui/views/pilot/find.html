@@ -1,0 +1,11 @@
+{{/* GET /pilot/find */}}
+{{define "main"}}
+    <div class="content">
+        <form action="/pilot/find" method="post" class="pure-form pure-form-aligned" data-bitwarden-watching="1">
+            <fieldset>
+                <input type="text" name="pilot.extID" placeholder="Pilot Public External ID...">
+                <button type="submit" class="pure-button pure-button-primary">Load Pilot</button>
+            </fieldset>
+        </form>
+    </div>
+{{end}}

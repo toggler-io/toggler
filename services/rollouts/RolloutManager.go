@@ -94,7 +94,7 @@ func (manager *RolloutManager) ListFeatureFlags(ctx context.Context) ([]*Feature
 	return ffs, err
 }
 
-func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context, flagID, pilotID string, isEnrolled bool) error {
+func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context, flagID, externalPilotID string, isEnrolled bool) error {
 
 	var ff FeatureFlag
 
@@ -108,7 +108,7 @@ func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context,
 		return frameless.ErrNotFound
 	}
 
-	pilot, err := manager.Storage.FindFlagPilotByExternalPilotID(ctx, ff.ID, pilotID)
+	pilot, err := manager.Storage.FindFlagPilotByExternalPilotID(ctx, ff.ID, externalPilotID)
 
 	if err != nil {
 		return err
@@ -119,7 +119,7 @@ func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context,
 		return manager.Storage.Update(ctx, pilot)
 	}
 
-	return manager.Save(ctx, &Pilot{FeatureFlagID: ff.ID, ExternalID: pilotID, Enrolled: isEnrolled})
+	return manager.Save(ctx, &Pilot{FeatureFlagID: ff.ID, ExternalID: externalPilotID, Enrolled: isEnrolled})
 
 }
 
