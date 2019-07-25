@@ -94,6 +94,34 @@ func (manager *RolloutManager) ListFeatureFlags(ctx context.Context) ([]*Feature
 	return ffs, err
 }
 
+func (manager *RolloutManager) UnsetPilotEnrollmentForFeature(ctx context.Context, flagID, externalPilotID string) error {
+
+	var ff FeatureFlag
+
+	found, err := manager.Storage.FindByID(ctx, &ff, flagID)
+
+	if err != nil {
+		return err
+	}
+
+	if !found {
+		return frameless.ErrNotFound
+	}
+
+	pilot, err := manager.Storage.FindFlagPilotByExternalPilotID(ctx, ff.ID, externalPilotID)
+
+	if err != nil {
+		return err
+	}
+
+	if pilot == nil {
+		return nil
+	}
+
+	return manager.Storage.DeleteByID(ctx, pilot, pilot.ID)
+	
+}
+
 func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context, flagID, externalPilotID string, isEnrolled bool) error {
 
 	var ff FeatureFlag

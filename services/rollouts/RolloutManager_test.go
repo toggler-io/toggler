@@ -44,6 +44,7 @@ func TestRolloutManager(t *testing.T) {
 	SpecRolloutManagerUpdateFeatureFlag(s)
 	SpecRolloutManagerListFeatureFlags(s)
 	SpecRolloutManagerSetPilotEnrollmentForFeature(s)
+	SpecRolloutManagerUnsetPilotEnrollmentForFeature(s)
 }
 
 func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
@@ -470,7 +471,7 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 				require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
 			})
 
-			s.Then(`flag is will not be recreated`, func(t *testcase.T) {
+			s.Then(`flag will not be recreated`, func(t *testcase.T) {
 				require.Nil(t, subject(t))
 
 				count, err := iterators.Count(GetStorage(t).FindAll(context.Background(), rollouts.FeatureFlag{}))
@@ -531,6 +532,82 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 						require.Equal(t, 1, count)
 
 					})
+				})
+			})
+		})
+	})
+}
+
+func SpecRolloutManagerUnsetPilotEnrollmentForFeature(s *testcase.Spec) {
+	s.Describe(`UnsetPilotEnrollmentForFeature`, func(s *testcase.Spec) {
+		subject := func(t *testcase.T) error {
+			return manager(t).UnsetPilotEnrollmentForFeature(context.TODO(), t.I(`FeatureFlagID`).(string), GetExternalPilotID(t))
+		}
+
+		s.Let(`FeatureFlagID`, func(t *testcase.T) interface{} {
+			return GetFeatureFlag(t).ID
+		})
+
+		findFlag := func(t *testcase.T) *rollouts.FeatureFlag {
+			iter := GetStorage(t).FindAll(context.Background(), &rollouts.FeatureFlag{})
+			require.NotNil(t, iter)
+			require.True(t, iter.Next())
+			var ff rollouts.FeatureFlag
+			require.Nil(t, iter.Decode(&ff))
+			require.False(t, iter.Next())
+			require.Nil(t, iter.Err())
+			return &ff
+		}
+
+		s.When(`no feature flag is seen ever before`, func(s *testcase.Spec) {
+			s.Let(`FeatureFlagID`, func(t *testcase.T) interface{} { return `` })
+			s.Before(func(t *testcase.T) {
+				require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
+			})
+
+			s.Then(`error returned`, func(t *testcase.T) {
+				require.Error(t, subject(t))
+			})
+		})
+
+		s.When(`feature flag already configured`, func(s *testcase.Spec) {
+			s.Before(func(t *testcase.T) {
+				require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
+			})
+
+			s.Then(`flag will not be recreated`, func(t *testcase.T) {
+				require.Nil(t, subject(t))
+
+				count, err := iterators.Count(GetStorage(t).FindAll(CTX(t), rollouts.FeatureFlag{}))
+				require.Nil(t, err)
+				require.Equal(t, 1, count)
+
+				flag := findFlag(t)
+				require.Equal(t, GetFeatureFlag(t), flag)
+			})
+
+			s.And(`pilot not exist for the flag`, func(s *testcase.Spec) {
+				s.Before(func(t *testcase.T) {
+					require.Nil(t, GetStorage(t).Truncate(CTX(t), rollouts.Pilot{}))
+				})
+
+				s.Then(`it will return without any error`, func(t *testcase.T) {
+					require.Nil(t, subject(t))
+				})
+			})
+
+			s.And(`pilot already exists`, func(s *testcase.Spec) {
+				s.Before(func(t *testcase.T) {
+					require.Nil(t, GetStorage(t).Save(CTX(t), GetPilot(t)))
+				})
+
+				s.Then(`pilot manual enrollment will be removed`, func(t *testcase.T) {
+					require.Nil(t, subject(t))
+					flag := findFlag(t)
+
+					pilot, err := GetStorage(t).FindFlagPilotByExternalPilotID(context.Background(), flag.ID, GetExternalPilotID(t))
+					require.Nil(t, err)
+					require.Nil(t, pilot)
 				})
 			})
 		})
