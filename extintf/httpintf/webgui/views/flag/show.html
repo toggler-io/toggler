@@ -53,6 +53,7 @@
 
     <div class="content">
         {{ range .Pilots }}
+
             <form method="post" action="/flag/pilot" class="pure-form">
                 <fieldset>
 
@@ -70,6 +71,15 @@
 
                 </fieldset>
             </form>
+
+            <form method="post" action="/flag/pilot/unset" class="pure-form">
+                <fieldset>
+                    <input name="pilot.extID" type="hidden" value="{{ .ExternalID }}">
+                    <input name="pilot.flagID" type="hidden" value="{{ .FeatureFlagID }}">
+                    <button type="submit" class="pure-button pure-button">unset</button>
+                </fieldset>
+            </form>
+
         {{ end }}
     </div>
 

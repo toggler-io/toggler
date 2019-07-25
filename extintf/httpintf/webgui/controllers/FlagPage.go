@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/toggler/extintf/httpintf/httputils"
@@ -25,6 +26,8 @@ func (ctrl *Controller) FlagPage(w http.ResponseWriter, r *http.Request) {
 		ctrl.flagCreateNewAction(w, r)
 	case `/flag/pilot`, `/flag/pilot/update`:
 		ctrl.flagSetPilotAction(w, r)
+	case `/flag/pilot/unset`:
+		ctrl.flagUnsetPilotAction(w, r)
 	default:
 		http.NotFound(w, r)
 	}
@@ -148,6 +151,24 @@ func (ctrl *Controller) flagSetPilotAction(w http.ResponseWriter, r *http.Reques
 		http.NotFound(w, r)
 
 	}
+}
+
+func (ctrl *Controller) flagUnsetPilotAction(w http.ResponseWriter, r *http.Request) {
+	featureFlagID := r.FormValue(`pilot.flagID`)
+	pilotExternalID := r.FormValue(`pilot.extID`)
+
+	err := ctrl.GetProtectedUsecases(r).UnsetPilotEnrollmentForFeature(r.Context(), featureFlagID, pilotExternalID)
+
+	if ctrl.handleError(w, r, err) {
+		fmt.Println(err)
+		return
+	}
+
+	u, _ := url.Parse(`/flag`)
+	q := u.Query()
+	q.Set(`id`, featureFlagID)
+	u.RawQuery = q.Encode()
+	http.Redirect(w, r, u.String(), http.StatusFound)
 }
 
 func (ctrl *Controller) flagCreateNewAction(w http.ResponseWriter, r *http.Request) {

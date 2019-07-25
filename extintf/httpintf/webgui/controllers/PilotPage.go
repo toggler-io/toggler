@@ -117,7 +117,7 @@ func (ctrl *Controller) pilotFlagSetRollout(w http.ResponseWriter, r *http.Reque
 	newEnrollmentStatus := strings.ToLower(r.FormValue(`pilot.enrollment`))
 	log.Println(pilot.ExternalID, newEnrollmentStatus)
 
-	err := ctrl.setPilotEnrollmentForFlag(
+	err := ctrl.setPilotManualEnrollmentForFlag(
 		r.Context(),
 		ctrl.GetProtectedUsecases(r).RolloutManager,
 		newEnrollmentStatus,
@@ -137,7 +137,7 @@ func (ctrl *Controller) pilotFlagSetRollout(w http.ResponseWriter, r *http.Reque
 
 }
 
-func (ctrl *Controller) setPilotEnrollmentForFlag(ctx context.Context, rm *rollouts.RolloutManager, newEnrollmentStatus string, flagID, pilotExtID string) error {
+func (ctrl *Controller) setPilotManualEnrollmentForFlag(ctx context.Context, rm *rollouts.RolloutManager, newEnrollmentStatus string, flagID, pilotExtID string) error {
 	switch newEnrollmentStatus {
 	case `whitelisted`:
 		return rm.SetPilotEnrollmentForFeature(ctx, flagID, pilotExtID, true)
@@ -146,18 +146,7 @@ func (ctrl *Controller) setPilotEnrollmentForFlag(ctx context.Context, rm *rollo
 		return rm.SetPilotEnrollmentForFeature(ctx, flagID, pilotExtID, false)
 
 	case `undefined`:
-
-		p, err := rm.FindFlagPilotByExternalPilotID(ctx, flagID, pilotExtID)
-
-		if err != nil {
-			return err
-		}
-
-		if p == nil {
-			return nil
-		}
-
-		return rm.Storage.DeleteByID(ctx, rollouts.Pilot{}, p.ID)
+		return rm.UnsetPilotEnrollmentForFeature(ctx, flagID, pilotExtID)
 
 	default:
 		return errors.New(http.StatusText(http.StatusBadRequest))
