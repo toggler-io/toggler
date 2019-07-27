@@ -19,6 +19,8 @@ require (
 	github.com/onsi/ginkgo v1.8.0 // indirect
 	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/pkg/errors v0.8.1
+	github.com/russross/blackfriday v2.0.0+incompatible
+	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/stretchr/testify v1.3.0
 	github.com/unrolled/logger v0.0.0-20190327162521-be1a2406c7c9
 	google.golang.org/grpc v1.21.0 // indirect

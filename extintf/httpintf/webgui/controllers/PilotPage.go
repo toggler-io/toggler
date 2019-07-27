@@ -33,8 +33,9 @@ type pilotEditPageContent struct {
 }
 
 type pilotEditPageContentFeatureFlag struct {
-	FeatureFlagID string
-	PilotState    string
+	FeatureFlagName string
+	FeatureFlagID   string
+	PilotState      string
 }
 
 func (ctrl *Controller) pilotFindPage(w http.ResponseWriter, r *http.Request) {
@@ -92,6 +93,7 @@ func (ctrl *Controller) pilotEditPage(w http.ResponseWriter, r *http.Request) {
 	for _, ff := range ffs {
 		var editFF pilotEditPageContentFeatureFlag
 		editFF.FeatureFlagID = ff.ID
+		editFF.FeatureFlagName = ff.Name
 
 		p, ok := pilotsIndex[ff.ID]
 		if !ok {

@@ -43,7 +43,9 @@
                     <fieldset>
                         <input name="_method" type="hidden" value="delete">
                         <input name="flag.id" type="hidden" value="{{ .Flag.ID }}">
-                        <button type="submit" onclick="return confirm('Are you sure?')" class="pure-button">Delete Feature Flag</button>
+                        <button type="submit" onclick="return confirm('Are you sure?')" class="pure-button">Delete
+                            Feature Flag
+                        </button>
                     </fieldset>
                 </form>
             </div>
@@ -54,31 +56,44 @@
     <div class="content">
         {{ range .Pilots }}
 
-            <form method="post" action="/flag/pilot" class="pure-form">
-                <fieldset>
+            <div class="pure-g">
 
-                    <label for="enrollment.{{ .ID }}">
-                        <input name="pilot.enrolled"
-                               id="enrollment.{{ .ID }}"
-                               type="checkbox"
-                               {{ if .Enrolled }}checked="checked"{{end}}> {{ .ExternalID }}
-                    </label>
+                <div class="pure-u-1-2">
 
-                    <input name="pilot.id" type="hidden" value="{{ .ID }}">
-                    <input name="pilot.extID" type="hidden" value="{{ .ExternalID }}">
-                    <input name="pilot.flagID" type="hidden" value="{{ .FeatureFlagID }}">
-                    <button type="submit" class="pure-button pure-button-primary">set</button>
+                    <form method="post" action="/flag/pilot" class="pure-form">
+                        <fieldset>
 
-                </fieldset>
-            </form>
+                            <label for="enrollment.{{ .ID }}">
+                                <input name="pilot.enrolled"
+                                       id="enrollment.{{ .ID }}"
+                                       type="checkbox"
+                                       {{ if .Enrolled }}checked="checked"{{end}}> {{ .ExternalID }}
+                            </label>
 
-            <form method="post" action="/flag/pilot/unset" class="pure-form">
-                <fieldset>
-                    <input name="pilot.extID" type="hidden" value="{{ .ExternalID }}">
-                    <input name="pilot.flagID" type="hidden" value="{{ .FeatureFlagID }}">
-                    <button type="submit" class="pure-button pure-button">unset</button>
-                </fieldset>
-            </form>
+                            <input name="pilot.id" type="hidden" value="{{ .ID }}">
+                            <input name="pilot.extID" type="hidden" value="{{ .ExternalID }}">
+                            <input name="pilot.flagID" type="hidden" value="{{ .FeatureFlagID }}">
+
+                            <button type="submit" class="pure-button pure-button-primary">set</button>
+
+                        </fieldset>
+                    </form>
+
+                </div>
+
+                <div class="pure-u-1-2">
+
+                    <form method="post" action="/flag/pilot/unset" class="pure-form">
+                        <fieldset>
+                            <input name="pilot.extID" type="hidden" value="{{ .ExternalID }}">
+                            <input name="pilot.flagID" type="hidden" value="{{ .FeatureFlagID }}">
+                            <button type="submit" class="pure-button pure-button">unset</button>
+                        </fieldset>
+                    </form>
+
+                </div>
+
+            </div>
 
         {{ end }}
     </div>

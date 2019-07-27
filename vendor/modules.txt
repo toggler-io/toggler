@@ -52,6 +52,10 @@ github.com/mjibson/esc/embed
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
+# github.com/russross/blackfriday v2.0.0+incompatible
+github.com/russross/blackfriday
+# github.com/shurcooL/sanitized_anchor_name v1.0.0
+github.com/shurcooL/sanitized_anchor_name
 # github.com/stretchr/testify v1.3.0
 github.com/stretchr/testify/require
 github.com/stretchr/testify/assert

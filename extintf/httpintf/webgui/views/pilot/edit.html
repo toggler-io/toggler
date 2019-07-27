@@ -4,7 +4,6 @@
         <h2 class="content-head is-center">Pilot Control Panel: {{ .PilotExternalID }}</h2>
 
         {{ range .FeatureFlags }}
-            <div class="pure-g">
                 <form action="/pilot/flag/set-rollout" method="post"
                       class="pure-form pure-form-aligned" data-bitwarden-watching="1">
 
@@ -13,8 +12,9 @@
                         <input type="hidden" name="pilot.extID" value="{{ $.PilotExternalID }}">
                         <input type="hidden" name="pilot.flagID" value="{{ .FeatureFlagID }}">
 
+
                         <div class="pure-control-group">
-                            <label for="enrollment">Enrollment Status</label>
+                            <label for="enrollment">{{ .FeatureFlagName }}</label>
                             <select id="enrollment" name="pilot.enrollment">
                                 <option value="whitelisted" {{ if eq .PilotState "whitelisted" }}selected{{end}}>
                                     Enrolled
@@ -32,7 +32,6 @@
 
                     </fieldset>
                 </form>
-            </div>
         {{ end }}
 
     </div>

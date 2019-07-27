@@ -22,6 +22,8 @@ func (ctrl *Controller) FlagPage(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case `/flag`:
 		ctrl.flagAction(w, r)
+	case `/flag/index`:
+		ctrl.flagListAction(w, r)
 	case `/flag/create`:
 		ctrl.flagCreateNewAction(w, r)
 	case `/flag/pilot`, `/flag/pilot/update`:
@@ -31,6 +33,17 @@ func (ctrl *Controller) FlagPage(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.NotFound(w, r)
 	}
+}
+
+func (ctrl *Controller) flagListAction(w http.ResponseWriter, r *http.Request) {
+	flags, err := ctrl.GetProtectedUsecases(r).ListFeatureFlags(r.Context())
+
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	ctrl.Render(w, `/flag/index.html`, flags)
 }
 
 func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
