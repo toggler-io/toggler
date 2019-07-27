@@ -22,6 +22,7 @@ Answer the following questions, in order to determine,
 if this project is needed for your team or not.
 
 Can my team…
+
 * apply [Dark Launching](/docs/DarkLaunch.md) practices ?
 * deploy frequently the codebase independently from feature release ?
 * confidently deploy to production after the automated tests are passed ?
