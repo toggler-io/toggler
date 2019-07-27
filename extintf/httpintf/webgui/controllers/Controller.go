@@ -5,12 +5,16 @@ import (
 	"github.com/adamluzsi/toggler/extintf/httpintf/webgui/views"
 	"github.com/adamluzsi/toggler/usecases"
 	"html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
 
 func NewController(uc *usecases.UseCases) *Controller {
-	return &Controller{UseCases: uc, Render: renderFunc,}
+	return &Controller{
+		UseCases: uc,
+		Render:   CreateRenderFunc(views.FS(false)),
+	}
 }
 
 type Controller struct {
@@ -19,38 +23,62 @@ type Controller struct {
 }
 
 //TODO: cache templates with closure
-func renderFunc(w http.ResponseWriter, tempName string, data interface{}) {
-	layoutRawStr := views.FSMustString(false, `/layout.html`)
-	pageRawStr := views.FSMustString(false, tempName)
+func CreateRenderFunc(fs http.FileSystem) func(w http.ResponseWriter, tempName string, data interface{}) {
+	fsString := func(name string) (string, error) {
+		f, err := fs.Open(name)
+		if err != nil {
+			return ``, err
+		}
+		bs, err := ioutil.ReadAll(f)
+		if err != nil {
+			return ``, err
+		}
+		return string(bs), nil
+	}
 
-	var err error
-	tmpl := template.New(``)
+	return func(w http.ResponseWriter, tempName string, data interface{}) {
+		var err error
 
-	if tmpl, err = tmpl.New(`page`).Parse(layoutRawStr); err != nil {
-		log.Println(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		layoutRawStr, err := fsString(`/layout.html`)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		pageRawStr, err := fsString(tempName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		tmpl := template.New(``)
+
+		if tmpl, err = tmpl.New(`page`).Parse(layoutRawStr); err != nil {
+			log.Println(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+		if tmpl, err = tmpl.New(`content`).Parse(pageRawStr); err != nil {
+			log.Println(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+		buf := bytes.NewBuffer([]byte{})
+
+		if err := tmpl.ExecuteTemplate(buf, `page`, data); err != nil {
+			log.Println(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+		if _, err := w.Write(buf.Bytes()); err != nil {
+			log.Println(err)
+		}
+
 		return
 	}
-
-	if tmpl, err = tmpl.New(`content`).Parse(pageRawStr); err != nil {
-		log.Println(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-
-	buf := bytes.NewBuffer([]byte{})
-
-	if err := tmpl.ExecuteTemplate(buf, `page`, data); err != nil {
-		log.Println(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-
-	if _, err := w.Write(buf.Bytes()); err != nil {
-		log.Println(err)
-	}
-
-	return
 }
 
 func (ctrl *Controller) GetProtectedUsecases(r *http.Request) *usecases.ProtectedUsecases {
@@ -63,6 +91,6 @@ func (ctrl *Controller) handleError(w http.ResponseWriter, r *http.Request, err 
 	}
 
 	log.Println(err.Error())
-	http.Redirect(w,r, r.URL.Path, http.StatusFound)
+	http.Redirect(w, r, r.URL.Path, http.StatusFound)
 	return true
 }
