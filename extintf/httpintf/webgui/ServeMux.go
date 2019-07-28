@@ -21,6 +21,7 @@ func NewServeMux(uc *usecases.UseCases) *ServeMux {
 	mux.Handle(`/flag`, authorized(uc, ctrl.FlagPage))
 	mux.Handle(`/flag/`, authorized(uc, ctrl.FlagPage))
 	mux.Handle(`/docs/`, authorized(uc, ctrl.DocsPage))
+	mux.Handle(`/docs/assets/`, authorized(uc, ctrl.DocsAssets))
 	mux.Handle(`/pilot/`, authorized(uc, ctrl.PilotPage))
 	mux.HandleFunc(`/login`, ctrl.LoginPage)
 	return mux

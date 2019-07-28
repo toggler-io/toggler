@@ -241,7 +241,7 @@ TlSptp6z8HnvxyR3rm0QTXktKrXO7cXU62Jy2tD2dCI/3GXyZIRspX7X/RUAAP//cqt3vawJAAA=
 		name:    "README.md",
 		local:   "/home/adamluzsi/src/github.com/adamluzsi/toggler/docs/README.md",
 		size:    7934,
-		modtime: 1564186051,
+		modtime: 1564353319,
 		compressed: `
 H4sIAAAAAAAC/6xZXY4bSXJ+r1OEWzA8EtikNLODhQV4xy31zG4DGq+sbtkwFgt3sjLIymFWZk1GJinq
 yafxDXwBH8UnMSIis0j2aBawsS8Suyp/I7744ouoZ5Djdusxdd1j/fUIjsDAPfoNDJEyWvgBTS4J4UFG
@@ -1735,6 +1735,12 @@ ZxflSgu/AgAA//9bdY3FCAYAAA==
 		isDir: true,
 	},
 
+	"/docs/assets": {
+		name:  "assets",
+		local: `/home/adamluzsi/src/github.com/adamluzsi/toggler/docs/assets`,
+		isDir: true,
+	},
+
 	"/docs/deploy": {
 		name:  "deploy",
 		local: `/home/adamluzsi/src/github.com/adamluzsi/toggler/docs/deploy`,
@@ -1765,10 +1771,13 @@ var _escDirs = map[string][]os.FileInfo{
 	"/home/adamluzsi/src/github.com/adamluzsi/toggler/docs": {
 		_escData["/docs/DarkLaunch.md"],
 		_escData["/docs/README.md"],
+		_escData["/docs/assets"],
 		_escData["/docs/deploy"],
 		_escData["/docs/design"],
 		_escData["/docs/httpapi"],
 	},
+
+	"/home/adamluzsi/src/github.com/adamluzsi/toggler/docs/assets": {},
 
 	"/home/adamluzsi/src/github.com/adamluzsi/toggler/docs/deploy": {
 		_escData["/docs/deploy/docker.md"],
