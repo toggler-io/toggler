@@ -303,6 +303,16 @@ ql7r8n8Dr593/xsAAP//2IIRNP4eAAA=
 `,
 	},
 
+	"/docs/assets/.gitkeep": {
+		name:    ".gitkeep",
+		local:   "/home/adamluzsi/src/github.com/adamluzsi/toggler/docs/assets/.gitkeep",
+		size:    0,
+		modtime: 1564353355,
+		compressed: `
+H4sIAAAAAAAC/wEAAP//AAAAAAAAAAA=
+`,
+	},
+
 	"/docs/deploy/docker.md": {
 		name:    "docker.md",
 		local:   "/home/adamluzsi/src/github.com/adamluzsi/toggler/docs/deploy/docker.md",
@@ -1777,7 +1787,9 @@ var _escDirs = map[string][]os.FileInfo{
 		_escData["/docs/httpapi"],
 	},
 
-	"/home/adamluzsi/src/github.com/adamluzsi/toggler/docs/assets": {},
+	"/home/adamluzsi/src/github.com/adamluzsi/toggler/docs/assets": {
+		_escData["/docs/assets/.gitkeep"],
+	},
 
 	"/home/adamluzsi/src/github.com/adamluzsi/toggler/docs/deploy": {
 		_escData["/docs/deploy/docker.md"],

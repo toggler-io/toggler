@@ -88,6 +88,18 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
+			u, err := url.Parse(`/flag`)
+
+			if ctrl.handleError(w, r, err) {
+				return
+			}
+
+			q := u.Query()
+			q.Add(`id`, ff.ID)
+			u.RawQuery = q.Encode()
+			http.Redirect(w, r, u.String(), http.StatusFound)
+			return
+
 		case http.MethodPost:
 			ff, err := httputils.ParseFlagFromForm(r)
 
@@ -126,13 +138,14 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
+			http.Redirect(w, r, `/flag/index`, http.StatusFound)
+			return
+
 		default:
 			http.NotFound(w, r)
 			return
 
 		}
-
-		http.Redirect(w, r, `/flag`, http.StatusFound)
 
 	default:
 		http.NotFound(w, r)
