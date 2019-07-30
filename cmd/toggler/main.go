@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/adamluzsi/toggler/extintf/caches"
 	"github.com/adamluzsi/toggler/extintf/storages"
 	"log"
 	"net/http"
@@ -21,16 +22,27 @@ func main() {
 	portConfValue := flagSet.String(`port`, os.Getenv(`PORT`), `set http server port else the env variable "PORT" value will be used`)
 	cmd := flagSet.String(`cmd`, `http-server`, `cli command. cmds: "http-server", "create-token"`)
 	fixtures := flagSet.Bool(`create-fixtures`, false, `create default fixtures for development purpose`)
+	dbURL := flagSet.String(`database-url`, ``, `define what url should be used for the db connection. Default value used from ENV[DATABASE_URL].`)
+	cacheURL := flagSet.String(`cache-url`, ``, `define what url should be used for the cache connection. Primary the CACHE_URL will be checked, then the DATABASE_URL value if no/empty value is given here`)
 
 	if err := flagSet.Parse(os.Args[1:]); err != nil {
 		panic(err)
 	}
 
-	storage, err := storages.New(connstr())
+	setupDatabaseURL(dbURL)
+	setupCacheURL(cacheURL, dbURL)
+
+	storage, err := storages.New(*dbURL)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer storage.Close()
+
+	cache, err := caches.New(*cacheURL, storage)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer cache.Close()
 
 	if *fixtures {
 		createFixtures(storage)
@@ -42,7 +54,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		httpListenAndServe(storage, port)
+		httpListenAndServe(cache, port)
 
 	case `create-token`:
 		createToken(storage, flagSet.Arg(0))
@@ -53,6 +65,30 @@ func main() {
 		fmt.Printf("\t%s\n", `create-token`)
 	}
 
+}
+
+func setupDatabaseURL(dbURL *string) {
+	if *dbURL != `` {
+		return
+	}
+
+	connstr, isSet := os.LookupEnv(`DATABASE_URL`)
+
+	if !isSet {
+		log.Fatal(`db url env variable is missing: "DATABASE_URL"`)
+	}
+
+	*dbURL = connstr
+}
+
+func setupCacheURL(cacheURL *string, dbURL *string) {
+	if *cacheURL == `` {
+		*cacheURL = os.Getenv(`CACHE_URL`)
+	}
+
+	if *cacheURL == `` {
+		*cacheURL = *dbURL
+	}
 }
 
 func createFixtures(s usecases.Storage) {
