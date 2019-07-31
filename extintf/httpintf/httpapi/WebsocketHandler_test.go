@@ -80,7 +80,7 @@ func TestWebsocket(t *testing.T) {
 		})
 
 		s.Let(`data`, func(t *testcase.T) interface{} {
-			return httpapi.IsFeatureGloballyEnabledRequestPayload{Feature: GetFeatureFlagName(t)}
+			return httpapi.IsFeatureGloballyEnabledRequestBody{Feature: GetFeatureFlagName(t)}
 		})
 
 		s.Let(`rnd`, func(t *testcase.T) interface{} {

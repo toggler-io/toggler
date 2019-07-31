@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+	"github.com/adamluzsi/toggler/lib/go/client"
+	"github.com/adamluzsi/toggler/lib/go/client/operations"
+	"github.com/adamluzsi/toggler/lib/go/models"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -92,7 +96,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 			payload := bytes.NewBuffer([]byte{})
 			jsonenc := json.NewEncoder(payload)
 
-			require.Nil(t, jsonenc.Encode(httpapi.IsFeatureGloballyEnabledRequestPayload{
+			require.Nil(t, jsonenc.Encode(httpapi.IsFeatureGloballyEnabledRequestBody{
 				Feature: GetFeatureFlagName(t),
 			}))
 
@@ -102,6 +106,42 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 		})
 
 		sharedUseCases(s)
+
+	})
+
+	s.Test(`swagger integration`, func(t *testcase.T) {
+
+		enr := rand.Intn(2) == 0
+
+		if enr {
+			GetFeatureFlag(t).Rollout.Strategy.Percentage = 100
+		}
+
+		require.Nil(t, GetStorage(t).Save(CTX(t), GetFeatureFlag(t)))
+
+		s := httptest.NewServer(http.StripPrefix(`/api/v1`, NewServeMux(t)))
+		defer s.Close()
+
+		p := operations.NewIsFeatureGloballyEnabledParams()
+		p.Body = &models.IsFeatureGloballyEnabledRequestBody{}
+		ffName := GetFeatureFlagName(t)
+		p.Body.Feature = &ffName
+
+		tc := client.DefaultTransportConfig()
+		u, _ := url.Parse(s.URL)
+		tc.Host = u.Host
+		tc.Schemes = []string{`http`}
+
+		c := client.NewHTTPClientWithConfig(nil, tc)
+
+		resp, err := c.Operations.IsFeatureGloballyEnabled(p)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+
+		require.NotNil(t, resp)
+		require.NotNil(t, resp.Payload)
+		require.Equal(t, enr, resp.Payload.Enrollment)
 
 	})
 

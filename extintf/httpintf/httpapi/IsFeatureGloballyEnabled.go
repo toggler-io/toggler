@@ -10,10 +10,10 @@ import (
 // swagger:parameters IsFeatureGloballyEnabled
 type IsFeatureGloballyEnabledRequestParameters struct {
 	// in: body
-	Body IsFeatureGloballyEnabledRequestPayload
+	Body IsFeatureGloballyEnabledRequestBody
 }
 
-type IsFeatureGloballyEnabledRequestPayload struct {
+type IsFeatureGloballyEnabledRequestBody struct {
 	// Feature is the Feature Flag name that is needed to be checked for enrollment
 	//
 	// required: true
@@ -25,7 +25,7 @@ type IsFeatureGloballyEnabledResponseBody = EnrollmentResponseBody
 
 /*
 
-	swagger:route GET /api/v1/rollout/is-globally-enabled.json feature-flag pilot IsFeatureGloballyEnabled
+	swagger:route GET /api/v1/rollout/is-feature-globally-enabled.json feature-flag pilot IsFeatureGloballyEnabled
 
 	Check Rollout Feature Status for Global use
 
@@ -77,7 +77,7 @@ func (sm *ServeMux) IsFeatureGloballyEnabled(w http.ResponseWriter, r *http.Requ
 
 func parseJSONPayloadForIsFeatureGloballyEnabled(r *http.Request, featureName *string) error {
 	jsondec := json.NewDecoder(r.Body)
-	var payload IsFeatureGloballyEnabledRequestPayload
+	var payload IsFeatureGloballyEnabledRequestBody
 	if err := jsondec.Decode(&payload); err != nil {
 		return err
 	}

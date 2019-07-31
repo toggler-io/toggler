@@ -6,12 +6,15 @@ require (
 	github.com/Pallinder/go-randomdata v1.2.0
 	github.com/adamluzsi/frameless v0.0.0-20190716225752-ef5b90560eff
 	github.com/adamluzsi/testcase v0.0.0-20190714215144-d4dbd6534e4d
-	github.com/docker/go-units v0.4.0 // indirect
+	github.com/go-openapi/errors v0.19.2
+	github.com/go-openapi/runtime v0.19.3
+	github.com/go-openapi/strfmt v0.19.2
+	github.com/go-openapi/swag v0.19.4
+	github.com/go-openapi/validate v0.19.2
 	github.com/go-redis/redis v6.15.2+incompatible
 	github.com/go-swagger/go-swagger v0.19.0
 	github.com/golang-migrate/migrate/v4 v4.5.0
 	github.com/golang/mock v1.3.1
-	github.com/google/go-cmp v0.3.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.0
 	github.com/lib/pq v1.2.0

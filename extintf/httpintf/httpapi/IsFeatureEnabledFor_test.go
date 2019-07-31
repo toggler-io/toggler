@@ -3,6 +3,10 @@ package httpapi_test
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/adamluzsi/toggler/lib/go/client"
+	"github.com/adamluzsi/toggler/lib/go/client/operations"
+	"github.com/adamluzsi/toggler/lib/go/models"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -103,7 +107,54 @@ func TestServeMux_IsFeatureEnabledFor(t *testing.T) {
 			return r
 		})
 
+		s.Let(`swagger.client.params`, func(t *testcase.T) interface{} {
+			p := operations.NewIsFeatureEnabledParams()
+			p.Body = &models.IsFeatureEnabledRequestPayload{}
+			pilotExtID := GetExternalPilotID(t)
+			ffName := GetFeatureFlagName(t)
+			p.Body.PilotID = &pilotExtID
+			p.Body.Feature = &ffName
+			return p
+		})
+
 		sharedSpec(s)
+
+	})
+
+	s.Test(`swagger integration`, func(t *testcase.T) {
+
+		enr := rand.Intn(2) == 0
+		if enr {
+			GetFeatureFlag(t).Rollout.Strategy.Percentage = 100
+		}
+
+		require.Nil(t, GetStorage(t).Save(CTX(t), GetFeatureFlag(t)))
+
+		s := httptest.NewServer(http.StripPrefix(`/api/v1`, NewServeMux(t)))
+		defer s.Close()
+
+		p := operations.NewIsFeatureEnabledParams()
+		p.Body = &models.IsFeatureEnabledRequestPayload{}
+		pilotExtID := GetExternalPilotID(t)
+		ffName := GetFeatureFlagName(t)
+		p.Body.PilotID = &pilotExtID
+		p.Body.Feature = &ffName
+
+		tc := client.DefaultTransportConfig()
+		u, _ := url.Parse(s.URL)
+		tc.Host = u.Host
+		tc.Schemes = []string{`http`}
+
+		c := client.NewHTTPClientWithConfig(nil, tc)
+
+		resp, err := c.Operations.IsFeatureEnabled(p)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+
+		require.NotNil(t, resp)
+		require.NotNil(t, resp.Payload)
+		require.Equal(t, enr, resp.Payload.Enrollment)
 
 	})
 }

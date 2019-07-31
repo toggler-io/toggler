@@ -29,7 +29,7 @@ type IsFeatureEnabledResponseBody = EnrollmentResponseBody
 
 /*
 
-	swagger:route GET /api/v1/rollout/is-enabled.json feature-flag pilot IsFeatureEnabled
+	swagger:route GET /api/v1/rollout/is-feature-enabled.json feature-flag pilot IsFeatureEnabled
 
 	Check Rollout Feature Status For Pilot
 

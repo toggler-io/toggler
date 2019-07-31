@@ -18,7 +18,48 @@
   },
   "basePath": "/",
   "paths": {
-    "/api/v1/rollout/is-enabled.json": {
+    "/api/v1/rollout/config.json": {
+      "get": {
+        "description": "Return all the flag states that was requested by the",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "feature-flag",
+          "pilot"
+        ],
+        "summary": "Check Multiple Rollout Feature Status For A Certain Pilot",
+        "operationId": "RolloutClientConfig",
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/RolloutClientConfigRequestBody"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/rolloutClientConfigResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/api/v1/rollout/is-feature-enabled.json": {
       "get": {
         "description": "Reply back whether the feature for a given pilot id is enabled or not.\nBy Default, this will be determined whether the flag exist,\nthe pseudo random dice roll enrolls the pilot,\nor if there any manually set enrollment status for the pilot.",
         "consumes": [
@@ -59,7 +100,7 @@
         }
       }
     },
-    "/api/v1/rollout/is-globally-enabled.json": {
+    "/api/v1/rollout/is-feature-globally-enabled.json": {
       "get": {
         "description": "Reply back whether the feature rolled out globally or not.\nThis is especially useful for cases where you don't have pilot id.\nSuch case is batch processing, or dark launch flips.\nBy Default, this will be determined whether the flag exist,\nThen  whether the release id done to everyone or not by percentage.",
         "consumes": [
@@ -83,7 +124,7 @@
             "name": "Body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/IsFeatureGloballyEnabledRequestPayload"
+              "$ref": "#/definitions/IsFeatureGloballyEnabledRequestBody"
             }
           }
         ],
@@ -205,7 +246,7 @@
       },
       "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
     },
-    "IsFeatureGloballyEnabledRequestPayload": {
+    "IsFeatureGloballyEnabledRequestBody": {
       "type": "object",
       "required": [
         "feature"
@@ -216,6 +257,49 @@
           "type": "string",
           "x-go-name": "Feature",
           "example": "rollout-feature-flag"
+        }
+      },
+      "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+    },
+    "RolloutClientConfigRequestBody": {
+      "type": "object",
+      "required": [
+        "id",
+        "features"
+      ],
+      "properties": {
+        "features": {
+          "description": "Features are the list of flag name that should be matched against the pilot and state the enrollment for each.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Features",
+          "example": [
+            "my-feature-flag"
+          ]
+        },
+        "id": {
+          "description": "PilotID is the public uniq id that identify the caller pilot",
+          "type": "string",
+          "x-go-name": "PilotID",
+          "example": "public-uniq-pilot-id"
+        }
+      },
+      "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+    },
+    "RolloutClientConfigResponseBody": {
+      "description": "The content expected to be cached in some form of state container.",
+      "type": "object",
+      "title": "RolloutClientConfigResponseBody will contain the requested feature flag states for a certain pilot.",
+      "properties": {
+        "states": {
+          "description": "States holds the requested rollout feature flag enrollment statuses.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "boolean"
+          },
+          "x-go-name": "States"
         }
       },
       "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
@@ -260,6 +344,12 @@
       "description": "ErrorResponse will contains a response about request that had some kind of problem.\nThe details will be included in the body.",
       "schema": {
         "$ref": "#/definitions/ErrorResponseBody"
+      }
+    },
+    "rolloutClientConfigResponse": {
+      "description": "RolloutClientConfigResponse returns information about the requester's rollout feature enrollment statuses.",
+      "schema": {
+        "$ref": "#/definitions/RolloutClientConfigResponseBody"
       }
     },
     "wsLoadBalanceErrResponse": {

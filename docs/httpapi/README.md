@@ -95,7 +95,7 @@ response
 {"enrollment": true}
 ```
 
-## GET /api/v1/rollout/is-feature-enabled.json
+## GET /api/v1/rollout/is-feature-globally-enabled.json
 
 Get rollout feature flag status for global
 

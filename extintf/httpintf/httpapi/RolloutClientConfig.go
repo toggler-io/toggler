@@ -5,20 +5,67 @@ import (
 	"net/http"
 )
 
-type ClientConfigRequest struct {
-	PilotID  string   `json:"id"`
+// RolloutClientConfigParameters defines the parameters that
+// swagger:parameters RolloutClientConfig
+type RolloutClientConfigParameters struct {
+	// in: body
+	Body RolloutClientConfigRequestBody
+}
+
+type RolloutClientConfigRequestBody struct {
+	// PilotID is the public uniq id that identify the caller pilot
+	//
+	// required: true
+	// example: public-uniq-pilot-id
+	PilotID string `json:"id"`
+	// Features are the list of flag name that should be matched against the pilot and state the enrollment for each.
+	//
+	// required: true
+	// example: ["my-feature-flag"]
 	Features []string `json:"features"`
 }
 
-type ClientConfigResponseBody struct {
+// RolloutClientConfigResponse returns information about the requester's rollout feature enrollment statuses.
+// swagger:response rolloutClientConfigResponse
+type RolloutClientConfigResponse struct {
+	// in: body
+	Body RolloutClientConfigResponseBody
+}
+
+// RolloutClientConfigResponseBody will contain the requested feature flag states for a certain pilot.
+// The content expected to be cached in some form of state container.
+type RolloutClientConfigResponseBody struct {
+	// States holds the requested rollout feature flag enrollment statuses.
 	States map[string]bool `json:"states"`
 }
 
+/*
+
+	swagger:route GET /api/v1/rollout/config.json feature-flag pilot RolloutClientConfig
+
+	Check Multiple Rollout Feature Status For A Certain Pilot
+
+	Return all the flag states that was requested by the
+
+		Consumes:
+		- application/json
+
+		Produces:
+		- application/json
+
+		Schemes: http, https
+
+		Responses:
+		  200: rolloutClientConfigResponse
+		  400: errorResponse
+		  500: errorResponse
+
+*/
 func (sm *ServeMux) RolloutConfigJSON(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	payloadDecoder := json.NewDecoder(r.Body)
 
-	var requestData ClientConfigRequest
+	var requestData RolloutClientConfigRequestBody
 
 	parseErr := payloadDecoder.Decode(&requestData)
 
@@ -32,9 +79,9 @@ func (sm *ServeMux) RolloutConfigJSON(w http.ResponseWriter, r *http.Request) {
 
 	states, err := sm.UseCases.GetPilotFlagStates(r.Context(), requestData.PilotID, requestData.Features...)
 
-	if handleError(w, err , http.StatusInternalServerError) {
+	if handleError(w, err, http.StatusInternalServerError) {
 		return
 	}
 
-	serveJSON(w, ClientConfigResponseBody{States: states})
+	serveJSON(w, RolloutClientConfigResponseBody{States: states})
 }

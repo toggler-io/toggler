@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+	"github.com/adamluzsi/toggler/lib/go/client"
+	"github.com/adamluzsi/toggler/lib/go/client/operations"
+	"github.com/adamluzsi/toggler/lib/go/models"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -43,7 +46,7 @@ func TestServeMux_ClientConfig(t *testing.T) {
 			s.Then(`the request will be accepted with OK`, func(t *testcase.T) {
 				r := subject(t)
 				require.Equal(t, 200, r.Code)
-				var body httpapi.ClientConfigResponseBody
+				var body httpapi.RolloutClientConfigResponseBody
 				IsJsonResponse(t, r, &body)
 				stateIs(t, GetFeatureFlagName(t), true, body.States)
 				stateIs(t, `yet-unknown-feature`, false, body.States)
@@ -56,7 +59,7 @@ func TestServeMux_ClientConfig(t *testing.T) {
 			s.Then(`the request will include values about toggles being flipped off`, func(t *testcase.T) {
 				r := subject(t)
 				require.Equal(t, 200, r.Code)
-				var body httpapi.ClientConfigResponseBody
+				var body httpapi.RolloutClientConfigResponseBody
 				IsJsonResponse(t, r, &body)
 				stateIs(t, GetFeatureFlagName(t), false, body.States)
 				stateIs(t, `yet-unknown-feature`, false, body.States)
@@ -105,7 +108,7 @@ func TestServeMux_ClientConfig(t *testing.T) {
 				require.Nil(t, err)
 				payload := bytes.NewBuffer([]byte{})
 				jsonenc := json.NewEncoder(payload)
-				require.Nil(t, jsonenc.Encode(httpapi.ClientConfigRequest{
+				require.Nil(t, jsonenc.Encode(httpapi.RolloutClientConfigRequestBody{
 					PilotID:  GetExternalPilotID(t),
 					Features: []string{GetFeatureFlagName(t), "yet-unknown-feature"},
 				}))
@@ -119,4 +122,36 @@ func TestServeMux_ClientConfig(t *testing.T) {
 		})
 
 	})
+
+	s.Test(`swagger integration`, func(t *testcase.T) {
+
+		require.Nil(t, GetStorage(t).Save(CTX(t), GetFeatureFlag(t)))
+		require.Nil(t, GetStorage(t).Save(CTX(t), GetPilot(t)))
+
+		s := httptest.NewServer(http.StripPrefix(`/api/v1`, NewServeMux(t)))
+		defer s.Close()
+
+		p := operations.NewRolloutClientConfigParams()
+		p.Body = &models.RolloutClientConfigRequestBody{}
+		p.Body.PilotID = &GetPilot(t).ExternalID
+		p.Body.Features = []string{GetFeatureFlagName(t)}
+
+		tc := client.DefaultTransportConfig()
+		u, _ := url.Parse(s.URL)
+		tc.Host = u.Host
+		tc.Schemes = []string{`http`}
+
+		c := client.NewHTTPClientWithConfig(nil, tc)
+
+		resp, err := c.Operations.RolloutClientConfig(p)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+
+		require.NotNil(t, resp)
+		require.NotNil(t, resp.Payload)
+		require.Equal(t, GetPilotEnrollment(t), resp.Payload.States[GetFeatureFlagName(t)])
+
+	})
+
 }
