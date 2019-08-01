@@ -39,8 +39,8 @@ func buildFeatureAPI(handlers *ServeMux) *http.ServeMux {
 
 func buildFlagAPI(handlers *ServeMux) http.Handler {
 	mux := http.NewServeMux()
-	mux.Handle(`/create.form`, http.HandlerFunc(handlers.CreateFeatureFlagFORM))
-	mux.Handle(`/create.json`, http.HandlerFunc(handlers.CreateFeatureFlagJSON))
+	mux.Handle(`/create.form`, http.HandlerFunc(handlers.CreateRolloutFeatureFlagFORM))
+	mux.Handle(`/create.json`, http.HandlerFunc(handlers.CreateRolloutFeatureFlagJSON))
 	mux.Handle(`/update.form`, http.HandlerFunc(handlers.UpdateFeatureFlagFORM))
 	mux.Handle(`/update.json`, http.HandlerFunc(handlers.UpdateFeatureFlagJSON))
 	mux.Handle(`/list.json`, http.HandlerFunc(handlers.ListFeatureFlags))

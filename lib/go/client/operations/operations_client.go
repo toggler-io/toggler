@@ -25,6 +25,36 @@ type Client struct {
 }
 
 /*
+CreateRolloutFeatureFlag creates rollout feature flag
+
+This operation allows you to create a new rollout feature flag.
+*/
+func (a *Client) CreateRolloutFeatureFlag(params *CreateRolloutFeatureFlagParams) (*CreateRolloutFeatureFlagOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCreateRolloutFeatureFlagParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "CreateRolloutFeatureFlag",
+		Method:             "GET",
+		PathPattern:        "/api/v1/rollout/flag/create.json",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https", "ws"},
+		Params:             params,
+		Reader:             &CreateRolloutFeatureFlagReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*CreateRolloutFeatureFlagOK), nil
+
+}
+
+/*
 IsFeatureEnabled checks rollout feature status for pilot
 
 Reply back whether the feature for a given pilot id is enabled or not.

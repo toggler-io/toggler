@@ -1,0 +1,498 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https",
+    "ws"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "The purpose of this application is to provide API over HTTP to toggler service,\nin which you can interact with the service in a programmatic way.",
+    "title": "provides API on HTTP layer to the toggler service.",
+    "version": "v1"
+  },
+  "basePath": "/",
+  "paths": {
+    "/api/v1/rollout/config.json": {
+      "get": {
+        "description": "Return all the flag states that was requested by the",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "feature-flag",
+          "pilot"
+        ],
+        "summary": "Check Multiple Rollout Feature Status For A Certain Pilot",
+        "operationId": "RolloutClientConfig",
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/RolloutClientConfigRequestBody"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/rolloutClientConfigResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/api/v1/rollout/flag/create.json": {
+      "get": {
+        "description": "This operation allows you to create a new rollout feature flag.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "rollout",
+          "feature-flag"
+        ],
+        "summary": "Create Rollout Feature Flag",
+        "operationId": "CreateRolloutFeatureFlag",
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/FeatureFlag"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/createRolloutFeatureFlagResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/api/v1/rollout/is-feature-enabled.json": {
+      "get": {
+        "description": "Reply back whether the feature for a given pilot id is enabled or not.\nBy Default, this will be determined whether the flag exist,\nthe pseudo random dice roll enrolls the pilot,\nor if there any manually set enrollment status for the pilot.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "feature-flag",
+          "pilot"
+        ],
+        "summary": "Check Rollout Feature Status For Pilot",
+        "operationId": "IsFeatureEnabled",
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/IsFeatureEnabledRequestPayload"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/enrollmentResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/api/v1/rollout/is-feature-globally-enabled.json": {
+      "get": {
+        "description": "Reply back whether the feature rolled out globally or not.\nThis is especially useful for cases where you don't have pilot id.\nSuch case is batch processing, or dark launch flips.\nBy Default, this will be determined whether the flag exist,\nThen  whether the release id done to everyone or not by percentage.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "feature-flag",
+          "pilot"
+        ],
+        "summary": "Check Rollout Feature Status for Global use",
+        "operationId": "IsFeatureGloballyEnabled",
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/IsFeatureGloballyEnabledRequestBody"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/enrollmentResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/api/v1/ws": {
+      "get": {
+        "description": "The\nReply back whether the feature for a given pilot id is enabled or not.\nBy Default, this will be determined whether the flag exist,\nthe pseudo random dice roll enrolls the pilot,\nor if there any manually set enrollment status for the pilot.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "ws"
+        ],
+        "tags": [
+          "feature-flag",
+          "pilot",
+          "global",
+          "websocket"
+        ],
+        "summary": "Socket API to check Rollout Feature Flag Status",
+        "operationId": "Websocket",
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/WebsocketRequestPayload"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/enrollmentResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "503": {
+            "$ref": "#/responses/wsLoadBalanceErrResponse"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "EnrollmentResponseBody": {
+      "description": "The content will be always given, regardless if the flag exists or not.\nThis helps the developers to use it as a null object, regardless the toggler service state.",
+      "type": "object",
+      "title": "EnrollmentResponse will be returned when feature flag status is requested.",
+      "properties": {
+        "enrollment": {
+          "description": "Rollout feature flag enrollment status.",
+          "type": "boolean",
+          "x-go-name": "Enrollment"
+        }
+      },
+      "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+    },
+    "ErrorResponseBody": {
+      "type": "object",
+      "title": "ErrorResponseBody describe and error that meant to be consumed by a software engineer.",
+      "properties": {
+        "error": {
+          "description": "Error contains the details of the error",
+          "type": "object",
+          "properties": {
+            "code": {
+              "description": "The constant code of the error that can be used for localisation",
+              "type": "integer",
+              "format": "int64",
+              "x-go-name": "Code",
+              "example": 401
+            },
+            "message": {
+              "description": "The message that describe the error to the developer who do the integration.\nNot meant to be propagated to the end-user.\nThe Message may change in the future, it it helps readability,\nplease do not rely on the content in any way other than just reading it.",
+              "type": "string",
+              "x-go-name": "Message"
+            }
+          },
+          "x-go-name": "Error"
+        }
+      },
+      "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+    },
+    "FeatureFlag": {
+      "description": "FeatureFlag is the basic entity with properties that feature flag holds",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "ID represent the fact that this object will be persistent in the Subject",
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "rollout": {
+          "$ref": "#/definitions/Rollout"
+        }
+      },
+      "x-go-package": "github.com/adamluzsi/toggler/services/rollouts"
+    },
+    "IsFeatureEnabledRequestPayload": {
+      "type": "object",
+      "required": [
+        "feature",
+        "id"
+      ],
+      "properties": {
+        "feature": {
+          "description": "Feature is the Feature Flag name that is needed to be checked for enrollment",
+          "type": "string",
+          "x-go-name": "Feature",
+          "example": "rollout-feature-flag"
+        },
+        "id": {
+          "description": "PilotID is the public unique ID of the pilot who's enrollment needs to be checked.",
+          "type": "string",
+          "x-go-name": "PilotID",
+          "example": "pilot-public-id"
+        }
+      },
+      "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+    },
+    "IsFeatureGloballyEnabledRequestBody": {
+      "type": "object",
+      "required": [
+        "feature"
+      ],
+      "properties": {
+        "feature": {
+          "description": "Feature is the Feature Flag name that is needed to be checked for enrollment",
+          "type": "string",
+          "x-go-name": "Feature",
+          "example": "rollout-feature-flag"
+        }
+      },
+      "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+    },
+    "Rollout": {
+      "type": "object",
+      "properties": {
+        "rand_seed_salt": {
+          "description": "RandSeed allows you to configure the randomness for the percentage based pilot enrollment selection.\nThis value could have been neglected by using the flag name as random seed,\nbut that would reduce the flexibility for edge cases where you want\nto use a similar pilot group as a successful flag rollout before.",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "RandSeed"
+        },
+        "strategy": {
+          "$ref": "#/definitions/RolloutStrategy"
+        }
+      },
+      "x-go-package": "github.com/adamluzsi/toggler/services/rollouts"
+    },
+    "RolloutClientConfigRequestBody": {
+      "type": "object",
+      "required": [
+        "id",
+        "features"
+      ],
+      "properties": {
+        "features": {
+          "description": "Features are the list of flag name that should be matched against the pilot and state the enrollment for each.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Features",
+          "example": [
+            "my-feature-flag"
+          ]
+        },
+        "id": {
+          "description": "PilotID is the public uniq id that identify the caller pilot",
+          "type": "string",
+          "x-go-name": "PilotID",
+          "example": "public-uniq-pilot-id"
+        }
+      },
+      "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+    },
+    "RolloutClientConfigResponseBody": {
+      "description": "The content expected to be cached in some form of state container.",
+      "type": "object",
+      "title": "RolloutClientConfigResponseBody will contain the requested feature flag states for a certain pilot.",
+      "properties": {
+        "states": {
+          "description": "States holds the requested rollout feature flag enrollment statuses.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "boolean"
+          },
+          "x-go-name": "States"
+        }
+      },
+      "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+    },
+    "RolloutStrategy": {
+      "type": "object",
+      "properties": {
+        "decision_logic_api": {
+          "$ref": "#/definitions/URL"
+        },
+        "percentage": {
+          "description": "Percentage allows you to define how many of your user base should be enrolled pseudo randomly.",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Percentage"
+        }
+      },
+      "x-go-package": "github.com/adamluzsi/toggler/services/rollouts"
+    },
+    "URL": {
+      "description": "The general form represented is:\n\n[scheme:][//[userinfo@]host][/]path[?query][#fragment]\n\nURLs that do not start with a slash after the scheme are interpreted as:\n\nscheme:opaque[?query][#fragment]\n\nNote that the Path field is stored in decoded form: /%47%6f%2f becomes /Go/.\nA consequence is that it is impossible to tell which slashes in the Path were\nslashes in the raw URL and which were %2f. This distinction is rarely important,\nbut when it is, code must not use Path directly.\nThe Parse function sets both Path and RawPath in the URL it returns,\nand URL's String method uses RawPath if it is a valid encoding of Path,\nby calling the EscapedPath method.",
+      "type": "object",
+      "title": "A URL represents a parsed URL (technically, a URI reference).",
+      "properties": {
+        "ForceQuery": {
+          "type": "boolean"
+        },
+        "Fragment": {
+          "type": "string"
+        },
+        "Host": {
+          "type": "string"
+        },
+        "Opaque": {
+          "type": "string"
+        },
+        "Path": {
+          "type": "string"
+        },
+        "RawPath": {
+          "type": "string"
+        },
+        "RawQuery": {
+          "type": "string"
+        },
+        "Scheme": {
+          "type": "string"
+        },
+        "User": {
+          "$ref": "#/definitions/Userinfo"
+        }
+      },
+      "x-go-package": "net/url"
+    },
+    "Userinfo": {
+      "description": "The Userinfo type is an immutable encapsulation of username and\npassword details for a URL. An existing Userinfo value is guaranteed\nto have a username set (potentially empty, as allowed by RFC 2396),\nand optionally a password.",
+      "type": "object",
+      "x-go-package": "net/url"
+    },
+    "WebsocketRequestPayload": {
+      "type": "object",
+      "required": [
+        "operation"
+      ],
+      "properties": {
+        "data": {
+          "description": "Data content correspond with the api payloads of the given operations.",
+          "type": "object",
+          "x-go-name": "Data",
+          "example": {
+            "feature": "my-feature",
+            "id": "pilot-id-name"
+          }
+        },
+        "operation": {
+          "description": "Operation describe the chosen operation that needs to be executed.",
+          "type": "string",
+          "enum": [
+            "IsFeatureEnabled",
+            "IsFeatureGloballyEnabled"
+          ],
+          "x-go-name": "Operation",
+          "example": "IsFeatureEnabled"
+        }
+      },
+      "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+    }
+  },
+  "responses": {
+    "createRolloutFeatureFlagResponse": {
+      "description": "CreateRolloutFeatureFlagResponse returns information about the requester's rollout feature enrollment status.",
+      "schema": {
+        "type": "object"
+      }
+    },
+    "enrollmentResponse": {
+      "description": "EnrollmentResponse returns information about the requester's rollout feature enrollment status.",
+      "schema": {
+        "$ref": "#/definitions/EnrollmentResponseBody"
+      }
+    },
+    "errorResponse": {
+      "description": "ErrorResponse will contains a response about request that had some kind of problem.\nThe details will be included in the body.",
+      "schema": {
+        "$ref": "#/definitions/ErrorResponseBody"
+      }
+    },
+    "rolloutClientConfigResponse": {
+      "description": "RolloutClientConfigResponse returns information about the requester's rollout feature enrollment statuses.",
+      "schema": {
+        "$ref": "#/definitions/RolloutClientConfigResponseBody"
+      }
+    },
+    "wsLoadBalanceErrResponse": {
+      "description": "WSLoadBalanceErrResp will be received in case the receiver server cannot take more ws connections.\nThis error must be handled by retrying the call until it succeed.\nThis error meant to be a recoverable error.\nThe main purpose for this is to gain control over how  much ws connection can be open on a single server instance,\nso scaling the service can be easily achieved.\nIn case there is a load balancer that handle this transparently, this error may not be received.",
+      "schema": {
+        "$ref": "#/definitions/ErrorResponseBody"
+      }
+    }
+  }
+}

@@ -1724,18 +1724,18 @@ EhNlPvSnMOYvIWjgiiAynjrlkXm3zPDgkXh/49dpeRX7P/7Pv/3H//3vd3LUG/y3/3fD//Qv//H//J3L
 	"/docs/httpapi/README.md": {
 		name:    "README.md",
 		local:   "/home/adamluzsi/src/github.com/adamluzsi/toggler/docs/httpapi/README.md",
-		size:    1544,
-		modtime: 1563882201,
+		size:    1553,
+		modtime: 1564614827,
 		compressed: `
-H4sIAAAAAAAC/6yTMW/bMBCFd/6KA71GMbpq65C42TIY6FAU8Jk6SawpkiGPcYwi/72gJMdqY7lwm1Hi
-HR/fd+8W4FHtsCFomT16LcRiAau7NSzR6+Xzp+U+CrFudQQdAeErbaNTO2IgW3mnLQO3yIBbQ8AO6IVU
-YgLnKSBrZ0EzBFKknyneinU7PVIuBIre2Qr2mlvgluDLev0Inx8fTvef6i12+ZJ7F6BzgeDgEii0oFpS
-u7477rFpKEDlVOrIct+XLS0m1zzEe0JOge5sfnYlxIoYgjPGJYZ6OIPaYAORkVOE2gVA8No47i9bwN0L
-dt6QEIGeEkUWm83mR3RW/BQA8k1LliD/lJM3uaRCRllCLgeQo2gu7w7F8etmONSVLKVPW6NV0b+hSFY/
-FbqSAuBVvGbt/JBMMtLpJZJsNpU5yBI4JBpLZ3CsjNuiMYersDR900dTmQHyb2Z/i/PoZ6mcrXVz2zcP
-+X4L3DHLaOOeAnTJsPaG3iOgMRjRk9K1VkNCbgfAl1nkmcL5ofYgRq0oS/g2RsRgU+QNKPAYjNOv7ftf
-Kqfj+zywrNKbiJMYTjQGiGeUSqjRRDojOLRMQzkDX8fjSAsaxj8O4tpF/Avl+bW6tFQflrH/sjlZrAsu
-ZxflSgu/AgAA//9bdY3FCAYAAA==
+H4sIAAAAAAAC/6xTsW7bMBDd+RUHeo1idNXWIXGzZTDQoSjgM3WSWFMkQx7jGEX+vaAkx2pjuXCQUeLd
+vXvv3luAR7XDhqBl9ui1EIsFrO7WsESvl89flvsoxLrVEXQEhO+0jU7tiIFs5Z22DNwiA24NATugF1KJ
+CZyngKydBc0QSJF+pngr1u30SbkQKHpnK9hrboFbgm/r9SN8fXw4zT/VW+zykHsXoHOB4OASKLSgWlK7
+vjvusWkoQOVU6shy35cpLSZjHuI9IadAdzavXQmxIobgjHGJoR7eoDbYQGTkFKF2ARC8No77YQu4e8HO
+GxIi0FOiyGKz2fyKzorfAkC+YckS5L9w8iaXVMgoS8jlAHIEzeXdoTh+3QyPupKl9GlrtCr6HYpk9VOh
+KykAXsVrxs6LZCUjnTaRZDOprIMsgUOisXRGjpVxWzTmcJUsTd/02arMCPIxsn/ZeeSzVM7Wurntmwd/
+vxnu6GW0cU8BumRYe0PvJaDRGNGT0rVWg0NuB4Eva5FvCueP2gsxYkVZwo/RIgabIiegwKMxTr+273+p
+7I6f84JllJ5EnNhwgjGIeAaphBpNpDOAQ8vUlDPi63g8aUHD+cdDXBvE/6g8H6tLofo0j01oNmO2PsB3
+krALdGcTcyWXPwEAAP//jvmCfREGAAA=
 `,
 	},
 

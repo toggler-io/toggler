@@ -1,5 +1,9 @@
 # github.com/Pallinder/go-randomdata v1.2.0
 github.com/Pallinder/go-randomdata
+# github.com/PuerkitoBio/purell v1.1.1
+github.com/PuerkitoBio/purell
+# github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
+github.com/PuerkitoBio/urlesc
 # github.com/adamluzsi/frameless v0.0.0-20190716225752-ef5b90560eff
 github.com/adamluzsi/frameless
 github.com/adamluzsi/frameless/fixtures
@@ -10,8 +14,38 @@ github.com/adamluzsi/frameless/resources/storages/memorystorage
 github.com/adamluzsi/frameless/resources
 # github.com/adamluzsi/testcase v0.0.0-20190714215144-d4dbd6534e4d
 github.com/adamluzsi/testcase
+# github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
+github.com/asaskevich/govalidator
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
+# github.com/go-openapi/analysis v0.19.2
+github.com/go-openapi/analysis
+github.com/go-openapi/analysis/internal
+# github.com/go-openapi/errors v0.19.2
+github.com/go-openapi/errors
+# github.com/go-openapi/jsonpointer v0.19.2
+github.com/go-openapi/jsonpointer
+# github.com/go-openapi/jsonreference v0.19.2
+github.com/go-openapi/jsonreference
+# github.com/go-openapi/loads v0.19.2
+github.com/go-openapi/loads
+# github.com/go-openapi/runtime v0.19.3
+github.com/go-openapi/runtime/middleware
+github.com/go-openapi/runtime
+github.com/go-openapi/runtime/client
+github.com/go-openapi/runtime/logger
+github.com/go-openapi/runtime/middleware/denco
+github.com/go-openapi/runtime/middleware/header
+github.com/go-openapi/runtime/middleware/untyped
+github.com/go-openapi/runtime/security
+# github.com/go-openapi/spec v0.19.2
+github.com/go-openapi/spec
+# github.com/go-openapi/strfmt v0.19.2
+github.com/go-openapi/strfmt
+# github.com/go-openapi/swag v0.19.4
+github.com/go-openapi/swag
+# github.com/go-openapi/validate v0.19.2
+github.com/go-openapi/validate
 # github.com/go-redis/redis v6.15.2+incompatible
 github.com/go-redis/redis
 github.com/go-redis/redis/internal
@@ -20,6 +54,8 @@ github.com/go-redis/redis/internal/hashtag
 github.com/go-redis/redis/internal/pool
 github.com/go-redis/redis/internal/proto
 github.com/go-redis/redis/internal/util
+# github.com/go-stack/stack v1.8.0
+github.com/go-stack/stack
 # github.com/go-swagger/go-swagger v0.19.0
 github.com/go-swagger/go-swagger
 # github.com/golang-migrate/migrate/v4 v4.5.0
@@ -45,6 +81,12 @@ github.com/hashicorp/go-multierror
 github.com/lib/pq
 github.com/lib/pq/oid
 github.com/lib/pq/scram
+# github.com/mailru/easyjson v0.0.0-20190614124828-94de47d64c63
+github.com/mailru/easyjson/jlexer
+github.com/mailru/easyjson/jwriter
+github.com/mailru/easyjson/buffer
+# github.com/mitchellh/mapstructure v1.1.2
+github.com/mitchellh/mapstructure
 # github.com/mjibson/esc v0.2.0
 github.com/mjibson/esc
 github.com/mjibson/esc/embed
@@ -61,6 +103,21 @@ github.com/stretchr/testify/require
 github.com/stretchr/testify/assert
 # github.com/unrolled/logger v0.0.0-20190327162521-be1a2406c7c9
 github.com/unrolled/logger
+# go.mongodb.org/mongo-driver v1.0.3
+go.mongodb.org/mongo-driver/bson
+go.mongodb.org/mongo-driver/bson/bsontype
+go.mongodb.org/mongo-driver/bson/primitive
+go.mongodb.org/mongo-driver/bson/bsoncodec
+go.mongodb.org/mongo-driver/bson/bsonrw
+go.mongodb.org/mongo-driver/x/bsonx/bsoncore
+# golang.org/x/net v0.0.0-20190620200207-3b0461eec859
+golang.org/x/net/idna
+# golang.org/x/text v0.3.2
+golang.org/x/text/unicode/norm
+golang.org/x/text/width
+golang.org/x/text/secure/bidirule
+golang.org/x/text/unicode/bidi
+golang.org/x/text/transform
 # golang.org/x/tools v0.0.0-20190624190245-7f2218787638
 golang.org/x/tools/imports
 golang.org/x/tools/go/packages
@@ -73,3 +130,5 @@ golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/internal/module
 golang.org/x/tools/go/internal/gcimporter
 golang.org/x/tools/internal/fastwalk
+# gopkg.in/yaml.v2 v2.2.2
+gopkg.in/yaml.v2
