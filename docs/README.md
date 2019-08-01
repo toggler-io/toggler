@@ -174,6 +174,7 @@ The token cannot be regained if it is not saved after token creation.
 #### API Documentation
 * [HTTP API documentation](/docs/httpapi/README.md)
 * you can find the swagger documentation at the /swagger.json endpoint.
+* the webgui also provides swagger-ui out of the box on the /swagger-ui path
 
 ## For Contributors
 * [Please read the design section of the project](/docs/design)
