@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"database/sql"
 	"github.com/adamluzsi/toggler/extintf/storages/postgres/assets"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -12,7 +13,7 @@ import (
 //go:generate esc -o ./assets/fs.go -pkg assets -prefix assets/migrations ./assets/migrations
 const migrationsDirectory = `/assets/migrations`
 
-func (pg *Postgres) Migrate() error {
+func Migrate(db *sql.DB) error {
 
 	f, err := assets.FS(false).Open(migrationsDirectory)
 
@@ -44,7 +45,7 @@ func (pg *Postgres) Migrate() error {
 		return err
 	}
 
-	dbDriver, err := postgres.WithInstance(pg.DB, &postgres.Config{})
+	dbDriver, err := postgres.WithInstance(db, &postgres.Config{})
 
 	if err != nil {
 		return err

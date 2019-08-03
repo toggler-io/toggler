@@ -12,6 +12,7 @@ import (
 	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/adamluzsi/toggler/services/security"
 	_ "github.com/lib/pq"
+	"io"
 	"net/url"
 	"strconv"
 	"strings"
@@ -21,17 +22,28 @@ import (
 func NewPostgres(db *sql.DB) (*Postgres, error) {
 	pg := &Postgres{DB: db, testEntities: memorystorage.NewMemory()}
 
-	if err := pg.Migrate(); err != nil {
+	if err := Migrate(db); err != nil {
 		return nil, err
 	}
 
 	return pg, nil
 }
 
+type sqlDB interface {
+	io.Closer
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
+	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
+}
+
 type Postgres struct {
-	*sql.DB
+	DB           sqlDB
 	timeLocation *time.Location
 	testEntities *memorystorage.Memory
+}
+
+func (pg *Postgres) Close() error {
+	return pg.DB.Close()
 }
 
 func (pg *Postgres) Save(ctx context.Context, entity interface{}) error {
