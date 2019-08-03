@@ -34,6 +34,20 @@ If your answer yes to most of them,
 then you can stop here, because adding this service to your stack would not solve too much.
 else, please continue...
 
+## Scalability
+
+The Service follows the [12 factor app](https://12factor.net/) principles,
+and scale out via the process model.
+The application don't use external resource dependent implementation,
+so as long the external reasource you use can be scale out, you will be fine.
+
+If you need to add a new storage implementation,
+because you need to use that,
+feel free to create a Issue or a PR.
+If you decide to implement your own integration with a storage,
+the expected behavior requirements/tests/coverage can be located under the `usecases/specs.StorageSpec` object.
+For examples, you can check the already existing storage implementations as well.
+
 ## Features
 
 ### Rollout management
