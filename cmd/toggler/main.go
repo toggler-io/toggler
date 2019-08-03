@@ -9,7 +9,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/adamluzsi/toggler/extintf/httpintf"
@@ -61,7 +63,15 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		httpListenAndServe(cache, port)
+
+		s := makeHTTPServer(cache, port)
+		withGracefulShutdown(func() {
+			if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				log.Fatal(err)
+			}
+		}, func(ctx context.Context) error {
+			return s.Shutdown(ctx)
+		})
 
 	case `create-token`:
 		createToken(storage, flagSet.Arg(0))
@@ -127,16 +137,19 @@ func createFixtures(s usecases.Storage) {
 	_ = pu.SetPilotEnrollmentForFeature(context.Background(), ff.ID, `test-public-pilot-id-2`, false)
 }
 
-func httpListenAndServe(storage usecases.Storage, port int) {
+func makeHTTPServer(storage usecases.Storage, port int) *http.Server {
 	useCases := usecases.NewUseCases(storage)
 	mux := httpintf.NewServeMux(useCases)
 
 	loggerMW := logger.New()
 	app := loggerMW.Handler(mux)
 
-	if err := http.ListenAndServe(fmt.Sprintf(`:%d`, port), app); err != nil {
-		log.Fatal(err)
+	server := &http.Server{
+		Addr:    fmt.Sprintf(`:%d`, port),
+		Handler: app,
 	}
+
+	return server
 }
 
 func createToken(s usecases.Storage, ownerUID string) {
@@ -155,12 +168,23 @@ func createToken(s usecases.Storage, ownerUID string) {
 	fmt.Println(t)
 }
 
-func connstr() string {
-	connstr, isSet := os.LookupEnv(`DATABASE_URL`)
+func withGracefulShutdown(wrk func(), shutdown func(context.Context) error) {
 
-	if !isSet {
-		log.Fatal(`please set "DATABASE_URL" to use the service`)
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	go wrk()
+	<-done
+
+	log.Println(`toggler graceful shutdown - BEGIN`)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Second)
+	defer cancel()
+
+	if err := shutdown(ctx); err != nil {
+		log.Fatalln(err)
 	}
 
-	return connstr
+	log.Println(`toggler graceful shutdown - FINISH`)
+
 }
