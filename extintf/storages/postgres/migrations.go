@@ -15,16 +15,32 @@ const migrationsDirectory = `/assets/migrations`
 
 func Migrate(db *sql.DB) error {
 
-	f, err := assets.FS(false).Open(migrationsDirectory)
+	m, err := NewMigrate(db)
 
 	if err != nil {
 		return err
 	}
 
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		return err
+	}
+
+	return nil
+
+}
+
+func NewMigrate(db *sql.DB) (*migrate.Migrate, error) {
+
+	f, err := assets.FS(false).Open(migrationsDirectory)
+
+	if err != nil {
+		return nil, err
+	}
+
 	fis, err := f.Readdir(-1)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var names []string
@@ -42,25 +58,21 @@ func Migrate(db *sql.DB) error {
 	srcDriver, err := bindata.WithInstance(s)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	dbDriver, err := postgres.WithInstance(db, &postgres.Config{})
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	m, err := migrate.NewWithInstance(`esc`, srcDriver, `postgres`, dbDriver)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		return err
-	}
-
-	return nil
+	return m, err
 
 }
