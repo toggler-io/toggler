@@ -8,7 +8,6 @@ import (
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources/specs"
-	"github.com/adamluzsi/frameless/resources/storages/memorystorage"
 	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/adamluzsi/toggler/services/security"
 	_ "github.com/lib/pq"
@@ -20,7 +19,7 @@ import (
 )
 
 func NewPostgres(db *sql.DB) (*Postgres, error) {
-	pg := &Postgres{DB: db, testEntities: memorystorage.NewMemory()}
+	pg := &Postgres{DB: db}
 
 	if err := Migrate(db); err != nil {
 		return nil, err
@@ -39,7 +38,6 @@ type sqlDB interface {
 type Postgres struct {
 	DB           sqlDB
 	timeLocation *time.Location
-	testEntities *memorystorage.Memory
 }
 
 func (pg *Postgres) Close() error {
@@ -59,18 +57,13 @@ func (pg *Postgres) Save(ctx context.Context, entity interface{}) error {
 	case *security.Token:
 		return pg.tokenInsertNew(ctx, e)
 	case *specs.TestEntity:
-		return pg.testEntities.Save(ctx, entity)
+		return pg.testEntityInsertNew(ctx, e)
 	default:
 		return frameless.ErrNotImplemented
 	}
 }
 
 func (pg *Postgres) FindByID(ctx context.Context, ptr interface{}, ID string) (bool, error) {
-	switch ptr.(type) {
-	case *specs.TestEntity:
-		return pg.testEntities.FindByID(ctx, ptr, ID)
-	}
-
 	id, err := strconv.ParseInt(ID, 10, 64)
 
 	if err != nil {
@@ -87,17 +80,15 @@ func (pg *Postgres) FindByID(ctx context.Context, ptr interface{}, ID string) (b
 	case *security.Token:
 		return pg.tokenFindByID(ctx, e, id)
 
+	case *specs.TestEntity:
+		return pg.testEntityFindByID(ctx, e, id)
+
 	default:
 		return false, frameless.ErrNotImplemented
 	}
 }
 
 func (pg *Postgres) Truncate(ctx context.Context, Type interface{}) error {
-	switch Type.(type) {
-	case specs.TestEntity, *specs.TestEntity:
-		return pg.testEntities.Truncate(ctx, Type)
-	}
-
 	var tableName string
 	switch Type.(type) {
 	case rollouts.FeatureFlag, *rollouts.FeatureFlag:
@@ -106,20 +97,19 @@ func (pg *Postgres) Truncate(ctx context.Context, Type interface{}) error {
 		tableName = `pilots`
 	case security.Token, *security.Token:
 		tableName = `tokens`
+	case specs.TestEntity, *specs.TestEntity:
+		tableName = `test_entities`
 	default:
 		return frameless.ErrNotImplemented
 	}
 
-	_, err := pg.DB.ExecContext(ctx, fmt.Sprintf(`TRUNCATE TABLE "%s"`, tableName))
+	query := fmt.Sprintf(`TRUNCATE TABLE "%s"`, tableName)
+	fmt.Println(query)
+	_, err := pg.DB.ExecContext(ctx, query)
 	return err
 }
 
 func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, ID string) error {
-	switch Type.(type) {
-	case specs.TestEntity, *specs.TestEntity:
-		return pg.testEntities.DeleteByID(ctx, Type, ID)
-	}
-
 	id, err := strconv.ParseInt(ID, 10, 64)
 
 	if err != nil {
@@ -139,6 +129,10 @@ func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, ID string)
 		_, err := pg.DB.ExecContext(ctx, `DELETE FROM "tokens" WHERE id = $1`, id)
 		return err
 
+	case specs.TestEntity, *specs.TestEntity:
+		_, err := pg.DB.ExecContext(ctx, `DELETE FROM "test_entities" WHERE id = $1`, id)
+		return err
+
 	default:
 		return frameless.ErrNotImplemented
 	}
@@ -156,7 +150,7 @@ func (pg *Postgres) Update(ctx context.Context, ptr interface{}) error {
 		return pg.tokenUpdate(ctx, e)
 
 	case *specs.TestEntity:
-		return pg.testEntities.Update(ctx, ptr)
+		return pg.testEntityUpdate(ctx, e)
 
 	default:
 		return frameless.ErrNotImplemented
@@ -392,6 +386,23 @@ func (pg *Postgres) pilotInsertNew(ctx context.Context, pilot *rollouts.Pilot) e
 	return specs.SetID(pilot, strconv.FormatInt(id.Int64, 10))
 }
 
+const testEntityInsertNewQuery = `
+INSERT INTO "test_entities" (id) 
+VALUES (default)
+RETURNING id;
+`
+
+func (pg *Postgres) testEntityInsertNew(ctx context.Context, te *specs.TestEntity) error {
+	row := pg.DB.QueryRowContext(ctx, testEntityInsertNewQuery)
+
+	var id sql.NullInt64
+	if err := row.Scan(&id); err != nil {
+		return err
+	}
+
+	return specs.SetID(te, strconv.FormatInt(id.Int64, 10))
+}
+
 const tokenInsertNewQuery = `
 INSERT INTO "tokens" (sha512, owner_uid, issued_at, duration)
 VALUES ($1, $2, $3, $4)
@@ -453,6 +464,28 @@ func (pg *Postgres) pilotFindByID(ctx context.Context, pilot *rollouts.Pilot, id
 	}
 
 	*pilot = p
+	return true, nil
+}
+
+const testEntityFindByIDQuery = `
+SELECT id
+FROM "test_entities" 
+WHERE id = $1;
+`
+
+func (pg *Postgres) testEntityFindByID(ctx context.Context, testEntity *specs.TestEntity, id int64) (bool, error) {
+	row := pg.DB.QueryRowContext(ctx, testEntityFindByIDQuery, id)
+
+	err := row.Scan(&testEntity.ID)
+
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+
+	if err != nil {
+		return false, err
+	}
+
 	return true, nil
 }
 
@@ -643,6 +676,10 @@ func (pg *Postgres) tokenUpdate(ctx context.Context, t *security.Token) error {
 	)
 
 	return err
+}
+
+func (pg *Postgres) testEntityUpdate(ctx context.Context, t *specs.TestEntity) error {
+	return nil
 }
 
 func (pg *Postgres) ensureTimeLocation(t time.Time) (time.Time, error) {

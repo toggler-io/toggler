@@ -305,6 +305,27 @@ H4sIAAAAAAAC/3IOcnUMcVXw9HNxjVBQysnPzy4tiC/IzMkvKY5PqoxPrSiJz0xRUvD3U1CCiCophAZ7
 `,
 	},
 
+	"/1564874467_create_test_entities_table.down.sql": {
+		name:    "1564874467_create_test_entities_table.down.sql",
+		local:   "assets/migrations/1564874467_create_test_entities_table.down.sql",
+		size:    27,
+		modtime: 1564874568,
+		compressed: `
+H4sIAAAAAAAC/3IJ8g9QCHF08nFVUCpJLS6JT80rySzJTC1WsgYEAAD//18Bt9QbAAAA
+`,
+	},
+
+	"/1564874467_create_test_entities_table.up.sql": {
+		name:    "1564874467_create_test_entities_table.up.sql",
+		local:   "assets/migrations/1564874467_create_test_entities_table.up.sql",
+		size:    59,
+		modtime: 1564874553,
+		compressed: `
+H4sIAAAAAAAC/3IOcnUMcVUIcXTycVVQKkktLolPzSvJLMlMLVbi0uBSUFBQyExRcPJ0D3YN8nT0UfDz
+D1HwC/Xx4dK0BgQAAP//QyRBQTsAAAA=
+`,
+	},
+
 	"/assets/migrations": {
 		name:  "migrations",
 		local: `./assets/migrations`,
@@ -323,5 +344,7 @@ var _escDirs = map[string][]os.FileInfo{
 		_escData["/1562584482_create_tokens_table.up.sql"],
 		_escData["/1563313726_create_index_lookup_pilots_by_ext_id.down.sql"],
 		_escData["/1563313726_create_index_lookup_pilots_by_ext_id.up.sql"],
+		_escData["/1564874467_create_test_entities_table.down.sql"],
+		_escData["/1564874467_create_test_entities_table.up.sql"],
 	},
 }
