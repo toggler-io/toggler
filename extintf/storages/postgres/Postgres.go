@@ -11,7 +11,6 @@ import (
 	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/adamluzsi/toggler/services/security"
 	_ "github.com/lib/pq"
-	"io"
 	"net/url"
 	"strconv"
 	"strings"
@@ -28,20 +27,26 @@ func NewPostgres(db *sql.DB) (*Postgres, error) {
 	return pg, nil
 }
 
-type sqlDB interface {
-	io.Closer
+type DB interface {
 	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
 	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
 }
 
 type Postgres struct {
-	DB           sqlDB
+	DB
 	timeLocation *time.Location
 }
 
 func (pg *Postgres) Close() error {
-	return pg.DB.Close()
+	switch db := pg.DB.(type) {
+	case *sql.DB:
+		return db.Close()
+	case *sql.Tx:
+		return db.Commit()
+	default:
+		return frameless.ErrNotImplemented
+	}
 }
 
 func (pg *Postgres) Save(ctx context.Context, entity interface{}) error {
@@ -169,7 +174,7 @@ func (pg *Postgres) FindAll(ctx context.Context, Type interface{}) frameless.Ite
 		return pg.tokenFindAll(ctx)
 
 	case specs.TestEntity, *specs.TestEntity:
-		return pg.FindAll(ctx, Type)
+		return pg.testEntityFindAll(ctx)
 
 	default:
 		return iterators.NewError(frameless.ErrNotImplemented)
@@ -549,6 +554,23 @@ func (pg *Postgres) pilotFindAll(ctx context.Context) frameless.Iterator {
 	}
 
 	return iterators.NewSQLRows(rows, m)
+}
+
+func (pg *Postgres) testEntityFindAll(ctx context.Context) frameless.Iterator {
+
+	mapper := iterators.SQLRowMapperFunc(func(s iterators.SQLRowScanner, e frameless.Entity) error {
+			te := e.(*specs.TestEntity)
+			return s.Scan(&te.ID)
+	})
+
+	rows, err := pg.DB.QueryContext(ctx, `SELECT id FROM "test_entities"`)
+
+	if err != nil {
+		return iterators.NewError(err)
+	}
+
+	return iterators.NewSQLRows(rows, mapper)
+
 }
 
 const tokenFindAllQuery = `
