@@ -109,7 +109,6 @@ func (pg *Postgres) Truncate(ctx context.Context, Type interface{}) error {
 	}
 
 	query := fmt.Sprintf(`TRUNCATE TABLE "%s"`, tableName)
-	fmt.Println(query)
 	_, err := pg.DB.ExecContext(ctx, query)
 	return err
 }

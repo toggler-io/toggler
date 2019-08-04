@@ -6,6 +6,7 @@ import (
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/toggler/extintf/storages/postgres"
+	testing2 "github.com/adamluzsi/toggler/testing"
 	"os"
 	"testing"
 
@@ -27,7 +28,10 @@ func TestPostgres(t *testing.T) {
 	storage, err := postgres.NewPostgres(db)
 	require.Nil(t, err)
 
-	(&specs.StorageSpec{Subject: storage}).Test(t)
+	specs.StorageSpec{
+		Subject: storage,
+		FixtureFactory: testing2.NewFixtureFactory(),
+	}.Test(t)
 }
 
 func MustOpenDB(t *testing.T) *sql.DB {

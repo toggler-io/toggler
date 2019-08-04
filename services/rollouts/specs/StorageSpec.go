@@ -13,6 +13,11 @@ import (
 
 type StorageSpec struct {
 	Storage rollouts.Storage
+
+	FixtureFactory interface {
+		specs.FixtureFactory
+		SetPilotFeatureFlagID(ffID string) func()
+	}
 }
 
 func (spec StorageSpec) Test(t *testing.T) {
@@ -27,7 +32,7 @@ func (spec StorageSpec) Test(t *testing.T) {
 	s.Describe(`rollouts.StorageSpec`, func(s *testcase.Spec) {
 		s.Describe(`flag`, func(s *testcase.Spec) {
 			testEntity(t, rollouts.FeatureFlag{})
-			FlagFinderSpec{Subject: spec.Storage}.Test(t)
+			FlagFinderSpec{Subject: spec.Storage, FixtureFactory: spec.FixtureFactory}.Test(t)
 		})
 
 		s.Describe(`pilot`, func(s *testcase.Spec) {
@@ -37,27 +42,30 @@ func (spec StorageSpec) Test(t *testing.T) {
 
 			s.Around(func(t *testcase.T) func() {
 				flag := t.I(`flag`).(*rollouts.FeatureFlag)
-				require.Nil(t, spec.Storage.Save(context.Background(),flag))
-				ff.PilotFeatureFlagID = flag.ID
+				require.Nil(t, spec.Storage.Save(spec.ctx(flag), flag))
+				td := ff.SetPilotFeatureFlagID(flag.ID)
 				return func() {
-					require.Nil(t, spec.Storage.Truncate(context.Background(), rollouts.FeatureFlag{}))
-					ff.PilotFeatureFlagID = ``
+					require.Nil(t, spec.Storage.Truncate(spec.ctx(rollouts.FeatureFlag{}), rollouts.FeatureFlag{}))
+					td()
 				}
 			})
 
 			s.Then(`coverage pass`, func(t *testcase.T) {
 				testEntity(t.T, rollouts.Pilot{})
-				PilotFinderSpec{Subject: spec.Storage}.Test(t.T)
+				PilotFinderSpec{
+					Subject:        spec.Storage,
+					FixtureFactory: spec.FixtureFactory,
+				}.Test(t.T)
 			})
 		})
 
 		s.Describe(`flag name uniq across storage`, func(s *testcase.Spec) {
 			subject := func(t *testcase.T) error {
-				return spec.Storage.Save(context.Background(), t.I(`flag`).(*rollouts.FeatureFlag))
+				return spec.Storage.Save(spec.ctx(rollouts.FeatureFlag{}), t.I(`flag`).(*rollouts.FeatureFlag))
 			}
 
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, spec.Storage.Truncate(context.Background(), rollouts.FeatureFlag{}))
+				require.Nil(t, spec.Storage.Truncate(spec.ctx(rollouts.FeatureFlag{}), rollouts.FeatureFlag{}))
 			})
 
 			s.Let(`flag`, func(t *testcase.T) interface{} {
@@ -75,4 +83,8 @@ func (spec StorageSpec) Test(t *testing.T) {
 			})
 		})
 	})
+}
+
+func (spec StorageSpec) ctx(e interface{}) context.Context {
+	return spec.FixtureFactory.Context(e)
 }

@@ -1,14 +1,15 @@
 package specs
 
 import (
+	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/toggler/services/security"
 	testing2 "github.com/adamluzsi/toggler/testing"
-	"github.com/adamluzsi/frameless/resources/specs"
 	"testing"
 )
 
 type StorageSpec struct {
 	Storage security.Storage
+	specs.FixtureFactory
 }
 
 func (spec StorageSpec) Test(t *testing.T) {
@@ -24,6 +25,5 @@ func (spec StorageSpec) Test(t *testing.T) {
 		specs.TestUpdate(t, spec.Storage, entityType, ff)
 	}
 
-	TokenFinderSpec{Subject: spec.Storage}.Test(t)
-
+	TokenFinderSpec{Subject: spec.Storage, FixtureFactory: spec.FixtureFactory}.Test(t)
 }

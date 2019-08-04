@@ -7,5 +7,8 @@ import (
 )
 
 func TestTestStorage(t *testing.T) {
-	(&specs.StorageSpec{Subject: tting.NewTestStorage()}).Test(t)
+	specs.StorageSpec{
+		Subject: tting.NewTestStorage(),
+		FixtureFactory: tting.NewFixtureFactory(),
+	}.Test(t)
 }

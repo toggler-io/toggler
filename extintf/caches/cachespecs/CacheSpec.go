@@ -23,6 +23,11 @@ import (
 
 type CacheSpec struct {
 	Factory func(usecases.Storage) caches.Interface
+
+	FixtureFactory interface {
+		flspecs.FixtureFactory
+		SetPilotFeatureFlagID(ffID string) func()
+	}
 }
 
 func (spec CacheSpec) Test(t *testing.T) {
@@ -31,8 +36,8 @@ func (spec CacheSpec) Test(t *testing.T) {
 
 	s.Around(func(t *testcase.T) func() {
 		cleanup := func() {
-			require.Nil(t, spec.cache(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
-			require.Nil(t, spec.cache(t).Truncate(context.Background(), rollouts.Pilot{}))
+			require.Nil(t, spec.cache(t).Truncate(spec.ctx(rollouts.FeatureFlag{}), rollouts.FeatureFlag{}))
+			require.Nil(t, spec.cache(t).Truncate(spec.ctx(rollouts.Pilot{}), rollouts.Pilot{}))
 		}
 
 		cleanup()
@@ -45,7 +50,7 @@ func (spec CacheSpec) Test(t *testing.T) {
 
 	s.Describe(`CacheSpec`, func(s *testcase.Spec) {
 		s.Test(`cache mimics the storage behavior by proxying between storage and the caller`, func(t *testcase.T) {
-			specs.StorageSpec{Subject: spec.cache(t)}.Test(t.T)
+			specs.StorageSpec{Subject: spec.cache(t), FixtureFactory: spec.FixtureFactory}.Test(t.T)
 		})
 
 		SharedSpecForEntityCachingBehavior := func(s *testcase.Spec, T interface{}) {
@@ -57,7 +62,7 @@ func (spec CacheSpec) Test(t *testing.T) {
 				})
 
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, spec.storage(t).Save(context.Background(), t.I(`value`)))
+					require.Nil(t, spec.storage(t).Save(spec.ctx(t.I(`value`)), t.I(`value`)))
 					_, found := flspecs.LookupID(t.I(`value`))
 					require.True(t, found)
 				})
@@ -66,7 +71,7 @@ func (spec CacheSpec) Test(t *testing.T) {
 					v := reflects.New(T)
 					id, found := flspecs.LookupID(t.I(`value`))
 					require.True(t, found)
-					found, err := spec.cache(t).FindByID(context.Background(), v, id)
+					found, err := spec.cache(t).FindByID(spec.ctx(v), v, id)
 					require.Nil(t, err)
 					require.True(t, found)
 					require.Equal(t, t.I(`value`), v)
@@ -77,7 +82,7 @@ func (spec CacheSpec) Test(t *testing.T) {
 						v := reflects.New(T)
 						id, found := flspecs.LookupID(t.I(`value`))
 						require.True(t, found)
-						found, err := spec.cache(t).FindByID(context.Background(), v, id)
+						found, err := spec.cache(t).FindByID(spec.ctx(v), v, id)
 						require.Nil(t, err)
 						require.True(t, found)
 						require.Equal(t, t.I(`value`), v)
@@ -93,14 +98,15 @@ func (spec CacheSpec) Test(t *testing.T) {
 						})
 
 						s.Before(func(t *testcase.T) {
-							require.Nil(t, spec.cache(t).Update(context.Background(), t.I(`value-with-new-content`)))
+							v := t.I(`value-with-new-content`)
+							require.Nil(t, spec.cache(t).Update(spec.ctx(v), v))
 						})
 
 						s.Then(`it will return the new value instead the old one`, func(t *testcase.T) {
 							v := reflects.New(T)
 							id, found := flspecs.LookupID(t.I(`value`))
 							require.True(t, found)
-							found, err := spec.cache(t).FindByID(context.Background(), v, id)
+							found, err := spec.cache(t).FindByID(spec.ctx(v), v, id)
 							require.Nil(t, err)
 							require.True(t, found)
 							require.Equal(t, t.I(`value-with-new-content`), v)
@@ -116,7 +122,7 @@ func (spec CacheSpec) Test(t *testing.T) {
 
 						for i := 0; i < 42; i++ {
 							v := reflects.New(T)
-							found, err := spec.cache(t).FindByID(context.Background(), v, id)
+							found, err := spec.cache(t).FindByID(spec.ctx(v), v, id)
 							require.Nil(t, err)
 							require.True(t, found)
 							require.Equal(t, value, v)
@@ -155,13 +161,13 @@ func (spec CacheSpec) Test(t *testing.T) {
 								require.True(t, found)
 
 								nv = reflects.New(T)
-								found, err := spec.cache(t).FindByID(context.Background(), nv, id)
+								found, err := spec.cache(t).FindByID(spec.ctx(nv), nv, id)
 								require.Nil(t, err)
 								require.True(t, found)
 								require.Equal(t, value, nv)
 
 								nv = reflects.New(T)
-								found, err = spec.cache(t).FindByID(context.Background(), nv, id)
+								found, err = spec.cache(t).FindByID(spec.ctx(nv), nv, id)
 								require.Nil(t, err)
 								require.True(t, found)
 								require.Equal(t, value, nv)
@@ -195,6 +201,10 @@ func (spec CacheSpec) cache(t *testcase.T) caches.Interface {
 
 func (spec CacheSpec) storage(t *testcase.T) usecases.Storage {
 	return t.I(`storage`).(usecases.Storage)
+}
+
+func (spec CacheSpec) ctx(e interface{}) context.Context {
+	return NewFixtureFactory().Context(e)
 }
 
 func (spec CacheSpec) mockStorage(s *testcase.Spec, setupMockBehavior func(*testcase.T, *MockStorage)) {

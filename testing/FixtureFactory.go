@@ -23,6 +23,12 @@ type FixtureFactory struct {
 // this ensures that the randoms have better variety between test runs with -count n
 var rnd = rand.New(rand.NewSource(time.Now().Unix()))
 
+func (ff *FixtureFactory) SetPilotFeatureFlagID(ffID string) func() {
+	original := ff.PilotFeatureFlagID
+	ff.PilotFeatureFlagID = ffID
+	return func() { ff.PilotFeatureFlagID = original }
+}
+
 func (ff *FixtureFactory) Create(EntityType interface{}) interface{} {
 	switch EntityType.(type) {
 	case rollouts.FeatureFlag, *rollouts.FeatureFlag:
