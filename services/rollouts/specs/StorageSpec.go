@@ -42,10 +42,10 @@ func (spec StorageSpec) Test(t *testing.T) {
 
 			s.Around(func(t *testcase.T) func() {
 				flag := t.I(`flag`).(*rollouts.FeatureFlag)
-				require.Nil(t, spec.Storage.Save(spec.ctx(flag), flag))
+				require.Nil(t, spec.Storage.Save(spec.ctx(), flag))
 				td := ff.SetPilotFeatureFlagID(flag.ID)
 				return func() {
-					require.Nil(t, spec.Storage.Truncate(spec.ctx(rollouts.FeatureFlag{}), rollouts.FeatureFlag{}))
+					require.Nil(t, spec.Storage.Truncate(spec.ctx(), rollouts.FeatureFlag{}))
 					td()
 				}
 			})
@@ -61,11 +61,11 @@ func (spec StorageSpec) Test(t *testing.T) {
 
 		s.Describe(`flag name uniq across storage`, func(s *testcase.Spec) {
 			subject := func(t *testcase.T) error {
-				return spec.Storage.Save(spec.ctx(rollouts.FeatureFlag{}), t.I(`flag`).(*rollouts.FeatureFlag))
+				return spec.Storage.Save(spec.ctx(), t.I(`flag`).(*rollouts.FeatureFlag))
 			}
 
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, spec.Storage.Truncate(spec.ctx(rollouts.FeatureFlag{}), rollouts.FeatureFlag{}))
+				require.Nil(t, spec.Storage.Truncate(spec.ctx(), rollouts.FeatureFlag{}))
 			})
 
 			s.Let(`flag`, func(t *testcase.T) interface{} {
@@ -85,6 +85,6 @@ func (spec StorageSpec) Test(t *testing.T) {
 	})
 }
 
-func (spec StorageSpec) ctx(e interface{}) context.Context {
-	return spec.FixtureFactory.Context(e)
+func (spec StorageSpec) ctx() context.Context {
+	return spec.FixtureFactory.Context()
 }

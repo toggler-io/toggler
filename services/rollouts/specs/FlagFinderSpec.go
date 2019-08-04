@@ -31,22 +31,22 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 
 	s.Describe(`FlagFinderSpec`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, spec.Subject.Truncate(spec.ctx(rollouts.FeatureFlag{}), rollouts.FeatureFlag{}))
+			require.Nil(t, spec.Subject.Truncate(spec.ctx(), rollouts.FeatureFlag{}))
 		})
 
 		s.After(func(t *testcase.T) {
-			require.Nil(t, spec.Subject.Truncate(spec.ctx(rollouts.FeatureFlag{}), rollouts.FeatureFlag{}))
+			require.Nil(t, spec.Subject.Truncate(spec.ctx(), rollouts.FeatureFlag{}))
 		})
 
 		s.Describe(`FindFlagByName`, func(s *testcase.Spec) {
 			subject := func(t *testcase.T) *rollouts.FeatureFlag {
-				ff, err := spec.Subject.FindFlagByName(spec.ctx(rollouts.FeatureFlag{}), featureName)
+				ff, err := spec.Subject.FindFlagByName(spec.ctx(), featureName)
 				require.Nil(t, err)
 				return ff
 			}
 
 			s.When(`we don't have feature flag yet`, func(s *testcase.Spec) {
-				s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.Truncate(spec.ctx(rollouts.FeatureFlag{}), rollouts.FeatureFlag{})) })
+				s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.Truncate(spec.ctx(), rollouts.FeatureFlag{})) })
 
 				s.Then(`we receive back nil pointer`, func(t *testcase.T) {
 					require.Nil(t, subject(t))
@@ -59,12 +59,12 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 				})
 
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, spec.Subject.Save(spec.ctx(rollouts.FeatureFlag{}), t.I(`ff`).(*rollouts.FeatureFlag)))
+					require.Nil(t, spec.Subject.Save(spec.ctx(), t.I(`ff`).(*rollouts.FeatureFlag)))
 				})
 
 				s.Then(`searching for it returns the flag entity`, func(t *testcase.T) {
 					ff := t.I(`ff`).(*rollouts.FeatureFlag)
-					actually, err := spec.Subject.FindFlagByName(spec.ctx(rollouts.FeatureFlag{}), ff.Name)
+					actually, err := spec.Subject.FindFlagByName(spec.ctx(), ff.Name)
 					require.Nil(t, err)
 					require.Equal(t, ff, actually)
 				})
@@ -73,11 +73,11 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 
 		s.Describe(`FindFlagsByName`, func(s *testcase.Spec) {
 			subject := func(t *testcase.T) frameless.Iterator {
-				return spec.Subject.FindFlagsByName(spec.ctx(rollouts.FeatureFlag{}), t.I(`flag names`).([]string)...)
+				return spec.Subject.FindFlagsByName(spec.ctx(), t.I(`flag names`).([]string)...)
 			}
 
 			s.Before(func(t *testcase.T) {
-				ctx := spec.ctx(rollouts.FeatureFlag{})
+				ctx := spec.ctx()
 				require.Nil(t, spec.Subject.Save(ctx, &rollouts.FeatureFlag{Name: `A`}))
 				require.Nil(t, spec.Subject.Save(ctx, &rollouts.FeatureFlag{Name: `B`}))
 				require.Nil(t, spec.Subject.Save(ctx, &rollouts.FeatureFlag{Name: `C`}))
@@ -146,6 +146,6 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 	})
 }
 
-func (spec FlagFinderSpec) ctx(e interface{}) context.Context {
-	return spec.FixtureFactory.Context(e)
+func (spec FlagFinderSpec) ctx() context.Context {
+	return spec.FixtureFactory.Context()
 }

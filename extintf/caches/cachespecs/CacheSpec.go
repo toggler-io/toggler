@@ -204,7 +204,7 @@ func (spec CacheSpec) storage(t *testcase.T) usecases.Storage {
 }
 
 func (spec CacheSpec) ctx(e interface{}) context.Context {
-	return NewFixtureFactory().Context(e)
+	return NewFixtureFactory().Context()
 }
 
 func (spec CacheSpec) mockStorage(s *testcase.Spec, setupMockBehavior func(*testcase.T, *MockStorage)) {

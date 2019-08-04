@@ -4,8 +4,8 @@ go 1.12
 
 require (
 	github.com/Pallinder/go-randomdata v1.2.0
-	github.com/adamluzsi/frameless v0.0.0-20190716225752-ef5b90560eff
-	github.com/adamluzsi/testcase v0.0.0-20190714215144-d4dbd6534e4d
+	github.com/adamluzsi/frameless v0.0.0-20190804113708-60371dc00618
+	github.com/adamluzsi/testcase v0.0.0-20190803211906-0997483d600d
 	github.com/go-openapi/errors v0.19.2
 	github.com/go-openapi/runtime v0.19.3
 	github.com/go-openapi/strfmt v0.19.2
