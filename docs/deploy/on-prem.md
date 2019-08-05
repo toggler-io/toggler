@@ -1,6 +1,7 @@
 # Deploying to On-Premises
 
 to deploy to your own server, you need to build the binary first.
+
 * clone the project
 * cd to the project root directory
 * `go build -o toggler cmd/toggler/main.go`

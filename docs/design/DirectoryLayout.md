@@ -1,5 +1,9 @@
 # Project Structure
 
+To understand easily what file belongs to where,
+you can go trough the directory layout guideline,
+which helps explains what directory responsible to contain what.
+
 ```
 ..
 ├── bin                        -> executables for toggler local development 
