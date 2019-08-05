@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 set -e -u
 
-: ${DATABASE_URL:="memory"}
+: ${DATABASE_URL:="${TEST_STORAGE_URL_POSTGRES}"}
 export DATABASE_URL
 
 cd ${WDP}
 go generate ./...
-go run cmd/toggler/main.go -cmd http-server -port 8080 -create-fixtures
+go run cmd/toggler/main.go \
+    -cmd http-server \
+    -port 8080 \
+    -create-fixtures \
+    -create-development-token 'toor'

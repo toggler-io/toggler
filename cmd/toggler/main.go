@@ -26,6 +26,7 @@ func main() {
 	portConfValue := flagSet.String(`port`, os.Getenv(`PORT`), `set http server port else the env variable "PORT" value will be used.`)
 	cmd := flagSet.String(`cmd`, `http-server`, `cli command. cmds: "http-server", "create-token".`)
 	fixtures := flagSet.Bool(`create-fixtures`, false, `create default fixtures for development purpose.`)
+	localDevelopmentToken := flagSet.String(`create-development-token`, ``, `create token for local development purpose only!`)
 	dbURL := flagSet.String(`database-url`, ``, `define what url should be used for the db connection. Default value used from ENV[DATABASE_URL].`)
 	cacheURL := flagSet.String(`cache-url`, ``, `define what url should be used for the cache connection. default value is taken from ENV[CACHE_URL].`)
 	cacheTTL := flagSet.Duration(`cache-ttl`, 30*time.Minute, `define the time-to-live duration for the cached objects (if cache used)`)
@@ -55,6 +56,10 @@ func main() {
 
 	if *fixtures {
 		createFixtures(storage)
+	}
+
+	if *localDevelopmentToken != `` {
+		createDevelopmentToken(storage, *localDevelopmentToken)
 	}
 
 	switch *cmd {
@@ -119,13 +124,13 @@ func createFixtures(s usecases.Storage) {
 	useCases := usecases.NewUseCases(s)
 	issuer := security.Issuer{Storage: s}
 
-	tt, _, err := issuer.CreateNewToken(context.Background(), `testing`, nil, nil)
+	tstr, t, err := issuer.CreateNewToken(context.Background(), `testing`, nil, nil)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(tt)
+	defer s.DeleteByID(context.Background(), *t, t.ID)
 
-	pu, err := useCases.ProtectedUsecases(context.Background(), tt)
+	pu, err := useCases.ProtectedUsecases(context.Background(), tstr)
 
 	if err != nil {
 		panic(err)
@@ -166,6 +171,45 @@ func createToken(s usecases.Storage, ownerUID string) {
 	}
 
 	fmt.Println(t)
+}
+
+func createDevelopmentToken(s usecases.Storage, tokenSTR string) {
+	defer func() {
+		fmt.Println(`WARNING - you created a non random token for local development purpose`)
+		fmt.Println(`if this is a production environment, it is advised to delete this token immediately`)
+	}()
+	
+	ctx := context.Background()
+
+	issuer := security.Issuer{Storage: s}
+	dk := security.NewDoorkeeper(s)
+
+	valid, err := dk.VerifyTextToken(ctx, tokenSTR)
+	if err != nil {
+		panic(err)
+	}
+
+	if valid {
+		return
+	}
+
+	_, t, err := issuer.CreateNewToken(ctx, `developer`, nil, nil)
+
+	if err != nil {
+		panic(err)
+	}
+
+	sha512hex, err := security.ToSHA512Hex(tokenSTR)
+
+	if err != nil {
+		panic(err)
+	}
+
+	t.SHA512 = sha512hex
+
+	if err := s.Update(ctx, t); err != nil {
+		panic(err)
+	}
 }
 
 func withGracefulShutdown(wrk func(), shutdown func(context.Context) error) {
