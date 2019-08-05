@@ -68,8 +68,12 @@ This sometimes result in swearing for me during the night,
 when I try to argue myself why the shared spec is probably wrong,
 until I realize trough rubber duck debugging, 
 that the focus on the implementation detail blinds me from seeing the high level concepts.
-Exactly what PP can help in big companies easily.
+Which is good because then I can really go into the zone,
+without the need to interrupt myself with mental model perspective changes.
+And exactly why PP can be really powerful tool,
+if the participants able to stick with they role.
+And if you have a partner for programming...
 
 There is nothing more annoying, 
-that the feeling you get when you past self is right
-after a 15m one sided conversation.
+that the feeling you get when your past self is still right
+after a 15m one sided conversation, trough the specs.
