@@ -309,7 +309,7 @@ H4sIAAAAAAAC/3IOcnUMcVXw9HNxjVBQysnPzy4tiC/IzMkvKY5PqoxPrSiJz0xRUvD3U1CCiCophAZ7
 		name:    "1564874467_create_test_entities_table.down.sql",
 		local:   "assets/migrations/1564874467_create_test_entities_table.down.sql",
 		size:    27,
-		modtime: 1564874568,
+		modtime: 1564875530,
 		compressed: `
 H4sIAAAAAAAC/3IJ8g9QCHF08nFVUCpJLS6JT80rySzJTC1WsgYEAAD//18Bt9QbAAAA
 `,
@@ -319,7 +319,7 @@ H4sIAAAAAAAC/3IJ8g9QCHF08nFVUCpJLS6JT80rySzJTC1WsgYEAAD//18Bt9QbAAAA
 		name:    "1564874467_create_test_entities_table.up.sql",
 		local:   "assets/migrations/1564874467_create_test_entities_table.up.sql",
 		size:    59,
-		modtime: 1564874553,
+		modtime: 1564875530,
 		compressed: `
 H4sIAAAAAAAC/3IOcnUMcVUIcXTycVVQKkktLolPzSvJLMlMLVbi0uBSUFBQyExRcPJ0D3YN8nT0UfDz
 D1HwC/Xx4dK0BgQAAP//QyRBQTsAAAA=

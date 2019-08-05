@@ -45,7 +45,8 @@ type RolloutClientConfigResponseBody struct {
 
 	Check Multiple Rollout Feature Status For A Certain Pilot
 
-	Return all the flag states that was requested by the
+	Return all the flag states that was requested in the favor of a Pilot.
+	This endpoint especially useful for Mobile & SPA apps.
 
 		Consumes:
 		- application/json

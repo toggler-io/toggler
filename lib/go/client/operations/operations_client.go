@@ -124,7 +124,8 @@ func (a *Client) IsFeatureGloballyEnabled(params *IsFeatureGloballyEnabledParams
 /*
 RolloutClientConfig checks multiple rollout feature status for a certain pilot
 
-Return all the flag states that was requested by the
+Return all the flag states that was requested in the favor of a Pilot.
+This endpoint especially useful for Mobile & SPA apps.
 */
 func (a *Client) RolloutClientConfig(params *RolloutClientConfigParams) (*RolloutClientConfigOK, error) {
 	// TODO: Validate the params before sending

@@ -20,7 +20,7 @@
   "paths": {
     "/api/v1/rollout/config.json": {
       "get": {
-        "description": "Return all the flag states that was requested by the",
+        "description": "Return all the flag states that was requested in the favor of a Pilot.\nThis endpoint especially useful for Mobile \u0026 SPA apps.",
         "consumes": [
           "application/json"
         ],
