@@ -65,7 +65,7 @@ type WebsocketOK struct {
 }
 
 func (o *WebsocketOK) Error() string {
-	return fmt.Sprintf("[GET /api/v1/ws][%d] websocketOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[GET /ws][%d] websocketOK  %+v", 200, o.Payload)
 }
 
 func (o *WebsocketOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -95,7 +95,7 @@ type WebsocketInternalServerError struct {
 }
 
 func (o *WebsocketInternalServerError) Error() string {
-	return fmt.Sprintf("[GET /api/v1/ws][%d] websocketInternalServerError  %+v", 500, o.Payload)
+	return fmt.Sprintf("[GET /ws][%d] websocketInternalServerError  %+v", 500, o.Payload)
 }
 
 func (o *WebsocketInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -129,7 +129,7 @@ type WebsocketServiceUnavailable struct {
 }
 
 func (o *WebsocketServiceUnavailable) Error() string {
-	return fmt.Sprintf("[GET /api/v1/ws][%d] websocketServiceUnavailable  %+v", 503, o.Payload)
+	return fmt.Sprintf("[GET /ws][%d] websocketServiceUnavailable  %+v", 503, o.Payload)
 }
 
 func (o *WebsocketServiceUnavailable) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

@@ -25,7 +25,7 @@ type IsFeatureGloballyEnabledResponseBody = EnrollmentResponseBody
 
 /*
 
-	swagger:route GET /api/v1/rollout/is-feature-globally-enabled.json feature-flag pilot IsFeatureGloballyEnabled
+	swagger:route POST /rollout/is-feature-globally-enabled.json feature-flag pilot IsFeatureGloballyEnabled
 
 	Check Rollout Feature Status for Global use
 
@@ -34,6 +34,8 @@ type IsFeatureGloballyEnabledResponseBody = EnrollmentResponseBody
 	Such case is batch processing, or dark launch flips.
 	By Default, this will be determined whether the flag exist,
 	Then  whether the release id done to everyone or not by percentage.
+	The endpoint can be called with HTTP GET method as well,
+	POST is used officially only to support most highly abstracted http clients.
 
 		Consumes:
 		- application/json

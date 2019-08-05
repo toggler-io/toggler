@@ -37,8 +37,8 @@ func (a *Client) CreateRolloutFeatureFlag(params *CreateRolloutFeatureFlagParams
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "CreateRolloutFeatureFlag",
-		Method:             "GET",
-		PathPattern:        "/api/v1/rollout/flag/create.json",
+		Method:             "POST",
+		PathPattern:        "/rollout/flag/create.json",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http", "https", "ws"},
@@ -61,6 +61,8 @@ Reply back whether the feature for a given pilot id is enabled or not.
 By Default, this will be determined whether the flag exist,
 the pseudo random dice roll enrolls the pilot,
 or if there any manually set enrollment status for the pilot.
+The endpoint can be called with HTTP GET method as well,
+POST is used officially only to support most highly abstracted http clients.
 */
 func (a *Client) IsFeatureEnabled(params *IsFeatureEnabledParams) (*IsFeatureEnabledOK, error) {
 	// TODO: Validate the params before sending
@@ -70,8 +72,8 @@ func (a *Client) IsFeatureEnabled(params *IsFeatureEnabledParams) (*IsFeatureEna
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "IsFeatureEnabled",
-		Method:             "GET",
-		PathPattern:        "/api/v1/rollout/is-feature-enabled.json",
+		Method:             "POST",
+		PathPattern:        "/rollout/is-feature-enabled.json",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http", "https", "ws"},
@@ -95,6 +97,8 @@ This is especially useful for cases where you don't have pilot id.
 Such case is batch processing, or dark launch flips.
 By Default, this will be determined whether the flag exist,
 Then  whether the release id done to everyone or not by percentage.
+The endpoint can be called with HTTP GET method as well,
+POST is used officially only to support most highly abstracted http clients.
 */
 func (a *Client) IsFeatureGloballyEnabled(params *IsFeatureGloballyEnabledParams) (*IsFeatureGloballyEnabledOK, error) {
 	// TODO: Validate the params before sending
@@ -104,8 +108,8 @@ func (a *Client) IsFeatureGloballyEnabled(params *IsFeatureGloballyEnabledParams
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "IsFeatureGloballyEnabled",
-		Method:             "GET",
-		PathPattern:        "/api/v1/rollout/is-feature-globally-enabled.json",
+		Method:             "POST",
+		PathPattern:        "/rollout/is-feature-globally-enabled.json",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http", "https", "ws"},
@@ -126,6 +130,8 @@ RolloutClientConfig checks multiple rollout feature status for a certain pilot
 
 Return all the flag states that was requested in the favor of a Pilot.
 This endpoint especially useful for Mobile & SPA apps.
+The endpoint can be called with HTTP GET method as well,
+POST is used officially only to support most highly abstracted http clients.
 */
 func (a *Client) RolloutClientConfig(params *RolloutClientConfigParams) (*RolloutClientConfigOK, error) {
 	// TODO: Validate the params before sending
@@ -135,8 +141,8 @@ func (a *Client) RolloutClientConfig(params *RolloutClientConfigParams) (*Rollou
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "RolloutClientConfig",
-		Method:             "GET",
-		PathPattern:        "/api/v1/rollout/config.json",
+		Method:             "POST",
+		PathPattern:        "/rollout/config.json",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http", "https", "ws"},
@@ -170,7 +176,7 @@ func (a *Client) Websocket(params *WebsocketParams) (*WebsocketOK, error) {
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "Websocket",
 		Method:             "GET",
-		PathPattern:        "/api/v1/ws",
+		PathPattern:        "/ws",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http", "https", "ws"},

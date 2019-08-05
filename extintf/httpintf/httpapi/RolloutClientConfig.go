@@ -41,12 +41,14 @@ type RolloutClientConfigResponseBody struct {
 
 /*
 
-	swagger:route GET /api/v1/rollout/config.json feature-flag pilot RolloutClientConfig
+	swagger:route POST /rollout/config.json feature-flag pilot RolloutClientConfig
 
 	Check Multiple Rollout Feature Status For A Certain Pilot
 
 	Return all the flag states that was requested in the favor of a Pilot.
 	This endpoint especially useful for Mobile & SPA apps.
+	The endpoint can be called with HTTP GET method as well,
+	POST is used officially only to support most highly abstracted http clients.
 
 		Consumes:
 		- application/json

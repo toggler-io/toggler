@@ -29,7 +29,7 @@ type IsFeatureEnabledResponseBody = EnrollmentResponseBody
 
 /*
 
-	swagger:route GET /api/v1/rollout/is-feature-enabled.json feature-flag pilot IsFeatureEnabled
+	swagger:route POST /rollout/is-feature-enabled.json feature-flag pilot IsFeatureEnabled
 
 	Check Rollout Feature Status For Pilot
 
@@ -37,6 +37,8 @@ type IsFeatureEnabledResponseBody = EnrollmentResponseBody
 	By Default, this will be determined whether the flag exist,
 	the pseudo random dice roll enrolls the pilot,
 	or if there any manually set enrollment status for the pilot.
+	The endpoint can be called with HTTP GET method as well,
+	POST is used officially only to support most highly abstracted http clients.
 
 		Consumes:
 		- application/json

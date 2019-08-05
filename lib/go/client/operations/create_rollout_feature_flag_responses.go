@@ -65,7 +65,7 @@ type CreateRolloutFeatureFlagOK struct {
 }
 
 func (o *CreateRolloutFeatureFlagOK) Error() string {
-	return fmt.Sprintf("[GET /api/v1/rollout/flag/create.json][%d] createRolloutFeatureFlagOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[POST /rollout/flag/create.json][%d] createRolloutFeatureFlagOK  %+v", 200, o.Payload)
 }
 
 func (o *CreateRolloutFeatureFlagOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -93,7 +93,7 @@ type CreateRolloutFeatureFlagBadRequest struct {
 }
 
 func (o *CreateRolloutFeatureFlagBadRequest) Error() string {
-	return fmt.Sprintf("[GET /api/v1/rollout/flag/create.json][%d] createRolloutFeatureFlagBadRequest  %+v", 400, o.Payload)
+	return fmt.Sprintf("[POST /rollout/flag/create.json][%d] createRolloutFeatureFlagBadRequest  %+v", 400, o.Payload)
 }
 
 func (o *CreateRolloutFeatureFlagBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -123,7 +123,7 @@ type CreateRolloutFeatureFlagInternalServerError struct {
 }
 
 func (o *CreateRolloutFeatureFlagInternalServerError) Error() string {
-	return fmt.Sprintf("[GET /api/v1/rollout/flag/create.json][%d] createRolloutFeatureFlagInternalServerError  %+v", 500, o.Payload)
+	return fmt.Sprintf("[POST /rollout/flag/create.json][%d] createRolloutFeatureFlagInternalServerError  %+v", 500, o.Payload)
 }
 
 func (o *CreateRolloutFeatureFlagInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

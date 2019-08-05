@@ -65,7 +65,7 @@ type IsFeatureGloballyEnabledOK struct {
 }
 
 func (o *IsFeatureGloballyEnabledOK) Error() string {
-	return fmt.Sprintf("[GET /api/v1/rollout/is-feature-globally-enabled.json][%d] isFeatureGloballyEnabledOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[POST /rollout/is-feature-globally-enabled.json][%d] isFeatureGloballyEnabledOK  %+v", 200, o.Payload)
 }
 
 func (o *IsFeatureGloballyEnabledOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -95,7 +95,7 @@ type IsFeatureGloballyEnabledBadRequest struct {
 }
 
 func (o *IsFeatureGloballyEnabledBadRequest) Error() string {
-	return fmt.Sprintf("[GET /api/v1/rollout/is-feature-globally-enabled.json][%d] isFeatureGloballyEnabledBadRequest  %+v", 400, o.Payload)
+	return fmt.Sprintf("[POST /rollout/is-feature-globally-enabled.json][%d] isFeatureGloballyEnabledBadRequest  %+v", 400, o.Payload)
 }
 
 func (o *IsFeatureGloballyEnabledBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -125,7 +125,7 @@ type IsFeatureGloballyEnabledInternalServerError struct {
 }
 
 func (o *IsFeatureGloballyEnabledInternalServerError) Error() string {
-	return fmt.Sprintf("[GET /api/v1/rollout/is-feature-globally-enabled.json][%d] isFeatureGloballyEnabledInternalServerError  %+v", 500, o.Payload)
+	return fmt.Sprintf("[POST /rollout/is-feature-globally-enabled.json][%d] isFeatureGloballyEnabledInternalServerError  %+v", 500, o.Payload)
 }
 
 func (o *IsFeatureGloballyEnabledInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

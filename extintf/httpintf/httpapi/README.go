@@ -4,7 +4,7 @@
 // in which you can interact with the service in a programmatic way.
 //
 //     Schemes: http, https, ws
-//     BasePath: /
+//     BasePath: /api/v1
 //     Version: v1
 //
 //     Consumes:

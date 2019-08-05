@@ -15,7 +15,7 @@ func NewServeMux(uc *usecases.UseCases) *ServeMux {
 	mux.Handle(`/api/v1/`, letsCORSit(http.StripPrefix(`/api/v1`, httpapi.NewServeMux(uc))))
 	mux.Handle(`/`, webgui.NewServeMux(uc))
 	mux.Handle(`/swagger.json`, letsCORSit(http.HandlerFunc(swagger.HandleSwaggerConfigJSON)))
-	mux.Handle(`/swagger-ui/`, http.StripPrefix(`/swagger-ui`, http.HandlerFunc(swagger.HandleSwaggerUI)))
+	mux.Handle(`/swagger-ui/`, http.StripPrefix(`/swagger-ui`, swagger.HandleSwaggerUI()))
 
 	return &ServeMux{
 		ServeMux: mux,

@@ -43,7 +43,7 @@ type WSLoadBalanceErrResp struct {
 
 /*
 
-	swagger:route GET /api/v1/ws feature-flag pilot global websocket Websocket
+	swagger:route GET /ws feature-flag pilot global websocket Websocket
 
 	Socket API to check Rollout Feature Flag Status
 

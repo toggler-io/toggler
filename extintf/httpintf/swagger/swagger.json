@@ -16,11 +16,11 @@
     "title": "provides API on HTTP layer to the toggler service.",
     "version": "v1"
   },
-  "basePath": "/",
+  "basePath": "/api/v1",
   "paths": {
-    "/api/v1/rollout/config.json": {
-      "get": {
-        "description": "Return all the flag states that was requested in the favor of a Pilot.\nThis endpoint especially useful for Mobile \u0026 SPA apps.",
+    "/rollout/config.json": {
+      "post": {
+        "description": "Return all the flag states that was requested in the favor of a Pilot.\nThis endpoint especially useful for Mobile \u0026 SPA apps.\nThe endpoint can be called with HTTP GET method as well,\nPOST is used officially only to support most highly abstracted http clients.",
         "consumes": [
           "application/json"
         ],
@@ -59,8 +59,8 @@
         }
       }
     },
-    "/api/v1/rollout/flag/create.json": {
-      "get": {
+    "/rollout/flag/create.json": {
+      "post": {
         "description": "This operation allows you to create a new rollout feature flag.",
         "consumes": [
           "application/json"
@@ -100,9 +100,9 @@
         }
       }
     },
-    "/api/v1/rollout/is-feature-enabled.json": {
-      "get": {
-        "description": "Reply back whether the feature for a given pilot id is enabled or not.\nBy Default, this will be determined whether the flag exist,\nthe pseudo random dice roll enrolls the pilot,\nor if there any manually set enrollment status for the pilot.",
+    "/rollout/is-feature-enabled.json": {
+      "post": {
+        "description": "Reply back whether the feature for a given pilot id is enabled or not.\nBy Default, this will be determined whether the flag exist,\nthe pseudo random dice roll enrolls the pilot,\nor if there any manually set enrollment status for the pilot.\nThe endpoint can be called with HTTP GET method as well,\nPOST is used officially only to support most highly abstracted http clients.",
         "consumes": [
           "application/json"
         ],
@@ -141,9 +141,9 @@
         }
       }
     },
-    "/api/v1/rollout/is-feature-globally-enabled.json": {
-      "get": {
-        "description": "Reply back whether the feature rolled out globally or not.\nThis is especially useful for cases where you don't have pilot id.\nSuch case is batch processing, or dark launch flips.\nBy Default, this will be determined whether the flag exist,\nThen  whether the release id done to everyone or not by percentage.",
+    "/rollout/is-feature-globally-enabled.json": {
+      "post": {
+        "description": "Reply back whether the feature rolled out globally or not.\nThis is especially useful for cases where you don't have pilot id.\nSuch case is batch processing, or dark launch flips.\nBy Default, this will be determined whether the flag exist,\nThen  whether the release id done to everyone or not by percentage.\nThe endpoint can be called with HTTP GET method as well,\nPOST is used officially only to support most highly abstracted http clients.",
         "consumes": [
           "application/json"
         ],
@@ -182,7 +182,7 @@
         }
       }
     },
-    "/api/v1/ws": {
+    "/ws": {
       "get": {
         "description": "The\nReply back whether the feature for a given pilot id is enabled or not.\nBy Default, this will be determined whether the flag exist,\nthe pseudo random dice roll enrolls the pilot,\nor if there any manually set enrollment status for the pilot.",
         "consumes": [
