@@ -5,11 +5,6 @@
   "produces": [
     "application/json"
   ],
-  "schemes": [
-    "http",
-    "https",
-    "ws"
-  ],
   "swagger": "2.0",
   "info": {
     "description": "The purpose of this application is to provide API over HTTP to toggler service,\nin which you can interact with the service in a programmatic way.",

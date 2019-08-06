@@ -45,7 +45,7 @@ func HandleSwaggerUI() http.Handler {
 				}
 
 			})
-
+			
 			data := struct{ ConfigURL string }{}
 			data.ConfigURL = createURL(r, schema)
 
