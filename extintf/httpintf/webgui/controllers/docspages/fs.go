@@ -378,12 +378,12 @@ UQ6NLPiwVf8PAAD//xTXDvpjDwAA
 	"/docs/design/README.md": {
 		name:    "README.md",
 		local:   "/home/adamluzsi/src/github.com/adamluzsi/toggler/docs/design/README.md",
-		size:    176,
-		modtime: 1565042628,
+		size:    191,
+		modtime: 1565077106,
 		compressed: `
-H4sIAAAAAAAC/1yLvarDIBTH9/sUf3DJXeojdAm0Q/cOJYN4DvGAUfGYgm9fMJBC19+Hwcwqa/ozBq+7
-rAGR3xxRqiQvJbIuk6Xs1dLo7FdcNvof2zN0tMDQjM2lDg2uMkELe73+7Icb6vxnqexbrh0P1/PecNuF
-eJlOfuDRfwIAAP//Nc7nz7AAAAA=
+H4sIAAAAAAAC/1zMMQvCMBAF4N1f8aBLXcxPcCnoUNDNQTrE5GhObE9yaSH/Xkwlg+O9795r0JHyOO+a
+BvczjwE9rfTCNcqTXPopLo/vxSvp0BovTo0vYKTCYfL7snILGSkQVDDZOUODjeShb3J6/KtvVqj2O47k
+ksSM3mZZEk4Lexramm9x+f8EAAD//5Fgv/K/AAAA
 `,
 	},
 
@@ -1684,40 +1684,40 @@ EhNlPvSnMOYvIWjgiiAynjrlkXm3zPDgkXh/49dpeRX7P/7Pv/3H//3vd3LUG/y3/3fD//Qv//H//J3L
 `,
 	},
 
-	"/docs/design/principles.md": {
-		name:    "principles.md",
-		local:   "/home/adamluzsi/src/github.com/adamluzsi/toggler/docs/design/principles.md",
-		size:    3617,
-		modtime: 1565042466,
+	"/docs/design/objectives.md": {
+		name:    "objectives.md",
+		local:   "/home/adamluzsi/src/github.com/adamluzsi/toggler/docs/design/objectives.md",
+		size:    3610,
+		modtime: 1565076969,
 		compressed: `
-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
+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
 `,
 	},
 
@@ -1874,7 +1874,7 @@ var _escDirs = map[string][]os.FileInfo{
 		_escData["/docs/design/README.md"],
 		_escData["/docs/design/feature-check-per-user-basis.sd"],
 		_escData["/docs/design/feature-check-per-user-basis.svg"],
-		_escData["/docs/design/principles.md"],
+		_escData["/docs/design/objectives.md"],
 		_escData["/docs/design/sharedspecs.md"],
 	},
 
