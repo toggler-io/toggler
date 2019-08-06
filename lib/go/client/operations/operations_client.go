@@ -161,13 +161,17 @@ func (a *Client) RolloutClientConfig(params *RolloutClientConfigParams) (*Rollou
 /*
 Websocket sockets API to check rollout feature flag status
 
-The
-Reply back whether the feature for a given pilot id is enabled or not.
-By Default, this will be determined whether the flag exist,
-the pseudo random dice roll enrolls the pilot,
-or if there any manually set enrollment status for the pilot.
+This endpoint currently meant to used by servers and not by clients.
+The  reason behind is that it is much more easy to calculate with server quantity,
+than with client quantity, and therefore the load balancing is much more deterministic for the service.
+The websocket based communication allows for servers to do low latency quick requests,
+which is ideal to check flag status for individual requests that the server receives.
+Because the nature of the persistent connection, TCP connection overhead is minimal.
+The endpoint able to serve back whether the feature for a given pilot id is enabled or not.
+The endpoint also able to serve back global flag state checks as well.
+The flag enrollment interpretation use the same logic as it is described in the documentation.
 */
-func (a *Client) Websocket(params *WebsocketParams) (*WebsocketOK, error) {
+func (a *Client) Websocket(params *WebsocketParams, authInfo runtime.ClientAuthInfoWriter) (*WebsocketOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewWebsocketParams()
@@ -179,9 +183,10 @@ func (a *Client) Websocket(params *WebsocketParams) (*WebsocketOK, error) {
 		PathPattern:        "/ws",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"ws"},
+		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &WebsocketReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})

@@ -1,6 +1,8 @@
-## Features
+# Rollout
 
-## Rollout management
+## [Enrollment logic](/docs/rollout/enrollment.md)
+
+## Management
 
 The service allows you to be able to control feature release, trough a combination of options.
 

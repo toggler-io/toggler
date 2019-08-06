@@ -19,7 +19,7 @@ func NewServeMux(uc *usecases.UseCases) *ServeMux {
 
 	featureAPI := buildFeatureAPI(mux)
 	mux.Handle(`/rollout/`, http.StripPrefix(`/rollout`, featureAPI))
-	mux.HandleFunc(`/ws`, mux.WebsocketHandler)
+	mux.Handle(`/ws`, authMiddleware(uc, http.HandlerFunc(mux.WebsocketHandler)))
 
 	mux.HandleFunc(`/healthcheck`, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)

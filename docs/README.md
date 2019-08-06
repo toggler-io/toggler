@@ -23,7 +23,7 @@ if this project is needed for your team or not.
 
 Can my team…
 
-* apply [Dark Launching](/docs/DarkLaunch.md) practices ?
+* apply [Dark Launching](/docs/rollout/DarkLaunch.md) practices ?
 * deploy frequently the codebase independently from feature release ?
 * confidently deploy to production after the automated tests are passed ?
 * perform deployment during normal business hours with negligible downtime?
@@ -48,11 +48,9 @@ If you decide to implement your own integration with a storage,
 the expected behavior requirements/tests/coverage can be located under the `usecases/specs.StorageSpec` object.
 For examples, you can check the already existing storage implementations as well.
 
-## [Features](/docs/features.md)
-Please visit the Features documentation for this section.
+## [Rollout Features](/docs/rollout/README.md)
 
 ## [Design](/docs/design/README.md)
-Please visit the Design documentation to read the principles and conventions applied in this project.
 
 ## Quick Start / Setup
 

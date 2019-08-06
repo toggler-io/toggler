@@ -1,4 +1,4 @@
-# High Level Project Objectives
+# High Level Project Objectives For The Design
 
 Toggler is made with the following concerns when it was begin to be designed.
 

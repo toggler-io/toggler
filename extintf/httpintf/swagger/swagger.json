@@ -179,15 +179,17 @@
     },
     "/ws": {
       "get": {
-        "description": "The\nReply back whether the feature for a given pilot id is enabled or not.\nBy Default, this will be determined whether the flag exist,\nthe pseudo random dice roll enrolls the pilot,\nor if there any manually set enrollment status for the pilot.",
+        "security": [
+          {
+            "api_key": []
+          }
+        ],
+        "description": "This endpoint currently meant to used by servers and not by clients.\nThe  reason behind is that it is much more easy to calculate with server quantity,\nthan with client quantity, and therefore the load balancing is much more deterministic for the service.\nThe websocket based communication allows for servers to do low latency quick requests,\nwhich is ideal to check flag status for individual requests that the server receives.\nBecause the nature of the persistent connection, TCP connection overhead is minimal.\nThe endpoint able to serve back whether the feature for a given pilot id is enabled or not.\nThe endpoint also able to serve back global flag state checks as well.\nThe flag enrollment interpretation use the same logic as it is described in the documentation.",
         "consumes": [
           "application/json"
         ],
         "produces": [
           "application/json"
-        ],
-        "schemes": [
-          "ws"
         ],
         "tags": [
           "feature-flag",

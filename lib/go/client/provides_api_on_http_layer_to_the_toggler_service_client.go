@@ -27,7 +27,7 @@ const (
 )
 
 // DefaultSchemes are the default schemes found in Meta (info) section of spec file
-var DefaultSchemes = []string{"http", "https", "ws"}
+var DefaultSchemes = []string{"http", "https"}
 
 // NewHTTPClient creates a new provides API on HTTP layer to the toggler service HTTP client.
 func NewHTTPClient(formats strfmt.Registry) *ProvidesAPIOnHTTPLayerToTheTogglerService {
