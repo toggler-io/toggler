@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/require"
 	"math/rand"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -29,10 +30,19 @@ func TestWebsocket(t *testing.T) {
 		return url
 	})
 
+	s.Let(`TokenString`, func(t *testcase.T) interface{} {
+		tSTR, _ := CreateToken(t, `manager`)
+		return tSTR
+	})
+
 	ws := func(t *testcase.T) *websocket.Conn { return t.I(`ws`).(*websocket.Conn) }
 	s.Let(`ws`, func(t *testcase.T) interface{} {
 		url := t.I(`url`).(string)
-		ws, resp, err := websocket.DefaultDialer.Dial(url, nil)
+
+		rHeader := make(http.Header)
+		rHeader.Set(`X-Auth-Token`, t.I(`TokenString`).(string))
+
+		ws, resp, err := websocket.DefaultDialer.Dial(url, rHeader)
 		if err == websocket.ErrBadHandshake && resp != nil && err != nil {
 			t.Logf(`target url is %q`, url)
 			t.Fatalf(`%s with HTTP status code %d`, err.Error(), resp.StatusCode)

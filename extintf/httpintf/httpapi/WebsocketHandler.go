@@ -65,7 +65,7 @@ type WSLoadBalanceErrResp struct {
 
 		Security:
 		  api_key:
-		  - "X-Auth-SHA512"
+		  - "X-Auth-Token"
 
 		Responses:
 		  200: enrollmentResponse
