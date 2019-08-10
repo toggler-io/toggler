@@ -1,6 +1,7 @@
 package specs
 
 import (
+	"github.com/adamluzsi/frameless/reflects"
 	"testing"
 )
 
@@ -12,11 +13,10 @@ type Resource interface {
 	Delete
 	DeleteByID
 	Truncate
-	Purge
 }
 
 func TestAll(t *testing.T, r Resource, e interface{}, f FixtureFactory) {
-	t.Run(`specs`, func(t *testing.T) {
+	t.Run(reflects.FullyQualifiedName(e), func(t *testing.T) {
 
 		t.Run(`CREATE`, func(t *testing.T) {
 			TestSave(t, r, e, f)
@@ -35,8 +35,6 @@ func TestAll(t *testing.T, r Resource, e interface{}, f FixtureFactory) {
 			TestDelete(t, r, e, f)
 			TestDeleteByID(t, r, e, f)
 			TestTruncate(t, r, e, f)
-			TestPurge(t, r, e, f)
 		})
-
 	})
 }

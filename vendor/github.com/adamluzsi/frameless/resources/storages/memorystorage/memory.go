@@ -32,6 +32,10 @@ func (storage *Memory) Update(ctx context.Context, entityPtr interface{}) error 
 	storage.Mutex.Lock()
 	defer storage.Mutex.Unlock()
 
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
 	ID, found := specs.LookupID(entityPtr)
 
 	if !found {
@@ -56,25 +60,37 @@ func (storage *Memory) Delete(ctx context.Context, entity interface{}) error {
 		return fmt.Errorf("can't find ID in %s", reflect.TypeOf(entity).Name())
 	}
 
-	return storage.DeleteByID(context.TODO(), entity, ID)
+	return storage.DeleteByID(ctx, entity, ID)
 }
 
 func (storage *Memory) DeleteByID(ctx context.Context, Type interface{}, ID string) error {
 	storage.Mutex.Lock()
 	defer storage.Mutex.Unlock()
 
-	table := storage.TableFor(Type)
-
-	if _, ok := table[ID]; ok {
-		delete(table, ID)
+	if err := ctx.Err(); err != nil {
+		return err
 	}
 
-	return nil
+	table := storage.TableFor(Type)
+
+	_, ok := table[ID]
+
+	if !ok {
+		return frameless.ErrNotFound
+	}
+
+	delete(table, ID)
+
+	return ctx.Err()
 }
 
 func (storage *Memory) FindAll(ctx context.Context, Type interface{}) frameless.Iterator {
 	storage.Mutex.RLock()
 	defer storage.Mutex.RUnlock()
+
+	if err := ctx.Err(); err != nil {
+		return iterators.NewError(err)
+	}
 
 	table := storage.TableFor(Type)
 
@@ -94,6 +110,10 @@ func (storage *Memory) Save(ctx context.Context, ptr interface{}) error {
 		return fmt.Errorf("entity already have an ID: %s", currentID)
 	}
 
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
 	id := fixtures.RandomString(42)
 	storage.TableFor(ptr)[id] = ptr
 	return specs.SetID(ptr, id)
@@ -102,6 +122,10 @@ func (storage *Memory) Save(ctx context.Context, ptr interface{}) error {
 func (storage *Memory) FindByID(ctx context.Context, ptr interface{}, ID string) (bool, error) {
 	storage.Mutex.RLock()
 	defer storage.Mutex.RUnlock()
+
+	if err := ctx.Err(); err != nil {
+		return false, err
+	}
 
 	entity, found := storage.TableFor(ptr)[ID]
 
@@ -114,31 +138,6 @@ func (storage *Memory) FindByID(ctx context.Context, ptr interface{}, ID string)
 
 func (storage *Memory) Close() error {
 	return nil
-}
-
-func (storage *Memory) Purge(ctx context.Context) (rerr error) {
-	defer func() {
-		r := recover()
-
-		if r == nil {
-			return
-		}
-
-		err, ok := r.(error)
-
-		if ok {
-			rerr = err
-		}
-	}()
-
-	storage.Mutex.Lock()
-	defer storage.Mutex.Unlock()
-
-	for k, _ := range storage.DB {
-		delete(storage.DB, k)
-	}
-
-	return
 }
 
 func (storage *Memory) TableFor(e interface{}) MemoryTable {
@@ -154,6 +153,10 @@ func (storage *Memory) TableFor(e interface{}) MemoryTable {
 func (storage *Memory) Truncate(ctx context.Context, Type interface{}) error {
 	storage.Mutex.Lock()
 	defer storage.Mutex.Unlock()
+
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 
 	name := reflects.FullyQualifiedName(Type)
 
