@@ -66,6 +66,7 @@ func (spec PilotFinderSpec) Test(t *testing.T) {
 					require.NotNil(t, iter)
 					require.False(t, iter.Next())
 					require.Nil(t, iter.Err())
+					require.Nil(t, iter.Close())
 				})
 			}
 
