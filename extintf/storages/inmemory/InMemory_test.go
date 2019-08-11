@@ -8,5 +8,8 @@ import (
 )
 
 func TestInMemory(t *testing.T) {
-	(&specs.StorageSpec{Subject: inmemory.New(), FixtureFactory: testing2.NewFixtureFactory()}).Test(t)
+	specs.StorageSpec{Subject:
+		inmemory.New(),
+		FixtureFactory: testing2.NewFixtureFactory(),
+	}.Test(t)
 }

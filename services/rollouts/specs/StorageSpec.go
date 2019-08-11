@@ -3,7 +3,6 @@ package specs
 import (
 	"context"
 	"github.com/adamluzsi/testcase"
-	testing2 "github.com/adamluzsi/toggler/testing"
 	"github.com/stretchr/testify/require"
 	"testing"
 
@@ -22,11 +21,10 @@ type StorageSpec struct {
 
 func (spec StorageSpec) Test(t *testing.T) {
 	s := testcase.NewSpec(t)
-	ff := testing2.NewFixtureFactory()
 	testEntity := func(t *testing.T, entityType interface{}) {
-		specs.TestMinimumRequirements(t, spec.Storage, entityType, ff)
-		specs.TestUpdate(t, spec.Storage, entityType, ff)
-		specs.TestFindAll(t, spec.Storage, entityType, ff)
+		specs.TestMinimumRequirements(t, spec.Storage, entityType, spec.FixtureFactory)
+		specs.TestUpdate(t, spec.Storage, entityType, spec.FixtureFactory)
+		specs.TestFindAll(t, spec.Storage, entityType, spec.FixtureFactory)
 	}
 
 	s.Describe(`rollouts.StorageSpec`, func(s *testcase.Spec) {
@@ -37,13 +35,13 @@ func (spec StorageSpec) Test(t *testing.T) {
 
 		s.Describe(`pilot`, func(s *testcase.Spec) {
 			s.Let(`flag`, func(t *testcase.T) interface{} {
-				return ff.Create(rollouts.FeatureFlag{})
+				return spec.FixtureFactory.Create(rollouts.FeatureFlag{})
 			})
 
 			s.Around(func(t *testcase.T) func() {
 				flag := t.I(`flag`).(*rollouts.FeatureFlag)
 				require.Nil(t, spec.Storage.Save(spec.ctx(), flag))
-				td := ff.SetPilotFeatureFlagID(flag.ID)
+				td := spec.FixtureFactory.SetPilotFeatureFlagID(flag.ID)
 				return func() {
 					require.Nil(t, spec.Storage.Truncate(spec.ctx(), rollouts.FeatureFlag{}))
 					td()

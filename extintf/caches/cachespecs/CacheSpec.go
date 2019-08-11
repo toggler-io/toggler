@@ -11,7 +11,6 @@ import (
 	"github.com/adamluzsi/toggler/extintf/storages/inmemory"
 	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/adamluzsi/toggler/services/security"
-	. "github.com/adamluzsi/toggler/testing"
 	"github.com/adamluzsi/toggler/usecases"
 	"github.com/adamluzsi/toggler/usecases/specs"
 	"github.com/golang/mock/gomock"
@@ -58,7 +57,7 @@ func (spec CacheSpec) Test(t *testing.T) {
 			s.Describe(title, func(s *testcase.Spec) {
 
 				s.Let(`value`, func(t *testcase.T) interface{} {
-					return NewFixtureFactory().Create(T)
+					return spec.FixtureFactory.Create(T)
 				})
 
 				s.Before(func(t *testcase.T) {
@@ -92,7 +91,7 @@ func (spec CacheSpec) Test(t *testing.T) {
 						s.Let(`value-with-new-content`, func(t *testcase.T) interface{} {
 							id, found := flspecs.LookupID(t.I(`value`))
 							require.True(t, found)
-							nv := NewFixtureFactory().Create(T)
+							nv := spec.FixtureFactory.Create(T)
 							require.Nil(t, flspecs.SetID(nv, id))
 							return nv
 						})
@@ -204,7 +203,7 @@ func (spec CacheSpec) storage(t *testcase.T) usecases.Storage {
 }
 
 func (spec CacheSpec) ctx(e interface{}) context.Context {
-	return NewFixtureFactory().Context()
+	return spec.FixtureFactory.Context()
 }
 
 func (spec CacheSpec) mockStorage(s *testcase.Spec, setupMockBehavior func(*testcase.T, *MockStorage)) {

@@ -150,7 +150,7 @@ func (r *Redis) FindAll(ctx context.Context, Type interface{}) frameless.Iterato
 	if err := ctx.Err(); err != nil {
 		return iterators.NewError(err)
 	}
-	
+
 	valuesWithIDs, err := r.client.WithContext(ctx).HGetAll(r.hKey(Type)).Result()
 
 	if err != nil {
