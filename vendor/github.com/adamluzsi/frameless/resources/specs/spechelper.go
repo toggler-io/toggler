@@ -2,6 +2,7 @@ package specs
 
 import (
 	"fmt"
+
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/testcase"
@@ -15,4 +16,8 @@ func extIDFieldRequired(s *testcase.Spec, entityType interface{}) {
 		_, hasExtID := LookupID(reflects.New(entityType))
 		require.True(t, hasExtID, frameless.ErrIDRequired.Error())
 	})
+}
+
+func name(e frameless.Entity) string {
+	return reflects.BaseTypeOf(e).Name()
 }

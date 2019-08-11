@@ -117,29 +117,44 @@ func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, ID string)
 	id, err := strconv.ParseInt(ID, 10, 64)
 
 	if err != nil {
-		return err
+		return frameless.ErrNotFound
 	}
+
+	var query string
 
 	switch Type.(type) {
 	case rollouts.FeatureFlag, *rollouts.FeatureFlag:
-		_, err := pg.DB.ExecContext(ctx, `DELETE FROM "feature_flags" WHERE id = $1`, id)
-		return err
+		query = `DELETE FROM "feature_flags" WHERE id = $1`
 
 	case rollouts.Pilot, *rollouts.Pilot:
-		_, err := pg.DB.ExecContext(ctx, `DELETE FROM "pilots" WHERE id = $1`, id)
-		return err
+		query = `DELETE FROM "pilots" WHERE id = $1`
 
 	case security.Token, *security.Token:
-		_, err := pg.DB.ExecContext(ctx, `DELETE FROM "tokens" WHERE id = $1`, id)
-		return err
+		query = `DELETE FROM "tokens" WHERE id = $1`
 
 	case specs.TestEntity, *specs.TestEntity:
-		_, err := pg.DB.ExecContext(ctx, `DELETE FROM "test_entities" WHERE id = $1`, id)
-		return err
+		query = `DELETE FROM "test_entities" WHERE id = $1`
 
 	default:
 		return frameless.ErrNotImplemented
 	}
+
+
+	result, err := pg.DB.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	count, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if count == 0 {
+		return frameless.ErrNotFound
+	}
+
+	return nil
 }
 
 func (pg *Postgres) Update(ctx context.Context, ptr interface{}) error {

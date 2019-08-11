@@ -60,6 +60,10 @@ func (r *Redis) Close() error {
 }
 
 func (r *Redis) FindByID(ctx context.Context, ptr interface{}, ID string) (bool, error) {
+	if err := ctx.Err(); err != nil {
+		return false, err
+	}
+
 	reply := r.client.WithContext(ctx).HGet(r.hKey(ptr), ID)
 
 	err := reply.Err()
@@ -82,14 +86,30 @@ func (r *Redis) FindByID(ctx context.Context, ptr interface{}, ID string) (bool,
 }
 
 func (r *Redis) DeleteByID(ctx context.Context, Type interface{}, ID string) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	reply := r.client.WithContext(ctx).HDel(r.hKey(Type), ID)
 	if err := reply.Err(); err != nil && err != redis.Nil {
 		return err
 	}
+
+	success, err := reply.Result()
+	if err != nil {
+		return err
+	}
+
+	if success != 1 {
+		return frameless.ErrNotFound
+	}
+
 	return nil
 }
 
 func (r *Redis) Truncate(ctx context.Context, Type interface{}) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	hkey := r.hKey(Type)
 	keys, err := r.client.WithContext(ctx).HKeys(hkey).Result()
 	if err != nil {
@@ -127,6 +147,10 @@ func (r *Redis) Update(ctx context.Context, ptr interface{}) error {
 }
 
 func (r *Redis) FindAll(ctx context.Context, Type interface{}) frameless.Iterator {
+	if err := ctx.Err(); err != nil {
+		return iterators.NewError(err)
+	}
+	
 	valuesWithIDs, err := r.client.WithContext(ctx).HGetAll(r.hKey(Type)).Result()
 
 	if err != nil {
@@ -253,6 +277,12 @@ func (r *Redis) Save(ctx context.Context, ptr interface{}) error {
 
 	bs, err := r.marshal(ptr)
 	if err != nil {
+		return err
+	}
+
+	// apparently the redis client is not really
+	// worried if it received a canceled context.
+	if err := ctx.Err(); err != nil {
 		return err
 	}
 
