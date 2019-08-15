@@ -34,6 +34,42 @@ If your answer yes to most of them,
 then you can stop here, because adding this service to your stack would not solve too much.
 else, please continue...
 
+## Why toggler, why not ${COMPANY_NAME} ?
+
+`toggler` primary goal is to provide a vendor-lock free solution to a wide range of audience.
+The API's follow simple conventions, making transition easy to almost any other service
+in case the service is not enough for the company/team needs.
+
+The secondary goal is derived from the primary, which is to own the data.
+Regardless how and where you use, the ownership of the data belongs to you.
+There is no `free` plan that aims you to lock in by data, or by other means.
+
+If you are satisfied with the service, 
+then the `toggler` project did well. 
+
+## State of the code
+
+### Architecture
+
+The `toggler` project core design is based on `the clean architechture` principles,
+and split across architecture layers.
+
+The folder structure also try to represent it trough `screaming architecture` elements.
+
+### Testability & Maintainability
+
+The `toggler` project coverage is made with *behavior driven development* principles,
+and as such the tests aim to justify system behavior, not implementation.
+You probably heard this already many times, but in this case thing about in a way 
+where you have `postgres` implementation without a single query or db table assertion. :)
+Purely just behavior testes. 
+
+Why this is good ? Through this, I can have as many different implementations,
+and share the expectations from separate components such as storage implementation,
+and any contributor can jump in and contribute to it, even without deep TDD or BDD practices.
+Also refactoring the internal implementation of the project components is easier.
+[There is an in depth explanation in this section.](/docs/design/sharedspecs.md) 
+
 ## Scalability
 
 The Service follows the [12 factor app](https://12factor.net/) principles,
