@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-func SimplifiedName(e frameless.Entity) string {
+func SymbolicName(e frameless.Entity) string {
 	t := BaseTypeOf(e)
 
 	if t.PkgPath() == "" {

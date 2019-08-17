@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/frameless/resources"
-	_ "github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/toggler/services/rollouts"
 	"math/rand"
 	"net/url"

@@ -7,7 +7,7 @@ import (
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/reflects"
-	"github.com/adamluzsi/frameless/resources/specs"
+	"github.com/adamluzsi/frameless/resources"
 	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/adamluzsi/toggler/services/security"
 	_ "github.com/lib/pq"
@@ -50,7 +50,7 @@ func (pg *Postgres) Close() error {
 }
 
 func (pg *Postgres) Save(ctx context.Context, entity interface{}) error {
-	if currentID, ok := specs.LookupID(entity); !ok || currentID != "" {
+	if currentID, ok := resources.LookupID(entity); !ok || currentID != "" {
 		return fmt.Errorf("entity already have an ID: %s", currentID)
 	}
 
@@ -61,7 +61,7 @@ func (pg *Postgres) Save(ctx context.Context, entity interface{}) error {
 		return pg.pilotInsertNew(ctx, e)
 	case *security.Token:
 		return pg.tokenInsertNew(ctx, e)
-	case *specs.TestEntity:
+	case *resources.TestEntity:
 		return pg.testEntityInsertNew(ctx, e)
 	default:
 		return frameless.ErrNotImplemented
@@ -85,7 +85,7 @@ func (pg *Postgres) FindByID(ctx context.Context, ptr interface{}, ID string) (b
 	case *security.Token:
 		return pg.tokenFindByID(ctx, e, id)
 
-	case *specs.TestEntity:
+	case *resources.TestEntity:
 		return pg.testEntityFindByID(ctx, e, id)
 
 	default:
@@ -102,7 +102,7 @@ func (pg *Postgres) Truncate(ctx context.Context, Type interface{}) error {
 		tableName = `pilots`
 	case security.Token, *security.Token:
 		tableName = `tokens`
-	case specs.TestEntity, *specs.TestEntity:
+	case resources.TestEntity, *resources.TestEntity:
 		tableName = `test_entities`
 	default:
 		return frameless.ErrNotImplemented
@@ -132,7 +132,7 @@ func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, ID string)
 	case security.Token, *security.Token:
 		query = `DELETE FROM "tokens" WHERE id = $1`
 
-	case specs.TestEntity, *specs.TestEntity:
+	case resources.TestEntity, *resources.TestEntity:
 		query = `DELETE FROM "test_entities" WHERE id = $1`
 
 	default:
@@ -168,7 +168,7 @@ func (pg *Postgres) Update(ctx context.Context, ptr interface{}) error {
 	case *security.Token:
 		return pg.tokenUpdate(ctx, e)
 
-	case *specs.TestEntity:
+	case *resources.TestEntity:
 		return pg.testEntityUpdate(ctx, e)
 
 	default:
@@ -187,7 +187,7 @@ func (pg *Postgres) FindAll(ctx context.Context, Type interface{}) frameless.Ite
 	case security.Token, *security.Token:
 		return pg.tokenFindAll(ctx)
 
-	case specs.TestEntity, *specs.TestEntity:
+	case resources.TestEntity, *resources.TestEntity:
 		return pg.testEntityFindAll(ctx)
 
 	default:
@@ -374,7 +374,7 @@ func (pg *Postgres) featureFlagInsertNew(ctx context.Context, flag *rollouts.Fea
 		return err
 	}
 
-	return specs.SetID(flag, strconv.FormatInt(id.Int64, 10))
+	return resources.SetID(flag, strconv.FormatInt(id.Int64, 10))
 }
 
 const pilotInsertNewQuery = `
@@ -402,7 +402,7 @@ func (pg *Postgres) pilotInsertNew(ctx context.Context, pilot *rollouts.Pilot) e
 		return err
 	}
 
-	return specs.SetID(pilot, strconv.FormatInt(id.Int64, 10))
+	return resources.SetID(pilot, strconv.FormatInt(id.Int64, 10))
 }
 
 const testEntityInsertNewQuery = `
@@ -411,7 +411,7 @@ VALUES (default)
 RETURNING id;
 `
 
-func (pg *Postgres) testEntityInsertNew(ctx context.Context, te *specs.TestEntity) error {
+func (pg *Postgres) testEntityInsertNew(ctx context.Context, te *resources.TestEntity) error {
 	row := pg.DB.QueryRowContext(ctx, testEntityInsertNewQuery)
 
 	var id sql.NullInt64
@@ -419,7 +419,7 @@ func (pg *Postgres) testEntityInsertNew(ctx context.Context, te *specs.TestEntit
 		return err
 	}
 
-	return specs.SetID(te, strconv.FormatInt(id.Int64, 10))
+	return resources.SetID(te, strconv.FormatInt(id.Int64, 10))
 }
 
 const tokenInsertNewQuery = `
@@ -441,7 +441,7 @@ func (pg *Postgres) tokenInsertNew(ctx context.Context, token *security.Token) e
 		return err
 	}
 
-	return specs.SetID(token, strconv.FormatInt(id.Int64, 10))
+	return resources.SetID(token, strconv.FormatInt(id.Int64, 10))
 }
 
 func (pg *Postgres) featureFlagFindByID(ctx context.Context, flag *rollouts.FeatureFlag, id int64) (bool, error) {
@@ -492,7 +492,7 @@ FROM "test_entities"
 WHERE id = $1;
 `
 
-func (pg *Postgres) testEntityFindByID(ctx context.Context, testEntity *specs.TestEntity, id int64) (bool, error) {
+func (pg *Postgres) testEntityFindByID(ctx context.Context, testEntity *resources.TestEntity, id int64) (bool, error) {
 	row := pg.DB.QueryRowContext(ctx, testEntityFindByIDQuery, id)
 
 	err := row.Scan(&testEntity.ID)
@@ -573,7 +573,7 @@ func (pg *Postgres) pilotFindAll(ctx context.Context) frameless.Iterator {
 func (pg *Postgres) testEntityFindAll(ctx context.Context) frameless.Iterator {
 
 	mapper := iterators.SQLRowMapperFunc(func(s iterators.SQLRowScanner, e frameless.Entity) error {
-			te := e.(*specs.TestEntity)
+			te := e.(*resources.TestEntity)
 			return s.Scan(&te.ID)
 	})
 
@@ -714,7 +714,7 @@ func (pg *Postgres) tokenUpdate(ctx context.Context, t *security.Token) error {
 	return err
 }
 
-func (pg *Postgres) testEntityUpdate(ctx context.Context, t *specs.TestEntity) error {
+func (pg *Postgres) testEntityUpdate(ctx context.Context, t *resources.TestEntity) error {
 	return nil
 }
 

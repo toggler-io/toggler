@@ -3,15 +3,15 @@ package security
 import (
 	"context"
 
-	"github.com/adamluzsi/frameless/resources/specs"
+	"github.com/adamluzsi/frameless/resources"
 )
 
 type Storage interface {
-	specs.Save
-	specs.FindByID
-	specs.Truncate
-	specs.DeleteByID
-	specs.Update
+	resources.Save
+	resources.FindByID
+	resources.Truncate
+	resources.DeleteByID
+	resources.Update
 	TokenFinder
 }
 

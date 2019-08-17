@@ -10,7 +10,7 @@ import (
 
 	"github.com/adamluzsi/toggler/services/rollouts"
 
-	"github.com/adamluzsi/frameless/resources/specs"
+	"github.com/adamluzsi/frameless/resources"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,10 +18,10 @@ type FlagFinderSpec struct {
 	Subject interface {
 		rollouts.FlagFinder
 
-		specs.MinimumRequirements
+		resources.MinimumRequirements
 	}
 
-	specs.FixtureFactory
+	resources.FixtureFactory
 }
 
 func (spec FlagFinderSpec) Test(t *testing.T) {

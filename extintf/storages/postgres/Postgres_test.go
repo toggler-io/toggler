@@ -13,7 +13,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/require"
 
-	fspecs "github.com/adamluzsi/frameless/resources/specs"
+	"github.com/adamluzsi/frameless/resources"
 	"github.com/adamluzsi/toggler/usecases/specs"
 )
 
@@ -29,7 +29,7 @@ func TestPostgres(t *testing.T) {
 	require.Nil(t, err)
 
 	specs.StorageSpec{
-		Subject: storage,
+		Subject:        storage,
 		FixtureFactory: testing2.NewFixtureFactory(),
 	}.Test(t)
 }
@@ -104,7 +104,7 @@ func TestPostgres_Close(t *testing.T) {
 		})
 
 		s.Then(`the *sql.Tx had received Commit`, func(t *testcase.T) {
-			var te fspecs.TestEntity
+			var te resources.TestEntity
 			ctx := context.Background()
 
 			pgSqlDB := &postgres.Postgres{DB: t.I(`*sql.DB`).(*sql.DB)}

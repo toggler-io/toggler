@@ -1,4 +1,4 @@
-package specs
+package resources
 
 import (
 	"context"
@@ -55,13 +55,19 @@ func (spec FindAllSpec) Test(t *testing.T) {
 			return spec.FixtureFactory.Create(spec.EntityType)
 		})
 
-		s.When(`entity was saved in the resource`, func(s *testcase.Spec) {
+		s.When(`entity was saved in the Resource`, func(s *testcase.Spec) {
 
 			s.Before(func(t *testcase.T) {
 				require.Nil(t, spec.Subject.Save(spec.Context(), t.I(`entity`)))
 			})
 
-			s.Then(`the entity will be returned as part of the results of the iterator`, func(t *testcase.T) {
+			s.Then(`the entity will returns the all the entity in volume`, func(t *testcase.T) {
+				count, err := iterators.Count(subject(t))
+				require.Nil(t, err)
+				require.Equal(t, 1, count)
+			})
+
+			s.Then(`then the returned iterator includes the stored entity`, func(t *testcase.T) {
 				all := subject(t)
 				var entities []interface{}
 				require.Nil(t, iterators.CollectAll(all, &entities))
@@ -69,7 +75,7 @@ func (spec FindAllSpec) Test(t *testing.T) {
 				require.Contains(t, entities, reflects.BaseValueOf(t.I(`entity`)).Interface())
 			})
 
-			s.And(`more similar entity is saved in the resource as well`, func(s *testcase.Spec) {
+			s.And(`more similar entity is saved in the Resource as well`, func(s *testcase.Spec) {
 				s.Let(`oth-entity`, func(t *testcase.T) interface{} {
 					return spec.FixtureFactory.Create(spec.EntityType)
 				})
@@ -88,7 +94,7 @@ func (spec FindAllSpec) Test(t *testing.T) {
 			})
 		})
 
-		s.When(`no entity saved before in the resource`, func(s *testcase.Spec) {
+		s.When(`no entity saved before in the Resource`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
 				require.Nil(t, spec.Subject.Truncate(spec.Context(), spec.EntityType))
 			})

@@ -1,7 +1,7 @@
 package specs
 
 import (
-	"github.com/adamluzsi/frameless/resources/specs"
+	"github.com/adamluzsi/frameless/resources"
 	rollspecs "github.com/adamluzsi/toggler/services/rollouts/specs"
 	secuspecs "github.com/adamluzsi/toggler/services/security/specs"
 	"testing"
@@ -13,7 +13,7 @@ type StorageSpec struct {
 	Subject usecases.Storage
 
 	FixtureFactory interface {
-		specs.FixtureFactory
+		resources.FixtureFactory
 		SetPilotFeatureFlagID(ffID string) func()
 	}
 }

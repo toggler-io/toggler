@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/adamluzsi/frameless/reflects"
-	"github.com/adamluzsi/frameless/resources/specs"
+	"github.com/adamluzsi/frameless/resources"
 	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/adamluzsi/toggler/services/security"
 	"github.com/go-redis/redis"
@@ -28,7 +28,7 @@ func New(connstr string) (*Redis, error) {
 		reflects.FullyQualifiedName(security.Token{}):       "tokens",
 		reflects.FullyQualifiedName(rollouts.Pilot{}):       "pilots",
 		reflects.FullyQualifiedName(rollouts.FeatureFlag{}): "feature_flags",
-		reflects.FullyQualifiedName(specs.TestEntity{}):     "test_entities",
+		reflects.FullyQualifiedName(resources.TestEntity{}): "test_entities",
 	}
 	return r, nil
 }
@@ -125,7 +125,7 @@ func (r *Redis) Truncate(ctx context.Context, Type interface{}) error {
 }
 
 func (r *Redis) Update(ctx context.Context, ptr interface{}) error {
-	id, found := specs.LookupID(ptr)
+	id, found := resources.LookupID(ptr)
 	if !found {
 		return frameless.ErrIDRequired
 	}
@@ -244,7 +244,7 @@ func (r *Redis) FindTokenBySHA512Hex(ctx context.Context, sha512hex string) (*se
 }
 
 func (r *Redis) Save(ctx context.Context, ptr interface{}) error {
-	currentID, found := specs.LookupID(ptr)
+	currentID, found := resources.LookupID(ptr)
 
 	if !found {
 		return frameless.ErrIDRequired
@@ -271,7 +271,7 @@ func (r *Redis) Save(ctx context.Context, ptr interface{}) error {
 		return errors.New(`error happened during creating new id`)
 	}
 
-	if err := specs.SetID(ptr, id); err != nil {
+	if err := resources.SetID(ptr, id); err != nil {
 		return err
 	}
 

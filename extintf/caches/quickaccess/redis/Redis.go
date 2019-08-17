@@ -6,7 +6,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"github.com/adamluzsi/frameless/reflects"
-	"github.com/adamluzsi/frameless/resources/specs"
+	"github.com/adamluzsi/frameless/resources"
 	"github.com/adamluzsi/toggler/usecases"
 	"github.com/go-redis/redis"
 	"time"
@@ -107,7 +107,7 @@ func (r *Redis) Truncate(ctx context.Context, Type interface{}) error {
 }
 
 func (r *Redis) Update(ctx context.Context, ptr interface{}) error {
- 	id, found := specs.LookupID(ptr)
+	id, found := resources.LookupID(ptr)
 	if found {
 		if err := r.invalidateKey(r.cacheKeyOfObject(ptr, id)); err != nil {
 			return err

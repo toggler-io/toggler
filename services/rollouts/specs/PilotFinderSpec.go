@@ -13,7 +13,7 @@ import (
 	"github.com/adamluzsi/toggler/services/rollouts"
 
 	"github.com/adamluzsi/frameless"
-	"github.com/adamluzsi/frameless/resources/specs"
+	"github.com/adamluzsi/frameless/resources"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,10 +21,10 @@ type PilotFinderSpec struct {
 	Subject interface {
 		rollouts.PilotFinder
 
-		specs.MinimumRequirements
+		resources.MinimumRequirements
 	}
 
-	specs.FixtureFactory
+	resources.FixtureFactory
 }
 
 func (spec PilotFinderSpec) Test(t *testing.T) {

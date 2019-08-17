@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/frameless/reflects"
-	flspecs "github.com/adamluzsi/frameless/resources/specs"
+	"github.com/adamluzsi/frameless/resources"
 	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/toggler/extintf/caches"
 	"github.com/adamluzsi/toggler/extintf/storages/inmemory"
@@ -24,7 +24,7 @@ type CacheSpec struct {
 	Factory func(usecases.Storage) caches.Interface
 
 	FixtureFactory interface {
-		flspecs.FixtureFactory
+		resources.FixtureFactory
 		SetPilotFeatureFlagID(ffID string) func()
 	}
 }
@@ -62,13 +62,13 @@ func (spec CacheSpec) Test(t *testing.T) {
 
 				s.Before(func(t *testcase.T) {
 					require.Nil(t, spec.storage(t).Save(spec.ctx(t.I(`value`)), t.I(`value`)))
-					_, found := flspecs.LookupID(t.I(`value`))
+					_, found := resources.LookupID(t.I(`value`))
 					require.True(t, found)
 				})
 
 				s.Then(`it will return the value`, func(t *testcase.T) {
 					v := reflects.New(T)
-					id, found := flspecs.LookupID(t.I(`value`))
+					id, found := resources.LookupID(t.I(`value`))
 					require.True(t, found)
 					found, err := spec.cache(t).FindByID(spec.ctx(v), v, id)
 					require.Nil(t, err)
@@ -79,7 +79,7 @@ func (spec CacheSpec) Test(t *testing.T) {
 				s.And(`after value already cached`, func(s *testcase.Spec) {
 					s.Before(func(t *testcase.T) {
 						v := reflects.New(T)
-						id, found := flspecs.LookupID(t.I(`value`))
+						id, found := resources.LookupID(t.I(`value`))
 						require.True(t, found)
 						found, err := spec.cache(t).FindByID(spec.ctx(v), v, id)
 						require.Nil(t, err)
@@ -89,10 +89,10 @@ func (spec CacheSpec) Test(t *testing.T) {
 
 					s.And(`value is suddenly updated `, func(s *testcase.Spec) {
 						s.Let(`value-with-new-content`, func(t *testcase.T) interface{} {
-							id, found := flspecs.LookupID(t.I(`value`))
+							id, found := resources.LookupID(t.I(`value`))
 							require.True(t, found)
 							nv := spec.FixtureFactory.Create(T)
-							require.Nil(t, flspecs.SetID(nv, id))
+							require.Nil(t, resources.SetID(nv, id))
 							return nv
 						})
 
@@ -103,7 +103,7 @@ func (spec CacheSpec) Test(t *testing.T) {
 
 						s.Then(`it will return the new value instead the old one`, func(t *testcase.T) {
 							v := reflects.New(T)
-							id, found := flspecs.LookupID(t.I(`value`))
+							id, found := resources.LookupID(t.I(`value`))
 							require.True(t, found)
 							found, err := spec.cache(t).FindByID(spec.ctx(v), v, id)
 							require.Nil(t, err)
@@ -116,7 +116,7 @@ func (spec CacheSpec) Test(t *testing.T) {
 				s.And(`on multiple request`, func(s *testcase.Spec) {
 					s.Then(`it will return it consistently`, func(t *testcase.T) {
 						value := t.I(`value`)
-						id, found := flspecs.LookupID(value)
+						id, found := resources.LookupID(value)
 						require.True(t, found)
 
 						for i := 0; i < 42; i++ {
@@ -134,14 +134,14 @@ func (spec CacheSpec) Test(t *testing.T) {
 								storage.EXPECT().Save(gomock.Any(), gomock.Any()).
 									AnyTimes().
 									DoAndReturn(func(ctx context.Context, e interface{}) error {
-										return flspecs.SetID(e, fixtures.RandomString(7))
+										return resources.SetID(e, fixtures.RandomString(7))
 									})
 
 								storage.EXPECT().FindByID(gomock.Any(), gomock.Any(), gomock.Any()).
 									Times(1).
 									DoAndReturn(func(ctx context.Context, ptr interface{}, ID string) (bool, error) {
 										value := t.I(`value`)
-										id, found := flspecs.LookupID(value)
+										id, found := resources.LookupID(value)
 										require.True(t, found)
 										require.Equal(t, ID, id)
 										require.Nil(t, reflects.Link(value, ptr))
@@ -156,7 +156,7 @@ func (spec CacheSpec) Test(t *testing.T) {
 							s.Then(`it will only bother the storage for the value once`, func(t *testcase.T) {
 								var nv interface{}
 								value := t.I(`value`)
-								id, found := flspecs.LookupID(value)
+								id, found := resources.LookupID(value)
 								require.True(t, found)
 
 								nv = reflects.New(T)

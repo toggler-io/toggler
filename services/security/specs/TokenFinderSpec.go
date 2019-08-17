@@ -3,7 +3,7 @@ package specs
 import (
 	"context"
 	"github.com/adamluzsi/frameless/fixtures"
-	"github.com/adamluzsi/frameless/resources/specs"
+	"github.com/adamluzsi/frameless/resources"
 	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/toggler/services/security"
 	. "github.com/adamluzsi/toggler/testing"
@@ -16,10 +16,10 @@ type TokenFinderSpec struct {
 	Subject interface {
 		security.TokenFinder
 
-		specs.MinimumRequirements
+		resources.MinimumRequirements
 	}
 
-	specs.FixtureFactory
+	resources.FixtureFactory
 }
 
 func (spec TokenFinderSpec) ctx() context.Context {
