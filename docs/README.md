@@ -169,6 +169,7 @@ The token cannot be regained if it is not saved after token creation.
 * the webgui also provides swagger-ui out of the box on the /swagger-ui path
 
 ## For Contributors
+* [README](/docs/contribution/README.md)
 * [Backlog](https://github.com/adamluzsi/toggler/projects)
 
 Feel free to open an issue if you see anything
