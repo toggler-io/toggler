@@ -109,7 +109,7 @@ func TestUseCases_IsFeatureEnabledFor(t *testing.T) {
 					EnsureFlag(t, GetFeatureFlagName(t), expectedEnrollMaxPercentage)
 				})
 
-				s.Then(``, func(t *testcase.T) {
+				s.Then(`in average the percentage should be represented`, func(t *testcase.T) {
 					var enrolled, rejected int
 
 					extIDS := t.I(`extIDS`).([]string)

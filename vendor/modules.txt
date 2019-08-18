@@ -11,7 +11,7 @@ github.com/adamluzsi/frameless/reflects
 github.com/adamluzsi/frameless/resources
 github.com/adamluzsi/frameless/iterators
 github.com/adamluzsi/frameless/resources/storages/memorystorage
-# github.com/adamluzsi/testcase v0.0.0-20190803211906-0997483d600d
+# github.com/adamluzsi/testcase v0.0.0-20190818005401-57564aa1e711
 github.com/adamluzsi/testcase
 # github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
 github.com/asaskevich/govalidator
