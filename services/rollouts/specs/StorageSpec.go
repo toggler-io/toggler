@@ -2,18 +2,19 @@ package specs
 
 import (
 	"context"
-	"github.com/adamluzsi/frameless/resources"
+	"testing"
+
+	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 type StorageSpec struct {
 	Storage rollouts.Storage
 
 	FixtureFactory interface {
-		resources.FixtureFactory
+		specs.FixtureFactory
 		SetPilotFeatureFlagID(ffID string) func()
 	}
 }
@@ -21,9 +22,9 @@ type StorageSpec struct {
 func (spec StorageSpec) Test(t *testing.T) {
 	s := testcase.NewSpec(t)
 	testEntity := func(t *testing.T, entityType interface{}) {
-		resources.TestMinimumRequirements(t, spec.Storage, entityType, spec.FixtureFactory)
-		resources.TestUpdate(t, spec.Storage, entityType, spec.FixtureFactory)
-		resources.TestFindAll(t, spec.Storage, entityType, spec.FixtureFactory)
+		specs.TestMinimumRequirements(t, spec.Storage, entityType, spec.FixtureFactory)
+		specs.TestUpdate(t, spec.Storage, entityType, spec.FixtureFactory)
+		specs.TestFindAll(t, spec.Storage, entityType, spec.FixtureFactory)
 	}
 
 	s.Describe(`rollouts.StorageSpec`, func(s *testcase.Spec) {

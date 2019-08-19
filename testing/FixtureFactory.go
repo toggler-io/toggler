@@ -2,12 +2,13 @@ package testing
 
 import (
 	"fmt"
-	"github.com/adamluzsi/frameless/fixtures"
-	"github.com/adamluzsi/frameless/resources"
-	"github.com/adamluzsi/toggler/services/rollouts"
 	"math/rand"
 	"net/url"
 	"time"
+
+	"github.com/adamluzsi/frameless/fixtures"
+	"github.com/adamluzsi/frameless/resources/specs"
+	"github.com/adamluzsi/toggler/services/rollouts"
 )
 
 func NewFixtureFactory() *FixtureFactory {
@@ -15,7 +16,7 @@ func NewFixtureFactory() *FixtureFactory {
 }
 
 type FixtureFactory struct {
-	resources.GenericFixtureFactory
+	specs.GenericFixtureFactory
 	PilotFeatureFlagID string // this will allow to create pilot fixtures
 }
 

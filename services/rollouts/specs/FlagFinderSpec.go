@@ -2,15 +2,14 @@ package specs
 
 import (
 	"context"
-	"github.com/adamluzsi/frameless"
-	"github.com/adamluzsi/frameless/iterators"
-	"github.com/adamluzsi/testcase"
-	. "github.com/adamluzsi/toggler/testing"
 	"testing"
 
+	"github.com/adamluzsi/frameless"
+	"github.com/adamluzsi/frameless/iterators"
+	"github.com/adamluzsi/frameless/resources/specs"
+	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/toggler/services/rollouts"
-
-	"github.com/adamluzsi/frameless/resources"
+	. "github.com/adamluzsi/toggler/testing"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,10 +17,10 @@ type FlagFinderSpec struct {
 	Subject interface {
 		rollouts.FlagFinder
 
-		resources.MinimumRequirements
+		specs.MinimumRequirements
 	}
 
-	resources.FixtureFactory
+	specs.FixtureFactory
 }
 
 func (spec FlagFinderSpec) Test(t *testing.T) {

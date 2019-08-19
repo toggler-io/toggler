@@ -3,9 +3,12 @@ package cachespecs
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources"
+	frmlspecs "github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/toggler/extintf/caches"
 	"github.com/adamluzsi/toggler/extintf/storages/inmemory"
@@ -15,7 +18,6 @@ import (
 	"github.com/adamluzsi/toggler/usecases/specs"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 //go:generate mockgen -source ../../../usecases/Storage.go -destination MockStorage.go -package cachespecs
@@ -24,7 +26,7 @@ type CacheSpec struct {
 	Factory func(usecases.Storage) caches.Interface
 
 	FixtureFactory interface {
-		resources.FixtureFactory
+		frmlspecs.FixtureFactory
 		SetPilotFeatureFlagID(ffID string) func()
 	}
 }

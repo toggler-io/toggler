@@ -172,19 +172,16 @@ func (spec *Spec) runTestCase(test func(t *T)) {
 	var desc []string
 
 	for _, c := range allCTX[1:] {
-		desc = append(desc, c.description.text)
+		desc = append(desc, c.description)
 	}
-	
-	spec.testingT.Run(strings.Join(desc, `/`), func(runT *testing.T) {
+
+	spec.testingT.Run(strings.Join(desc, `_`), func(runT *testing.T) {
 
 		v := newV()
 		t := &T{T: runT, V: v}
 		var teardown []func()
 
-		for _, c := range allCTX {
-			t.Log(c.description.String())
-		}
-		t.Log()
+		spec.printDescription(t)
 
 		for _, c := range allCTX {
 			v.merge(c.vars)
@@ -267,7 +264,7 @@ type context struct {
 	hooks       []hookBlock
 	parallel    bool
 	immutable   bool
-	description description
+	description string
 }
 
 func (c *context) let(varName string, letBlock func(*T) interface{}) {
@@ -325,21 +322,26 @@ func (c *context) addHook(h hookBlock) {
 	c.hooks = append(c.hooks, h)
 }
 
-type description struct {
-	tab  int
-	text string
-}
-
-func (d description) String() string {
-	return fmt.Sprintf(`%s%s`, strings.Repeat("\t", d.tab), d.text)
-}
-
 func (spec *Spec) newSubSpec(desc string) *Spec {
 	spec.ctx.immutable = true
 	subCTX := newContext()
 	subCTX.parent = spec.ctx
-	subCTX.description.text = desc
-	subCTX.description.tab = spec.ctx.description.tab + 1
+	subCTX.description = desc
 	subSpec := &Spec{testingT: spec.testingT, ctx: subCTX}
 	return subSpec
+}
+
+func (spec *Spec) printDescription(t *T) {
+	t.Log()
+	defer t.Log()
+
+	var tab int
+	for _, c := range spec.ctx.allLinkListElement() {
+		if c.description == `` {
+			continue
+		}
+
+		tab++
+		t.Logf(`%s%s`, strings.Repeat("\t", tab), c.description)
+	}
 }
