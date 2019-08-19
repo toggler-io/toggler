@@ -4,6 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"net/url"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/reflects"
@@ -11,10 +16,6 @@ import (
 	"github.com/adamluzsi/toggler/services/rollouts"
 	"github.com/adamluzsi/toggler/services/security"
 	_ "github.com/lib/pq"
-	"net/url"
-	"strconv"
-	"strings"
-	"time"
 )
 
 func NewPostgres(db *sql.DB) (*Postgres, error) {
@@ -138,7 +139,6 @@ func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, ID string)
 	default:
 		return frameless.ErrNotImplemented
 	}
-
 
 	result, err := pg.DB.ExecContext(ctx, query, id)
 	if err != nil {
@@ -573,8 +573,8 @@ func (pg *Postgres) pilotFindAll(ctx context.Context) frameless.Iterator {
 func (pg *Postgres) testEntityFindAll(ctx context.Context) frameless.Iterator {
 
 	mapper := iterators.SQLRowMapperFunc(func(s iterators.SQLRowScanner, e frameless.Entity) error {
-			te := e.(*resources.TestEntity)
-			return s.Scan(&te.ID)
+		te := e.(*resources.TestEntity)
+		return s.Scan(&te.ID)
 	})
 
 	rows, err := pg.DB.QueryContext(ctx, `SELECT id FROM "test_entities"`)
