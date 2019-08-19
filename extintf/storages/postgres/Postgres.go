@@ -109,7 +109,7 @@ func (pg *Postgres) Truncate(ctx context.Context, Type interface{}) error {
 		return frameless.ErrNotImplemented
 	}
 
-	query := fmt.Sprintf(`TRUNCATE TABLE "%s"`, tableName)
+	query := fmt.Sprintf(`DELETE FROM "%s"`, tableName)
 	_, err := pg.DB.ExecContext(ctx, query)
 	return err
 }
