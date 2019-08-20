@@ -56,6 +56,8 @@ github.com/adamluzsi/testcase v0.0.0-20190818005401-57564aa1e711 h1:hPvaKL3A7Upt
 github.com/adamluzsi/testcase v0.0.0-20190818005401-57564aa1e711/go.mod h1:v7gx5uOqLnIsGEIZf4ve0HqzpCS36W6at4JTRsZTJpA=
 github.com/adamluzsi/testcase v0.0.0-20190819213543-834251e1a244 h1:Xhde74iDIjpQfUL9O1045R4mBcj8aNXxH7wxiExYz2Q=
 github.com/adamluzsi/testcase v0.0.0-20190819213543-834251e1a244/go.mod h1:v7gx5uOqLnIsGEIZf4ve0HqzpCS36W6at4JTRsZTJpA=
+github.com/adamluzsi/testcase v0.0.0-20190819214834-99cb234a195c h1:OBAY3hXJhbzWK855kj3Ie+kwpYdQBVDIy/SChe0tb3s=
+github.com/adamluzsi/testcase v0.0.0-20190819214834-99cb234a195c/go.mod h1:v7gx5uOqLnIsGEIZf4ve0HqzpCS36W6at4JTRsZTJpA=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
 github.com/apache/thrift v0.12.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=
