@@ -19,7 +19,16 @@ type StorageSpec struct {
 	}
 }
 
+func (spec StorageSpec) Benchmark(b *testing.B) {
+	b.Run(`usecases.StorageSpec`, func(b *testing.B) {
+		rollspecs.StorageSpec{Subject: spec.Subject, FixtureFactory: spec.FixtureFactory}.Benchmark(b)
+		secuspecs.StorageSpec{Subject: spec.Subject, FixtureFactory: spec.FixtureFactory}.Benchmark(b)
+	})
+}
+
 func (spec StorageSpec) Test(t *testing.T) {
-	rollspecs.StorageSpec{Storage: spec.Subject, FixtureFactory: spec.FixtureFactory}.Test(t)
-	secuspecs.StorageSpec{Storage: spec.Subject, FixtureFactory: spec.FixtureFactory}.Test(t)
+	t.Run(`usecases.StorageSpec`, func(t *testing.T) {
+		rollspecs.StorageSpec{Subject: spec.Subject, FixtureFactory: spec.FixtureFactory}.Test(t)
+		secuspecs.StorageSpec{Subject: spec.Subject, FixtureFactory: spec.FixtureFactory}.Test(t)
+	})
 }

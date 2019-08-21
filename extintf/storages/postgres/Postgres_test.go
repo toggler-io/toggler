@@ -17,6 +17,23 @@ import (
 	"github.com/adamluzsi/toggler/usecases/specs"
 )
 
+func BenchmarkPostgres(b *testing.B) {
+	if testing.Short() {
+		b.Skip()
+	}
+
+	db := MustOpenDB(b)
+	defer db.Close()
+
+	storage, err := postgres.NewPostgres(db)
+	require.Nil(b, err)
+
+	specs.StorageSpec{
+		Subject:        storage,
+		FixtureFactory: testing2.NewFixtureFactory(),
+	}.Benchmark(b)
+}
+
 func TestPostgres(t *testing.T) {
 	if testing.Short() {
 		t.Skip()
@@ -34,19 +51,19 @@ func TestPostgres(t *testing.T) {
 	}.Test(t)
 }
 
-func MustOpenDB(t *testing.T) *sql.DB {
-	databaseConnectionString := getDatabaseConnectionString(t)
+func MustOpenDB(tb testing.TB) *sql.DB {
+	databaseConnectionString := getDatabaseConnectionString(tb)
 	db, err := sql.Open("postgres", databaseConnectionString)
-	require.Nil(t, err)
-	require.Nil(t, db.Ping())
+	require.Nil(tb, err)
+	require.Nil(tb, db.Ping())
 	return db
 }
 
-func getDatabaseConnectionString(t *testing.T) string {
+func getDatabaseConnectionString(tb testing.TB) string {
 	databaseURL, isSet := os.LookupEnv("TEST_STORAGE_URL_POSTGRES")
 
 	if !isSet {
-		t.Skip(`"TEST_STORAGE_URL_POSTGRES" env var is not set, therefore skipping this test`)
+		tb.Skip(`"TEST_STORAGE_URL_POSTGRES" env var is not set, therefore skipping this test`)
 	}
 
 	return databaseURL

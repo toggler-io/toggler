@@ -48,6 +48,16 @@ github.com/adamluzsi/frameless v0.0.0-20190819213947-5fedfba54e42 h1:UWX2/xKc3Ab
 github.com/adamluzsi/frameless v0.0.0-20190819213947-5fedfba54e42/go.mod h1:ZmoPxhb2WvYEoF0xi+WOka3a0k30ClLRNMQ7bvNnEJg=
 github.com/adamluzsi/frameless v0.0.0-20190819214621-212fd86ada0a h1:2fyPCtCdhuPBc3Q3E0471jbEe3byyeSbmKt6f5MHGMs=
 github.com/adamluzsi/frameless v0.0.0-20190819214621-212fd86ada0a/go.mod h1:ZmoPxhb2WvYEoF0xi+WOka3a0k30ClLRNMQ7bvNnEJg=
+github.com/adamluzsi/frameless v0.0.0-20190820231221-1d905c78c727 h1:z89LhaG702FNzRPULTKvVCA0PVyYOVWWgHXDgkxDgZg=
+github.com/adamluzsi/frameless v0.0.0-20190820231221-1d905c78c727/go.mod h1:ZmoPxhb2WvYEoF0xi+WOka3a0k30ClLRNMQ7bvNnEJg=
+github.com/adamluzsi/frameless v0.0.0-20190820234425-81651eec2e76 h1:9iJIyrYulbQOwwgXtN/sdvXLQcIqHFcPxzP5JCYEVJA=
+github.com/adamluzsi/frameless v0.0.0-20190820234425-81651eec2e76/go.mod h1:ZmoPxhb2WvYEoF0xi+WOka3a0k30ClLRNMQ7bvNnEJg=
+github.com/adamluzsi/frameless v0.0.0-20190821094109-ac1503dfe6fc h1:YqVE22wLtmVpN+kv/6UaNwaldrFXtkaszNBl514QULk=
+github.com/adamluzsi/frameless v0.0.0-20190821094109-ac1503dfe6fc/go.mod h1:ZmoPxhb2WvYEoF0xi+WOka3a0k30ClLRNMQ7bvNnEJg=
+github.com/adamluzsi/frameless v0.0.0-20190821121504-cc0483b583ea h1:iLyH414/5WxZnmAJ/umzImc0lBBhprbkNPrZfDhhnZM=
+github.com/adamluzsi/frameless v0.0.0-20190821121504-cc0483b583ea/go.mod h1:ZmoPxhb2WvYEoF0xi+WOka3a0k30ClLRNMQ7bvNnEJg=
+github.com/adamluzsi/frameless v0.0.0-20190821123556-52532990ffd1 h1:LjZoEYRLCJl/YgJcqQLNh8W87OOUQse1KHa96i8erto=
+github.com/adamluzsi/frameless v0.0.0-20190821123556-52532990ffd1/go.mod h1:ZmoPxhb2WvYEoF0xi+WOka3a0k30ClLRNMQ7bvNnEJg=
 github.com/adamluzsi/testcase v0.0.0-20190714215144-d4dbd6534e4d h1:o4Nzhufpp4qGjRixpH9x4puR8boQQNjoXpJtLTYDXYU=
 github.com/adamluzsi/testcase v0.0.0-20190714215144-d4dbd6534e4d/go.mod h1:v7gx5uOqLnIsGEIZf4ve0HqzpCS36W6at4JTRsZTJpA=
 github.com/adamluzsi/testcase v0.0.0-20190803211906-0997483d600d h1:wxca1Ff5MwvFW/ppQRRC7wP5qtKbZvo3Wt84F1/ZwM8=

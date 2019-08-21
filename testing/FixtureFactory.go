@@ -7,8 +7,11 @@ import (
 	"time"
 
 	"github.com/adamluzsi/frameless/fixtures"
+	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/toggler/services/rollouts"
+	"github.com/adamluzsi/toggler/services/security"
+	"github.com/google/uuid"
 )
 
 func NewFixtureFactory() *FixtureFactory {
@@ -30,8 +33,8 @@ func (ff *FixtureFactory) SetPilotFeatureFlagID(ffID string) func() {
 }
 
 func (ff *FixtureFactory) Create(EntityType interface{}) interface{} {
-	switch EntityType.(type) {
-	case rollouts.FeatureFlag, *rollouts.FeatureFlag:
+	switch reflects.BaseValueOf(EntityType).Interface().(type) {
+	case rollouts.FeatureFlag:
 		flag := ff.GenericFixtureFactory.Create(EntityType).(*rollouts.FeatureFlag)
 
 		flag.Rollout.Strategy.DecisionLogicAPI = nil
@@ -48,10 +51,15 @@ func (ff *FixtureFactory) Create(EntityType interface{}) interface{} {
 
 		return flag
 
-	case rollouts.Pilot, *rollouts.Pilot:
+	case rollouts.Pilot:
 		pilot := ff.GenericFixtureFactory.Create(EntityType).(*rollouts.Pilot)
 		pilot.FeatureFlagID = ff.PilotFeatureFlagID
 		return pilot
+
+	case security.Token:
+		t := ff.GenericFixtureFactory.Create(EntityType).(*security.Token)
+		t.SHA512 = uuid.New().String()
+		return t
 
 	default:
 		return ff.GenericFixtureFactory.Create(EntityType)

@@ -7,11 +7,11 @@ import (
 )
 
 type Storage interface {
-	resources.Save
-	resources.FindByID
-	resources.Truncate
-	resources.DeleteByID
-	resources.Update
+	resources.Saver
+	resources.Finder
+	resources.Updater
+	resources.Deleter
+	resources.Truncater
 	TokenFinder
 }
 

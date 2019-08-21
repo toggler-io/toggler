@@ -13,24 +13,24 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// UpdateSpec will request an update for a wrapped entity object in the Resource
-type UpdateSpec struct {
+// UpdaterSpec will request an update for a wrapped entity object in the Resource
+type UpdaterSpec struct {
 	EntityType interface{}
 	FixtureFactory
 	Subject updateSpecSubject
 }
 
 type updateSpecSubject interface {
-	resources.Update
+	resources.Updater
 
 	MinimumRequirements
 }
 
-func (spec UpdateSpec) Test(t *testing.T) {
+func (spec UpdaterSpec) Test(t *testing.T) {
 	s := testcase.NewSpec(t)
 	extIDFieldRequired(s, spec.EntityType)
 
-	s.Describe(`Update`, func(s *testcase.Spec) {
+	s.Describe(`Updater`, func(s *testcase.Spec) {
 		subject := func(t *testcase.T) error {
 			return spec.Subject.Update(
 				t.I(`ctx`).(context.Context),
@@ -104,7 +104,7 @@ func (spec UpdateSpec) Test(t *testing.T) {
 				return newEntity
 			})
 
-			s.Then(`then it will update stored entity values`, func(t *testcase.T) {
+			s.Then(`it will encounter error during the update of the stored entity`, func(t *testcase.T) {
 				require.Error(t, subject(t))
 			})
 		})
@@ -112,6 +112,8 @@ func (spec UpdateSpec) Test(t *testing.T) {
 	})
 }
 
-func TestUpdate(t *testing.T, r updateSpecSubject, e interface{}, f FixtureFactory) {
-	UpdateSpec{EntityType: e, FixtureFactory: f, Subject: r}.Test(t)
+func (spec UpdaterSpec) Benchmark(b *testing.B) {
+	b.Run(`UpdaterSpec`, func(b *testing.B) {
+		b.Skip()
+	})
 }

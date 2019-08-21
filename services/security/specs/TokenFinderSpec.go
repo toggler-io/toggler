@@ -1,29 +1,24 @@
 package specs
 
 import (
-	"context"
+	"testing"
+	"time"
+
 	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/toggler/services/security"
 	. "github.com/adamluzsi/toggler/testing"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 type TokenFinderSpec struct {
 	Subject interface {
 		security.TokenFinder
-
 		specs.MinimumRequirements
 	}
 
 	specs.FixtureFactory
-}
-
-func (spec TokenFinderSpec) ctx() context.Context {
-	return spec.FixtureFactory.Context()
 }
 
 func (spec TokenFinderSpec) Test(t *testing.T) {
@@ -40,22 +35,22 @@ func (spec TokenFinderSpec) Test(t *testing.T) {
 	})
 
 	s.Before(func(t *testcase.T) {
-		require.Nil(t, spec.Subject.Truncate(spec.ctx(), security.Token{}))
+		require.Nil(t, spec.Subject.Truncate(spec.Context(), security.Token{}))
 	})
 
 	s.After(func(t *testcase.T) {
-		require.Nil(t, spec.Subject.Truncate(spec.ctx(), security.Token{}))
+		require.Nil(t, spec.Subject.Truncate(spec.Context(), security.Token{}))
 	})
 
 	s.Describe(`FindTokenBySHA512Hex`, func(s *testcase.Spec) {
 		subject := func(t *testcase.T) (*security.Token, error) {
-			return spec.Subject.FindTokenBySHA512Hex(spec.ctx(), t.I(`token SHA512`).(string))
+			return spec.Subject.FindTokenBySHA512Hex(spec.Context(), t.I(`token SHA512`).(string))
 		}
 
 		s.Let(`token SHA512`, func(t *testcase.T) interface{} { return `the answer is 42` })
 
 		s.When(`no token stored in the storage yet`, func(s *testcase.Spec) {
-			s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.Truncate(spec.ctx(), security.Token{})) })
+			s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.Truncate(spec.Context(), security.Token{})) })
 
 			s.Then(`it will return nil token without any error`, func(t *testcase.T) {
 				token, err := subject(t)
@@ -66,7 +61,7 @@ func (spec TokenFinderSpec) Test(t *testing.T) {
 
 		s.When(`token is stored in the storage already`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, spec.Subject.Save(spec.ctx(), t.I(`token object`).(*security.Token)))
+				require.Nil(t, spec.Subject.Save(spec.Context(), t.I(`token object`).(*security.Token)))
 			})
 
 			s.Then(`token will be retrieved`, func(t *testcase.T) {
@@ -79,5 +74,11 @@ func (spec TokenFinderSpec) Test(t *testing.T) {
 			})
 		})
 
+	})
+}
+
+func (spec TokenFinderSpec) Benchmark(b *testing.B) {
+	b.Run(`TokenFinderSpec`, func(b *testing.B) {
+		b.Skip()
 	})
 }

@@ -1,25 +1,31 @@
 package specs
 
 import (
+	"testing"
+
 	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/toggler/services/security"
-	"testing"
 )
 
 type StorageSpec struct {
-	Storage security.Storage
+	Subject security.Storage
 	specs.FixtureFactory
 }
 
+func (spec StorageSpec) Benchmark(b *testing.B) {
+	b.Run(`security.StorageSpec`, func(b *testing.B) {
+		entityType := security.Token{}
+		specs.MinimumRequirementsSpec{EntityType: entityType, FixtureFactory: spec.FixtureFactory, Subject: spec.Subject}.Benchmark(b)
+		specs.UpdaterSpec{EntityType: entityType, FixtureFactory: spec.FixtureFactory, Subject: spec.Subject}.Benchmark(b)
+		TokenFinderSpec{Subject: spec.Subject, FixtureFactory: spec.FixtureFactory}.Benchmark(b)
+	})
+}
+
 func (spec StorageSpec) Test(t *testing.T) {
-	entityTypes := []interface{}{
-		security.Token{},
-	}
-
-	for _, entityType := range entityTypes {
-		specs.TestMinimumRequirements(t, spec.Storage, entityType, spec.FixtureFactory)
-		specs.TestUpdate(t, spec.Storage, entityType, spec.FixtureFactory)
-	}
-
-	TokenFinderSpec{Subject: spec.Storage, FixtureFactory: spec.FixtureFactory}.Test(t)
+	t.Run(`security.StorageSpec`, func(t *testing.T) {
+		entityType := security.Token{}
+		specs.MinimumRequirementsSpec{EntityType: entityType, FixtureFactory: spec.FixtureFactory, Subject: spec.Subject}.Test(t)
+		specs.UpdaterSpec{EntityType: entityType, FixtureFactory: spec.FixtureFactory, Subject: spec.Subject}.Test(t)
+		TokenFinderSpec{Subject: spec.Subject, FixtureFactory: spec.FixtureFactory}.Test(t)
+	})
 }

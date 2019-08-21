@@ -8,12 +8,11 @@ import (
 )
 
 type Storage interface {
-	resources.Save
-	resources.FindByID
-	resources.Truncate
-	resources.DeleteByID
-	resources.Update
-	resources.FindAll
+	resources.Saver
+	resources.Finder
+	resources.Updater
+	resources.Deleter
+	resources.Truncater
 	rollouts.FlagFinder
 	rollouts.PilotFinder
 	security.TokenFinder
