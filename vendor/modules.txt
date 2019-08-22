@@ -4,7 +4,7 @@ github.com/Pallinder/go-randomdata
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 github.com/PuerkitoBio/urlesc
-# github.com/adamluzsi/frameless v0.0.0-20190820234425-81651eec2e76
+# github.com/adamluzsi/frameless v0.0.0-20190823145654-daebfc36e177
 github.com/adamluzsi/frameless
 github.com/adamluzsi/frameless/fixtures
 github.com/adamluzsi/frameless/reflects
@@ -12,7 +12,7 @@ github.com/adamluzsi/frameless/resources
 github.com/adamluzsi/frameless/resources/specs
 github.com/adamluzsi/frameless/iterators
 github.com/adamluzsi/frameless/resources/storages/memorystorage
-# github.com/adamluzsi/testcase v0.0.0-20190819214834-99cb234a195c
+# github.com/adamluzsi/testcase v0.0.0-20190822231812-946b420be6a4
 github.com/adamluzsi/testcase
 # github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
 github.com/asaskevich/govalidator

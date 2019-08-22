@@ -58,6 +58,14 @@ github.com/adamluzsi/frameless v0.0.0-20190821121504-cc0483b583ea h1:iLyH414/5Wx
 github.com/adamluzsi/frameless v0.0.0-20190821121504-cc0483b583ea/go.mod h1:ZmoPxhb2WvYEoF0xi+WOka3a0k30ClLRNMQ7bvNnEJg=
 github.com/adamluzsi/frameless v0.0.0-20190821123556-52532990ffd1 h1:LjZoEYRLCJl/YgJcqQLNh8W87OOUQse1KHa96i8erto=
 github.com/adamluzsi/frameless v0.0.0-20190821123556-52532990ffd1/go.mod h1:ZmoPxhb2WvYEoF0xi+WOka3a0k30ClLRNMQ7bvNnEJg=
+github.com/adamluzsi/frameless v0.0.0-20190822233100-decde3a30836 h1:L6PXUQmclSk4bKvW0varJ5TBROX2KmoCeMn9UO7IvnQ=
+github.com/adamluzsi/frameless v0.0.0-20190822233100-decde3a30836/go.mod h1:j9vJTZJR0PVFFNJqD1EW0k6T6QTMzqHXLj+DI9jHouA=
+github.com/adamluzsi/frameless v0.0.0-20190823002841-1fe94580dd70 h1:gWycVogpgUJ0bKkpnSL3pzU1o76RSXXqNFpfo8ppM54=
+github.com/adamluzsi/frameless v0.0.0-20190823002841-1fe94580dd70/go.mod h1:j9vJTZJR0PVFFNJqD1EW0k6T6QTMzqHXLj+DI9jHouA=
+github.com/adamluzsi/frameless v0.0.0-20190823143236-538a3ef8373e h1:GuYsn4dNua+SARK1lMgc2sCktAUw4mo+kw9iObt6hpo=
+github.com/adamluzsi/frameless v0.0.0-20190823143236-538a3ef8373e/go.mod h1:j9vJTZJR0PVFFNJqD1EW0k6T6QTMzqHXLj+DI9jHouA=
+github.com/adamluzsi/frameless v0.0.0-20190823145654-daebfc36e177 h1:O/JJb40mBRe7841VPXeCOhEqPn7TapIg1ZYZL4+BR2E=
+github.com/adamluzsi/frameless v0.0.0-20190823145654-daebfc36e177/go.mod h1:j9vJTZJR0PVFFNJqD1EW0k6T6QTMzqHXLj+DI9jHouA=
 github.com/adamluzsi/testcase v0.0.0-20190714215144-d4dbd6534e4d h1:o4Nzhufpp4qGjRixpH9x4puR8boQQNjoXpJtLTYDXYU=
 github.com/adamluzsi/testcase v0.0.0-20190714215144-d4dbd6534e4d/go.mod h1:v7gx5uOqLnIsGEIZf4ve0HqzpCS36W6at4JTRsZTJpA=
 github.com/adamluzsi/testcase v0.0.0-20190803211906-0997483d600d h1:wxca1Ff5MwvFW/ppQRRC7wP5qtKbZvo3Wt84F1/ZwM8=
@@ -68,6 +76,8 @@ github.com/adamluzsi/testcase v0.0.0-20190819213543-834251e1a244 h1:Xhde74iDIjpQ
 github.com/adamluzsi/testcase v0.0.0-20190819213543-834251e1a244/go.mod h1:v7gx5uOqLnIsGEIZf4ve0HqzpCS36W6at4JTRsZTJpA=
 github.com/adamluzsi/testcase v0.0.0-20190819214834-99cb234a195c h1:OBAY3hXJhbzWK855kj3Ie+kwpYdQBVDIy/SChe0tb3s=
 github.com/adamluzsi/testcase v0.0.0-20190819214834-99cb234a195c/go.mod h1:v7gx5uOqLnIsGEIZf4ve0HqzpCS36W6at4JTRsZTJpA=
+github.com/adamluzsi/testcase v0.0.0-20190822231812-946b420be6a4 h1:SZoWRBPbFmpIgELjU9NuYScpK4IFmnUJ+bi5gnnhT5o=
+github.com/adamluzsi/testcase v0.0.0-20190822231812-946b420be6a4/go.mod h1:v7gx5uOqLnIsGEIZf4ve0HqzpCS36W6at4JTRsZTJpA=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
 github.com/apache/thrift v0.12.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=

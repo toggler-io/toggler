@@ -12,11 +12,7 @@ import (
 
 type StorageSpec struct {
 	Subject usecases.Storage
-
-	FixtureFactory interface {
-		frmlspecs.FixtureFactory
-		SetPilotFeatureFlagID(ffID string) func()
-	}
+	frmlspecs.FixtureFactory
 }
 
 func (spec StorageSpec) Benchmark(b *testing.B) {

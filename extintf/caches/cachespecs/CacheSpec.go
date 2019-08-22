@@ -8,7 +8,7 @@ import (
 	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources"
-	frmlspecs "github.com/adamluzsi/frameless/resources/specs"
+	frmls "github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/toggler/extintf/caches"
 	"github.com/adamluzsi/toggler/extintf/storages/inmemory"
@@ -24,11 +24,7 @@ import (
 
 type CacheSpec struct {
 	Factory func(usecases.Storage) caches.Interface
-
-	FixtureFactory interface {
-		frmlspecs.FixtureFactory
-		SetPilotFeatureFlagID(ffID string) func()
-	}
+	frmls.FixtureFactory
 }
 
 func (spec CacheSpec) Test(t *testing.T) {

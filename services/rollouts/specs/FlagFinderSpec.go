@@ -23,6 +23,12 @@ type FlagFinderSpec struct {
 	specs.FixtureFactory
 }
 
+func (spec FlagFinderSpec) Benchmark(b *testing.B) {
+	b.Run(`FlagFinderSpec`, func(b *testing.B) {
+		b.Skip(`TODO`)
+	})
+}
+
 func (spec FlagFinderSpec) Test(t *testing.T) {
 	s := testcase.NewSpec(t)
 

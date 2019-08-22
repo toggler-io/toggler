@@ -20,22 +20,16 @@ func NewFixtureFactory() *FixtureFactory {
 
 type FixtureFactory struct {
 	specs.GenericFixtureFactory
-	PilotFeatureFlagID string // this will allow to create pilot fixtures
 }
 
 // this ensures that the randoms have better variety between test runs with -count n
 var rnd = rand.New(rand.NewSource(time.Now().Unix()))
 
-func (ff *FixtureFactory) SetPilotFeatureFlagID(ffID string) func() {
-	original := ff.PilotFeatureFlagID
-	ff.PilotFeatureFlagID = ffID
-	return func() { ff.PilotFeatureFlagID = original }
-}
-
 func (ff *FixtureFactory) Create(EntityType interface{}) interface{} {
 	switch reflects.BaseValueOf(EntityType).Interface().(type) {
 	case rollouts.FeatureFlag:
 		flag := ff.GenericFixtureFactory.Create(EntityType).(*rollouts.FeatureFlag)
+		flag.Name = fmt.Sprintf(`%s - %s`, flag.Name, uuid.New().String())
 
 		flag.Rollout.Strategy.DecisionLogicAPI = nil
 
@@ -53,7 +47,7 @@ func (ff *FixtureFactory) Create(EntityType interface{}) interface{} {
 
 	case rollouts.Pilot:
 		pilot := ff.GenericFixtureFactory.Create(EntityType).(*rollouts.Pilot)
-		pilot.FeatureFlagID = ff.PilotFeatureFlagID
+		pilot.ExternalID = uuid.New().String()
 		return pilot
 
 	case security.Token:

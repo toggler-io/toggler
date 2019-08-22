@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type PilotFinderSpec struct {
+type pilotFinderSpec struct {
 	Subject interface {
 		rollouts.PilotFinder
 
@@ -27,10 +27,29 @@ type PilotFinderSpec struct {
 	specs.FixtureFactory
 }
 
-func (spec PilotFinderSpec) Test(t *testing.T) {
+func (spec pilotFinderSpec) Benchmark(b *testing.B) {
+	b.Run(`pilotFinderSpec`, func(b *testing.B) {
+		b.Skip(`TODO`)
+
+		b.Run(`FindPilotsByFeatureFlag`, func(b *testing.B) {
+			flag := spec.Create(rollouts.FeatureFlag{}).(*rollouts.FeatureFlag)
+			require.Nil(b, spec.Subject.Save(spec.Context(), flag))
+			pilots := CreateEntities(specs.BenchmarkEntityVolumeCount(), spec.FixtureFactory, rollouts.Pilot{})
+			SaveEntities(b, spec.Subject, spec.FixtureFactory, pilots...)
+
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				_, err := iterators.Count(spec.Subject.FindPilotsByFeatureFlag(spec.Context(), flag))
+				require.Nil(b, err)
+			}
+		})
+	})
+}
+
+func (spec pilotFinderSpec) Test(t *testing.T) {
 	s := testcase.NewSpec(t)
 
-	s.Describe(`PilotFinderSpec`, func(s *testcase.Spec) {
+	s.Describe(`pilotFinderSpec`, func(s *testcase.Spec) {
 
 		s.Let(`flagName`, func(t *testcase.T) interface{} {
 			return ExampleFeatureName()
@@ -264,6 +283,6 @@ func (spec PilotFinderSpec) Test(t *testing.T) {
 	})
 }
 
-func (spec PilotFinderSpec) ctx() context.Context {
+func (spec pilotFinderSpec) ctx() context.Context {
 	return spec.FixtureFactory.Context()
 }

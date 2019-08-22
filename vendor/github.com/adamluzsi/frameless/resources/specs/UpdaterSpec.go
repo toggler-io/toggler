@@ -113,7 +113,24 @@ func (spec UpdaterSpec) Test(t *testing.T) {
 }
 
 func (spec UpdaterSpec) Benchmark(b *testing.B) {
+	cleanup(b, spec.Subject, spec.FixtureFactory, spec.EntityType)
 	b.Run(`UpdaterSpec`, func(b *testing.B) {
-		b.Skip()
+		es := createEntities(benchmarkEntityVolumeCount, spec.FixtureFactory, spec.EntityType)
+		 saveEntities(b, spec.Subject, spec.FixtureFactory, es...)
+		defer cleanup(b, spec.Subject, spec.FixtureFactory, spec.EntityType)
+
+		var executionTimes int
+		b.ResetTimer()
+	wrk:
+		for {
+			for _, ptr := range es {
+				require.Nil(b, spec.Subject.Update(spec.Context(), ptr))
+
+				executionTimes++
+				if b.N <= executionTimes {
+					break wrk
+				}
+			}
+		}
 	})
 }

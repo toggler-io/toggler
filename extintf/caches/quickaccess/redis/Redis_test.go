@@ -1,14 +1,15 @@
 package redis_test
 
 import (
+	"os"
+	"testing"
+
 	"github.com/adamluzsi/toggler/extintf/caches"
 	"github.com/adamluzsi/toggler/extintf/caches/cachespecs"
 	"github.com/adamluzsi/toggler/extintf/caches/quickaccess/redis"
-	testing2 "github.com/adamluzsi/toggler/testing"
+	. "github.com/adamluzsi/toggler/testing"
 	"github.com/adamluzsi/toggler/usecases"
 	"github.com/stretchr/testify/require"
-	"os"
-	"testing"
 )
 
 func TestRedis(t *testing.T) {
@@ -20,7 +21,7 @@ func TestRedis(t *testing.T) {
 
 	cachespecs.CacheSpec{
 		Factory:        factory,
-		FixtureFactory: testing2.NewFixtureFactory(),
+		FixtureFactory: NewFixtureFactory(),
 	}.Test(t)
 }
 
