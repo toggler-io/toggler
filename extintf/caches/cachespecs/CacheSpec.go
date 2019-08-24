@@ -20,7 +20,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//go:generate mockgen -source ../../../usecases/Subject.go -destination MockStorage.go -package cachespecs
+//go:generate mockgen -source ../../../usecases/Storage.go -destination MockStorage.go -package cachespecs
 
 type CacheSpec struct {
 	Factory func(usecases.Storage) caches.Interface

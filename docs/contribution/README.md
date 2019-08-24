@@ -2,6 +2,8 @@
 
 This section deals with explaining about the common caveats of contribution.
 
+## [Local development setup guide](/docs/contribution/setup.md)
+
 ## What to expect if I want to contribute to the project ?
 
 If you contribute to the project, first before all,
