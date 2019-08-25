@@ -6,8 +6,11 @@ export DATABASE_URL
 
 cd ${WDP}
 go generate ./...
+
+go run cmd/toggler/main.go fixtures \
+    -create-fixtures \
+    -create-development-token 'root'
+
 go run cmd/toggler/main.go \
     http-server \
-    -port 8080 \
-    -create-fixtures \
-    -create-development-token 'toor'
+    -port 8080

@@ -23,17 +23,31 @@ import (
 	"github.com/toggler-io/toggler/usecases"
 )
 
+
+const commandsHelpDescription = `
+Commands:
+  * http-server, server, s
+    - start up http web-server
+  * create-token
+    - create token for admin user
+  * create-fixtures
+    - create fixtures for local development purpose
+`
+
 func main() {
-	flagSet := flag.NewFlagSet(`toggler`, flag.ExitOnError)
-	portConfValue := flagSet.String(`port`, os.Getenv(`PORT`), `set http server port else the env variable "PORT" value will be used.`)
-	fixtures := flagSet.Bool(`create-fixtures`, false, `create default fixtures for development purpose.`)
-	localDevelopmentToken := flagSet.String(`create-development-token`, ``, `create token for local development purpose only!`)
+	flagSet := flag.NewFlagSet(`toggler`, flag.ContinueOnError)
 	dbURL := flagSet.String(`database-url`, ``, `define what url should be used for the db connection. Default value used from ENV[DATABASE_URL].`)
 	cacheURL := flagSet.String(`cache-url`, ``, `define what url should be used for the cache connection. default value is taken from ENV[CACHE_URL].`)
 	cacheTTL := flagSet.Duration(`cache-ttl`, 30*time.Minute, `define the time-to-live duration for the cached objects (if cache used)`)
 
 	if err := flagSet.Parse(os.Args[1:]); err != nil {
-		panic(err)
+		if err == flag.ErrHelp {
+			fmt.Print(commandsHelpDescription)
+			fmt.Println()
+		} else {
+			log.Print(err.Error())
+		}
+		os.Exit(0)
 	}
 
 	setupDatabaseURL(dbURL)
@@ -55,20 +69,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if *fixtures {
-		createFixtures(storage)
-	}
-
-	if *localDevelopmentToken != `` {
-		createDevelopmentToken(storage, *localDevelopmentToken)
-	}
-
 	switch flagSet.Arg(0) {
 	case `create-token`:
-		createToken(storage, flagSet.Arg(0))
+		createTokenCMD(flagSet.Args(), storage)
+
+	case `create-fixtures`:
+		fixturesCMD(flagSet.Args(), storage)
 
 	case `http-server`, `server`, `s`:
-		httpServer(portConfValue, cache)
+		httpServerCMD(flagSet.Args(), cache)
 
 	default:
 		fmt.Println(`please provide on of the commands`)
@@ -78,11 +87,18 @@ func main() {
 
 }
 
-func httpServer(portConfValue *string, storage usecases.Storage) {
-	port, err := strconv.Atoi(*portConfValue)
-	if err != nil {
-		panic(err)
+func httpServerCMD(args []string, s usecases.Storage) {
+	flagSet := flag.NewFlagSet(`http-server`, flag.ExitOnError)
+	portConfValue := flagSet.String(`port`, os.Getenv(`PORT`), `set http server port else the env variable "PORT" value will be used.`)
+
+	if err := flagSet.Parse(args[1:]); err != nil {
+		log.Println(err)
 	}
+
+	httpServer(getPort(*portConfValue), s)
+}
+
+func httpServer(port int, storage usecases.Storage) {
 	s := makeHTTPServer(storage, port)
 	withGracefulShutdown(func() {
 		if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -91,6 +107,17 @@ func httpServer(portConfValue *string, storage usecases.Storage) {
 	}, func(ctx context.Context) error {
 		return s.Shutdown(ctx)
 	})
+}
+
+func getPort(portConfValue string) int {
+	if portConfValue == `` {
+		log.Fatal(`http server port is not given (--port/$PORT)`)
+	}
+	p, err := strconv.Atoi(portConfValue)
+	if err != nil {
+		log.Fatal(`http server port is not a number`)
+	}
+	return p
 }
 
 func setupDatabaseURL(dbURL *string) {
@@ -121,6 +148,24 @@ func setupCacheURL(cacheURL *string, cacheTTL *time.Duration) {
 			log.Fatal(err)
 		}
 		*cacheTTL = d
+	}
+}
+
+func fixturesCMD(args []string, s usecases.Storage) {
+	flagSet := flag.NewFlagSet(`fixtures`, flag.ExitOnError)
+	fixtures := flagSet.Bool(`create-fixtures`, false, `create default fixtures for development purpose.`)
+	localDevelopmentToken := flagSet.String(`create-development-token`, ``, `create token for local development purpose only!`)
+
+	if err := flagSet.Parse(args[1:]); err != nil {
+		log.Println(err)
+	}
+
+	if *fixtures {
+		createFixtures(s)
+	}
+
+	if *localDevelopmentToken != `` {
+		createDevelopmentToken(s, *localDevelopmentToken)
 	}
 }
 
@@ -159,6 +204,16 @@ func makeHTTPServer(storage usecases.Storage, port int) *http.Server {
 	}
 
 	return server
+}
+
+func createTokenCMD(args []string, s usecases.Storage) {
+	flagSet := flag.NewFlagSet(`create-token`, flag.ExitOnError)
+
+	if err := flagSet.Parse(args[1:]); err != nil {
+		log.Fatal(err)
+	}
+
+	createToken(s, flagSet.Arg(0))
 }
 
 func createToken(s usecases.Storage, ownerUID string) {
