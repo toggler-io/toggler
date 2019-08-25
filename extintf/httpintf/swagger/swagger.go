@@ -2,9 +2,9 @@ package swagger
 
 import (
 	"fmt"
-	"github.com/adamluzsi/toggler/extintf/httpintf/httputils"
-	"github.com/adamluzsi/toggler/extintf/httpintf/swagger/specfs"
-	"github.com/adamluzsi/toggler/extintf/httpintf/swagger/uifs"
+	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
+	"github.com/toggler-io/toggler/extintf/httpintf/swagger/specfs"
+	"github.com/toggler-io/toggler/extintf/httpintf/swagger/uifs"
 	"html/template"
 	"net/http"
 	"sync"

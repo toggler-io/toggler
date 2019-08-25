@@ -3,7 +3,7 @@ package httputils
 import (
 	"net/http"
 
-	"github.com/adamluzsi/toggler/usecases"
+	"github.com/toggler-io/toggler/usecases"
 )
 
 func GetAuthToken(r *http.Request) (string, error) {

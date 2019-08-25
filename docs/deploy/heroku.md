@@ -11,6 +11,6 @@ To deploy to `heroku`, try the following steps:
 	* $ heroku login
 	* $ heroku git:clone -a mycompany-toggler
 	* $ cd mycompany-toggler
-	* $ git remote add origin git@github.com:adamluzsi/toggler.git
+	* $ git remote add origin git@github.com:toggler-io/toggler.git
 	* $ git pull origin master
 	* $ git push heroku master

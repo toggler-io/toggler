@@ -9,8 +9,8 @@ import (
 	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources/specs"
-	"github.com/adamluzsi/toggler/services/rollouts"
-	"github.com/adamluzsi/toggler/services/security"
+	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/security"
 	"github.com/google/uuid"
 )
 

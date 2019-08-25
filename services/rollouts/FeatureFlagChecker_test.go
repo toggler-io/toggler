@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/adamluzsi/testcase"
-	"github.com/adamluzsi/toggler/services/rollouts"
-	. "github.com/adamluzsi/toggler/testing"
+	"github.com/toggler-io/toggler/services/rollouts"
+	. "github.com/toggler-io/toggler/testing"
 	"github.com/stretchr/testify/require"
 )
 

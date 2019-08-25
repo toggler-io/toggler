@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources"
-	"github.com/adamluzsi/toggler/usecases"
+	"github.com/toggler-io/toggler/usecases"
 	"github.com/go-redis/redis"
 	"time"
 )

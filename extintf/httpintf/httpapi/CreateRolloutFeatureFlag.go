@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/adamluzsi/toggler/extintf/httpintf/httputils"
-	"github.com/adamluzsi/toggler/services/rollouts"
-	"github.com/adamluzsi/toggler/usecases"
+	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
+	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/usecases"
 )
 
 // CreateRolloutFeatureFlagJSONParameters is the request object for creating feature flags.

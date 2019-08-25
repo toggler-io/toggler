@@ -1,12 +1,12 @@
 package httpintf
 
 import (
-	"github.com/adamluzsi/toggler/extintf/httpintf/swagger"
+	"github.com/toggler-io/toggler/extintf/httpintf/swagger"
 	"net/http"
 
-	"github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
-	"github.com/adamluzsi/toggler/extintf/httpintf/webgui"
-	"github.com/adamluzsi/toggler/usecases"
+	"github.com/toggler-io/toggler/extintf/httpintf/httpapi"
+	"github.com/toggler-io/toggler/extintf/httpintf/webgui"
+	"github.com/toggler-io/toggler/usecases"
 )
 
 func NewServeMux(uc *usecases.UseCases) *ServeMux {

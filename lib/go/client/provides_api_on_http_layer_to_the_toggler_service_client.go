@@ -11,7 +11,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	"github.com/adamluzsi/toggler/lib/go/client/operations"
+	"github.com/toggler-io/toggler/lib/go/client/operations"
 )
 
 // Default provides API on HTTP layer to the toggler service HTTP client.

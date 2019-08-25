@@ -1,15 +1,15 @@
 package storages_test
 
 import (
-	"github.com/adamluzsi/toggler/extintf/storages/redis"
+	"github.com/toggler-io/toggler/extintf/storages/redis"
 	"os"
 	"testing"
 
 	"github.com/adamluzsi/testcase"
-	"github.com/adamluzsi/toggler/extintf/storages"
-	"github.com/adamluzsi/toggler/extintf/storages/inmemory"
-	"github.com/adamluzsi/toggler/extintf/storages/postgres"
-	"github.com/adamluzsi/toggler/usecases"
+	"github.com/toggler-io/toggler/extintf/storages"
+	"github.com/toggler-io/toggler/extintf/storages/inmemory"
+	"github.com/toggler-io/toggler/extintf/storages/postgres"
+	"github.com/toggler-io/toggler/usecases"
 	"github.com/stretchr/testify/require"
 )
 

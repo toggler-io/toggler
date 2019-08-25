@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"github.com/adamluzsi/toggler/usecases"
+	"github.com/toggler-io/toggler/usecases"
 	"net/http"
 	"time"
 )

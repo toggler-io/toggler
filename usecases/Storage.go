@@ -2,8 +2,8 @@ package usecases
 
 import (
 	"github.com/adamluzsi/frameless/resources"
-	"github.com/adamluzsi/toggler/services/rollouts"
-	"github.com/adamluzsi/toggler/services/security"
+	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/security"
 	"io"
 )
 

@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"bytes"
-	"github.com/adamluzsi/toggler/extintf/httpintf/webgui/views"
-	"github.com/adamluzsi/toggler/usecases"
+	"github.com/toggler-io/toggler/extintf/httpintf/webgui/views"
+	"github.com/toggler-io/toggler/usecases"
 	"html/template"
 	"io/ioutil"
 	"log"

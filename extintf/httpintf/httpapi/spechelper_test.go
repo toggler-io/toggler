@@ -6,10 +6,10 @@ import (
 	"net/http/httptest"
 
 	"github.com/adamluzsi/testcase"
-	"github.com/adamluzsi/toggler/services/security"
+	"github.com/toggler-io/toggler/services/security"
 	"github.com/stretchr/testify/require"
 
-	. "github.com/adamluzsi/toggler/testing"
+	. "github.com/toggler-io/toggler/testing"
 )
 
 func UpdateFeatureFlagRolloutPercentage(t *testcase.T, featureFlagName string, rolloutPercentage int) {

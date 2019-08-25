@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/adamluzsi/toggler/extintf/httpintf/httputils"
-	"github.com/adamluzsi/toggler/services/rollouts"
-	"github.com/adamluzsi/toggler/usecases"
+	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
+	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/usecases"
 )
 
 func (sm *ServeMux) UpdateFeatureFlagJSON(w http.ResponseWriter, r *http.Request) {

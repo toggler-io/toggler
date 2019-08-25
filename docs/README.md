@@ -171,7 +171,7 @@ The token cannot be regained if it is not saved after token creation.
 ## For Contributors
 * [High level overview](/docs/contribution/README.md)
 * [Local Development Setup](/docs/contribution/setup.md)
-* [Backlog](https://github.com/adamluzsi/toggler/projects)
+* [Backlog](https://github.com/toggler-io/toggler/projects)
 
 Feel free to open an issue if you see anything
 

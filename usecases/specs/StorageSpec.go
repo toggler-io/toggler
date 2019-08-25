@@ -4,10 +4,10 @@ import (
 	"testing"
 
 	frmlspecs "github.com/adamluzsi/frameless/resources/specs"
-	rollspecs "github.com/adamluzsi/toggler/services/rollouts/specs"
-	secuspecs "github.com/adamluzsi/toggler/services/security/specs"
+	rollspecs "github.com/toggler-io/toggler/services/rollouts/specs"
+	secuspecs "github.com/toggler-io/toggler/services/security/specs"
 
-	"github.com/adamluzsi/toggler/usecases"
+	"github.com/toggler-io/toggler/usecases"
 )
 
 type StorageSpec struct {

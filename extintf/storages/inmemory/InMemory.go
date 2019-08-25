@@ -5,8 +5,8 @@ import (
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/resources/storages/memorystorage"
-	"github.com/adamluzsi/toggler/services/rollouts"
-	"github.com/adamluzsi/toggler/services/security"
+	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/security"
 )
 
 func New() *InMemory {

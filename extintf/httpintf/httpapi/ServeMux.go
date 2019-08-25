@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/adamluzsi/toggler/usecases"
+	"github.com/toggler-io/toggler/usecases"
 )
 
 func NewServeMux(uc *usecases.UseCases) *ServeMux {

@@ -4,7 +4,7 @@ import (
 	 "context"
 	"net/http"
 
-	"github.com/adamluzsi/toggler/usecases"
+	"github.com/toggler-io/toggler/usecases"
 )
 
 func (sm *ServeMux) ListFeatureFlags(w http.ResponseWriter, r *http.Request) {

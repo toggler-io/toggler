@@ -13,8 +13,8 @@ import (
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources"
-	"github.com/adamluzsi/toggler/services/rollouts"
-	"github.com/adamluzsi/toggler/services/security"
+	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/security"
 	_ "github.com/lib/pq"
 )
 

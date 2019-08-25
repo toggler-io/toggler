@@ -234,7 +234,7 @@
           "x-go-name": "Enrollment"
         }
       },
-      "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+      "x-go-package": "github.com/toggler-io/toggler/extintf/httpintf/httpapi"
     },
     "ErrorResponseBody": {
       "type": "object",
@@ -260,7 +260,7 @@
           "x-go-name": "Error"
         }
       },
-      "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+      "x-go-package": "github.com/toggler-io/toggler/extintf/httpintf/httpapi"
     },
     "FeatureFlag": {
       "description": "FeatureFlag is the basic entity with properties that feature flag holds",
@@ -279,7 +279,7 @@
           "$ref": "#/definitions/Rollout"
         }
       },
-      "x-go-package": "github.com/adamluzsi/toggler/services/rollouts"
+      "x-go-package": "github.com/toggler-io/toggler/services/rollouts"
     },
     "IsFeatureEnabledRequestPayload": {
       "type": "object",
@@ -301,7 +301,7 @@
           "example": "pilot-public-id"
         }
       },
-      "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+      "x-go-package": "github.com/toggler-io/toggler/extintf/httpintf/httpapi"
     },
     "IsFeatureGloballyEnabledRequestBody": {
       "type": "object",
@@ -316,7 +316,7 @@
           "example": "rollout-feature-flag"
         }
       },
-      "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+      "x-go-package": "github.com/toggler-io/toggler/extintf/httpintf/httpapi"
     },
     "Rollout": {
       "type": "object",
@@ -331,7 +331,7 @@
           "$ref": "#/definitions/RolloutStrategy"
         }
       },
-      "x-go-package": "github.com/adamluzsi/toggler/services/rollouts"
+      "x-go-package": "github.com/toggler-io/toggler/services/rollouts"
     },
     "RolloutClientConfigRequestBody": {
       "type": "object",
@@ -358,7 +358,7 @@
           "example": "public-uniq-pilot-id"
         }
       },
-      "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+      "x-go-package": "github.com/toggler-io/toggler/extintf/httpintf/httpapi"
     },
     "RolloutClientConfigResponseBody": {
       "description": "The content expected to be cached in some form of state container.",
@@ -374,7 +374,7 @@
           "x-go-name": "States"
         }
       },
-      "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+      "x-go-package": "github.com/toggler-io/toggler/extintf/httpintf/httpapi"
     },
     "RolloutStrategy": {
       "type": "object",
@@ -389,7 +389,7 @@
           "x-go-name": "Percentage"
         }
       },
-      "x-go-package": "github.com/adamluzsi/toggler/services/rollouts"
+      "x-go-package": "github.com/toggler-io/toggler/services/rollouts"
     },
     "URL": {
       "description": "The general form represented is:\n\n[scheme:][//[userinfo@]host][/]path[?query][#fragment]\n\nURLs that do not start with a slash after the scheme are interpreted as:\n\nscheme:opaque[?query][#fragment]\n\nNote that the Path field is stored in decoded form: /%47%6f%2f becomes /Go/.\nA consequence is that it is impossible to tell which slashes in the Path were\nslashes in the raw URL and which were %2f. This distinction is rarely important,\nbut when it is, code must not use Path directly.\nThe Parse function sets both Path and RawPath in the URL it returns,\nand URL's String method uses RawPath if it is a valid encoding of Path,\nby calling the EscapedPath method.",
@@ -457,7 +457,7 @@
           "example": "IsFeatureEnabled"
         }
       },
-      "x-go-package": "github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
+      "x-go-package": "github.com/toggler-io/toggler/extintf/httpintf/httpapi"
     }
   },
   "responses": {

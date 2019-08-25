@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"database/sql"
-	"github.com/adamluzsi/toggler/extintf/storages/postgres/assets"
+	"github.com/toggler-io/toggler/extintf/storages/postgres/assets"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"

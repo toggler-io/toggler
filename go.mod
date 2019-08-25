@@ -1,4 +1,4 @@
-module github.com/adamluzsi/toggler
+module github.com/toggler-io/toggler
 
 go 1.12
 

@@ -1,7 +1,7 @@
 package testing
 
 import (
-	"github.com/adamluzsi/toggler/extintf/storages/inmemory"
+	"github.com/toggler-io/toggler/extintf/storages/inmemory"
 )
 
 func NewTestStorage() *TestStorage {

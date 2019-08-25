@@ -16,7 +16,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	models "github.com/adamluzsi/toggler/lib/go/models"
+	models "github.com/toggler-io/toggler/lib/go/models"
 )
 
 // NewRolloutClientConfigParams creates a new RolloutClientConfigParams object

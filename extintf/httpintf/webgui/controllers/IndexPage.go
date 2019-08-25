@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"github.com/adamluzsi/toggler/extintf/httpintf/webgui/controllers/docspages"
+	"github.com/toggler-io/toggler/extintf/httpintf/webgui/controllers/docspages"
 	"github.com/russross/blackfriday"
 	"html/template"
 	"net/http"

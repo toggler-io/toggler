@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/testcase"
-	"github.com/adamluzsi/toggler/extintf/storages/postgres"
-	testing2 "github.com/adamluzsi/toggler/testing"
+	"github.com/toggler-io/toggler/extintf/storages/postgres"
+	testing2 "github.com/toggler-io/toggler/testing"
 	"os"
 	"testing"
 
@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/adamluzsi/frameless/resources"
-	"github.com/adamluzsi/toggler/usecases/specs"
+	"github.com/toggler-io/toggler/usecases/specs"
 )
 
 func BenchmarkPostgres(b *testing.B) {

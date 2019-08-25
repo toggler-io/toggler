@@ -5,12 +5,12 @@ import (
 	"testing"
 
 	"github.com/adamluzsi/testcase"
-	"github.com/adamluzsi/toggler/services/rollouts"
-	"github.com/adamluzsi/toggler/services/security"
-	"github.com/adamluzsi/toggler/usecases"
+	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/security"
+	"github.com/toggler-io/toggler/usecases"
 	"github.com/stretchr/testify/require"
 
-	. "github.com/adamluzsi/toggler/testing"
+	. "github.com/toggler-io/toggler/testing"
 )
 
 func TestUseCases_ProtectedUsecases(t *testing.T) {

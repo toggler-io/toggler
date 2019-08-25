@@ -10,10 +10,10 @@ import (
 	"testing"
 
 	"github.com/adamluzsi/testcase"
-	"github.com/adamluzsi/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/rollouts"
 	"github.com/stretchr/testify/require"
 
-	. "github.com/adamluzsi/toggler/testing"
+	. "github.com/toggler-io/toggler/testing"
 )
 
 func TestServeMux_SetPilotEnrollmentForFeature(t *testing.T) {

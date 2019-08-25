@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/adamluzsi/testcase"
-	"github.com/adamluzsi/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/rollouts"
 
 	"github.com/stretchr/testify/require"
 )

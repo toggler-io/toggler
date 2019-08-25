@@ -6,7 +6,7 @@ import (
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/testcase"
-	"github.com/adamluzsi/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/rollouts"
 	"github.com/stretchr/testify/require"
 )
 

@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"context"
-	"github.com/adamluzsi/toggler/extintf/httpintf/httputils"
-	"github.com/adamluzsi/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
+	"github.com/toggler-io/toggler/services/rollouts"
 	"github.com/pkg/errors"
 	"log"
 	"net/http"

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/adamluzsi/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/rollouts"
 	"github.com/pkg/errors"
 )
 

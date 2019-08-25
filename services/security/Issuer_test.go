@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/adamluzsi/testcase"
-	"github.com/adamluzsi/toggler/services/security"
+	"github.com/toggler-io/toggler/services/security"
 	"github.com/stretchr/testify/require"
 
-	. "github.com/adamluzsi/toggler/testing"
+	. "github.com/toggler-io/toggler/testing"
 )
 
 func TestIssuer(t *testing.T) {

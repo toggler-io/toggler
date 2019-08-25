@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/adamluzsi/frameless"
-	"github.com/adamluzsi/toggler/extintf/httpintf/httputils"
-	"github.com/adamluzsi/toggler/usecases"
+	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
+	"github.com/toggler-io/toggler/usecases"
 	"net/http"
 )
 

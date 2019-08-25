@@ -3,8 +3,8 @@ package caches
 import (
 	"net/url"
 
-	"github.com/adamluzsi/toggler/extintf/caches/nullcache"
-	"github.com/adamluzsi/toggler/usecases"
+	"github.com/toggler-io/toggler/extintf/caches/nullcache"
+	"github.com/toggler-io/toggler/usecases"
 )
 
 func New(connstr string, storage usecases.Storage) (Interface, error) {

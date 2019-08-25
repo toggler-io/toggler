@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/adamluzsi/testcase"
-	. "github.com/adamluzsi/toggler/testing"
+	. "github.com/toggler-io/toggler/testing"
 	"github.com/stretchr/testify/require"
 )
 

@@ -1,7 +1,7 @@
 package caches
 
 import (
-	"github.com/adamluzsi/toggler/usecases"
+	"github.com/toggler-io/toggler/usecases"
 	"time"
 )
 

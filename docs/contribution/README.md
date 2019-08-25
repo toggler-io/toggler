@@ -44,7 +44,7 @@ and it can be changed then.
 
 ### By Backlog 
 
-First of all, I use the [github projects page](https://github.com/adamluzsi/toggler/projects) as backlog.
+First of all, I use the [github projects page](https://github.com/toggler-io/toggler/projects) as backlog.
 I distinct projects across product lines in the project.
 Hopefully each of those product line can give more value to the users of this service for they own development.
 They are not perfectly split, and I'm open for any constructive criticism!
@@ -71,9 +71,9 @@ because the long list of breaking tests in the beginning can be overwhelming.
 package consul_test
 
 import (
-	"github.com/adamluzsi/toggler/extintf/storages/redis"
-	testing2 "github.com/adamluzsi/toggler/testing"
-	"github.com/adamluzsi/toggler/usecases/specs"
+	"github.com/toggler-io/toggler/extintf/storages/redis"
+	testing2 "github.com/toggler-io/toggler/testing"
+	"github.com/toggler-io/toggler/usecases/specs"
 	"github.com/stretchr/testify/require"
 	"os"
 	"testing"

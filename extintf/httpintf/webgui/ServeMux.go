@@ -4,10 +4,10 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/adamluzsi/toggler/extintf/httpintf/httputils"
-	"github.com/adamluzsi/toggler/extintf/httpintf/webgui/assets"
-	"github.com/adamluzsi/toggler/extintf/httpintf/webgui/controllers"
-	"github.com/adamluzsi/toggler/usecases"
+	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
+	"github.com/toggler-io/toggler/extintf/httpintf/webgui/assets"
+	"github.com/toggler-io/toggler/extintf/httpintf/webgui/controllers"
+	"github.com/toggler-io/toggler/usecases"
 )
 
 //go:generate esc -o ./assets/fs.go -ignore fs.go -pkg assets -prefix assets ./assets

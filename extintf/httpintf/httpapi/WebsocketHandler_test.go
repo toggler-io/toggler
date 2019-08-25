@@ -3,8 +3,8 @@ package httpapi_test
 import (
 	"context"
 	"github.com/adamluzsi/testcase"
-	"github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
-	. "github.com/adamluzsi/toggler/testing"
+	"github.com/toggler-io/toggler/extintf/httpintf/httpapi"
+	. "github.com/toggler-io/toggler/testing"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/require"
 	"math/rand"

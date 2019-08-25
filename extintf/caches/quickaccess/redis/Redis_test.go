@@ -4,11 +4,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/adamluzsi/toggler/extintf/caches"
-	"github.com/adamluzsi/toggler/extintf/caches/cachespecs"
-	"github.com/adamluzsi/toggler/extintf/caches/quickaccess/redis"
-	. "github.com/adamluzsi/toggler/testing"
-	"github.com/adamluzsi/toggler/usecases"
+	"github.com/toggler-io/toggler/extintf/caches"
+	"github.com/toggler-io/toggler/extintf/caches/cachespecs"
+	"github.com/toggler-io/toggler/extintf/caches/quickaccess/redis"
+	. "github.com/toggler-io/toggler/testing"
+	"github.com/toggler-io/toggler/usecases"
 	"github.com/stretchr/testify/require"
 )
 

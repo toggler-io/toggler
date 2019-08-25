@@ -2,7 +2,7 @@ package usecases_test
 
 import (
 	"context"
-	. "github.com/adamluzsi/toggler/testing"
+	. "github.com/toggler-io/toggler/testing"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 	"testing"

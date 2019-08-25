@@ -1,11 +1,11 @@
 package nullcache_test
 
 import (
-	"github.com/adamluzsi/toggler/extintf/caches"
-	"github.com/adamluzsi/toggler/extintf/caches/nullcache"
-	"github.com/adamluzsi/toggler/extintf/storages/inmemory"
-	testing2 "github.com/adamluzsi/toggler/testing"
-	"github.com/adamluzsi/toggler/usecases/specs"
+	"github.com/toggler-io/toggler/extintf/caches"
+	"github.com/toggler-io/toggler/extintf/caches/nullcache"
+	"github.com/toggler-io/toggler/extintf/storages/inmemory"
+	testing2 "github.com/toggler-io/toggler/testing"
+	"github.com/toggler-io/toggler/usecases/specs"
 	"github.com/stretchr/testify/require"
 	"testing"
 )

@@ -1,8 +1,8 @@
 package testing_test
 
 import (
-	tting "github.com/adamluzsi/toggler/testing"
-	"github.com/adamluzsi/toggler/usecases/specs"
+	tting "github.com/toggler-io/toggler/testing"
+	"github.com/toggler-io/toggler/usecases/specs"
 	"testing"
 )
 

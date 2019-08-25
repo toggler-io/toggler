@@ -13,7 +13,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	models "github.com/adamluzsi/toggler/lib/go/models"
+	models "github.com/toggler-io/toggler/lib/go/models"
 )
 
 // RolloutClientConfigReader is a Reader for the RolloutClientConfig structure.

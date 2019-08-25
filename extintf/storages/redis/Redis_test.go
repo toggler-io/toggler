@@ -1,9 +1,9 @@
 package redis_test
 
 import (
-	"github.com/adamluzsi/toggler/extintf/storages/redis"
-	testing2 "github.com/adamluzsi/toggler/testing"
-	"github.com/adamluzsi/toggler/usecases/specs"
+	"github.com/toggler-io/toggler/extintf/storages/redis"
+	testing2 "github.com/toggler-io/toggler/testing"
+	"github.com/toggler-io/toggler/usecases/specs"
 	"github.com/stretchr/testify/require"
 	"os"
 	"testing"

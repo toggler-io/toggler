@@ -3,10 +3,10 @@ package httpapi_test
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/adamluzsi/toggler/extintf/httpintf/httpapi"
-	"github.com/adamluzsi/toggler/lib/go/client"
-	"github.com/adamluzsi/toggler/lib/go/client/operations"
-	"github.com/adamluzsi/toggler/lib/go/models"
+	"github.com/toggler-io/toggler/extintf/httpintf/httpapi"
+	"github.com/toggler-io/toggler/lib/go/client"
+	"github.com/toggler-io/toggler/lib/go/client/operations"
+	"github.com/toggler-io/toggler/lib/go/models"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
@@ -14,7 +14,7 @@ import (
 	"testing"
 
 	"github.com/adamluzsi/testcase"
-	. "github.com/adamluzsi/toggler/testing"
+	. "github.com/toggler-io/toggler/testing"
 	"github.com/stretchr/testify/require"
 )
 

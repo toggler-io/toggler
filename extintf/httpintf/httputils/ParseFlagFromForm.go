@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/adamluzsi/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/rollouts"
 )
 
 func ParseFlagFromForm(r *http.Request) (*rollouts.FeatureFlag, error) {

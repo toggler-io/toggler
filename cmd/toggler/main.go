@@ -4,8 +4,8 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/adamluzsi/toggler/extintf/caches"
-	"github.com/adamluzsi/toggler/extintf/storages"
+	"github.com/toggler-io/toggler/extintf/caches"
+	"github.com/toggler-io/toggler/extintf/storages"
 	"log"
 	"net/http"
 	"os"
@@ -14,10 +14,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/adamluzsi/toggler/extintf/httpintf"
-	"github.com/adamluzsi/toggler/services/rollouts"
-	"github.com/adamluzsi/toggler/services/security"
-	"github.com/adamluzsi/toggler/usecases"
+	"github.com/toggler-io/toggler/extintf/httpintf"
+	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/security"
+	"github.com/toggler-io/toggler/usecases"
 	"github.com/unrolled/logger"
 )
 
