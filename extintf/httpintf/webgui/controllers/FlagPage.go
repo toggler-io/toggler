@@ -2,15 +2,16 @@ package controllers
 
 import (
 	"context"
-	"fmt"
-	"github.com/adamluzsi/frameless"
-	"github.com/adamluzsi/frameless/iterators"
-	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
-	"github.com/toggler-io/toggler/services/rollouts"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/adamluzsi/frameless"
+	"github.com/adamluzsi/frameless/iterators"
+
+	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
+	"github.com/toggler-io/toggler/services/rollouts"
 )
 
 type edigPageContent struct {
@@ -186,7 +187,6 @@ func (ctrl *Controller) flagUnsetPilotAction(w http.ResponseWriter, r *http.Requ
 	err := ctrl.GetProtectedUsecases(r).UnsetPilotEnrollmentForFeature(r.Context(), featureFlagID, pilotExternalID)
 
 	if ctrl.handleError(w, r, err) {
-		fmt.Println(err)
 		return
 	}
 

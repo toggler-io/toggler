@@ -168,13 +168,13 @@ func createToken(s usecases.Storage, ownerUID string) {
 
 	issuer := security.Issuer{Storage: s}
 
-	t, _, err := issuer.CreateNewToken(context.TODO(), ownerUID, nil, nil)
+	tStr, _, err := issuer.CreateNewToken(context.TODO(), ownerUID, nil, nil)
 
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(t)
+	fmt.Println(`token:`, tStr)
 }
 
 func createDevelopmentToken(s usecases.Storage, tokenSTR string) {

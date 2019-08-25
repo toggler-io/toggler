@@ -1,9 +1,9 @@
 package httpapi
 
 import (
-	"fmt"
-	"github.com/pkg/errors"
 	"net/http"
+
+	"github.com/pkg/errors"
 )
 
 // WebsocketRequestPayload is the payload that is expected to be received in the websocket connection.
@@ -128,7 +128,6 @@ subscription:
 			var resp IsFeatureGloballyEnabledResponseBody
 			resp.Enrollment = enr
 
-			fmt.Println(resp)
 			if handle(c.WriteJSON(&resp), http.StatusInternalServerError) {
 				break subscription
 			}
