@@ -2,12 +2,13 @@ package swagger
 
 import (
 	"fmt"
-	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
-	"github.com/toggler-io/toggler/extintf/httpintf/swagger/specfs"
-	"github.com/toggler-io/toggler/extintf/httpintf/swagger/uifs"
 	"html/template"
 	"net/http"
 	"sync"
+
+	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
+	"github.com/toggler-io/toggler/extintf/httpintf/swagger/specfs"
+	"github.com/toggler-io/toggler/extintf/httpintf/swagger/uifs"
 )
 
 func HandleSwaggerConfigJSON(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +25,7 @@ func HandleSwaggerUI() http.Handler {
 		return fmt.Sprintf(`%s://%s/swagger.json`, scheme, r.Host)
 	}
 
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case `/`, `/index.html`:
 			t, err := template.New(`swagger-ui`).Parse(uifs.FSMustString(false, `/index.html`))
@@ -45,7 +46,7 @@ func HandleSwaggerUI() http.Handler {
 				}
 
 			})
-			
+
 			data := struct{ ConfigURL string }{}
 			data.ConfigURL = createURL(r, schema)
 

@@ -7,9 +7,9 @@ package cachespecs
 import (
 	context "context"
 	frameless "github.com/adamluzsi/frameless"
+	gomock "github.com/golang/mock/gomock"
 	rollouts "github.com/toggler-io/toggler/services/rollouts"
 	security "github.com/toggler-io/toggler/services/security"
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )
 
