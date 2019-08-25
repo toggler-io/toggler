@@ -4,8 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/toggler-io/toggler/extintf/caches"
-	"github.com/toggler-io/toggler/extintf/storages"
 	"log"
 	"net/http"
 	"os"
@@ -14,17 +12,20 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/toggler-io/toggler/extintf/caches"
+	"github.com/toggler-io/toggler/extintf/storages"
+
+	"github.com/unrolled/logger"
+
 	"github.com/toggler-io/toggler/extintf/httpintf"
 	"github.com/toggler-io/toggler/services/rollouts"
 	"github.com/toggler-io/toggler/services/security"
 	"github.com/toggler-io/toggler/usecases"
-	"github.com/unrolled/logger"
 )
 
 func main() {
 	flagSet := flag.NewFlagSet(`toggler`, flag.ExitOnError)
 	portConfValue := flagSet.String(`port`, os.Getenv(`PORT`), `set http server port else the env variable "PORT" value will be used.`)
-	cmd := flagSet.String(`cmd`, `http-server`, `cli command. cmds: "http-server", "create-token".`)
 	fixtures := flagSet.Bool(`create-fixtures`, false, `create default fixtures for development purpose.`)
 	localDevelopmentToken := flagSet.String(`create-development-token`, ``, `create token for local development purpose only!`)
 	dbURL := flagSet.String(`database-url`, ``, `define what url should be used for the db connection. Default value used from ENV[DATABASE_URL].`)
@@ -62,24 +63,12 @@ func main() {
 		createDevelopmentToken(storage, *localDevelopmentToken)
 	}
 
-	switch *cmd {
-	case `http-server`:
-		port, err := strconv.Atoi(*portConfValue)
-		if err != nil {
-			panic(err)
-		}
-
-		s := makeHTTPServer(cache, port)
-		withGracefulShutdown(func() {
-			if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-				log.Fatal(err)
-			}
-		}, func(ctx context.Context) error {
-			return s.Shutdown(ctx)
-		})
-
+	switch flagSet.Arg(0) {
 	case `create-token`:
 		createToken(storage, flagSet.Arg(0))
+
+	case `http-server`, `server`, `s`:
+		httpServer(portConfValue, cache)
 
 	default:
 		fmt.Println(`please provide on of the commands`)
@@ -87,6 +76,21 @@ func main() {
 		fmt.Printf("\t%s\n", `create-token`)
 	}
 
+}
+
+func httpServer(portConfValue *string, storage usecases.Storage) {
+	port, err := strconv.Atoi(*portConfValue)
+	if err != nil {
+		panic(err)
+	}
+	s := makeHTTPServer(storage, port)
+	withGracefulShutdown(func() {
+		if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatal(err)
+		}
+	}, func(ctx context.Context) error {
+		return s.Shutdown(ctx)
+	})
 }
 
 func setupDatabaseURL(dbURL *string) {
@@ -178,7 +182,7 @@ func createDevelopmentToken(s usecases.Storage, tokenSTR string) {
 		fmt.Println(`WARNING - you created a non random token for local development purpose`)
 		fmt.Println(`if this is a production environment, it is advised to delete this token immediately`)
 	}()
-	
+
 	ctx := context.Background()
 
 	issuer := security.Issuer{Storage: s}

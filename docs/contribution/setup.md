@@ -6,6 +6,8 @@ The local development requires 3 tooling to provision the project fully.
 * [docker-compose](https://docs.docker.com/compose/gettingstarted/) (required)
 * [direnv](https://direnv.net/) (optional)
 
+## To ensure local development environment variables
+
 First of all, make sure that the `.envrc` file content is sourced into your shell.
 The file contains environment variables for local development.
 
@@ -15,14 +17,18 @@ The file contains environment variables for local development.
 . .envrc
 ```
 
-Then provision the project's external resource dependencies with `docker-compose`
+## To ensure project external resource dependencies
 
 ```bash
 docker-compose up -d
-``` 
+```
+
+## To provision tooling for the project (go modules)
 
 Then to install tooling execute the below mentioned next command.
-This will install all the tooling in your GOPATH/bin directory that the depends on.
+This will install all the tooling in your `GOPATH/bin` directory that the depends on.
+
+The `.envrc` append your `GOPATH/bin` to the `PATH` variable.
 
 > to vendor tooling the project relies on go modules
 
@@ -30,20 +36,28 @@ This will install all the tooling in your GOPATH/bin directory that the depends 
 go generate tools.go
 ```
 
-And then you can generate assets with the `generate` `go` subcmd
+## To generate assets and mocks
 
 ```bash
 go generate ./...
 ```
 
-And Finally, you can verify your current version by running the testing suite.
+## to execute test suite
 
 ```bash
 go test ./...
 ```
 
-Optionally, you can execute the benchmark suite as well.
+## To execute benchmark suite
 
 ```bash
 go test -bench . ./...
+```
+
+## To run the service locally with go compiler
+
+```bash
+export DATABASE_URL=${TEST_STORAGE_URL_POSTGRES}
+go run cmd/toggler/main.go create-token "token-owner-name"
+go run cmd/toggler/main.go http-server
 ```
