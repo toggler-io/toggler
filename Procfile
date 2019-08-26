@@ -1,1 +1,1 @@
-web: ./bin/toggler http-server -port $PORT
+web: go run cmd/toggler/main.go http-server -port $PORT
