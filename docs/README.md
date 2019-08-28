@@ -1,6 +1,8 @@
 # toggler
 
 `toggler` is a Self hosted Feature Toggle Service.
+There is a SaaS solutions as well deployed at [toggler.io](https://toggler.io),
+[you can read more about it under this link](/docs/toggler-io/README.md).
 
 The service designed to be hosted on public web.
 The service expects that public web request will be received from all kind of sources.
@@ -15,6 +17,8 @@ that needed to do centralised feature release management.
 
 Other than percentage based feature enrollment for piloting,
 every custom decision logic is expected to be implemented by your company trough an HTTP API.
+
+## What is a Feature Toggler service ?
 
 ## Is this Service for your team/company ?
 
@@ -44,8 +48,8 @@ The secondary goal is derived from the primary, which is to own the data.
 Regardless how and where you use, the ownership of the data belongs to you.
 There is no `free` plan that aims you to lock in by data, or by other means.
 
-If you are satisfied with the service, 
-then the `toggler` project did well. 
+If you are satisfied with the service,
+then the `toggler` project did well.
 
 ## State of the code
 
@@ -60,15 +64,15 @@ The folder structure also try to represent it trough `screaming architecture` el
 
 The `toggler` project coverage is made with *behavior driven development* principles,
 and as such the tests aim to justify system behavior, not implementation.
-You probably heard this already many times, but in this case thing about in a way 
+You probably heard this already many times, but in this case thing about in a way
 where you have `postgres` implementation without a single query or db table assertion. :)
-Purely just behavior testes. 
+Purely just behavior testes.
 
 Why this is good ? Through this, I can have as many different implementations,
 and share the expectations from separate components such as storage implementation,
 and any contributor can jump in and contribute to it, even without deep TDD or BDD practices.
 Also refactoring the internal implementation of the project components is easier.
-[There is an in depth explanation in this section.](/docs/design/sharedspecs.md) 
+[There is an in depth explanation in this section.](/docs/design/sharedspecs.md)
 
 ## Scalability
 
