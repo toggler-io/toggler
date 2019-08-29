@@ -1,3 +1,6 @@
+# Buildfile
+bin/toggler
+
 # Binaries for programs and plugins
 *.exe
 *.exe~

@@ -1,0 +1,1 @@
+make: go build -o bin/toggler ./cmd/toggler/main.go
