@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e -u
+set -e -u -x
 
 : ${DATABASE_URL:="${TEST_STORAGE_URL_POSTGRES}"}
 export DATABASE_URL
@@ -9,7 +9,7 @@ go generate ./...
 
 go run cmd/toggler/main.go fixtures \
     -create-fixtures \
-    -create-development-token 'root'
+    -create-unsafe-token 'root'
 
 go run cmd/toggler/main.go \
     http-server \

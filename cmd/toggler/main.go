@@ -73,7 +73,7 @@ func main() {
 	case `create-token`:
 		createTokenCMD(flagSet.Args(), storage)
 
-	case `create-fixtures`:
+	case `fixtures`:
 		fixturesCMD(flagSet.Args(), storage)
 
 	case `http-server`, `server`, `s`:
@@ -154,7 +154,7 @@ func setupCacheURL(cacheURL *string, cacheTTL *time.Duration) {
 func fixturesCMD(args []string, s usecases.Storage) {
 	flagSet := flag.NewFlagSet(`fixtures`, flag.ExitOnError)
 	fixtures := flagSet.Bool(`create-fixtures`, false, `create default fixtures for development purpose.`)
-	localDevelopmentToken := flagSet.String(`create-development-token`, ``, `create token for local development purpose only!`)
+	localDevelopmentToken := flagSet.String(`create-unsafe-token`, ``, `create token for local development purpose (don't use in prod)`)
 
 	if err := flagSet.Parse(args[1:]); err != nil {
 		log.Println(err)
