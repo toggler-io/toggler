@@ -4,19 +4,19 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	"github.com/pkg/errors"
 )
 
-func ParseFlagPilotFromForm(r *http.Request) (*rollouts.Pilot, error) {
+func ParseFlagPilotFromForm(r *http.Request) (*release.Pilot, error) {
 
 	if err := r.ParseForm(); err != nil {
 		return nil, err
 	}
 
-	var pilot rollouts.Pilot
+	var pilot release.Pilot
 	pilot.ID = r.FormValue(`pilot.id`)
-	pilot.FeatureFlagID = r.FormValue(`pilot.flagID`)
+	pilot.FlagID = r.FormValue(`pilot.flagID`)
 	pilot.ExternalID = r.FormValue(`pilot.extID`)
 
 	switch strings.ToLower(r.FormValue(`pilot.enrolled`)) {

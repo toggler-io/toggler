@@ -1,4 +1,4 @@
-package rollouts
+package release
 
 import (
 	"context"
@@ -25,7 +25,7 @@ type RolloutManager struct {
 	RandSeedGenerator func() int64
 }
 
-func (manager *RolloutManager) CreateFeatureFlag(ctx context.Context, flag *FeatureFlag) error {
+func (manager *RolloutManager) CreateFeatureFlag(ctx context.Context, flag *Flag) error {
 	if flag == nil {
 		return ErrMissingFlag
 	}
@@ -42,7 +42,7 @@ func (manager *RolloutManager) CreateFeatureFlag(ctx context.Context, flag *Feat
 		flag.Rollout.RandSeed = manager.RandSeedGenerator()
 	}
 
-	ff, err := manager.Storage.FindFlagByName(ctx, flag.Name)
+	ff, err := manager.Storage.FindReleaseFlagByName(ctx, flag.Name)
 
 	if err != nil {
 		return err
@@ -58,7 +58,7 @@ func (manager *RolloutManager) CreateFeatureFlag(ctx context.Context, flag *Feat
 	return manager.Storage.Save(ctx, flag)
 }
 
-func (manager *RolloutManager) UpdateFeatureFlag(ctx context.Context, flag *FeatureFlag) error {
+func (manager *RolloutManager) UpdateFeatureFlag(ctx context.Context, flag *Flag) error {
 	if flag == nil {
 		return ErrMissingFlag
 	}
@@ -68,7 +68,7 @@ func (manager *RolloutManager) UpdateFeatureFlag(ctx context.Context, flag *Feat
 	}
 
 	if flag.ID == `` {
-		ff, err := manager.Storage.FindFlagByName(ctx, flag.Name)
+		ff, err := manager.Storage.FindReleaseFlagByName(ctx, flag.Name)
 		if err != nil {
 			return err
 		}
@@ -87,16 +87,16 @@ func (manager *RolloutManager) UpdateFeatureFlag(ctx context.Context, flag *Feat
 	return manager.Storage.Update(ctx, flag)
 }
 
-func (manager *RolloutManager) ListFeatureFlags(ctx context.Context) ([]*FeatureFlag, error) {
-	iter := manager.Storage.FindAll(ctx, FeatureFlag{})
-	ffs := []*FeatureFlag{} // empty slice required for null object pattern enforcement
+func (manager *RolloutManager) ListFeatureFlags(ctx context.Context) ([]*Flag, error) {
+	iter := manager.Storage.FindAll(ctx, Flag{})
+	ffs := []*Flag{} // empty slice required for null object pattern enforcement
 	err := iterators.CollectAll(iter, &ffs)
 	return ffs, err
 }
 
 func (manager *RolloutManager) UnsetPilotEnrollmentForFeature(ctx context.Context, flagID, externalPilotID string) error {
 
-	var ff FeatureFlag
+	var ff Flag
 
 	found, err := manager.Storage.FindByID(ctx, &ff, flagID)
 
@@ -108,7 +108,7 @@ func (manager *RolloutManager) UnsetPilotEnrollmentForFeature(ctx context.Contex
 		return frameless.ErrNotFound
 	}
 
-	pilot, err := manager.Storage.FindFlagPilotByExternalPilotID(ctx, ff.ID, externalPilotID)
+	pilot, err := manager.Storage.FindReleaseFlagPilotByPilotExternalID(ctx, ff.ID, externalPilotID)
 
 	if err != nil {
 		return err
@@ -124,7 +124,7 @@ func (manager *RolloutManager) UnsetPilotEnrollmentForFeature(ctx context.Contex
 
 func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context, flagID, externalPilotID string, isEnrolled bool) error {
 
-	var ff FeatureFlag
+	var ff Flag
 
 	found, err := manager.Storage.FindByID(ctx, &ff, flagID)
 
@@ -136,7 +136,7 @@ func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context,
 		return frameless.ErrNotFound
 	}
 
-	pilot, err := manager.Storage.FindFlagPilotByExternalPilotID(ctx, ff.ID, externalPilotID)
+	pilot, err := manager.Storage.FindReleaseFlagPilotByPilotExternalID(ctx, ff.ID, externalPilotID)
 
 	if err != nil {
 		return err
@@ -147,7 +147,7 @@ func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context,
 		return manager.Storage.Update(ctx, pilot)
 	}
 
-	return manager.Save(ctx, &Pilot{FeatureFlagID: ff.ID, ExternalID: externalPilotID, Enrolled: isEnrolled})
+	return manager.Save(ctx, &Pilot{FlagID: ff.ID, ExternalID: externalPilotID, Enrolled: isEnrolled})
 
 }
 
@@ -157,7 +157,7 @@ func (manager *RolloutManager) DeleteFeatureFlag(ctx context.Context, id string)
 		return frameless.ErrIDRequired
 	}
 
-	var ff FeatureFlag
+	var ff Flag
 	found, err := manager.Storage.FindByID(ctx, &ff, id)
 
 	if err != nil {
@@ -187,17 +187,17 @@ func (manager *RolloutManager) DeleteFeatureFlag(ctx context.Context, id string)
 		return err
 	}
 
-	return manager.Storage.DeleteByID(ctx, FeatureFlag{}, id)
+	return manager.Storage.DeleteByID(ctx, Flag{}, id)
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 
-func (manager *RolloutManager) newDefaultFeatureFlag(featureFlagName string) *FeatureFlag {
-	return &FeatureFlag{
+func (manager *RolloutManager) newDefaultFeatureFlag(featureFlagName string) *Flag {
+	return &Flag{
 		Name: featureFlagName,
-		Rollout: Rollout{
+		Rollout: FlagRollout{
 			RandSeed: manager.RandSeedGenerator(),
-			Strategy: RolloutStrategy{
+			Strategy: FlagRolloutStrategy{
 				Percentage:       0,
 				DecisionLogicAPI: nil,
 			},

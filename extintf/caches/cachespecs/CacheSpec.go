@@ -12,7 +12,7 @@ import (
 	"github.com/adamluzsi/testcase"
 	"github.com/toggler-io/toggler/extintf/caches"
 	"github.com/toggler-io/toggler/extintf/storages/inmemory"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	"github.com/toggler-io/toggler/services/security"
 	"github.com/toggler-io/toggler/usecases"
 	"github.com/toggler-io/toggler/usecases/specs"
@@ -33,8 +33,8 @@ func (spec CacheSpec) Test(t *testing.T) {
 
 	s.Around(func(t *testcase.T) func() {
 		cleanup := func() {
-			require.Nil(t, spec.cache(t).Truncate(spec.ctx(rollouts.FeatureFlag{}), rollouts.FeatureFlag{}))
-			require.Nil(t, spec.cache(t).Truncate(spec.ctx(rollouts.Pilot{}), rollouts.Pilot{}))
+			require.Nil(t, spec.cache(t).Truncate(spec.ctx(release.Flag{}), release.Flag{}))
+			require.Nil(t, spec.cache(t).Truncate(spec.ctx(release.Pilot{}), release.Pilot{}))
 		}
 
 		cleanup()
@@ -175,8 +175,8 @@ func (spec CacheSpec) Test(t *testing.T) {
 			})
 		}
 
-		SharedSpecForEntityCachingBehavior(s, rollouts.FeatureFlag{})
-		SharedSpecForEntityCachingBehavior(s, rollouts.Pilot{})
+		SharedSpecForEntityCachingBehavior(s, release.Flag{})
+		SharedSpecForEntityCachingBehavior(s, release.Pilot{})
 		SharedSpecForEntityCachingBehavior(s, security.Token{})
 
 	})

@@ -9,7 +9,7 @@ The service expects that public web request will be received from all kind of so
 Such case is the combined usage from SPA, lambda service and traditional backend services.
 
 It is goal to provide a stable, reliable and free rollout management tooling for teams.
-By using feature flags you can decouple the feature release from the deployment or config change process,
+By using release flags you can decouple the feature release from the deployment or config change process,
 and also make it simple to keep feature states in sync for all your users.
 
 The project aims only to be just barely enough for the minimal requirement
@@ -27,7 +27,7 @@ if this project is needed for your team or not.
 
 Can my team…
 
-* apply [Dark Launching](/docs/rollout/DarkLaunch.md) practices ?
+* apply [Dark Launching](/docs/release/DarkLaunch.md) practices ?
 * deploy frequently the codebase independently from feature release ?
 * confidently deploy to production after the automated tests are passed ?
 * perform deployment during normal business hours with negligible downtime?
@@ -88,7 +88,7 @@ If you decide to implement your own integration with a storage,
 the expected behavior requirements/tests/coverage can be located under the `usecases/specs.StorageSpec` object.
 For examples, you can check the already existing storage implementations as well.
 
-## [Rollout Features](/docs/rollout/README.md)
+## [Rollout Features](/docs/release/README.md)
 
 ## [Design](/docs/design/README.md)
 

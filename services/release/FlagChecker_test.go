@@ -1,4 +1,4 @@
-package rollouts_test
+package release_test
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/adamluzsi/testcase"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	. "github.com/toggler-io/toggler/testing"
 	"github.com/stretchr/testify/require"
 )
@@ -23,8 +23,8 @@ func TestFeatureFlagChecker(t *testing.T) {
 	s.Let(`PseudoRandPercentage`, func(t *testcase.T) interface{} { return int(0) })
 
 	s.Before(func(t *testcase.T) {
-		require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
-		require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.Pilot{}))
+		require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
+		require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Pilot{}))
 	})
 
 	s.Describe(`IsFeatureEnabledFor`, func(s *testcase.Spec) {
@@ -55,12 +55,12 @@ func SpecFeatureFlagChecker_GetPilotFlagStates(s *testcase.Spec) {
 
 	cleanup := func(t *testcase.T) {
 		ctx := context.Background()
-		require.Nil(t, GetStorage(t).Truncate(ctx, rollouts.Pilot{}))
-		require.Nil(t, GetStorage(t).Truncate(ctx, rollouts.FeatureFlag{}))
+		require.Nil(t, GetStorage(t).Truncate(ctx, release.Pilot{}))
+		require.Nil(t, GetStorage(t).Truncate(ctx, release.Flag{}))
 	}
 
 	s.Let(`flag names`, func(t *testcase.T) interface{} {
-		return []string{GetFeatureFlagName(t), `non-existent`}
+		return []string{GetReleaseFlagName(t), `non-existent`}
 	})
 
 	s.Before(cleanup)
@@ -68,7 +68,7 @@ func SpecFeatureFlagChecker_GetPilotFlagStates(s *testcase.Spec) {
 
 	s.When(`no feature flag is set`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
+			require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
 		})
 
 		s.Then(`it will return with flipped off states`, func(t *testcase.T) {
@@ -76,14 +76,14 @@ func SpecFeatureFlagChecker_GetPilotFlagStates(s *testcase.Spec) {
 			require.Nil(t, err)
 			t.Log(states)
 			require.Equal(t, 2, len(states))
-			stateIs(t, states, GetFeatureFlagName(t), false)
+			stateIs(t, states, GetReleaseFlagName(t), false)
 			stateIs(t, states, `non-existent`, false)
 		})
 	})
 
 	s.When(`some of the feature flag exists`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Save(context.Background(), GetFeatureFlag(t)))
+			require.Nil(t, GetStorage(t).Save(context.Background(), GetReleaseFlag(t)))
 		})
 
 		// fix the value, so the dependency sub context can work with an assumption
@@ -95,22 +95,22 @@ func SpecFeatureFlagChecker_GetPilotFlagStates(s *testcase.Spec) {
 			s.Then(`it is expected to receive switched ON state for the flag`, func(t *testcase.T) {
 				states, err := subject(t)
 				require.Nil(t, err)
-				stateIs(t, states, GetFeatureFlagName(t), true)
+				stateIs(t, states, GetReleaseFlagName(t), true)
 			})
 
 			s.And(`the pilot is black listed`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Save(context.Background(), &rollouts.Pilot{
-						ExternalID:    GetExternalPilotID(t),
-						FeatureFlagID: GetFeatureFlag(t).ID,
-						Enrolled:      false,
+					require.Nil(t, GetStorage(t).Save(context.Background(), &release.Pilot{
+						ExternalID: GetExternalPilotID(t),
+						FlagID:     GetReleaseFlag(t).ID,
+						Enrolled:   false,
 					}))
 				})
 
 				s.Then(`the pilot flag state will be set to OFF`, func(t *testcase.T) {
 					states, err := subject(t)
 					require.Nil(t, err)
-					stateIs(t, states, GetFeatureFlagName(t), false)
+					stateIs(t, states, GetReleaseFlagName(t), false)
 				})
 			})
 		})
@@ -121,22 +121,22 @@ func SpecFeatureFlagChecker_GetPilotFlagStates(s *testcase.Spec) {
 			s.Then(`it is expected to receive switched OFF state for the flag`, func(t *testcase.T) {
 				states, err := subject(t)
 				require.Nil(t, err)
-				stateIs(t, states, GetFeatureFlagName(t), false)
+				stateIs(t, states, GetReleaseFlagName(t), false)
 			})
 
 			s.And(`the pilot is white listed`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Save(context.Background(), &rollouts.Pilot{
-						ExternalID:    GetExternalPilotID(t),
-						FeatureFlagID: GetFeatureFlag(t).ID,
-						Enrolled:      true,
+					require.Nil(t, GetStorage(t).Save(context.Background(), &release.Pilot{
+						ExternalID: GetExternalPilotID(t),
+						FlagID:     GetReleaseFlag(t).ID,
+						Enrolled:   true,
 					}))
 				})
 
 				s.Then(`the pilot flag state will be set to ON`, func(t *testcase.T) {
 					states, err := subject(t)
 					require.Nil(t, err)
-					stateIs(t, states, GetFeatureFlagName(t), true)
+					stateIs(t, states, GetReleaseFlagName(t), true)
 				})
 			})
 		})
@@ -157,7 +157,7 @@ func SpecFeatureFlagChecker_GetPilotFlagStates(s *testcase.Spec) {
 
 func SpecFeatureFlagChecker_IsFeatureGloballyEnabledFor(s *testcase.Spec) {
 	subject := func(t *testcase.T) (bool, error) {
-		return featureFlagChecker(t).IsFeatureGloballyEnabled(t.I(`FeatureName`).(string))
+		return featureFlagChecker(t).IsFeatureGloballyEnabled(t.I(`ReleaseFlagName`).(string))
 	}
 
 	thenItWillReportThatFeatureNotGlobballyEnabled := func(s *testcase.Spec) {
@@ -178,7 +178,7 @@ func SpecFeatureFlagChecker_IsFeatureGloballyEnabledFor(s *testcase.Spec) {
 
 	s.When(`feature flag is not seen before`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
+			require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
 		})
 
 		thenItWillReportThatFeatureNotGlobballyEnabled(s)
@@ -186,7 +186,7 @@ func SpecFeatureFlagChecker_IsFeatureGloballyEnabledFor(s *testcase.Spec) {
 
 	s.When(`feature flag is given`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
+			require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
 		})
 
 		s.And(`it is not yet rolled out globally`, func(s *testcase.Spec) {
@@ -206,14 +206,14 @@ func SpecFeatureFlagChecker_IsFeatureGloballyEnabledFor(s *testcase.Spec) {
 func SpecFeatureFlagChecker_IsFeatureEnabledFor(s *testcase.Spec) {
 	subject := func(t *testcase.T) (bool, error) {
 		return featureFlagChecker(t).IsFeatureEnabledFor(
-			t.I(`FeatureName`).(string),
-			t.I(`ExternalPilotID`).(string),
+			t.I(`ReleaseFlagName`).(string),
+			t.I(`PilotExternalID`).(string),
 		)
 	}
 
 	s.When(`feature was never enabled before`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
+			require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
 		})
 
 		s.Then(`it will tell that feature flag is not enabled`, func(t *testcase.T) {
@@ -225,7 +225,7 @@ func SpecFeatureFlagChecker_IsFeatureEnabledFor(s *testcase.Spec) {
 
 	s.When(`feature is configured with rollout strategy`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
+			require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
 		})
 
 		s.And(`by rollout percentage`, func(s *testcase.Spec) {
@@ -260,7 +260,7 @@ func SpecFeatureFlagChecker_IsFeatureEnabledFor(s *testcase.Spec) {
 
 				s.And(`the next pseudo rand int is less or eq with the rollout percentage`, func(s *testcase.Spec) {
 					s.Let(`PseudoRandPercentage`, func(t *testcase.T) interface{} {
-						ffPerc := GetFeatureFlag(t).Rollout.Strategy.Percentage
+						ffPerc := GetReleaseFlag(t).Rollout.Strategy.Percentage
 						return ffPerc - rand.Intn(ffPerc)
 					})
 
@@ -273,10 +273,10 @@ func SpecFeatureFlagChecker_IsFeatureEnabledFor(s *testcase.Spec) {
 					s.And(`the pilot is blacklisted manually from the feature`, func(s *testcase.Spec) {
 						s.Before(func(t *testcase.T) {
 
-							pilot := &rollouts.Pilot{
-								FeatureFlagID: GetFeatureFlag(t).ID,
-								ExternalID:    t.I(`ExternalPilotID`).(string),
-								Enrolled:      false,
+							pilot := &release.Pilot{
+								FlagID:     GetReleaseFlag(t).ID,
+								ExternalID: t.I(`PilotExternalID`).(string),
+								Enrolled:   false,
 							}
 
 							require.Nil(t, GetStorage(t).Save(context.TODO(), pilot))
@@ -295,7 +295,7 @@ func SpecFeatureFlagChecker_IsFeatureEnabledFor(s *testcase.Spec) {
 				s.And(`the next pseudo rand int is is greater than the rollout percentage`, func(s *testcase.Spec) {
 
 					s.Let(`PseudoRandPercentage`, func(t *testcase.T) interface{} {
-						return GetFeatureFlag(t).Rollout.Strategy.Percentage + 1
+						return GetReleaseFlag(t).Rollout.Strategy.Percentage + 1
 					})
 
 					s.Then(`pilot is not enrolled for the feature`, func(t *testcase.T) {
@@ -343,8 +343,8 @@ func SpecFeatureFlagChecker_IsFeatureEnabledFor(s *testcase.Spec) {
 
 			handler := func(t *testcase.T) http.Handler {
 				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					require.Equal(t, t.I(`FeatureName`).(string), r.URL.Query().Get(`feature`))
-					require.Equal(t, t.I(`ExternalPilotID`).(string), r.URL.Query().Get(`id`))
+					require.Equal(t, t.I(`ReleaseFlagName`).(string), r.URL.Query().Get(`feature`))
+					require.Equal(t, t.I(`PilotExternalID`).(string), r.URL.Query().Get(`id`))
 					w.WriteHeader(t.I(`replyCode`).(int))
 				})
 			}
@@ -380,11 +380,11 @@ func SpecFeatureFlagChecker_IsFeatureEnabledFor(s *testcase.Spec) {
 	})
 }
 
-func featureFlagChecker(t *testcase.T) *rollouts.FeatureFlagChecker {
-	return &rollouts.FeatureFlagChecker{
+func featureFlagChecker(t *testcase.T) *release.FlagChecker {
+	return &release.FlagChecker{
 		Storage: t.I(`TestStorage`).(*TestStorage),
 		IDPercentageCalculator: func(id string, seedSalt int64) (int, error) {
-			require.Equal(t, t.I(`ExternalPilotID`).(string), id)
+			require.Equal(t, t.I(`PilotExternalID`).(string), id)
 			require.Equal(t, t.I(`RolloutSeedSalt`).(int64), seedSalt)
 			return t.I(`PseudoRandPercentage`).(int), nil
 		},

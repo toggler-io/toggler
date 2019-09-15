@@ -64,7 +64,7 @@ for the create rollout feature flag operation typically these are written to a h
 type CreateRolloutFeatureFlagParams struct {
 
 	/*Body*/
-	Body *models.FeatureFlag
+	Body *models.Flag
 
 	timeout    time.Duration
 	Context    context.Context
@@ -105,13 +105,13 @@ func (o *CreateRolloutFeatureFlagParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the create rollout feature flag params
-func (o *CreateRolloutFeatureFlagParams) WithBody(body *models.FeatureFlag) *CreateRolloutFeatureFlagParams {
+func (o *CreateRolloutFeatureFlagParams) WithBody(body *models.Flag) *CreateRolloutFeatureFlagParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the create rollout feature flag params
-func (o *CreateRolloutFeatureFlagParams) SetBody(body *models.FeatureFlag) {
+func (o *CreateRolloutFeatureFlagParams) SetBody(body *models.Flag) {
 	o.Body = body
 }
 

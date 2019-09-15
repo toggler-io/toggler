@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/adamluzsi/testcase"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	"github.com/stretchr/testify/require"
 
 	. "github.com/toggler-io/toggler/testing"
@@ -38,7 +38,7 @@ func TestServeMux_SetPilotEnrollmentForFeature(t *testing.T) {
 	})
 
 	s.Before(func(t *testcase.T) {
-		require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
+		require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
 	})
 
 	s.Let(`request`, func(t *testcase.T) interface{} {
@@ -47,7 +47,7 @@ func TestServeMux_SetPilotEnrollmentForFeature(t *testing.T) {
 
 		values := u.Query()
 		values.Set(`token`, t.I(`TokenString`).(string))
-		values.Set(`pilot.flagID`, GetFeatureFlag(t).ID)
+		values.Set(`pilot.flagID`, GetReleaseFlag(t).ID)
 		values.Set(`pilot.extID`, GetExternalPilotID(t))
 		values.Set(`pilot.enrolled`, t.I(`enrollment query value`).(string))
 		u.RawQuery = values.Encode()
@@ -96,7 +96,7 @@ func TestServeMux_SetPilotEnrollmentForFeature(t *testing.T) {
 			var resp struct{}
 			IsJsonResponse(t, r, &resp)
 
-			p, err := GetStorage(t).FindFlagPilotByExternalPilotID(context.Background(), FindStoredFeatureFlagByName(t).ID, GetExternalPilotID(t))
+			p, err := GetStorage(t).FindReleaseFlagPilotByPilotExternalID(context.Background(), FindStoredReleaseFlagByName(t).ID, GetExternalPilotID(t))
 			require.Nil(t, err)
 			require.NotNil(t, p)
 			require.Equal(t, GetPilotEnrollment(t), p.Enrolled)
@@ -104,7 +104,7 @@ func TestServeMux_SetPilotEnrollmentForFeature(t *testing.T) {
 
 		s.And(`flag id is not existing`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, GetStorage(t).DeleteByID(context.Background(), rollouts.FeatureFlag{}, GetFeatureFlag(t).ID))
+				require.Nil(t, GetStorage(t).DeleteByID(context.Background(), release.Flag{}, GetReleaseFlag(t).ID))
 			})
 
 			s.Then(`bad request replied`, func(t *testcase.T) {

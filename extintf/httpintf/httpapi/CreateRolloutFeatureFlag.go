@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	"github.com/toggler-io/toggler/usecases"
 )
 
@@ -13,7 +13,7 @@ import (
 // swagger:parameters CreateRolloutFeatureFlag
 type CreateRolloutFeatureFlagJSONParameters struct {
 	// in: body
-	Body rollouts.FeatureFlag
+	Body release.Flag
 }
 
 // CreateRolloutFeatureFlagResponse returns information about the requester's rollout feature enrollment status.
@@ -27,7 +27,7 @@ type CreateRolloutFeatureFlagResponse struct {
 
 	swagger:route POST /rollout/flag/create.json rollout feature-flag CreateRolloutFeatureFlag
 
-	Create Rollout Feature Flag
+	Create FlagRollout Feature Flag
 
 	This operation allows you to create a new rollout feature flag.
 
@@ -53,7 +53,7 @@ func (sm *ServeMux) CreateRolloutFeatureFlagJSON(w http.ResponseWriter, r *http.
 	decoder.DisallowUnknownFields()
 	defer r.Body.Close() // ignorable
 
-	var flag rollouts.FeatureFlag
+	var flag release.Flag
 
 	if handleError(w, decoder.Decode(&flag), http.StatusBadRequest) {
 		return

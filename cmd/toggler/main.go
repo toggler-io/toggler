@@ -18,7 +18,7 @@ import (
 	"github.com/unrolled/logger"
 
 	"github.com/toggler-io/toggler/extintf/httpintf"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	"github.com/toggler-io/toggler/services/security"
 	"github.com/toggler-io/toggler/usecases"
 )
@@ -185,7 +185,7 @@ func createFixtures(s usecases.Storage) {
 		panic(err)
 	}
 
-	ff := rollouts.FeatureFlag{Name: `test`}
+	ff := release.Flag{Name: `test`}
 	_ = pu.CreateFeatureFlag(context.TODO(), &ff)
 	_ = pu.SetPilotEnrollmentForFeature(context.Background(), ff.ID, `test-public-pilot-id-1`, true)
 	_ = pu.SetPilotEnrollmentForFeature(context.Background(), ff.ID, `test-public-pilot-id-2`, false)

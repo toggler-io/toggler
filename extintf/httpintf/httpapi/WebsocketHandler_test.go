@@ -67,13 +67,13 @@ func TestWebsocket(t *testing.T) {
 
 		s.Let(`data`, func(t *testcase.T) interface{} {
 			return httpapi.IsFeatureEnabledRequestPayload{
-				Feature: GetFeatureFlagName(t),
+				Feature: GetReleaseFlagName(t),
 				PilotID: GetExternalPilotID(t),
 			}
 		})
 
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Save(context.Background(), GetFeatureFlag(t)))
+			require.Nil(t, GetStorage(t).Save(context.Background(), GetReleaseFlag(t)))
 			require.Nil(t, GetStorage(t).Save(context.Background(), GetPilot(t)))
 		})
 
@@ -90,7 +90,7 @@ func TestWebsocket(t *testing.T) {
 		})
 
 		s.Let(`data`, func(t *testcase.T) interface{} {
-			return httpapi.IsFeatureGloballyEnabledRequestBody{Feature: GetFeatureFlagName(t)}
+			return httpapi.IsFeatureGloballyEnabledRequestBody{Feature: GetReleaseFlagName(t)}
 		})
 
 		s.Let(`rnd`, func(t *testcase.T) interface{} {
@@ -98,7 +98,7 @@ func TestWebsocket(t *testing.T) {
 		})
 
 		s.Before(func(t *testcase.T) {
-			ff := GetFeatureFlag(t)
+			ff := GetReleaseFlag(t)
 			ff.Rollout.Strategy.Percentage = t.I(`rnd`).(int)
 			require.Nil(t, GetStorage(t).Save(context.Background(), ff))
 		})

@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 
@@ -18,11 +18,11 @@ func TestUseCases_ListFeatureFlags(t *testing.T) {
 	SetupSpec(s)
 	s.Parallel()
 
-	subject := func(t *testcase.T) ([]*rollouts.FeatureFlag, error) {
+	subject := func(t *testcase.T) ([]*release.Flag, error) {
 		return GetProtectedUsecases(t).ListFeatureFlags(context.TODO())
 	}
 
-	onSuccess := func(t *testcase.T) []*rollouts.FeatureFlag {
+	onSuccess := func(t *testcase.T) []*release.Flag {
 		ffs, err := subject(t)
 		require.Nil(t, err)
 		return ffs
@@ -40,7 +40,7 @@ func TestUseCases_ListFeatureFlags(t *testing.T) {
 
 	s.When(`there is no flag in the system`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
+			require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
 		})
 
 		s.Then(`we receive back empty list`, func(t *testcase.T) {

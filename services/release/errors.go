@@ -1,4 +1,4 @@
-package rollouts
+package release
 
 import "github.com/adamluzsi/frameless"
 

@@ -8,14 +8,14 @@ import (
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/testcase"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	. "github.com/toggler-io/toggler/testing"
 	"github.com/stretchr/testify/require"
 )
 
 type FlagFinderSpec struct {
 	Subject interface {
-		rollouts.FlagFinder
+		release.FlagFinder
 
 		specs.MinimumRequirements
 	}
@@ -32,26 +32,26 @@ func (spec FlagFinderSpec) Benchmark(b *testing.B) {
 func (spec FlagFinderSpec) Test(t *testing.T) {
 	s := testcase.NewSpec(t)
 
-	featureName := ExampleFeatureName()
+	featureName := ExampleName()
 
 	s.Describe(`FlagFinderSpec`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, spec.Subject.Truncate(spec.ctx(), rollouts.FeatureFlag{}))
+			require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Flag{}))
 		})
 
 		s.After(func(t *testcase.T) {
-			require.Nil(t, spec.Subject.Truncate(spec.ctx(), rollouts.FeatureFlag{}))
+			require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Flag{}))
 		})
 
-		s.Describe(`FindFlagByName`, func(s *testcase.Spec) {
-			subject := func(t *testcase.T) *rollouts.FeatureFlag {
-				ff, err := spec.Subject.FindFlagByName(spec.ctx(), featureName)
+		s.Describe(`FindReleaseFlagByName`, func(s *testcase.Spec) {
+			subject := func(t *testcase.T) *release.Flag {
+				ff, err := spec.Subject.FindReleaseFlagByName(spec.ctx(), featureName)
 				require.Nil(t, err)
 				return ff
 			}
 
 			s.When(`we don't have feature flag yet`, func(s *testcase.Spec) {
-				s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.Truncate(spec.ctx(), rollouts.FeatureFlag{})) })
+				s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Flag{})) })
 
 				s.Then(`we receive back nil pointer`, func(t *testcase.T) {
 					require.Nil(t, subject(t))
@@ -60,16 +60,16 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 
 			s.When(`we have a feature flag already set`, func(s *testcase.Spec) {
 				s.Let(`ff`, func(t *testcase.T) interface{} {
-					return &rollouts.FeatureFlag{Name: featureName}
+					return &release.Flag{Name: featureName}
 				})
 
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, spec.Subject.Save(spec.ctx(), t.I(`ff`).(*rollouts.FeatureFlag)))
+					require.Nil(t, spec.Subject.Save(spec.ctx(), t.I(`ff`).(*release.Flag)))
 				})
 
 				s.Then(`searching for it returns the flag entity`, func(t *testcase.T) {
-					ff := t.I(`ff`).(*rollouts.FeatureFlag)
-					actually, err := spec.Subject.FindFlagByName(spec.ctx(), ff.Name)
+					ff := t.I(`ff`).(*release.Flag)
+					actually, err := spec.Subject.FindReleaseFlagByName(spec.ctx(), ff.Name)
 					require.Nil(t, err)
 					require.Equal(t, ff, actually)
 				})
@@ -83,12 +83,12 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 
 			s.Before(func(t *testcase.T) {
 				ctx := spec.ctx()
-				require.Nil(t, spec.Subject.Save(ctx, &rollouts.FeatureFlag{Name: `A`}))
-				require.Nil(t, spec.Subject.Save(ctx, &rollouts.FeatureFlag{Name: `B`}))
-				require.Nil(t, spec.Subject.Save(ctx, &rollouts.FeatureFlag{Name: `C`}))
+				require.Nil(t, spec.Subject.Save(ctx, &release.Flag{Name: `A`}))
+				require.Nil(t, spec.Subject.Save(ctx, &release.Flag{Name: `B`}))
+				require.Nil(t, spec.Subject.Save(ctx, &release.Flag{Name: `C`}))
 			})
 
-			mustContainName := func(t *testcase.T, ffs []rollouts.FeatureFlag, name string) {
+			mustContainName := func(t *testcase.T, ffs []release.Flag, name string) {
 				for _, ff := range ffs {
 					if ff.Name == name {
 						return
@@ -106,7 +106,7 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 				s.Then(`it will return all of them`, func(t *testcase.T) {
 					flagsIter := subject(t)
 
-					var flags []rollouts.FeatureFlag
+					var flags []release.Flag
 					require.Nil(t, iterators.CollectAll(flagsIter, &flags))
 
 					require.Equal(t, 3, len(flags))
@@ -124,7 +124,7 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 				s.Then(`it will return all of them`, func(t *testcase.T) {
 					flagsIter := subject(t)
 
-					var flags []rollouts.FeatureFlag
+					var flags []release.Flag
 					require.Nil(t, iterators.CollectAll(flagsIter, &flags))
 
 					require.Equal(t, 2, len(flags))

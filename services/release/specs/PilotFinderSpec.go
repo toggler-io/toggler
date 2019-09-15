@@ -10,7 +10,7 @@ import (
 	"github.com/adamluzsi/testcase"
 	. "github.com/toggler-io/toggler/testing"
 
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/resources/specs"
@@ -19,7 +19,7 @@ import (
 
 type pilotFinderSpec struct {
 	Subject interface {
-		rollouts.PilotFinder
+		release.PilotFinder
 
 		specs.MinimumRequirements
 	}
@@ -32,9 +32,9 @@ func (spec pilotFinderSpec) Benchmark(b *testing.B) {
 		b.Skip(`TODO`)
 
 		b.Run(`FindPilotsByFeatureFlag`, func(b *testing.B) {
-			flag := spec.Create(rollouts.FeatureFlag{}).(*rollouts.FeatureFlag)
+			flag := spec.Create(release.Flag{}).(*release.Flag)
 			require.Nil(b, spec.Subject.Save(spec.Context(), flag))
-			pilots := CreateEntities(specs.BenchmarkEntityVolumeCount(), spec.FixtureFactory, rollouts.Pilot{})
+			pilots := CreateEntities(specs.BenchmarkEntityVolumeCount(), spec.FixtureFactory, release.Pilot{})
 			SaveEntities(b, spec.Subject, spec.FixtureFactory, pilots...)
 
 			b.ResetTimer()
@@ -52,25 +52,25 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 	s.Describe(`pilotFinderSpec`, func(s *testcase.Spec) {
 
 		s.Let(`flagName`, func(t *testcase.T) interface{} {
-			return ExampleFeatureName()
+			return ExampleName()
 		})
 
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, spec.Subject.Truncate(spec.ctx(), rollouts.FeatureFlag{}))
-			require.Nil(t, spec.Subject.Truncate(spec.ctx(), rollouts.Pilot{}))
+			require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Flag{}))
+			require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Pilot{}))
 		})
 
 		s.After(func(t *testcase.T) {
-			require.Nil(t, spec.Subject.Truncate(spec.ctx(), rollouts.FeatureFlag{}))
-			require.Nil(t, spec.Subject.Truncate(spec.ctx(), rollouts.Pilot{}))
+			require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Flag{}))
+			require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Pilot{}))
 		})
 
 		s.Describe(`FindPilotsByFeatureFlag`, func(s *testcase.Spec) {
-			getFF := func(t *testcase.T) *rollouts.FeatureFlag {
-				var ff *rollouts.FeatureFlag
+			getFF := func(t *testcase.T) *release.Flag {
+				var ff *release.Flag
 				f := t.I(`ff`)
 				if f != nil {
-					ff = f.(*rollouts.FeatureFlag)
+					ff = f.(*release.Flag)
 				}
 				return ff
 			}
@@ -91,7 +91,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 
 			s.When(`feature object is nil`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, spec.Subject.Truncate(spec.ctx(), rollouts.FeatureFlag{}))
+					require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Flag{}))
 				})
 				s.Let(`ff`, func(t *testcase.T) interface{} { return nil })
 				thenNoPilotsFound(s)
@@ -99,15 +99,15 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 
 			s.When(`feature object has no reference`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, spec.Subject.Truncate(spec.ctx(), rollouts.FeatureFlag{}))
+					require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Flag{}))
 				})
-				s.Let(`ff`, func(t *testcase.T) interface{} { return &rollouts.FeatureFlag{} })
+				s.Let(`ff`, func(t *testcase.T) interface{} { return &release.Flag{} })
 				thenNoPilotsFound(s)
 			})
 
 			s.When(`feature flag exists`, func(s *testcase.Spec) {
 				s.Let(`ff`, func(t *testcase.T) interface{} {
-					ff := &rollouts.FeatureFlag{Name: t.I(`flagName`).(string)}
+					ff := &release.Flag{Name: t.I(`flagName`).(string)}
 					require.Nil(t, spec.Subject.Save(spec.ctx(), ff))
 					return ff
 				})
@@ -116,7 +116,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 
 				s.And(`there are registered pilots for the feature`, func(s *testcase.Spec) {
 					s.Before(func(t *testcase.T) {
-						expectedPilots := t.I(`expectedPilots`).([]*rollouts.Pilot)
+						expectedPilots := t.I(`expectedPilots`).([]*release.Pilot)
 
 						for _, pilot := range expectedPilots {
 							require.Nil(t, spec.Subject.Save(spec.ctx(), pilot))
@@ -124,11 +124,11 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 					})
 
 					s.Let(`expectedPilots`, func(t *testcase.T) interface{} {
-						var expectedPilots []*rollouts.Pilot
-						ff := t.I(`ff`).(*rollouts.FeatureFlag)
+						var expectedPilots []*release.Pilot
+						ff := t.I(`ff`).(*release.Flag)
 
 						for i := 0; i < 5; i++ {
-							pilot := &rollouts.Pilot{FeatureFlagID: ff.ID, ExternalID: strconv.Itoa(i)}
+							pilot := &release.Pilot{FlagID: ff.ID, ExternalID: strconv.Itoa(i)}
 							expectedPilots = append(expectedPilots, pilot)
 						}
 
@@ -140,17 +140,17 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 						defer iter.Close()
 						require.NotNil(t, iter)
 
-						var actualPilots []*rollouts.Pilot
+						var actualPilots []*release.Pilot
 
 						for iter.Next() {
-							var actually rollouts.Pilot
+							var actually release.Pilot
 							require.Nil(t, iter.Decode(&actually))
 							actualPilots = append(actualPilots, &actually)
 						}
 
 						require.Nil(t, iter.Err())
 
-						expectedPilots := t.I(`expectedPilots`).([]*rollouts.Pilot)
+						expectedPilots := t.I(`expectedPilots`).([]*release.Pilot)
 
 						require.True(t, len(expectedPilots) == len(actualPilots))
 
@@ -162,11 +162,11 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 			})
 		})
 
-		s.Describe(`FindFlagPilotByExternalPilotID`, func(s *testcase.Spec) {
+		s.Describe(`FindReleaseFlagPilotByPilotExternalID`, func(s *testcase.Spec) {
 			const ExternalPublicPilotID = `42`
 
-			subject := func(t *testcase.T) (*rollouts.Pilot, error) {
-				return spec.Subject.FindFlagPilotByExternalPilotID(spec.ctx(), t.I(`featureFlagID`).(string), ExternalPublicPilotID)
+			subject := func(t *testcase.T) (*release.Pilot, error) {
+				return spec.Subject.FindReleaseFlagPilotByPilotExternalID(spec.ctx(), t.I(`featureFlagID`).(string), ExternalPublicPilotID)
 			}
 
 			ThenNoPilotsFound := func(s *testcase.Spec) {
@@ -179,7 +179,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 
 			s.When(`feature was never enabled before`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, spec.Subject.Truncate(spec.ctx(), rollouts.FeatureFlag{}))
+					require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Flag{}))
 				})
 				s.Let(`featureFlagID`, func(t *testcase.T) interface{} { return "not exinsting ID" })
 				ThenNoPilotsFound(s)
@@ -187,7 +187,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 
 			s.When(`feature flag exists`, func(s *testcase.Spec) {
 				s.Let(`featureFlagID`, func(t *testcase.T) interface{} {
-					ff := &rollouts.FeatureFlag{Name: t.I(`flagName`).(string)}
+					ff := &release.Flag{Name: t.I(`flagName`).(string)}
 					ff.Rollout.Strategy.Percentage = 100
 					require.Nil(t, spec.Subject.Save(spec.ctx(), ff))
 					return ff.ID
@@ -197,9 +197,9 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 
 				s.And(`the given there is a registered pilot for the feature`, func(s *testcase.Spec) {
 					s.Before(func(t *testcase.T) {
-						require.Nil(t, spec.Subject.Truncate(spec.ctx(), rollouts.Pilot{}))
+						require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Pilot{}))
 						featureFlagID := t.I(`featureFlagID`).(string)
-						pilot := &rollouts.Pilot{FeatureFlagID: featureFlagID, ExternalID: ExternalPublicPilotID}
+						pilot := &release.Pilot{FlagID: featureFlagID, ExternalID: ExternalPublicPilotID}
 						require.Nil(t, spec.Subject.Save(spec.ctx(), pilot))
 					})
 
@@ -210,7 +210,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 
 						featureFlagID := t.I(`featureFlagID`).(string)
 						require.Equal(t, ExternalPublicPilotID, pilot.ExternalID)
-						require.Equal(t, featureFlagID, pilot.FeatureFlagID)
+						require.Equal(t, featureFlagID, pilot.FlagID)
 					})
 				})
 			})
@@ -222,12 +222,12 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 				return spec.Subject.FindPilotEntriesByExtID(ctx, GetExternalPilotID(t))
 			}
 
-			s.Let(`ExternalPilotID`, func(t *testcase.T) interface{} {
+			s.Let(`PilotExternalID`, func(t *testcase.T) interface{} {
 				return ExampleExternalPilotID()
 			})
 
 			s.When(`there is no pilot records`, func(s *testcase.Spec) {
-				s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.Truncate(spec.ctx(), rollouts.Pilot{})) })
+				s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Pilot{})) })
 
 				s.Then(`it will return an empty result set`, func(t *testcase.T) {
 					count, err := iterators.Count(subject(t))
@@ -240,9 +240,9 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 				s.Before(func(t *testcase.T) {
 					ctx := spec.ctx()
 					extID := ExampleExternalPilotID()
-					require.Nil(t, spec.Subject.Save(ctx, &rollouts.Pilot{FeatureFlagID: `1`, ExternalID: extID, Enrolled: true}))
-					require.Nil(t, spec.Subject.Save(ctx, &rollouts.Pilot{FeatureFlagID: `2`, ExternalID: extID, Enrolled: true}))
-					require.Nil(t, spec.Subject.Save(ctx, &rollouts.Pilot{FeatureFlagID: `3`, ExternalID: extID, Enrolled: false}))
+					require.Nil(t, spec.Subject.Save(ctx, &release.Pilot{FlagID: `1`, ExternalID: extID, Enrolled: true}))
+					require.Nil(t, spec.Subject.Save(ctx, &release.Pilot{FlagID: `2`, ExternalID: extID, Enrolled: true}))
+					require.Nil(t, spec.Subject.Save(ctx, &release.Pilot{FlagID: `3`, ExternalID: extID, Enrolled: false}))
 				})
 
 				s.Then(`it will return an empty result set`, func(t *testcase.T) {
@@ -254,13 +254,13 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 
 			s.When(`pilot ext id has multiple records`, func(s *testcase.Spec) {
 				s.Let(`expected pilots`, func(t *testcase.T) interface{} {
-					var pilots []rollouts.Pilot
+					var pilots []release.Pilot
 
 					for i := 0; i < rand.Intn(5)+5; i++ {
-						pilot := rollouts.Pilot{
-							FeatureFlagID: strconv.Itoa(i),
-							ExternalID:    GetExternalPilotID(t),
-							Enrolled:      rand.Intn(1) == 0,
+						pilot := release.Pilot{
+							FlagID:     strconv.Itoa(i),
+							ExternalID: GetExternalPilotID(t),
+							Enrolled:   rand.Intn(1) == 0,
 						}
 
 						require.Nil(t, spec.Subject.Save(spec.ctx(), &pilot))
@@ -273,9 +273,9 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 				s.Before(func(t *testcase.T) { t.I(`expected pilots`) }) // eager load let value
 
 				s.Then(`it will return all of them`, func(t *testcase.T) {
-					var pilots []rollouts.Pilot
+					var pilots []release.Pilot
 					require.Nil(t, iterators.CollectAll(subject(t), &pilots))
-					require.ElementsMatch(t, t.I(`expected pilots`).([]rollouts.Pilot), pilots)
+					require.ElementsMatch(t, t.I(`expected pilots`).([]release.Pilot), pilots)
 				})
 			})
 

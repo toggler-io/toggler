@@ -1,18 +1,18 @@
-package rollouts
+package release
 
 import (
 	"net/url"
 )
 
-// FeatureFlag is the basic entity with properties that feature flag holds
-type FeatureFlag struct {
+// Flag is the basic entity with properties that feature flag holds
+type Flag struct {
 	// ID represent the fact that this object will be persistent in the Subject
-	ID      string  `ext:"ID" json:"id"`
-	Name    string  `json:"name"`
-	Rollout Rollout `json:"rollout"`
+	ID      string      `ext:"ID" json:"id"`
+	Name    string      `json:"name"`
+	Rollout FlagRollout `json:"rollout"`
 }
 
-type Rollout struct {
+type FlagRollout struct {
 	// RandSeed allows you to configure the randomness for the percentage based pilot enrollment selection.
 	// This value could have been neglected by using the flag name as random seed,
 	// but that would reduce the flexibility for edge cases where you want
@@ -22,10 +22,10 @@ type Rollout struct {
 	// Strategy expects to determines the behavior of the rollout workflow.
 	// the actual behavior implementation is with the RolloutManager,
 	// but the configuration data is located here
-	Strategy RolloutStrategy `json:"strategy"`
+	Strategy FlagRolloutStrategy `json:"strategy"`
 }
 
-type RolloutStrategy struct {
+type FlagRolloutStrategy struct {
 	// Percentage allows you to define how many of your user base should be enrolled pseudo randomly.
 	Percentage int `json:"percentage"`
 	// DecisionLogicAPI allow you to do rollout based on custom domain needs such as target groups,
@@ -33,7 +33,7 @@ type RolloutStrategy struct {
 	DecisionLogicAPI *url.URL `json:"decision_logic_api"`
 }
 
-func (flag FeatureFlag) Verify() error {
+func (flag Flag) Verify() error {
 	if flag.Name == "" {
 		return ErrNameIsEmpty
 	}

@@ -79,7 +79,7 @@ func TestServeMux_IsFeatureEnabledFor(t *testing.T) {
 			require.Nil(t, err)
 
 			q := u.Query()
-			q.Set(`feature`, GetFeatureFlagName(t))
+			q.Set(`feature`, GetReleaseFlagName(t))
 			q.Set(`id`, GetExternalPilotID(t))
 			u.RawQuery = q.Encode()
 
@@ -98,7 +98,7 @@ func TestServeMux_IsFeatureEnabledFor(t *testing.T) {
 			payload := bytes.NewBuffer([]byte{})
 			jsonenc := json.NewEncoder(payload)
 			require.Nil(t, jsonenc.Encode(httpapi.IsFeatureEnabledRequestPayload{
-				Feature: GetFeatureFlagName(t),
+				Feature: GetReleaseFlagName(t),
 				PilotID: GetExternalPilotID(t),
 			}))
 
@@ -111,7 +111,7 @@ func TestServeMux_IsFeatureEnabledFor(t *testing.T) {
 			p := operations.NewIsFeatureEnabledParams()
 			p.Body = &models.IsFeatureEnabledRequestPayload{}
 			pilotExtID := GetExternalPilotID(t)
-			ffName := GetFeatureFlagName(t)
+			ffName := GetReleaseFlagName(t)
 			p.Body.PilotID = &pilotExtID
 			p.Body.Feature = &ffName
 			return p
@@ -125,10 +125,10 @@ func TestServeMux_IsFeatureEnabledFor(t *testing.T) {
 
 		enr := rand.Intn(2) == 0
 		if enr {
-			GetFeatureFlag(t).Rollout.Strategy.Percentage = 100
+			GetReleaseFlag(t).Rollout.Strategy.Percentage = 100
 		}
 
-		require.Nil(t, GetStorage(t).Save(CTX(t), GetFeatureFlag(t)))
+		require.Nil(t, GetStorage(t).Save(CTX(t), GetReleaseFlag(t)))
 
 		s := httptest.NewServer(http.StripPrefix(`/api/v1`, NewServeMux(t)))
 		defer s.Close()
@@ -136,7 +136,7 @@ func TestServeMux_IsFeatureEnabledFor(t *testing.T) {
 		p := operations.NewIsFeatureEnabledParams()
 		p.Body = &models.IsFeatureEnabledRequestPayload{}
 		pilotExtID := GetExternalPilotID(t)
-		ffName := GetFeatureFlagName(t)
+		ffName := GetReleaseFlagName(t)
 		p.Body.PilotID = &pilotExtID
 		p.Body.Feature = &ffName
 

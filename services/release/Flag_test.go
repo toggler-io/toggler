@@ -1,4 +1,4 @@
-package rollouts_test
+package release_test
 
 import (
 	"math/rand"
@@ -9,19 +9,19 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/adamluzsi/testcase"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	. "github.com/toggler-io/toggler/testing"
 )
 
 func TestFeatureFlag(t *testing.T) {
 	s := testcase.NewSpec(t)
 
-	s.Let(`FeatureName`, func(t *testcase.T) interface{} { return ExampleFeatureName() })
+	s.Let(`ReleaseFlagName`, func(t *testcase.T) interface{} { return ExampleName() })
 	s.Let(`RolloutSeedSalt`, func(t *testcase.T) interface{} { return time.Now().Unix() })
 	s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return int(0) })
 	s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return nil })
-	s.Let(`FeatureFlag`, func(t *testcase.T) interface{} {
-		ff := &rollouts.FeatureFlag{Name: t.I(`FeatureName`).(string)}
+	s.Let(`Flag`, func(t *testcase.T) interface{} {
+		ff := &release.Flag{Name: t.I(`ReleaseFlagName`).(string)}
 		ff.Rollout.RandSeed = t.I(`RolloutSeedSalt`).(int64)
 		ff.Rollout.Strategy.Percentage = t.I(`RolloutPercentage`).(int)
 		ff.Rollout.Strategy.DecisionLogicAPI = getRolloutApiURL(t)
@@ -32,10 +32,10 @@ func TestFeatureFlag(t *testing.T) {
 		subject := func(t *testcase.T) error { return getFeatureFlag(t).Verify() }
 
 		s.When(`name is empty`, func(s *testcase.Spec) {
-			s.Let(`FeatureName`, func(t *testcase.T) interface{} { return `` })
+			s.Let(`ReleaseFlagName`, func(t *testcase.T) interface{} { return `` })
 
 			s.Then(`error reported`, func(t *testcase.T) {
-				require.Equal(t, rollouts.ErrNameIsEmpty, subject(t))
+				require.Equal(t, release.ErrNameIsEmpty, subject(t))
 			})
 		})
 
@@ -45,7 +45,7 @@ func TestFeatureFlag(t *testing.T) {
 					s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return `` })
 
 					s.Then(`error reported`, func(t *testcase.T) {
-						require.Equal(t, rollouts.ErrInvalidRequestURL, subject(t))
+						require.Equal(t, release.ErrInvalidRequestURL, subject(t))
 					})
 				})
 
@@ -53,7 +53,7 @@ func TestFeatureFlag(t *testing.T) {
 					s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return `/invalid/request/url` })
 
 					s.Then(`error reported`, func(t *testcase.T) {
-						require.Equal(t, rollouts.ErrInvalidRequestURL, subject(t))
+						require.Equal(t, release.ErrInvalidRequestURL, subject(t))
 					})
 				})
 
@@ -61,7 +61,7 @@ func TestFeatureFlag(t *testing.T) {
 					s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return `http://:8080/asd` })
 
 					s.Then(`error reported`, func(t *testcase.T) {
-						require.Equal(t, rollouts.ErrInvalidRequestURL, subject(t))
+						require.Equal(t, release.ErrInvalidRequestURL, subject(t))
 					})
 				})
 			})
@@ -88,7 +88,7 @@ func TestFeatureFlag(t *testing.T) {
 				s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return -1 + (rand.Intn(1024) * -1) })
 
 				s.Then(`it will report error regarding the percentage`, func(t *testcase.T) {
-					require.Equal(t, rollouts.ErrInvalidPercentage, subject(t))
+					require.Equal(t, release.ErrInvalidPercentage, subject(t))
 				})
 			})
 
@@ -96,7 +96,7 @@ func TestFeatureFlag(t *testing.T) {
 				s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return 101 + rand.Intn(1024) })
 
 				s.Then(`it will report error regarding the percentage`, func(t *testcase.T) {
-					require.Equal(t, rollouts.ErrInvalidPercentage, subject(t))
+					require.Equal(t, release.ErrInvalidPercentage, subject(t))
 				})
 			})
 
@@ -111,14 +111,14 @@ func TestFeatureFlag(t *testing.T) {
 	})
 }
 
-func getFeatureFlag(t *testcase.T) *rollouts.FeatureFlag {
-	ff := t.I(`FeatureFlag`)
+func getFeatureFlag(t *testcase.T) *release.Flag {
+	ff := t.I(`Flag`)
 
 	if ff == nil {
 		return nil
 	}
 
-	return ff.(*rollouts.FeatureFlag)
+	return ff.(*release.Flag)
 }
 
 func getRolloutApiURL(t *testcase.T) *url.URL {

@@ -3,7 +3,7 @@ package testing
 import (
 	"context"
 	"github.com/adamluzsi/testcase"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	"github.com/toggler-io/toggler/services/security"
 	"github.com/stretchr/testify/require"
 	"math/rand"
@@ -13,11 +13,11 @@ import (
 
 func SetupSpecCommonVariables(s *testcase.Spec) {
 
-	s.Let(`FeatureName`, func(t *testcase.T) interface{} {
-		return ExampleFeatureName()
+	s.Let(`ReleaseFlagName`, func(t *testcase.T) interface{} {
+		return ExampleName()
 	})
 
-	s.Let(`ExternalPilotID`, func(t *testcase.T) interface{} {
+	s.Let(`PilotExternalID`, func(t *testcase.T) interface{} {
 		return ExampleExternalPilotID()
 	})
 
@@ -34,10 +34,10 @@ func SetupSpecCommonVariables(s *testcase.Spec) {
 	})
 
 	s.Let(`Pilot`, func(t *testcase.T) interface{} {
-		return &rollouts.Pilot{
-			FeatureFlagID: t.I(`FeatureFlag`).(*rollouts.FeatureFlag).ID,
-			ExternalID:    t.I(`ExternalPilotID`).(string),
-			Enrolled:      t.I(`PilotEnrollment`).(bool),
+		return &release.Pilot{
+			FlagID:     t.I(`ReleaseFlag`).(*release.Flag).ID,
+			ExternalID: t.I(`PilotExternalID`).(string),
+			Enrolled:   t.I(`PilotEnrollment`).(bool),
 		}
 	})
 
@@ -45,8 +45,8 @@ func SetupSpecCommonVariables(s *testcase.Spec) {
 	s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return int(0) })
 	s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return nil })
 
-	s.Let(`FeatureFlag`, func(t *testcase.T) interface{} {
-		ff := &rollouts.FeatureFlag{Name: t.I(`FeatureName`).(string)}
+	s.Let(`ReleaseFlag`, func(t *testcase.T) interface{} {
+		ff := &release.Flag{Name: t.I(`ReleaseFlagName`).(string)}
 		ff.Rollout.RandSeed = t.I(`RolloutSeedSalt`).(int64)
 		ff.Rollout.Strategy.Percentage = t.I(`RolloutPercentage`).(int)
 		ff.Rollout.Strategy.DecisionLogicAPI = GetRolloutApiURL(t)
@@ -97,11 +97,11 @@ func CreateToken(t *testcase.T, tokenOwner string) (string, *security.Token) {
 }
 
 func GetExternalPilotID(t *testcase.T) string {
-	return t.I(`ExternalPilotID`).(string)
+	return t.I(`PilotExternalID`).(string)
 }
 
-func GetFeatureFlagName(t *testcase.T) string {
-	return t.I(`FeatureName`).(string)
+func GetReleaseFlagName(t *testcase.T) string {
+	return t.I(`ReleaseFlagName`).(string)
 }
 
 func GetStorage(t *testcase.T) *TestStorage {
@@ -112,18 +112,18 @@ func CTX(t *testcase.T) context.Context {
 	return t.I(`ctx`).(context.Context)
 }
 
-func GetFeatureFlag(t *testcase.T) *rollouts.FeatureFlag {
-	ff := t.I(`FeatureFlag`)
+func GetReleaseFlag(t *testcase.T) *release.Flag {
+	ff := t.I(`ReleaseFlag`)
 
 	if ff == nil {
 		return nil
 	}
 
-	return ff.(*rollouts.FeatureFlag)
+	return ff.(*release.Flag)
 }
 
-func GetPilot(t *testcase.T) *rollouts.Pilot {
-	return t.I(`Pilot`).(*rollouts.Pilot)
+func GetPilot(t *testcase.T) *release.Pilot {
+	return t.I(`Pilot`).(*release.Pilot)
 }
 
 func GetPilotEnrollment(t *testcase.T) bool {
@@ -143,12 +143,12 @@ func GetUniqUserID(t *testcase.T) string {
 }
 
 func SpecPilotEnrolmentIs(t *testcase.T, enrollment bool) {
-	if GetFeatureFlag(t).ID == `` {
-		require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
+	if GetReleaseFlag(t).ID == `` {
+		require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
 	}
 
-	rm := rollouts.NewRolloutManager(GetStorage(t))
-	require.Nil(t, rm.SetPilotEnrollmentForFeature(context.TODO(), GetFeatureFlag(t).ID, GetExternalPilotID(t), enrollment, ))
+	rm := release.NewRolloutManager(GetStorage(t))
+	require.Nil(t, rm.SetPilotEnrollmentForFeature(context.TODO(), GetReleaseFlag(t).ID, GetExternalPilotID(t), enrollment, ))
 }
 
 func GetRolloutApiURL(t *testcase.T) *url.URL {
@@ -163,19 +163,19 @@ func GetRolloutApiURL(t *testcase.T) *url.URL {
 	return u
 }
 
-func FindStoredFeatureFlagByName(t *testcase.T) *rollouts.FeatureFlag {
-	f, err := GetStorage(t).FindFlagByName(context.TODO(), GetFeatureFlagName(t))
+func FindStoredReleaseFlagByName(t *testcase.T) *release.Flag {
+	f, err := GetStorage(t).FindReleaseFlagByName(context.TODO(), GetReleaseFlagName(t))
 	require.Nil(t, err)
 	require.NotNil(t, f)
 	return f
 }
 
 func EnsureFlag(t *testcase.T, name string, prc int) {
-	rm := rollouts.NewRolloutManager(GetStorage(t))
-	require.Nil(t, rm.CreateFeatureFlag(context.TODO(), &rollouts.FeatureFlag{
+	rm := release.NewRolloutManager(GetStorage(t))
+	require.Nil(t, rm.CreateFeatureFlag(context.TODO(), &release.Flag{
 		Name: name,
-		Rollout: rollouts.Rollout{
-			Strategy: rollouts.RolloutStrategy{
+		Rollout: release.FlagRollout{
+			Strategy: release.FlagRolloutStrategy{
 				Percentage: prc,
 			},
 		},

@@ -21,8 +21,8 @@ func TestUseCases_IsFeatureEnabledFor(t *testing.T) {
 	s.Describe(`IsFeatureEnabledFor`, func(s *testcase.Spec) {
 		subject := func(t *testcase.T) (bool, error) {
 			return GetUseCases(t).IsFeatureEnabledFor(
-				t.I(`FeatureName`).(string),
-				t.I(`ExternalPilotID`).(string),
+				t.I(`ReleaseFlagName`).(string),
+				t.I(`PilotExternalID`).(string),
 			)
 		}
 
@@ -35,9 +35,9 @@ func TestUseCases_IsFeatureEnabledFor(t *testing.T) {
 		s.When(`user piloting status registered`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
 				enrollment := t.I(`enrollment`).(bool)
-				require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
+				require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
 
-				require.Nil(t, GetRolloutManager(t).SetPilotEnrollmentForFeature(context.TODO(), GetFeatureFlag(t).ID, t.I(`ExternalPilotID`).(string), enrollment, ))
+				require.Nil(t, GetRolloutManager(t).SetPilotEnrollmentForFeature(context.TODO(), GetReleaseFlag(t).ID, t.I(`PilotExternalID`).(string), enrollment, ))
 			})
 
 			s.And(`by whitelist`, func(s *testcase.Spec) {
@@ -106,7 +106,7 @@ func TestUseCases_IsFeatureEnabledFor(t *testing.T) {
 				s.Before(func(t *testcase.T) {
 					expectedEnrollMaxPercentage := t.I(`expectedEnrollMaxPercentage`).(int)
 
-					EnsureFlag(t, GetFeatureFlagName(t), expectedEnrollMaxPercentage)
+					EnsureFlag(t, GetReleaseFlagName(t), expectedEnrollMaxPercentage)
 				})
 
 				s.Then(`in average the percentage should be represented`, func(t *testcase.T) {
@@ -116,7 +116,7 @@ func TestUseCases_IsFeatureEnabledFor(t *testing.T) {
 
 					for _, extID := range extIDS {
 						enrollment, err := GetUseCases(t).IsFeatureEnabledFor(
-							t.I(`FeatureName`).(string), extID)
+							t.I(`ReleaseFlagName`).(string), extID)
 
 						require.Nil(t, err)
 

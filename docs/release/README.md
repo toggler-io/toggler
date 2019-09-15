@@ -1,6 +1,6 @@
 # Rollout
 
-## [Enrollment logic](/docs/rollout/enrollment.md)
+## [Enrollment logic](/docs/release/enrollment.md)
 
 ## Management
 

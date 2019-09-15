@@ -3,7 +3,7 @@ package controllers
 import (
 	"context"
 	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	"github.com/pkg/errors"
 	"log"
 	"net/http"
@@ -68,16 +68,16 @@ func (ctrl *Controller) pilotEditPage(w http.ResponseWriter, r *http.Request) {
 
 	pilots := protectedUsecases.RolloutManager.FindPilotEntriesByExtID(r.Context(), pilotExtID)
 
-	pilotsIndex := make(map[string]rollouts.Pilot) // FlagID => Pilot
+	pilotsIndex := make(map[string]release.Pilot) // FlagID => Pilot
 
 	for pilots.Next() {
-		var p rollouts.Pilot
+		var p release.Pilot
 
 		if httputils.HandleError(w, pilots.Decode(&p), http.StatusInternalServerError) {
 			return
 		}
 
-		pilotsIndex[p.FeatureFlagID] = p
+		pilotsIndex[p.FlagID] = p
 	}
 
 	ffs, err := protectedUsecases.RolloutManager.ListFeatureFlags(r.Context())
@@ -112,8 +112,8 @@ func (ctrl *Controller) pilotEditPage(w http.ResponseWriter, r *http.Request) {
 
 func (ctrl *Controller) pilotFlagSetRollout(w http.ResponseWriter, r *http.Request) {
 
-	var pilot rollouts.Pilot
-	pilot.FeatureFlagID = r.FormValue(`pilot.flagID`)
+	var pilot release.Pilot
+	pilot.FlagID = r.FormValue(`pilot.flagID`)
 	pilot.ExternalID = r.FormValue(`pilot.extID`)
 
 	newEnrollmentStatus := strings.ToLower(r.FormValue(`pilot.enrollment`))
@@ -123,7 +123,7 @@ func (ctrl *Controller) pilotFlagSetRollout(w http.ResponseWriter, r *http.Reque
 		r.Context(),
 		ctrl.GetProtectedUsecases(r).RolloutManager,
 		newEnrollmentStatus,
-		pilot.FeatureFlagID,
+		pilot.FlagID,
 		pilot.ExternalID,
 	)
 
@@ -139,7 +139,7 @@ func (ctrl *Controller) pilotFlagSetRollout(w http.ResponseWriter, r *http.Reque
 
 }
 
-func (ctrl *Controller) setPilotManualEnrollmentForFlag(ctx context.Context, rm *rollouts.RolloutManager, newEnrollmentStatus string, flagID, pilotExtID string) error {
+func (ctrl *Controller) setPilotManualEnrollmentForFlag(ctx context.Context, rm *release.RolloutManager, newEnrollmentStatus string, flagID, pilotExtID string) error {
 	switch newEnrollmentStatus {
 	case `whitelisted`:
 		return rm.SetPilotEnrollmentForFeature(ctx, flagID, pilotExtID, true)

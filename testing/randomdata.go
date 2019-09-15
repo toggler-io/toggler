@@ -9,7 +9,7 @@ import (
 //nolint:gochecknoglobals
 var mutex sync.Mutex
 
-func ExampleFeatureName() string {
+func ExampleName() string {
 	mutex.Lock()
 	defer mutex.Unlock()
 	return randomdata.SillyName()

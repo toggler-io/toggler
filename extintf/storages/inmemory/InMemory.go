@@ -5,7 +5,7 @@ import (
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/resources/storages/memorystorage"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	"github.com/toggler-io/toggler/services/security"
 )
 
@@ -15,11 +15,11 @@ func New() *InMemory {
 
 type InMemory struct{ *memorystorage.Memory }
 
-func (s *InMemory) FindPilotEntriesByExtID(ctx context.Context, pilotExtID string) rollouts.PilotEntries {
-	var pilots []*rollouts.Pilot
+func (s *InMemory) FindPilotEntriesByExtID(ctx context.Context, pilotExtID string) release.PilotEntries {
+	var pilots []*release.Pilot
 
-	for _, e := range s.TableFor(rollouts.Pilot{}) {
-		p := e.(*rollouts.Pilot)
+	for _, e := range s.TableFor(release.Pilot{}) {
+		p := e.(*release.Pilot)
 
 		if p.ExternalID == pilotExtID {
 			pilots = append(pilots, p)
@@ -30,7 +30,7 @@ func (s *InMemory) FindPilotEntriesByExtID(ctx context.Context, pilotExtID strin
 }
 
 func (s *InMemory) FindFlagsByName(ctx context.Context, names ...string) frameless.Iterator {
-	var flags []*rollouts.FeatureFlag
+	var flags []*release.Flag
 
 	nameIndex := make(map[string]struct{})
 
@@ -38,8 +38,8 @@ func (s *InMemory) FindFlagsByName(ctx context.Context, names ...string) framele
 		nameIndex[name] = struct{}{}
 	}
 
-	for _, e := range s.TableFor(rollouts.FeatureFlag{}) {
-		flag := e.(*rollouts.FeatureFlag)
+	for _, e := range s.TableFor(release.Flag{}) {
+		flag := e.(*release.Flag)
 
 		if _, ok := nameIndex[flag.Name] ; ok {
 			flags = append(flags, flag)
@@ -49,15 +49,15 @@ func (s *InMemory) FindFlagsByName(ctx context.Context, names ...string) framele
 	return iterators.NewSlice(flags)
 }
 
-func (s *InMemory) FindPilotsByFeatureFlag(ctx context.Context, ff *rollouts.FeatureFlag) frameless.Iterator {
-	table := s.TableFor(rollouts.Pilot{})
+func (s *InMemory) FindPilotsByFeatureFlag(ctx context.Context, ff *release.Flag) frameless.Iterator {
+	table := s.TableFor(release.Pilot{})
 
-	var pilots []*rollouts.Pilot
+	var pilots []*release.Pilot
 
 	for _, v := range table {
-		pilot := v.(*rollouts.Pilot)
+		pilot := v.(*release.Pilot)
 
-		if pilot.FeatureFlagID == ff.ID {
+		if pilot.FlagID == ff.ID {
 			pilots = append(pilots, pilot)
 		}
 	}
@@ -65,13 +65,13 @@ func (s *InMemory) FindPilotsByFeatureFlag(ctx context.Context, ff *rollouts.Fea
 	return iterators.NewSlice(pilots)
 }
 
-func (s *InMemory) FindFlagPilotByExternalPilotID(ctx context.Context, featureFlagID, externalPilotID string) (*rollouts.Pilot, error) {
-	table := s.TableFor(rollouts.Pilot{})
+func (s *InMemory) FindReleaseFlagPilotByPilotExternalID(ctx context.Context, featureFlagID, externalPilotID string) (*release.Pilot, error) {
+	table := s.TableFor(release.Pilot{})
 
 	for _, v := range table {
-		pilot := v.(*rollouts.Pilot)
+		pilot := v.(*release.Pilot)
 
-		if pilot.FeatureFlagID == featureFlagID && pilot.ExternalID == externalPilotID {
+		if pilot.FlagID == featureFlagID && pilot.ExternalID == externalPilotID {
 			return pilot, nil
 		}
 	}
@@ -79,12 +79,12 @@ func (s *InMemory) FindFlagPilotByExternalPilotID(ctx context.Context, featureFl
 	return nil, nil
 }
 
-func (s *InMemory) FindFlagByName(ctx context.Context, name string) (*rollouts.FeatureFlag, error) {
-	var ptr *rollouts.FeatureFlag
+func (s *InMemory) FindReleaseFlagByName(ctx context.Context, name string) (*release.Flag, error) {
+	var ptr *release.Flag
 	table := s.TableFor(ptr)
 
 	for _, v := range table {
-		flag := v.(*rollouts.FeatureFlag)
+		flag := v.(*release.Flag)
 
 		if flag.Name == name {
 			ptr = flag

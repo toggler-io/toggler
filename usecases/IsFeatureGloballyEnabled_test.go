@@ -22,7 +22,7 @@ func TestUseCases_IsFeatureGloballyEnabled(t *testing.T) {
 
 	subject := func(t *testcase.T) (bool, error) {
 		uc := t.I(`UseCases`).(*usecases.UseCases)
-		return uc.IsFeatureGloballyEnabled(t.I(`FeatureName`).(string))
+		return uc.IsFeatureGloballyEnabled(t.I(`ReleaseFlagName`).(string))
 	}
 
 	isEnrolled := func(t *testcase.T) bool {
@@ -33,7 +33,7 @@ func TestUseCases_IsFeatureGloballyEnabled(t *testing.T) {
 
 	s.When(`flag is already configured`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			EnsureFlag(t, GetFeatureFlagName(t), t.I(`percentage`).(int))
+			EnsureFlag(t, GetReleaseFlagName(t), t.I(`percentage`).(int))
 		})
 
 		s.And(`with global rollout (100%)`, func(s *testcase.Spec) {

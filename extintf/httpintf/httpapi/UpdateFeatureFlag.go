@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	"github.com/toggler-io/toggler/usecases"
 )
 
@@ -18,7 +18,7 @@ func (sm *ServeMux) UpdateFeatureFlagJSON(w http.ResponseWriter, r *http.Request
 	decoder.DisallowUnknownFields()
 	defer r.Body.Close() // ignorable
 
-	var flag rollouts.FeatureFlag
+	var flag release.Flag
 
 	if handleError(w, decoder.Decode(&flag), http.StatusBadRequest) {
 		return

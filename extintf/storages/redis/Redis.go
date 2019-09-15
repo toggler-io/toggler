@@ -11,7 +11,7 @@ import (
 
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	"github.com/toggler-io/toggler/services/security"
 	"github.com/go-redis/redis"
 	"github.com/google/uuid"
@@ -26,8 +26,8 @@ func New(connstr string) (*Redis, error) {
 	r.client = redis.NewClient(redisClientOpt)
 	r.keyMapping = map[string]string{
 		reflects.FullyQualifiedName(security.Token{}):       "tokens",
-		reflects.FullyQualifiedName(rollouts.Pilot{}):       "pilots",
-		reflects.FullyQualifiedName(rollouts.FeatureFlag{}): "feature_flags",
+		reflects.FullyQualifiedName(release.Pilot{}):        "pilots",
+		reflects.FullyQualifiedName(release.Flag{}):         "release_flags",
 		reflects.FullyQualifiedName(resources.TestEntity{}): "test_entities",
 	}
 	return r, nil
@@ -39,7 +39,7 @@ type Redis struct {
 }
 
 func (r *Redis) FindFlagsByName(ctx context.Context, names ...string) frameless.Iterator {
-	flags := r.FindAll(ctx, rollouts.FeatureFlag{})
+	flags := r.FindAll(ctx, release.Flag{})
 
 	nameIndex := make(map[string]struct{})
 
@@ -48,7 +48,7 @@ func (r *Redis) FindFlagsByName(ctx context.Context, names ...string) frameless.
 	}
 
 	flagsByName := iterators.Filter(flags, func(flag frameless.Entity) bool {
-		_, ok := nameIndex[flag.(rollouts.FeatureFlag).Name]
+		_, ok := nameIndex[flag.(release.Flag).Name]
 		return ok
 	})
 
@@ -170,12 +170,12 @@ func (r *Redis) FindAll(ctx context.Context, Type interface{}) frameless.Iterato
 	return iterators.NewSlice(values)
 }
 
-func (r *Redis) FindFlagByName(ctx context.Context, name string) (*rollouts.FeatureFlag, error) {
-	flags := r.FindAll(ctx, rollouts.FeatureFlag{})
+func (r *Redis) FindReleaseFlagByName(ctx context.Context, name string) (*release.Flag, error) {
+	flags := r.FindAll(ctx, release.Flag{})
 	flagsByName := iterators.Filter(flags, func(flag frameless.Entity) bool {
-		return flag.(rollouts.FeatureFlag).Name == name
+		return flag.(release.Flag).Name == name
 	})
-	var flag rollouts.FeatureFlag
+	var flag release.Flag
 	err := iterators.First(flagsByName, &flag)
 
 	if err == frameless.ErrNotFound {
@@ -189,14 +189,14 @@ func (r *Redis) FindFlagByName(ctx context.Context, name string) (*rollouts.Feat
 	return &flag, nil
 }
 
-func (r *Redis) FindFlagPilotByExternalPilotID(ctx context.Context, FeatureFlagID, ExternalPilotID string) (*rollouts.Pilot, error) {
-	pilots := r.FindAll(ctx, rollouts.Pilot{})
+func (r *Redis) FindReleaseFlagPilotByPilotExternalID(ctx context.Context, releaseFlagID, pilotExternalID string) (*release.Pilot, error) {
+	pilots := r.FindAll(ctx, release.Pilot{})
 	pilotsByIDs := iterators.Filter(pilots, func(pilot frameless.Entity) bool {
-		p := pilot.(rollouts.Pilot)
+		p := pilot.(release.Pilot)
 
-		return p.FeatureFlagID == FeatureFlagID && p.ExternalID == ExternalPilotID
+		return p.FlagID == releaseFlagID && p.ExternalID == pilotExternalID
 	})
-	var p rollouts.Pilot
+	var p release.Pilot
 	err := iterators.First(pilotsByIDs, &p)
 
 	if err == frameless.ErrNotFound {
@@ -210,17 +210,17 @@ func (r *Redis) FindFlagPilotByExternalPilotID(ctx context.Context, FeatureFlagI
 	return &p, nil
 }
 
-func (r *Redis) FindPilotsByFeatureFlag(ctx context.Context, ff *rollouts.FeatureFlag) frameless.Iterator {
-	pilots := r.FindAll(ctx, rollouts.Pilot{})
+func (r *Redis) FindPilotsByFeatureFlag(ctx context.Context, ff *release.Flag) frameless.Iterator {
+	pilots := r.FindAll(ctx, release.Pilot{})
 	return iterators.Filter(pilots, func(pilot frameless.Entity) bool {
-		return pilot.(rollouts.Pilot).FeatureFlagID == ff.ID
+		return pilot.(release.Pilot).FlagID == ff.ID
 	})
 }
 
-func (r *Redis) FindPilotEntriesByExtID(ctx context.Context, pilotExtID string) rollouts.PilotEntries {
-	pilots := r.FindAll(ctx, rollouts.Pilot{})
+func (r *Redis) FindPilotEntriesByExtID(ctx context.Context, pilotExtID string) release.PilotEntries {
+	pilots := r.FindAll(ctx, release.Pilot{})
 	return iterators.Filter(pilots, func(pilot frameless.Entity) bool {
-		return pilot.(rollouts.Pilot).ExternalID == pilotExtID
+		return pilot.(release.Pilot).ExternalID == pilotExtID
 	})
 }
 
@@ -255,8 +255,8 @@ func (r *Redis) Save(ctx context.Context, ptr interface{}) error {
 	}
 
 	switch e := ptr.(type) {
-	case *rollouts.FeatureFlag:
-		ff, err := r.FindFlagByName(ctx, e.Name)
+	case *release.Flag:
+		ff, err := r.FindReleaseFlagByName(ctx, e.Name)
 		if err != nil {
 			return err
 		}

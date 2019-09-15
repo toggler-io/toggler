@@ -48,7 +48,7 @@ func TestServeMux_ClientConfig(t *testing.T) {
 				require.Equal(t, 200, r.Code)
 				var body httpapi.RolloutClientConfigResponseBody
 				IsJsonResponse(t, r, &body)
-				stateIs(t, GetFeatureFlagName(t), true, body.States)
+				stateIs(t, GetReleaseFlagName(t), true, body.States)
 				stateIs(t, `yet-unknown-feature`, false, body.States)
 			})
 		})
@@ -61,7 +61,7 @@ func TestServeMux_ClientConfig(t *testing.T) {
 				require.Equal(t, 200, r.Code)
 				var body httpapi.RolloutClientConfigResponseBody
 				IsJsonResponse(t, r, &body)
-				stateIs(t, GetFeatureFlagName(t), false, body.States)
+				stateIs(t, GetReleaseFlagName(t), false, body.States)
 				stateIs(t, `yet-unknown-feature`, false, body.States)
 			})
 		})
@@ -76,7 +76,7 @@ func TestServeMux_ClientConfig(t *testing.T) {
 					require.Nil(t, err)
 
 					q := u.Query()
-					q.Set(t.I(`feature query string key`).(string), GetFeatureFlagName(t))
+					q.Set(t.I(`feature query string key`).(string), GetReleaseFlagName(t))
 					q.Add(t.I(`feature query string key`).(string), `yet-unknown-feature`)
 					q.Set(`id`, GetExternalPilotID(t))
 					u.RawQuery = q.Encode()
@@ -110,7 +110,7 @@ func TestServeMux_ClientConfig(t *testing.T) {
 				jsonenc := json.NewEncoder(payload)
 				require.Nil(t, jsonenc.Encode(httpapi.RolloutClientConfigRequestBody{
 					PilotID:  GetExternalPilotID(t),
-					Features: []string{GetFeatureFlagName(t), "yet-unknown-feature"},
+					Features: []string{GetReleaseFlagName(t), "yet-unknown-feature"},
 				}))
 
 				r := httptest.NewRequest(http.MethodGet, u.String(), payload)
@@ -125,7 +125,7 @@ func TestServeMux_ClientConfig(t *testing.T) {
 
 	s.Test(`swagger integration`, func(t *testcase.T) {
 
-		require.Nil(t, GetStorage(t).Save(CTX(t), GetFeatureFlag(t)))
+		require.Nil(t, GetStorage(t).Save(CTX(t), GetReleaseFlag(t)))
 		require.Nil(t, GetStorage(t).Save(CTX(t), GetPilot(t)))
 
 		s := httptest.NewServer(http.StripPrefix(`/api/v1`, NewServeMux(t)))
@@ -134,7 +134,7 @@ func TestServeMux_ClientConfig(t *testing.T) {
 		p := operations.NewRolloutClientConfigParams()
 		p.Body = &models.RolloutClientConfigRequestBody{}
 		p.Body.PilotID = &GetPilot(t).ExternalID
-		p.Body.Features = []string{GetFeatureFlagName(t)}
+		p.Body.Features = []string{GetReleaseFlagName(t)}
 
 		tc := client.DefaultTransportConfig()
 		u, _ := url.Parse(s.URL)
@@ -150,7 +150,7 @@ func TestServeMux_ClientConfig(t *testing.T) {
 
 		require.NotNil(t, resp)
 		require.NotNil(t, resp.Payload)
-		require.Equal(t, GetPilotEnrollment(t), resp.Payload.States[GetFeatureFlagName(t)])
+		require.Equal(t, GetPilotEnrollment(t), resp.Payload.States[GetReleaseFlagName(t)])
 
 	})
 

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/adamluzsi/testcase"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	"github.com/toggler-io/toggler/services/security"
 	"github.com/toggler-io/toggler/usecases"
 	"github.com/stretchr/testify/require"
@@ -55,9 +55,9 @@ func TestUseCases_ProtectedUsecases(t *testing.T) {
 			// which in testing equal to say, the object behaves the same as the
 			// type requirement.
 			var (
-				_ *rollouts.RolloutManager = pu.RolloutManager
-				_ *security.Doorkeeper     = pu.Doorkeeper
-				_ *security.Issuer         = pu.Issuer
+				_ *release.RolloutManager = pu.RolloutManager
+				_ *security.Doorkeeper    = pu.Doorkeeper
+				_ *security.Issuer        = pu.Issuer
 			)
 		})
 

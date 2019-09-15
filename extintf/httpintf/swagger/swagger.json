@@ -71,14 +71,14 @@
           "rollout",
           "feature-flag"
         ],
-        "summary": "Create Rollout Feature Flag",
+        "summary": "Create FlagRollout Feature Flag",
         "operationId": "CreateRolloutFeatureFlag",
         "parameters": [
           {
             "name": "Body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/FeatureFlag"
+              "$ref": "#/definitions/Flag"
             }
           }
         ],
@@ -262,8 +262,8 @@
       },
       "x-go-package": "github.com/toggler-io/toggler/extintf/httpintf/httpapi"
     },
-    "FeatureFlag": {
-      "description": "FeatureFlag is the basic entity with properties that feature flag holds",
+    "Flag": {
+      "description": "Flag is the basic entity with properties that feature flag holds",
       "type": "object",
       "properties": {
         "id": {
@@ -276,10 +276,40 @@
           "x-go-name": "Name"
         },
         "rollout": {
-          "$ref": "#/definitions/Rollout"
+          "$ref": "#/definitions/FlagRollout"
         }
       },
-      "x-go-package": "github.com/toggler-io/toggler/services/rollouts"
+      "x-go-package": "github.com/toggler-io/toggler/services/release"
+    },
+    "FlagRollout": {
+      "type": "object",
+      "properties": {
+        "rand_seed_salt": {
+          "description": "RandSeed allows you to configure the randomness for the percentage based pilot enrollment selection.\nThis value could have been neglected by using the flag name as random seed,\nbut that would reduce the flexibility for edge cases where you want\nto use a similar pilot group as a successful flag rollout before.",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "RandSeed"
+        },
+        "strategy": {
+          "$ref": "#/definitions/FlagRolloutStrategy"
+        }
+      },
+      "x-go-package": "github.com/toggler-io/toggler/services/release"
+    },
+    "FlagRolloutStrategy": {
+      "type": "object",
+      "properties": {
+        "decision_logic_api": {
+          "$ref": "#/definitions/URL"
+        },
+        "percentage": {
+          "description": "Percentage allows you to define how many of your user base should be enrolled pseudo randomly.",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Percentage"
+        }
+      },
+      "x-go-package": "github.com/toggler-io/toggler/services/release"
     },
     "IsFeatureEnabledRequestPayload": {
       "type": "object",
@@ -317,21 +347,6 @@
         }
       },
       "x-go-package": "github.com/toggler-io/toggler/extintf/httpintf/httpapi"
-    },
-    "Rollout": {
-      "type": "object",
-      "properties": {
-        "rand_seed_salt": {
-          "description": "RandSeed allows you to configure the randomness for the percentage based pilot enrollment selection.\nThis value could have been neglected by using the flag name as random seed,\nbut that would reduce the flexibility for edge cases where you want\nto use a similar pilot group as a successful flag rollout before.",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "RandSeed"
-        },
-        "strategy": {
-          "$ref": "#/definitions/RolloutStrategy"
-        }
-      },
-      "x-go-package": "github.com/toggler-io/toggler/services/rollouts"
     },
     "RolloutClientConfigRequestBody": {
       "type": "object",
@@ -375,21 +390,6 @@
         }
       },
       "x-go-package": "github.com/toggler-io/toggler/extintf/httpintf/httpapi"
-    },
-    "RolloutStrategy": {
-      "type": "object",
-      "properties": {
-        "decision_logic_api": {
-          "$ref": "#/definitions/URL"
-        },
-        "percentage": {
-          "description": "Percentage allows you to define how many of your user base should be enrolled pseudo randomly.",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "Percentage"
-        }
-      },
-      "x-go-package": "github.com/toggler-io/toggler/services/rollouts"
     },
     "URL": {
       "description": "The general form represented is:\n\n[scheme:][//[userinfo@]host][/]path[?query][#fragment]\n\nURLs that do not start with a slash after the scheme are interpreted as:\n\nscheme:opaque[?query][#fragment]\n\nNote that the Path field is stored in decoded form: /%47%6f%2f becomes /Go/.\nA consequence is that it is impossible to tell which slashes in the Path were\nslashes in the raw URL and which were %2f. This distinction is rarely important,\nbut when it is, code must not use Path directly.\nThe Parse function sets both Path and RawPath in the URL it returns,\nand URL's String method uses RawPath if it is a valid encoding of Path,\nby calling the EscapedPath method.",

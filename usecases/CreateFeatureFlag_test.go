@@ -15,14 +15,14 @@ func TestUseCases_CreateFeatureFlagRolloutStrategyToUseDecisionLogicAPI(t *testi
 	s.Parallel()
 
 	subject := func(t *testcase.T) error {
-		return GetProtectedUsecases(t).CreateFeatureFlag(context.TODO(), GetFeatureFlag(t))
+		return GetProtectedUsecases(t).CreateFeatureFlag(context.TODO(), GetReleaseFlag(t))
 	}
 
 	s.When(`with valid values`, func(s *testcase.Spec) {
 		s.Then(`it will be set/persisted`, func(t *testcase.T) {
 			require.Nil(t, subject(t))
 
-			require.Equal(t, GetFeatureFlag(t), FindStoredFeatureFlagByName(t))
+			require.Equal(t, GetReleaseFlag(t), FindStoredReleaseFlagByName(t))
 		})
 	})
 

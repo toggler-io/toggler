@@ -1,4 +1,4 @@
-package rollouts
+package release
 
 import (
 	"context"
@@ -20,12 +20,12 @@ type PilotEntries = frameless.Iterator
 type FlagEntries = frameless.Iterator
 
 type FlagFinder interface {
-	FindFlagByName(ctx context.Context, name string) (*FeatureFlag, error)
+	FindReleaseFlagByName(ctx context.Context, name string) (*Flag, error)
 	FindFlagsByName(ctx context.Context, names ...string) FlagEntries
 }
 
 type PilotFinder interface {
-	FindFlagPilotByExternalPilotID(ctx context.Context, FeatureFlagID, ExternalPilotID string) (*Pilot, error)
-	FindPilotsByFeatureFlag(ctx context.Context, ff *FeatureFlag) frameless.Iterator
+	FindReleaseFlagPilotByPilotExternalID(ctx context.Context, FeatureFlagID, ExternalPilotID string) (*Pilot, error)
+	FindPilotsByFeatureFlag(ctx context.Context, ff *Flag) frameless.Iterator
 	FindPilotEntriesByExtID(ctx context.Context, pilotExtID string) PilotEntries
 }

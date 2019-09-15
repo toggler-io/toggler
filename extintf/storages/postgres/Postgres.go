@@ -13,7 +13,7 @@ import (
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	"github.com/toggler-io/toggler/services/security"
 	_ "github.com/lib/pq"
 )
@@ -56,9 +56,9 @@ func (pg *Postgres) Save(ctx context.Context, entity interface{}) error {
 	}
 
 	switch e := entity.(type) {
-	case *rollouts.FeatureFlag:
+	case *release.Flag:
 		return pg.featureFlagInsertNew(ctx, e)
-	case *rollouts.Pilot:
+	case *release.Pilot:
 		return pg.pilotInsertNew(ctx, e)
 	case *security.Token:
 		return pg.tokenInsertNew(ctx, e)
@@ -77,10 +77,10 @@ func (pg *Postgres) FindByID(ctx context.Context, ptr interface{}, ID string) (b
 	}
 
 	switch e := ptr.(type) {
-	case *rollouts.FeatureFlag:
+	case *release.Flag:
 		return pg.featureFlagFindByID(ctx, e, id)
 
-	case *rollouts.Pilot:
+	case *release.Pilot:
 		return pg.pilotFindByID(ctx, e, id)
 
 	case *security.Token:
@@ -97,9 +97,9 @@ func (pg *Postgres) FindByID(ctx context.Context, ptr interface{}, ID string) (b
 func (pg *Postgres) Truncate(ctx context.Context, Type interface{}) error {
 	var tableName string
 	switch Type.(type) {
-	case rollouts.FeatureFlag, *rollouts.FeatureFlag:
-		tableName = `feature_flags`
-	case rollouts.Pilot, *rollouts.Pilot:
+	case release.Flag, *release.Flag:
+		tableName = `release_flags`
+	case release.Pilot, *release.Pilot:
 		tableName = `pilots`
 	case security.Token, *security.Token:
 		tableName = `tokens`
@@ -124,10 +124,10 @@ func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, ID string)
 	var query string
 
 	switch Type.(type) {
-	case rollouts.FeatureFlag, *rollouts.FeatureFlag:
-		query = `DELETE FROM "feature_flags" WHERE id = $1`
+	case release.Flag, *release.Flag:
+		query = `DELETE FROM "release_flags" WHERE id = $1`
 
-	case rollouts.Pilot, *rollouts.Pilot:
+	case release.Pilot, *release.Pilot:
 		query = `DELETE FROM "pilots" WHERE id = $1`
 
 	case security.Token, *security.Token:
@@ -159,10 +159,10 @@ func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, ID string)
 
 func (pg *Postgres) Update(ctx context.Context, ptr interface{}) error {
 	switch e := ptr.(type) {
-	case *rollouts.FeatureFlag:
+	case *release.Flag:
 		return pg.featureFlagUpdate(ctx, e)
 
-	case *rollouts.Pilot:
+	case *release.Pilot:
 		return pg.pilotUpdate(ctx, e)
 
 	case *security.Token:
@@ -178,10 +178,10 @@ func (pg *Postgres) Update(ctx context.Context, ptr interface{}) error {
 
 func (pg *Postgres) FindAll(ctx context.Context, Type interface{}) frameless.Iterator {
 	switch Type.(type) {
-	case rollouts.FeatureFlag, *rollouts.FeatureFlag:
+	case release.Flag, *release.Flag:
 		return pg.featureFlagFindAll(ctx)
 
-	case rollouts.Pilot, *rollouts.Pilot:
+	case release.Pilot, *release.Pilot:
 		return pg.pilotFindAll(ctx)
 
 	case security.Token, *security.Token:
@@ -195,15 +195,15 @@ func (pg *Postgres) FindAll(ctx context.Context, Type interface{}) frameless.Ite
 	}
 }
 
-func (pg *Postgres) FindFlagByName(ctx context.Context, name string) (*rollouts.FeatureFlag, error) {
+func (pg *Postgres) FindReleaseFlagByName(ctx context.Context, name string) (*release.Flag, error) {
 
 	mapper := featureFlagMapper{}
-	query := fmt.Sprintf(`%s FROM "feature_flags" WHERE "name" = $1`,
+	query := fmt.Sprintf(`%s FROM "release_flags" WHERE "name" = $1`,
 		mapper.SelectClause())
 
 	row := pg.DB.QueryRowContext(ctx, query, name)
 
-	var ff rollouts.FeatureFlag
+	var ff release.Flag
 
 	err := mapper.Map(row, &ff)
 
@@ -219,7 +219,7 @@ func (pg *Postgres) FindFlagByName(ctx context.Context, name string) (*rollouts.
 
 }
 
-func (pg *Postgres) FindFlagPilotByExternalPilotID(ctx context.Context, FeatureFlagID, ExternalPilotID string) (*rollouts.Pilot, error) {
+func (pg *Postgres) FindReleaseFlagPilotByPilotExternalID(ctx context.Context, FeatureFlagID, ExternalPilotID string) (*release.Pilot, error) {
 	flagID, err := strconv.ParseInt(FeatureFlagID, 10, 64)
 
 	if err != nil {
@@ -232,7 +232,7 @@ func (pg *Postgres) FindFlagPilotByExternalPilotID(ctx context.Context, FeatureF
 
 	row := pg.DB.QueryRowContext(ctx, q, flagID, ExternalPilotID)
 
-	var p rollouts.Pilot
+	var p release.Pilot
 
 	err = m.Map(row, &p)
 
@@ -247,7 +247,7 @@ func (pg *Postgres) FindFlagPilotByExternalPilotID(ctx context.Context, FeatureF
 	return &p, nil
 }
 
-func (pg *Postgres) FindPilotsByFeatureFlag(ctx context.Context, ff *rollouts.FeatureFlag) frameless.Iterator {
+func (pg *Postgres) FindPilotsByFeatureFlag(ctx context.Context, ff *release.Flag) frameless.Iterator {
 	if ff == nil {
 		return iterators.NewEmpty()
 	}
@@ -306,7 +306,7 @@ func (pg *Postgres) FindTokenBySHA512Hex(ctx context.Context, token string) (*se
 	return &t, nil
 }
 
-func (pg *Postgres) FindPilotEntriesByExtID(ctx context.Context, pilotExtID string) rollouts.PilotEntries {
+func (pg *Postgres) FindPilotEntriesByExtID(ctx context.Context, pilotExtID string) release.PilotEntries {
 	m := pilotMapper{}
 	q := fmt.Sprintf(`SELECT %s FROM "pilots" WHERE "external_id" = $1`, m.SelectClause())
 	rows, err := pg.DB.QueryContext(ctx, q, pilotExtID)
@@ -329,7 +329,7 @@ func (pg *Postgres) FindFlagsByName(ctx context.Context, flagNames ...string) fr
 
 	mapper := featureFlagMapper{}
 
-	query := fmt.Sprintf(`%s FROM "feature_flags" WHERE "name" IN (%s)`,
+	query := fmt.Sprintf(`%s FROM "release_flags" WHERE "name" IN (%s)`,
 		mapper.SelectClause(),
 		strings.Join(namesInClause, `,`))
 
@@ -343,7 +343,7 @@ func (pg *Postgres) FindFlagsByName(ctx context.Context, flagNames ...string) fr
 }
 
 const featureFlagInsertNewQuery = `
-INSERT INTO "feature_flags" (
+INSERT INTO "release_flags" (
 	name,
 	rollout_rand_seed,
 	rollout_strategy_percentage,
@@ -353,7 +353,7 @@ VALUES ($1, $2, $3, $4)
 RETURNING id;
 `
 
-func (pg *Postgres) featureFlagInsertNew(ctx context.Context, flag *rollouts.FeatureFlag) error {
+func (pg *Postgres) featureFlagInsertNew(ctx context.Context, flag *release.Flag) error {
 
 	var DecisionLogicAPI sql.NullString
 
@@ -383,12 +383,12 @@ VALUES ($1, $2, $3)
 RETURNING id;
 `
 
-func (pg *Postgres) pilotInsertNew(ctx context.Context, pilot *rollouts.Pilot) error {
+func (pg *Postgres) pilotInsertNew(ctx context.Context, pilot *release.Pilot) error {
 
-	flagID, err := strconv.ParseInt(pilot.FeatureFlagID, 10, 64)
+	flagID, err := strconv.ParseInt(pilot.FlagID, 10, 64)
 
 	if err != nil {
-		return fmt.Errorf(`invalid Feature Flag ID: ` + pilot.FeatureFlagID)
+		return fmt.Errorf(`invalid Feature Flag ID: ` + pilot.FlagID)
 	}
 
 	row := pg.DB.QueryRowContext(ctx, pilotInsertNewQuery,
@@ -444,13 +444,13 @@ func (pg *Postgres) tokenInsertNew(ctx context.Context, token *security.Token) e
 	return resources.SetID(token, strconv.FormatInt(id.Int64, 10))
 }
 
-func (pg *Postgres) featureFlagFindByID(ctx context.Context, flag *rollouts.FeatureFlag, id int64) (bool, error) {
+func (pg *Postgres) featureFlagFindByID(ctx context.Context, flag *release.Flag, id int64) (bool, error) {
 
 	mapper := featureFlagMapper{}
-	query := fmt.Sprintf(`%s FROM "feature_flags" WHERE "id" = $1`, mapper.SelectClause())
+	query := fmt.Sprintf(`%s FROM "release_flags" WHERE "id" = $1`, mapper.SelectClause())
 	row := pg.DB.QueryRowContext(ctx, query, id)
 
-	var ff rollouts.FeatureFlag
+	var ff release.Flag
 	err := mapper.Map(row, &ff)
 
 	if err == sql.ErrNoRows {
@@ -466,12 +466,12 @@ func (pg *Postgres) featureFlagFindByID(ctx context.Context, flag *rollouts.Feat
 
 }
 
-func (pg *Postgres) pilotFindByID(ctx context.Context, pilot *rollouts.Pilot, id int64) (bool, error) {
+func (pg *Postgres) pilotFindByID(ctx context.Context, pilot *release.Pilot, id int64) (bool, error) {
 	m := pilotMapper{}
 	query := fmt.Sprintf(`SELECT %s FROM "pilots" WHERE "id" = $1`, m.SelectClause())
 	row := pg.DB.QueryRowContext(ctx, query, id)
 
-	var p rollouts.Pilot
+	var p release.Pilot
 	err := m.Map(row, &p)
 
 	if err == sql.ErrNoRows {
@@ -550,7 +550,7 @@ func (pg *Postgres) tokenFindByID(ctx context.Context, token *security.Token, id
 
 func (pg *Postgres) featureFlagFindAll(ctx context.Context) frameless.Iterator {
 	mapper := featureFlagMapper{}
-	query := fmt.Sprintf(`%s FROM "feature_flags"`, mapper.SelectClause())
+	query := fmt.Sprintf(`%s FROM "release_flags"`, mapper.SelectClause())
 	rows, err := pg.DB.QueryContext(ctx, query)
 	if err != nil {
 		return iterators.NewError(err)
@@ -647,7 +647,7 @@ func (pg *Postgres) tokenFindAll(ctx context.Context) frameless.Iterator {
 }
 
 const featureFlagUpdateQuery = `
-UPDATE "feature_flags"
+UPDATE "release_flags"
 SET name = $1,
     rollout_rand_seed = $2,
     rollout_strategy_percentage = $3,
@@ -655,7 +655,7 @@ SET name = $1,
 WHERE id = $5;
 `
 
-func (pg *Postgres) featureFlagUpdate(ctx context.Context, flag *rollouts.FeatureFlag) error {
+func (pg *Postgres) featureFlagUpdate(ctx context.Context, flag *release.Flag) error {
 	var DecisionLogicAPI sql.NullString
 
 	if flag.Rollout.Strategy.DecisionLogicAPI != nil {
@@ -682,9 +682,9 @@ SET feature_flag_id = $1,
 WHERE id = $4;
 `
 
-func (pg *Postgres) pilotUpdate(ctx context.Context, pilot *rollouts.Pilot) error {
+func (pg *Postgres) pilotUpdate(ctx context.Context, pilot *release.Pilot) error {
 	_, err := pg.DB.ExecContext(ctx, pilotUpdateQuery,
-		pilot.FeatureFlagID,
+		pilot.FlagID,
 		pilot.ExternalID,
 		pilot.Enrolled,
 		pilot.ID,
@@ -737,7 +737,7 @@ func (featureFlagMapper) SelectClause() string {
 }
 
 func (featureFlagMapper) Map(scanner iterators.SQLRowScanner, ptr frameless.Entity) error {
-	var ff rollouts.FeatureFlag
+	var ff release.Flag
 	var DecisionLogicAPI sql.NullString
 
 	err := scanner.Scan(
@@ -771,11 +771,11 @@ func (pilotMapper) SelectClause() string {
 }
 
 func (pilotMapper) Map(s iterators.SQLRowScanner, ptr frameless.Entity) error {
-	var p rollouts.Pilot
+	var p release.Pilot
 
 	err := s.Scan(
 		&p.ID,
-		&p.FeatureFlagID,
+		&p.FlagID,
 		&p.ExternalID,
 		&p.Enrolled,
 	)

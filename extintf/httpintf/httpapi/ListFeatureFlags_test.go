@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/adamluzsi/testcase"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	"github.com/toggler-io/toggler/services/security"
 	"github.com/stretchr/testify/require"
 
@@ -66,7 +66,7 @@ func TestServeMux_ListFeatureFlags(t *testing.T) {
 				require.Equal(t, 200, r.Code)
 
 				require.Contains(t, r.Body.String(), `[]`)
-				var flags []*rollouts.FeatureFlag
+				var flags []*release.Flag
 				IsJsonResponse(t, r, &flags)
 				require.Empty(t, flags)
 			})
@@ -74,14 +74,14 @@ func TestServeMux_ListFeatureFlags(t *testing.T) {
 
 		s.And(`feature flag is present in the system`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				UpdateFeatureFlagRolloutPercentage(t, `a`, 10)
+				UpdateReleaseFlagRolloutPercentage(t, `a`, 10)
 			})
 
 			s.Then(`flags received back`, func(t *testcase.T) {
 				r := subject(t)
 				require.Equal(t, 200, r.Code)
 
-				var resps []rollouts.FeatureFlag
+				var resps []release.Flag
 				IsJsonResponse(t, r, &resps)
 
 				require.Equal(t, 1, len(resps))
@@ -102,8 +102,8 @@ func TestServeMux_ListFeatureFlags(t *testing.T) {
 
 			s.And(`even multiple flag in the system`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					UpdateFeatureFlagRolloutPercentage(t, `b`, 20)
-					UpdateFeatureFlagRolloutPercentage(t, `c`, 30)
+					UpdateReleaseFlagRolloutPercentage(t, `b`, 20)
+					UpdateReleaseFlagRolloutPercentage(t, `c`, 30)
 				})
 
 				s.Then(`flags received back`, func(t *testcase.T) {

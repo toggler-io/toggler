@@ -33,7 +33,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 	sharedUseCases := func(s *testcase.Spec) {
 		s.And(`flag global`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				UpdateFeatureFlagRolloutPercentage(t, GetFeatureFlagName(t), 100)
+				UpdateReleaseFlagRolloutPercentage(t, GetReleaseFlagName(t), 100)
 			})
 
 			s.Then(`the request will be accepted with OK`, func(t *testcase.T) {
@@ -52,7 +52,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 
 		s.And(`flag is not global`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				UpdateFeatureFlagRolloutPercentage(t, GetFeatureFlagName(t), 99)
+				UpdateReleaseFlagRolloutPercentage(t, GetReleaseFlagName(t), 99)
 			})
 
 			s.Then(`the request will be marked as forbidden`, func(t *testcase.T) {
@@ -77,7 +77,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 			require.Nil(t, err)
 
 			q := u.Query()
-			q.Set(`feature`, GetFeatureFlagName(t))
+			q.Set(`feature`, GetReleaseFlagName(t))
 			u.RawQuery = q.Encode()
 
 			return httptest.NewRequest(http.MethodGet, u.String(), bytes.NewBuffer([]byte{}))
@@ -97,7 +97,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 			jsonenc := json.NewEncoder(payload)
 
 			require.Nil(t, jsonenc.Encode(httpapi.IsFeatureGloballyEnabledRequestBody{
-				Feature: GetFeatureFlagName(t),
+				Feature: GetReleaseFlagName(t),
 			}))
 
 			r := httptest.NewRequest(http.MethodGet, u.String(), payload)
@@ -114,17 +114,17 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 		enr := rand.Intn(2) == 0
 
 		if enr {
-			GetFeatureFlag(t).Rollout.Strategy.Percentage = 100
+			GetReleaseFlag(t).Rollout.Strategy.Percentage = 100
 		}
 
-		require.Nil(t, GetStorage(t).Save(CTX(t), GetFeatureFlag(t)))
+		require.Nil(t, GetStorage(t).Save(CTX(t), GetReleaseFlag(t)))
 
 		s := httptest.NewServer(http.StripPrefix(`/api/v1`, NewServeMux(t)))
 		defer s.Close()
 
 		p := operations.NewIsFeatureGloballyEnabledParams()
 		p.Body = &models.IsFeatureGloballyEnabledRequestBody{}
-		ffName := GetFeatureFlagName(t)
+		ffName := GetReleaseFlagName(t)
 		p.Body.Feature = &ffName
 
 		tc := client.DefaultTransportConfig()

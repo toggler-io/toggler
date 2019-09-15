@@ -2,12 +2,12 @@ package usecases
 
 import (
 	"context"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	"github.com/toggler-io/toggler/services/security"
 )
 
 type ProtectedUsecases struct {
-	*rollouts.RolloutManager
+	*release.RolloutManager
 	*security.Doorkeeper
 	*security.Issuer
 }

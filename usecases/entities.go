@@ -5,15 +5,15 @@ package usecases
 
 import (
 	"github.com/adamluzsi/frameless"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	"github.com/toggler-io/toggler/services/security"
 )
 
 func NewUseCases(s Storage) *UseCases {
 	return &UseCases{
-		FeatureFlagChecker: rollouts.NewFeatureFlagChecker(s),
+		FlagChecker: release.NewFlagChecker(s),
 		protectedUsecases: &ProtectedUsecases{
-			RolloutManager: rollouts.NewRolloutManager(s),
+			RolloutManager: release.NewRolloutManager(s),
 			Doorkeeper:     security.NewDoorkeeper(s),
 			Issuer:         security.NewIssuer(s),
 		},
@@ -21,7 +21,7 @@ func NewUseCases(s Storage) *UseCases {
 }
 
 type UseCases struct {
-	*rollouts.FeatureFlagChecker
+	*release.FlagChecker
 	protectedUsecases *ProtectedUsecases
 }
 

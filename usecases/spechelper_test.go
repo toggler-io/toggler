@@ -2,7 +2,7 @@ package usecases_test
 
 import (
 	"context"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	. "github.com/toggler-io/toggler/testing"
 	"github.com/toggler-io/toggler/usecases"
 	"github.com/adamluzsi/testcase"
@@ -17,8 +17,8 @@ func SetupSpec(s *testcase.Spec) {
 	})
 }
 
-func GetRolloutManager(t *testcase.T) *rollouts.RolloutManager {
-	rm := rollouts.NewRolloutManager(GetStorage(t))
+func GetRolloutManager(t *testcase.T) *release.RolloutManager {
+	rm := release.NewRolloutManager(GetStorage(t))
 	return rm
 }
 

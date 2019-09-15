@@ -1,4 +1,4 @@
-package rollouts_test
+package release_test
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/adamluzsi/testcase"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	. "github.com/toggler-io/toggler/testing"
 
 	"github.com/adamluzsi/frameless/iterators"
@@ -25,7 +25,7 @@ func TestRolloutManager(t *testing.T) {
 	})
 
 	s.Let(`RolloutManager`, func(t *testcase.T) interface{} {
-		return &rollouts.RolloutManager{
+		return &release.RolloutManager{
 			Storage: GetStorage(t),
 
 			RandSeedGenerator: func() int64 {
@@ -35,8 +35,8 @@ func TestRolloutManager(t *testing.T) {
 	})
 
 	s.Before(func(t *testcase.T) {
-		require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
-		require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.Pilot{}))
+		require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
+		require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Pilot{}))
 	})
 
 	SpecRolloutManagerCreateFeatureFlag(s)
@@ -53,12 +53,12 @@ func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
 			return manager(t).DeleteFeatureFlag(context.TODO(), t.I(`flag ID`).(string))
 		}
 
-		s.Let(`FeatureFlagName`, func(t *testcase.T) interface{} { return ExampleFeatureName() })
+		s.Let(`FeatureFlagName`, func(t *testcase.T) interface{} { return ExampleName() })
 		s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return nil })
 		s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return rand.Intn(101) })
 		s.Let(`RolloutSeedSalt`, func(t *testcase.T) interface{} { return int64(42) })
-		s.Let(`FeatureFlag`, func(t *testcase.T) interface{} {
-			ff := &rollouts.FeatureFlag{Name: t.I(`FeatureName`).(string)}
+		s.Let(`ReleaseFlag`, func(t *testcase.T) interface{} {
+			ff := &release.Flag{Name: t.I(`ReleaseFlagName`).(string)}
 			ff.Rollout.RandSeed = t.I(`RolloutSeedSalt`).(int64)
 			ff.Rollout.Strategy.Percentage = t.I(`RolloutPercentage`).(int)
 			ff.Rollout.Strategy.DecisionLogicAPI = GetRolloutApiURL(t)
@@ -75,16 +75,16 @@ func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
 
 		s.When(`it had been persisted previously`, func(s *testcase.Spec) {
 			s.Let(`flag ID`, func(t *testcase.T) interface{} {
-				return GetFeatureFlag(t).ID
+				return GetReleaseFlag(t).ID
 			})
 
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
-				require.NotEmpty(t, GetFeatureFlag(t).ID)
+				require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
+				require.NotEmpty(t, GetReleaseFlag(t).ID)
 			})
 
 			s.Then(`flag will be deleted`, func(t *testcase.T) {
-				id := GetFeatureFlag(t).ID
+				id := GetReleaseFlag(t).ID
 				require.NotEmpty(t, id)
 				require.Nil(t, subject(t))
 			})
@@ -97,14 +97,14 @@ func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
 
 				s.Then(`it will remove the pilots as well for the feature`, func(t *testcase.T) {
 					require.Nil(t, subject(t))
-					pilotCount, err := iterators.Count(GetStorage(t).FindAll(CTX(t), rollouts.Pilot{}))
+					pilotCount, err := iterators.Count(GetStorage(t).FindAll(CTX(t), release.Pilot{}))
 					require.Nil(t, err)
 					require.Equal(t, 0, pilotCount)
 				})
 
 				s.And(`if other flags have pilots enrolled as well`, func(s *testcase.Spec) {
 					s.Before(func(t *testcase.T) {
-						othFlag := *GetFeatureFlag(t)
+						othFlag := *GetReleaseFlag(t)
 						othFlag.Name = `oth flag`
 						othFlag.ID = ``
 
@@ -115,7 +115,7 @@ func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
 
 					s.Then(`they will be unaffected by the subject flag removal`, func(t *testcase.T) {
 						require.Nil(t, subject(t))
-						pilotCount, err := iterators.Count(GetStorage(t).FindAll(CTX(t), rollouts.Pilot{}))
+						pilotCount, err := iterators.Count(GetStorage(t).FindAll(CTX(t), release.Pilot{}))
 
 						require.Nil(t, err)
 						require.Equal(t, 2, pilotCount)
@@ -129,20 +129,20 @@ func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
 
 func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 	s.Describe(`CreateFeatureFlag`, func(s *testcase.Spec) {
-		subjectWithArgs := func(t *testcase.T, f *rollouts.FeatureFlag) error {
+		subjectWithArgs := func(t *testcase.T, f *release.Flag) error {
 			return manager(t).CreateFeatureFlag(context.TODO(), f)
 		}
 
 		subject := func(t *testcase.T) error {
-			return subjectWithArgs(t, GetFeatureFlag(t))
+			return subjectWithArgs(t, GetReleaseFlag(t))
 		}
 
-		s.Let(`FeatureFlagName`, func(t *testcase.T) interface{} { return ExampleFeatureName() })
+		s.Let(`FeatureFlagName`, func(t *testcase.T) interface{} { return ExampleName() })
 		s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return nil })
 		s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return rand.Intn(101) })
 		s.Let(`RolloutSeedSalt`, func(t *testcase.T) interface{} { return int64(42) })
-		s.Let(`FeatureFlag`, func(t *testcase.T) interface{} {
-			ff := &rollouts.FeatureFlag{Name: t.I(`FeatureName`).(string)}
+		s.Let(`ReleaseFlag`, func(t *testcase.T) interface{} {
+			ff := &release.Flag{Name: t.I(`ReleaseFlagName`).(string)}
 			ff.Rollout.RandSeed = t.I(`RolloutSeedSalt`).(int64)
 			ff.Rollout.Strategy.Percentage = t.I(`RolloutPercentage`).(int)
 			ff.Rollout.Strategy.DecisionLogicAPI = GetRolloutApiURL(t)
@@ -151,15 +151,15 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 
 		s.Then(`on valid input the values persisted`, func(t *testcase.T) {
 			require.Nil(t, subject(t))
-			require.NotNil(t, FindStoredFeatureFlagByName(t))
-			require.Equal(t, GetFeatureFlag(t), FindStoredFeatureFlagByName(t))
+			require.NotNil(t, FindStoredReleaseFlagByName(t))
+			require.Equal(t, GetReleaseFlag(t), FindStoredReleaseFlagByName(t))
 		})
 
 		s.When(`name is empty`, func(s *testcase.Spec) {
-			s.Let(`FeatureName`, func(t *testcase.T) interface{} { return "" })
+			s.Let(`ReleaseFlagName`, func(t *testcase.T) interface{} { return "" })
 
 			s.Then(`it will fail with invalid feature name`, func(t *testcase.T) {
-				require.Equal(t, rollouts.ErrNameIsEmpty, subject(t))
+				require.Equal(t, release.ErrNameIsEmpty, subject(t))
 			})
 		})
 
@@ -168,7 +168,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 				s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return `http//example.com` })
 
 				s.Then(`it will fail with invalid url`, func(t *testcase.T) {
-					require.Equal(t, rollouts.ErrInvalidRequestURL, subject(t))
+					require.Equal(t, release.ErrInvalidRequestURL, subject(t))
 				})
 			})
 
@@ -178,7 +178,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 				s.Then(`it will be saved and will represent that no custom domain decision url used`, func(t *testcase.T) {
 					require.Nil(t, subject(t))
 
-					require.Nil(t, FindStoredFeatureFlagByName(t).Rollout.Strategy.DecisionLogicAPI)
+					require.Nil(t, FindStoredReleaseFlagByName(t).Rollout.Strategy.DecisionLogicAPI)
 				})
 			})
 
@@ -188,7 +188,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 				s.Then(`it will persist for future usage`, func(t *testcase.T) {
 					require.Nil(t, subject(t))
 
-					require.Equal(t, `https://example.com`, FindStoredFeatureFlagByName(t).Rollout.Strategy.DecisionLogicAPI.String())
+					require.Equal(t, `https://example.com`, FindStoredReleaseFlagByName(t).Rollout.Strategy.DecisionLogicAPI.String())
 				})
 			})
 		})
@@ -198,7 +198,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 				s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return -1 + (rand.Intn(1024) * -1) })
 
 				s.Then(`it will report error regarding the percentage`, func(t *testcase.T) {
-					require.Equal(t, rollouts.ErrInvalidPercentage, subject(t))
+					require.Equal(t, release.ErrInvalidPercentage, subject(t))
 				})
 			})
 
@@ -206,7 +206,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 				s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return 101 + rand.Intn(1024) })
 
 				s.Then(`it will report error regarding the percentage`, func(t *testcase.T) {
-					require.Equal(t, rollouts.ErrInvalidPercentage, subject(t))
+					require.Equal(t, release.ErrInvalidPercentage, subject(t))
 				})
 			})
 
@@ -216,7 +216,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 				s.Then(`it will persist the received percentage`, func(t *testcase.T) {
 					require.Nil(t, subject(t))
 
-					require.Equal(t, t.I(`RolloutPercentage`).(int), FindStoredFeatureFlagByName(t).Rollout.Strategy.Percentage)
+					require.Equal(t, t.I(`RolloutPercentage`).(int), FindStoredReleaseFlagByName(t).Rollout.Strategy.Percentage)
 				})
 			})
 		})
@@ -228,7 +228,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 				s.Then(`random seed generator used for setting seed value`, func(t *testcase.T) {
 					require.Nil(t, subject(t))
 
-					require.Equal(t, GetGeneratedRandomSeed(t), FindStoredFeatureFlagByName(t).Rollout.RandSeed)
+					require.Equal(t, GetGeneratedRandomSeed(t), FindStoredReleaseFlagByName(t).Rollout.RandSeed)
 				})
 			})
 
@@ -238,14 +238,14 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 				s.Then(`it will persist the value`, func(t *testcase.T) {
 					require.Nil(t, subject(t))
 
-					require.Equal(t, int64(12), FindStoredFeatureFlagByName(t).Rollout.RandSeed)
+					require.Equal(t, int64(12), FindStoredReleaseFlagByName(t).Rollout.RandSeed)
 				})
 			})
 		})
 
 		s.When(`feature flag`, func(s *testcase.Spec) {
 			s.Context(`is nil`, func(s *testcase.Spec) {
-				s.Let(`FeatureFlag`, func(t *testcase.T) interface{} { return nil })
+				s.Let(`ReleaseFlag`, func(t *testcase.T) interface{} { return nil })
 
 				s.Then(`it will return error about it`, func(t *testcase.T) {
 					require.Error(t, subject(t))
@@ -254,44 +254,44 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 
 			s.Context(`was not stored until now`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
+					require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
 				})
 
 				s.Then(`it will be persisted`, func(t *testcase.T) {
 					require.Nil(t, subject(t))
-					require.NotNil(t, FindStoredFeatureFlagByName(t))
-					require.Equal(t, GetFeatureFlag(t), FindStoredFeatureFlagByName(t))
+					require.NotNil(t, FindStoredReleaseFlagByName(t))
+					require.Equal(t, GetReleaseFlag(t), FindStoredReleaseFlagByName(t))
 				})
 			})
 
 			s.Context(`had been persisted previously`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
-					require.NotEmpty(t, GetFeatureFlag(t).ID)
+					require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
+					require.NotEmpty(t, GetReleaseFlag(t).ID)
 				})
 
 				s.When(`the id is not referring to the existing one`, func(s *testcase.Spec) {
 					s.Before(func(t *testcase.T) {
-						GetFeatureFlag(t).ID = ``
+						GetReleaseFlag(t).ID = ``
 					})
 
 					s.Then(`it will report feature flag already exists error`, func(t *testcase.T) {
-						require.Equal(t, rollouts.ErrFlagAlreadyExist, subject(t))
+						require.Equal(t, release.ErrFlagAlreadyExist, subject(t))
 					})
 				})
 
 				s.When(`the ID is set and pointing to an existing flag`, func(s *testcase.Spec) {
 					s.Before(func(t *testcase.T) {
-						require.NotEmpty(t, GetFeatureFlag(t).ID)
-						var ff rollouts.FeatureFlag
-						found, err := GetStorage(t).FindByID(context.Background(), &ff, GetFeatureFlag(t).ID)
+						require.NotEmpty(t, GetReleaseFlag(t).ID)
+						var ff release.Flag
+						found, err := GetStorage(t).FindByID(context.Background(), &ff, GetReleaseFlag(t).ID)
 						require.Nil(t, err)
 						require.True(t, found)
-						require.Equal(t, GetFeatureFlag(t), &ff)
+						require.Equal(t, GetReleaseFlag(t), &ff)
 					})
 
 					s.Then(`it will report invalid action error`, func(t *testcase.T) {
-						require.Equal(t, rollouts.ErrInvalidAction, subject(t))
+						require.Equal(t, release.ErrInvalidAction, subject(t))
 					})
 				})
 			})
@@ -301,20 +301,20 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 
 func SpecRolloutManagerUpdateFeatureFlag(s *testcase.Spec) {
 	s.Describe(`UpdateFeatureFlag`, func(s *testcase.Spec) {
-		subjectWithArgs := func(t *testcase.T, f *rollouts.FeatureFlag) error {
+		subjectWithArgs := func(t *testcase.T, f *release.Flag) error {
 			return manager(t).UpdateFeatureFlag(context.TODO(), f)
 		}
 
 		subject := func(t *testcase.T) error {
-			return subjectWithArgs(t, GetFeatureFlag(t))
+			return subjectWithArgs(t, GetReleaseFlag(t))
 		}
 
-		s.Let(`FeatureFlagName`, func(t *testcase.T) interface{} { return ExampleFeatureName() })
+		s.Let(`FeatureFlagName`, func(t *testcase.T) interface{} { return ExampleName() })
 		s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return nil })
 		s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return rand.Intn(101) })
 		s.Let(`RolloutSeedSalt`, func(t *testcase.T) interface{} { return int64(42) })
-		s.Let(`FeatureFlag`, func(t *testcase.T) interface{} {
-			ff := &rollouts.FeatureFlag{Name: t.I(`FeatureName`).(string)}
+		s.Let(`ReleaseFlag`, func(t *testcase.T) interface{} {
+			ff := &release.Flag{Name: t.I(`ReleaseFlagName`).(string)}
 			ff.Rollout.RandSeed = t.I(`RolloutSeedSalt`).(int64)
 			ff.Rollout.Strategy.Percentage = t.I(`RolloutPercentage`).(int)
 			ff.Rollout.Strategy.DecisionLogicAPI = GetRolloutApiURL(t)
@@ -331,7 +331,7 @@ func SpecRolloutManagerUpdateFeatureFlag(s *testcase.Spec) {
 
 		s.When(`feature flag`, func(s *testcase.Spec) {
 			s.Context(`is nil`, func(s *testcase.Spec) {
-				s.Let(`FeatureFlag`, func(t *testcase.T) interface{} { return nil })
+				s.Let(`ReleaseFlag`, func(t *testcase.T) interface{} { return nil })
 
 				s.Then(`it will return error about it`, func(t *testcase.T) {
 					require.Error(t, subject(t))
@@ -340,7 +340,7 @@ func SpecRolloutManagerUpdateFeatureFlag(s *testcase.Spec) {
 
 			s.Context(`was not stored until now`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
+					require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
 				})
 
 				s.Then(`it will report error about the missing ID`, func(t *testcase.T) {
@@ -350,12 +350,12 @@ func SpecRolloutManagerUpdateFeatureFlag(s *testcase.Spec) {
 
 			s.Context(`had been persisted previously`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
-					require.NotEmpty(t, GetFeatureFlag(t).ID)
+					require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
+					require.NotEmpty(t, GetReleaseFlag(t).ID)
 				})
 
 				s.Then(`latest values are persisted in the storage`, func(t *testcase.T) {
-					flag := *GetFeatureFlag(t) // pass by value copy
+					flag := *GetReleaseFlag(t) // pass by value copy
 					newName := flag.Name + ` v2`
 					flag.Name = newName
 					flag.Rollout.Strategy.Percentage = 42
@@ -364,8 +364,8 @@ func SpecRolloutManagerUpdateFeatureFlag(s *testcase.Spec) {
 					flag.Rollout.Strategy.DecisionLogicAPI = u
 					require.Nil(t, subjectWithArgs(t, &flag))
 
-					var storedFlag rollouts.FeatureFlag
-					found, err := GetStorage(t).FindByID(context.Background(), &storedFlag, GetFeatureFlag(t).ID)
+					var storedFlag release.Flag
+					found, err := GetStorage(t).FindByID(context.Background(), &storedFlag, GetReleaseFlag(t).ID)
 					require.Nil(t, err)
 					require.True(t, found)
 					require.Equal(t, u, storedFlag.Rollout.Strategy.DecisionLogicAPI)
@@ -380,11 +380,11 @@ func SpecRolloutManagerUpdateFeatureFlag(s *testcase.Spec) {
 
 func SpecRolloutManagerListFeatureFlags(s *testcase.Spec) {
 	s.Describe(`ListFeatureFlags`, func(s *testcase.Spec) {
-		subject := func(t *testcase.T) ([]*rollouts.FeatureFlag, error) {
+		subject := func(t *testcase.T) ([]*release.Flag, error) {
 			return manager(t).ListFeatureFlags(context.TODO())
 		}
 
-		onSuccess := func(t *testcase.T) []*rollouts.FeatureFlag {
+		onSuccess := func(t *testcase.T) []*release.Flag {
 			ffs, err := subject(t)
 			require.Nil(t, err)
 			return ffs
@@ -412,13 +412,13 @@ func SpecRolloutManagerListFeatureFlags(s *testcase.Spec) {
 
 		s.When(`no feature present in the system`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
+				require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
 			})
 
 			s.Then(`feature flags are returned`, func(t *testcase.T) {
 				flags := onSuccess(t)
 
-				require.Equal(t, []*rollouts.FeatureFlag{}, flags)
+				require.Equal(t, []*release.Flag{}, flags)
 			})
 		})
 
@@ -433,22 +433,22 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 		}
 
 		subject := func(t *testcase.T) error {
-			return manager(t).SetPilotEnrollmentForFeature(context.TODO(), t.I(`FeatureFlagID`).(string), GetExternalPilotID(t), GetNewEnrollment(t))
+			return manager(t).SetPilotEnrollmentForFeature(context.TODO(), t.I(`FlagID`).(string), GetExternalPilotID(t), GetNewEnrollment(t))
 		}
 
-		s.Let(`FeatureFlagID`, func(t *testcase.T) interface{} {
-			return GetFeatureFlag(t).ID
+		s.Let(`FlagID`, func(t *testcase.T) interface{} {
+			return GetReleaseFlag(t).ID
 		})
 
 		s.Let(`NewEnrollment`, func(t *testcase.T) interface{} {
 			return rand.Intn(2) == 0
 		})
 
-		findFlag := func(t *testcase.T) *rollouts.FeatureFlag {
-			iter := GetStorage(t).FindAll(context.Background(), &rollouts.FeatureFlag{})
+		findFlag := func(t *testcase.T) *release.Flag {
+			iter := GetStorage(t).FindAll(context.Background(), &release.Flag{})
 			require.NotNil(t, iter)
 			require.True(t, iter.Next())
-			var ff rollouts.FeatureFlag
+			var ff release.Flag
 			require.Nil(t, iter.Decode(&ff))
 			require.False(t, iter.Next())
 			require.Nil(t, iter.Err())
@@ -456,9 +456,9 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 		}
 
 		s.When(`no feature flag is seen ever before`, func(s *testcase.Spec) {
-			s.Let(`FeatureFlagID`, func(t *testcase.T) interface{} { return `` })
+			s.Let(`FlagID`, func(t *testcase.T) interface{} { return `` })
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
+				require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
 			})
 
 			s.Then(`error returned`, func(t *testcase.T) {
@@ -468,18 +468,18 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 		s.When(`feature flag already configured`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
+				require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
 			})
 
 			s.Then(`flag will not be recreated`, func(t *testcase.T) {
 				require.Nil(t, subject(t))
 
-				count, err := iterators.Count(GetStorage(t).FindAll(context.Background(), rollouts.FeatureFlag{}))
+				count, err := iterators.Count(GetStorage(t).FindAll(context.Background(), release.Flag{}))
 				require.Nil(t, err)
 				require.Equal(t, 1, count)
 
 				flag := findFlag(t)
-				require.Equal(t, GetFeatureFlag(t), flag)
+				require.Equal(t, GetReleaseFlag(t), flag)
 			})
 
 			s.And(`pilot already exists`, func(s *testcase.Spec) {
@@ -496,7 +496,7 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 						require.Nil(t, subject(t))
 						flag := findFlag(t)
 
-						pilot, err := GetStorage(t).FindFlagPilotByExternalPilotID(context.Background(), flag.ID, GetExternalPilotID(t))
+						pilot, err := GetStorage(t).FindReleaseFlagPilotByPilotExternalID(context.Background(), flag.ID, GetExternalPilotID(t))
 						require.Nil(t, err)
 
 						require.NotNil(t, pilot)
@@ -504,7 +504,7 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 						require.Equal(t, GetExternalPilotID(t), pilot.ExternalID)
 						require.Equal(t, GetPilot(t), pilot)
 
-						count, err := iterators.Count(GetStorage(t).FindAll(context.Background(), rollouts.Pilot{}))
+						count, err := iterators.Count(GetStorage(t).FindAll(context.Background(), release.Pilot{}))
 						require.Nil(t, err)
 						require.Equal(t, 1, count)
 					})
@@ -520,14 +520,14 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 						require.Nil(t, subject(t))
 						ff := findFlag(t)
 
-						pilot, err := GetStorage(t).FindFlagPilotByExternalPilotID(context.Background(), ff.ID, GetExternalPilotID(t))
+						pilot, err := GetStorage(t).FindReleaseFlagPilotByPilotExternalID(context.Background(), ff.ID, GetExternalPilotID(t))
 						require.Nil(t, err)
 
 						require.NotNil(t, pilot)
 						require.Equal(t, GetNewEnrollment(t), pilot.Enrolled)
 						require.Equal(t, GetExternalPilotID(t), pilot.ExternalID)
 
-						count, err := iterators.Count(GetStorage(t).FindAll(context.Background(), rollouts.Pilot{}))
+						count, err := iterators.Count(GetStorage(t).FindAll(context.Background(), release.Pilot{}))
 						require.Nil(t, err)
 						require.Equal(t, 1, count)
 
@@ -541,18 +541,18 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 func SpecRolloutManagerUnsetPilotEnrollmentForFeature(s *testcase.Spec) {
 	s.Describe(`UnsetPilotEnrollmentForFeature`, func(s *testcase.Spec) {
 		subject := func(t *testcase.T) error {
-			return manager(t).UnsetPilotEnrollmentForFeature(context.TODO(), t.I(`FeatureFlagID`).(string), GetExternalPilotID(t))
+			return manager(t).UnsetPilotEnrollmentForFeature(context.TODO(), t.I(`FlagID`).(string), GetExternalPilotID(t))
 		}
 
-		s.Let(`FeatureFlagID`, func(t *testcase.T) interface{} {
-			return GetFeatureFlag(t).ID
+		s.Let(`FlagID`, func(t *testcase.T) interface{} {
+			return GetReleaseFlag(t).ID
 		})
 
-		findFlag := func(t *testcase.T) *rollouts.FeatureFlag {
-			iter := GetStorage(t).FindAll(context.Background(), &rollouts.FeatureFlag{})
+		findFlag := func(t *testcase.T) *release.Flag {
+			iter := GetStorage(t).FindAll(context.Background(), &release.Flag{})
 			require.NotNil(t, iter)
 			require.True(t, iter.Next())
-			var ff rollouts.FeatureFlag
+			var ff release.Flag
 			require.Nil(t, iter.Decode(&ff))
 			require.False(t, iter.Next())
 			require.Nil(t, iter.Err())
@@ -560,9 +560,9 @@ func SpecRolloutManagerUnsetPilotEnrollmentForFeature(s *testcase.Spec) {
 		}
 
 		s.When(`no feature flag is seen ever before`, func(s *testcase.Spec) {
-			s.Let(`FeatureFlagID`, func(t *testcase.T) interface{} { return `` })
+			s.Let(`FlagID`, func(t *testcase.T) interface{} { return `` })
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, GetStorage(t).Truncate(context.Background(), rollouts.FeatureFlag{}))
+				require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
 			})
 
 			s.Then(`error returned`, func(t *testcase.T) {
@@ -572,23 +572,23 @@ func SpecRolloutManagerUnsetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 		s.When(`feature flag already configured`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
+				require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
 			})
 
 			s.Then(`flag will not be recreated`, func(t *testcase.T) {
 				require.Nil(t, subject(t))
 
-				count, err := iterators.Count(GetStorage(t).FindAll(CTX(t), rollouts.FeatureFlag{}))
+				count, err := iterators.Count(GetStorage(t).FindAll(CTX(t), release.Flag{}))
 				require.Nil(t, err)
 				require.Equal(t, 1, count)
 
 				flag := findFlag(t)
-				require.Equal(t, GetFeatureFlag(t), flag)
+				require.Equal(t, GetReleaseFlag(t), flag)
 			})
 
 			s.And(`pilot not exist for the flag`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Truncate(CTX(t), rollouts.Pilot{}))
+					require.Nil(t, GetStorage(t).Truncate(CTX(t), release.Pilot{}))
 				})
 
 				s.Then(`it will return without any error`, func(t *testcase.T) {
@@ -605,7 +605,7 @@ func SpecRolloutManagerUnsetPilotEnrollmentForFeature(s *testcase.Spec) {
 					require.Nil(t, subject(t))
 					flag := findFlag(t)
 
-					pilot, err := GetStorage(t).FindFlagPilotByExternalPilotID(context.Background(), flag.ID, GetExternalPilotID(t))
+					pilot, err := GetStorage(t).FindReleaseFlagPilotByPilotExternalID(context.Background(), flag.ID, GetExternalPilotID(t))
 					require.Nil(t, err)
 					require.Nil(t, pilot)
 				})
@@ -618,6 +618,6 @@ func GetGeneratedRandomSeed(t *testcase.T) int64 {
 	return t.I(`GeneratedRandomSeed`).(int64)
 }
 
-func manager(t *testcase.T) *rollouts.RolloutManager {
-	return t.I(`RolloutManager`).(*rollouts.RolloutManager)
+func manager(t *testcase.T) *release.RolloutManager {
+	return t.I(`RolloutManager`).(*release.RolloutManager)
 }

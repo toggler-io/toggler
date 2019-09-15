@@ -11,12 +11,12 @@ import (
 	"github.com/adamluzsi/frameless/iterators"
 
 	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 )
 
 type edigPageContent struct {
-	Flag   rollouts.FeatureFlag
-	Pilots []rollouts.Pilot
+	Flag   release.Flag
+	Pilots []release.Pilot
 }
 
 func (ctrl *Controller) FlagPage(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +56,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 
 		id := r.Form.Get(`id`)
 
-		var ff rollouts.FeatureFlag
+		var ff release.Flag
 		found, err := ctrl.Storage.FindByID(r.Context(), &ff, id)
 
 		if ctrl.handleError(w, r, err) {
@@ -68,7 +68,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		var pilots []rollouts.Pilot
+		var pilots []release.Pilot
 
 		if ctrl.handleError(w, r, iterators.CollectAll(ctrl.Storage.FindPilotsByFeatureFlag(r.Context(), &ff), &pilots)) {
 			return
@@ -164,13 +164,13 @@ func (ctrl *Controller) flagSetPilotAction(w http.ResponseWriter, r *http.Reques
 			return
 		}
 
-		if ctrl.handleError(w, r, ctrl.GetProtectedUsecases(r).SetPilotEnrollmentForFeature(r.Context(), p.FeatureFlagID, p.ExternalID, p.Enrolled)) {
+		if ctrl.handleError(w, r, ctrl.GetProtectedUsecases(r).SetPilotEnrollmentForFeature(r.Context(), p.FlagID, p.ExternalID, p.Enrolled)) {
 			return
 		}
 
 		u, _ := url.Parse(`/flag`)
 		q := u.Query()
-		q.Set(`id`, p.FeatureFlagID)
+		q.Set(`id`, p.FlagID)
 		u.RawQuery = q.Encode()
 		http.Redirect(w, r, u.String(), http.StatusFound)
 

@@ -7,20 +7,20 @@ import (
 	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 )
 
 type StorageSpec struct {
-	Subject rollouts.Storage
+	Subject release.Storage
 	specs.FixtureFactory
 }
 
 func (spec StorageSpec) Benchmark(b *testing.B) {
 	b.Run(`rollouts`, func(b *testing.B) {
 
-		b.Run(`FeatureFlag`, func(b *testing.B) {
+		b.Run(`ReleaseFlag`, func(b *testing.B) {
 			specs.CommonSpec{
-				EntityType:     rollouts.FeatureFlag{},
+				EntityType:     release.Flag{},
 				FixtureFactory: spec.FixtureFactory,
 				Subject:        spec.Subject,
 			}.Benchmark(b)
@@ -32,9 +32,9 @@ func (spec StorageSpec) Benchmark(b *testing.B) {
 		})
 
 		b.Run(`Pilot`, func(b *testing.B) {
-			flag := spec.FixtureFactory.Create(rollouts.FeatureFlag{}).(*rollouts.FeatureFlag)
+			flag := spec.FixtureFactory.Create(release.Flag{}).(*release.Flag)
 			require.Nil(b, spec.Subject.Save(spec.Context(), flag))
-			defer func() { require.Nil(b, spec.Subject.DeleteByID(spec.Context(), rollouts.FeatureFlag{}, flag.ID)) }()
+			defer func() { require.Nil(b, spec.Subject.DeleteByID(spec.Context(), release.Flag{}, flag.ID)) }()
 
 			ff := &FixtureFactoryForPilots{
 				FixtureFactory: spec.FixtureFactory,
@@ -42,7 +42,7 @@ func (spec StorageSpec) Benchmark(b *testing.B) {
 			}
 
 			specs.CommonSpec{
-				EntityType:     rollouts.Pilot{},
+				EntityType:     release.Pilot{},
 				FixtureFactory: ff,
 				Subject:        spec.Subject,
 			}.Benchmark(b)
@@ -59,9 +59,9 @@ func (spec StorageSpec) Benchmark(b *testing.B) {
 func (spec StorageSpec) Test(t *testing.T) {
 	t.Run(`rollouts`, func(t *testing.T) {
 
-		t.Run(`FeatureFlag`, func(t *testing.T) {
+		t.Run(`ReleaseFlag`, func(t *testing.T) {
 			specs.CommonSpec{
-				EntityType:     rollouts.FeatureFlag{},
+				EntityType:     release.Flag{},
 				FixtureFactory: spec.FixtureFactory,
 				Subject:        spec.Subject,
 			}.Test(t)
@@ -75,15 +75,15 @@ func (spec StorageSpec) Test(t *testing.T) {
 
 			s.Context(`name is uniq across storage`, func(s *testcase.Spec) {
 				subject := func(t *testcase.T) error {
-					return spec.Subject.Save(spec.Context(), t.I(`flag`).(*rollouts.FeatureFlag))
+					return spec.Subject.Save(spec.Context(), t.I(`flag`).(*release.Flag))
 				}
 
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, spec.Subject.Truncate(spec.Context(), rollouts.FeatureFlag{}))
+					require.Nil(t, spec.Subject.Truncate(spec.Context(), release.Flag{}))
 				})
 
 				s.Let(`flag`, func(t *testcase.T) interface{} {
-					return &rollouts.FeatureFlag{
+					return &release.Flag{
 						Name: `my-uniq-flag-name`,
 					}
 				})
@@ -100,9 +100,9 @@ func (spec StorageSpec) Test(t *testing.T) {
 
 		t.Run(`Pilot`, func(t *testing.T) {
 
-			flag := spec.FixtureFactory.Create(rollouts.FeatureFlag{}).(*rollouts.FeatureFlag)
+			flag := spec.FixtureFactory.Create(release.Flag{}).(*release.Flag)
 			require.Nil(t, spec.Subject.Save(spec.Context(), flag))
-			defer func() { require.Nil(t, spec.Subject.Truncate(spec.Context(), rollouts.FeatureFlag{})) }()
+			defer func() { require.Nil(t, spec.Subject.Truncate(spec.Context(), release.Flag{})) }()
 
 			ff := &FixtureFactoryForPilots{
 				FixtureFactory: spec.FixtureFactory,
@@ -110,7 +110,7 @@ func (spec StorageSpec) Test(t *testing.T) {
 			}
 
 			specs.CommonSpec{
-				EntityType:     rollouts.Pilot{},
+				EntityType:     release.Pilot{},
 				FixtureFactory: ff,
 				Subject:        spec.Subject,
 			}.Test(t)
@@ -131,9 +131,9 @@ type FixtureFactoryForPilots struct {
 
 func (ff *FixtureFactoryForPilots) Create(EntityType interface{}) interface{} {
 	switch reflects.BaseValueOf(EntityType).Interface().(type) {
-	case rollouts.Pilot:
-		pilot := ff.FixtureFactory.Create(EntityType).(*rollouts.Pilot)
-		pilot.FeatureFlagID = ff.FlagID
+	case release.Pilot:
+		pilot := ff.FixtureFactory.Create(EntityType).(*release.Pilot)
+		pilot.FlagID = ff.FlagID
 		return pilot
 
 	default:

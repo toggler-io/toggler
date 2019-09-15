@@ -1,4 +1,4 @@
-package rollouts
+package release
 
 import (
 	"context"
@@ -9,16 +9,16 @@ import (
 	"time"
 )
 
-func NewFeatureFlagChecker(s Storage) *FeatureFlagChecker {
-	return &FeatureFlagChecker{
+func NewFlagChecker(s Storage) *FlagChecker {
+	return &FlagChecker{
 		Storage:                s,
 		IDPercentageCalculator: PseudoRandPercentageGenerator{}.FNV1a64,
 		HTTPClient:             http.Client{Timeout: 3 * time.Second},
 	}
 }
 
-// FeatureFlagChecker is an interactor that implements query like (read only) behaviors with feature flags.
-type FeatureFlagChecker struct {
+// FlagChecker is an interactor that implements query like (read only) behaviors with feature flags.
+type FlagChecker struct {
 	Storage                Storage
 	IDPercentageCalculator func(string, int64) (int, error)
 	HTTPClient             http.Client
@@ -26,9 +26,9 @@ type FeatureFlagChecker struct {
 
 // IsFeatureEnabledFor grant you the ability to
 // check whether a pilot is enrolled or not for the feature flag in subject.
-func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, externalPilotID string) (bool, error) {
+func (checker *FlagChecker) IsFeatureEnabledFor(featureFlagName string, externalPilotID string) (bool, error) {
 
-	ff, err := checker.Storage.FindFlagByName(context.TODO(), featureFlagName)
+	ff, err := checker.Storage.FindReleaseFlagByName(context.TODO(), featureFlagName)
 
 	if err != nil {
 		return false, err
@@ -38,7 +38,7 @@ func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, e
 		return false, nil
 	}
 
-	pilot, err := checker.Storage.FindFlagPilotByExternalPilotID(context.TODO(), ff.ID, externalPilotID)
+	pilot, err := checker.Storage.FindReleaseFlagPilotByPilotExternalID(context.TODO(), ff.ID, externalPilotID)
 
 	if err != nil {
 		return false, err
@@ -60,8 +60,8 @@ func (checker *FeatureFlagChecker) IsFeatureEnabledFor(featureFlagName string, e
 
 }
 
-func (checker *FeatureFlagChecker) IsFeatureGloballyEnabled(featureFlagName string) (bool, error) {
-	ff, err := checker.Storage.FindFlagByName(context.TODO(), featureFlagName)
+func (checker *FlagChecker) IsFeatureGloballyEnabled(featureFlagName string) (bool, error) {
+	ff, err := checker.Storage.FindReleaseFlagByName(context.TODO(), featureFlagName)
 
 	if err != nil {
 		return false, err
@@ -74,7 +74,7 @@ func (checker *FeatureFlagChecker) IsFeatureGloballyEnabled(featureFlagName stri
 	return ff.Rollout.Strategy.Percentage == 100, nil
 }
 
-func (checker *FeatureFlagChecker) makeCustomDomainAPIDecisionCheck(featureFlagName string, externalPilotID string, apiURL *url.URL) (bool, error) {
+func (checker *FlagChecker) makeCustomDomainAPIDecisionCheck(featureFlagName string, externalPilotID string, apiURL *url.URL) (bool, error) {
 	req, err := http.NewRequest(`GET`, apiURL.String(), nil)
 	if err != nil {
 		return false, err
@@ -94,19 +94,19 @@ func (checker *FeatureFlagChecker) makeCustomDomainAPIDecisionCheck(featureFlagN
 	return 200 <= code && code < 300, nil
 }
 
-func (checker *FeatureFlagChecker) GetPilotFlagStates(ctx context.Context, externalPilotID string, featureFlagNames ...string) (map[string]bool, error) {
+func (checker *FlagChecker) GetPilotFlagStates(ctx context.Context, externalPilotID string, featureFlagNames ...string) (map[string]bool, error) {
 	states := make(map[string]bool)
 
 	for _, flagName := range featureFlagNames {
 		states[flagName] = false
 	}
 
-	flagIndexByID := make(map[string]*FeatureFlag)
+	flagIndexByID := make(map[string]*Flag)
 
 	flags := checker.Storage.FindFlagsByName(ctx, featureFlagNames...)
 
 	for flags.Next() {
-		var ff FeatureFlag
+		var ff Flag
 		if err := flags.Decode(&ff); err != nil {
 			return nil, err
 		}
@@ -123,7 +123,7 @@ func (checker *FeatureFlagChecker) GetPilotFlagStates(ctx context.Context, exter
 
 	pilotEntries := checker.Storage.FindPilotEntriesByExtID(ctx, externalPilotID)
 	pilotEntriesThatAreRelevant := iterators.Filter(pilotEntries, func(p frameless.Entity) bool {
-		_, ok := flagIndexByID[p.(Pilot).FeatureFlagID]
+		_, ok := flagIndexByID[p.(Pilot).FlagID]
 		return ok
 	})
 
@@ -132,13 +132,13 @@ func (checker *FeatureFlagChecker) GetPilotFlagStates(ctx context.Context, exter
 		if err := pilotEntriesThatAreRelevant.Decode(&p); err != nil {
 			return nil, err
 		}
-		states[flagIndexByID[p.FeatureFlagID].Name] = p.Enrolled
+		states[flagIndexByID[p.FlagID].Name] = p.Enrolled
 	}
 
 	return states, nil
 }
 
-func (checker *FeatureFlagChecker) isEnrolled(ff *FeatureFlag, externalPilotID string) (bool, error) {
+func (checker *FlagChecker) isEnrolled(ff *Flag, externalPilotID string) (bool, error) {
 	diceRollResultPercentage, err := checker.IDPercentageCalculator(externalPilotID, ff.Rollout.RandSeed)
 	if err != nil {
 		return false, err

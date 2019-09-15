@@ -54,7 +54,7 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 
 	s.Before(func(t *testcase.T) {
 		t.Log(`given we have flag already stored`)
-		require.Nil(t, GetStorage(t).Save(context.TODO(), GetFeatureFlag(t)))
+		require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
 	})
 
 	s.When(`request is sent to the JSON endpoint`, func(s *testcase.Spec) {
@@ -64,7 +64,7 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 		})
 
 		s.Let(`payload bytes`, func(t *testcase.T) interface{} {
-			bs, err := json.Marshal(GetFeatureFlag(t))
+			bs, err := json.Marshal(GetReleaseFlag(t))
 			require.Nil(t, err)
 			return bs
 		})
@@ -91,14 +91,14 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 
 		s.Let(`payload bytes`, func(t *testcase.T) interface{} {
 			data := url.Values{}
-			data.Set(`flag.id`, GetFeatureFlag(t).ID)
-			data.Set(`flag.name`, GetFeatureFlag(t).Name)
-			data.Set(`flag.rollout.randSeed`, strconv.FormatInt(GetFeatureFlag(t).Rollout.RandSeed, 10))
-			data.Set(`flag.rollout.strategy.percentage`, strconv.Itoa(GetFeatureFlag(t).Rollout.Strategy.Percentage))
+			data.Set(`flag.id`, GetReleaseFlag(t).ID)
+			data.Set(`flag.name`, GetReleaseFlag(t).Name)
+			data.Set(`flag.rollout.randSeed`, strconv.FormatInt(GetReleaseFlag(t).Rollout.RandSeed, 10))
+			data.Set(`flag.rollout.strategy.percentage`, strconv.Itoa(GetReleaseFlag(t).Rollout.Strategy.Percentage))
 
 			var decisionLogicAPI string
-			if GetFeatureFlag(t).Rollout.Strategy.DecisionLogicAPI != nil {
-				decisionLogicAPI = GetFeatureFlag(t).Rollout.Strategy.DecisionLogicAPI.String()
+			if GetReleaseFlag(t).Rollout.Strategy.DecisionLogicAPI != nil {
+				decisionLogicAPI = GetReleaseFlag(t).Rollout.Strategy.DecisionLogicAPI.String()
 			}
 			data.Set(`flag.rollout.strategy.decisionLogicApi`, decisionLogicAPI)
 
@@ -184,9 +184,9 @@ func SpecServeMux_UpdateFeatureFlag(s *testcase.Spec, subject func(t *testcase.T
 			r := subject(t)
 			require.Equal(t, 200, r.Code, r.Body.String())
 
-			stored := FindStoredFeatureFlagByName(t)
+			stored := FindStoredReleaseFlagByName(t)
 
-			require.Equal(t, GetFeatureFlag(t), stored)
+			require.Equal(t, GetReleaseFlag(t), stored)
 		})
 	})
 }

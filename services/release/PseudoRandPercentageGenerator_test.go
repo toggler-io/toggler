@@ -1,4 +1,4 @@
-package rollouts_test
+package release_test
 
 import (
 	"strconv"
@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/adamluzsi/testcase"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 
 	"github.com/stretchr/testify/require"
 )
@@ -15,7 +15,7 @@ func TestPseudoRandPercentageGenerator_FNV1a64(t *testing.T) {
 	s := testcase.NewSpec(t)
 	s.Parallel()
 
-	subject := rollouts.PseudoRandPercentageGenerator{}.FNV1a64
+	subject := release.PseudoRandPercentageGenerator{}.FNV1a64
 
 	s.Let(`seedSalt`, func(t *testcase.T) interface{} {
 		return time.Now().Unix()

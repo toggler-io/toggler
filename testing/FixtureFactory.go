@@ -9,7 +9,7 @@ import (
 	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources/specs"
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 	"github.com/toggler-io/toggler/services/security"
 	"github.com/google/uuid"
 )
@@ -27,8 +27,8 @@ var rnd = rand.New(rand.NewSource(time.Now().Unix()))
 
 func (ff *FixtureFactory) Create(EntityType interface{}) interface{} {
 	switch reflects.BaseValueOf(EntityType).Interface().(type) {
-	case rollouts.FeatureFlag:
-		flag := ff.GenericFixtureFactory.Create(EntityType).(*rollouts.FeatureFlag)
+	case release.Flag:
+		flag := ff.GenericFixtureFactory.Create(EntityType).(*release.Flag)
 		flag.Name = fmt.Sprintf(`%s - %s`, flag.Name, uuid.New().String())
 
 		flag.Rollout.Strategy.DecisionLogicAPI = nil
@@ -45,8 +45,8 @@ func (ff *FixtureFactory) Create(EntityType interface{}) interface{} {
 
 		return flag
 
-	case rollouts.Pilot:
-		pilot := ff.GenericFixtureFactory.Create(EntityType).(*rollouts.Pilot)
+	case release.Pilot:
+		pilot := ff.GenericFixtureFactory.Create(EntityType).(*release.Pilot)
 		pilot.ExternalID = uuid.New().String()
 		return pilot
 

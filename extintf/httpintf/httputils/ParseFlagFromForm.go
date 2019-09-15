@@ -5,16 +5,16 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/toggler-io/toggler/services/rollouts"
+	"github.com/toggler-io/toggler/services/release"
 )
 
-func ParseFlagFromForm(r *http.Request) (*rollouts.FeatureFlag, error) {
+func ParseFlagFromForm(r *http.Request) (*release.Flag, error) {
 
 	if err := r.ParseForm(); err != nil {
 		return nil, err
 	}
 
-	var flag rollouts.FeatureFlag
+	var flag release.Flag
 
 	flag.Name = r.Form.Get(`flag.name`)
 	flag.ID = r.Form.Get(`flag.id`)

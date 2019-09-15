@@ -12,7 +12,7 @@ import (
 	. "github.com/toggler-io/toggler/testing"
 )
 
-func UpdateFeatureFlagRolloutPercentage(t *testcase.T, featureFlagName string, rolloutPercentage int) {
+func UpdateReleaseFlagRolloutPercentage(t *testcase.T, featureFlagName string, rolloutPercentage int) {
 	EnsureFlag(t, featureFlagName, rolloutPercentage)
 }
 

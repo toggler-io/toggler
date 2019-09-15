@@ -1,4 +1,4 @@
-package rollouts
+package release
 
 // Pilot is a data entity that represent relation between an external system's user and a feature flag.
 // The Pilot terminology itself means that the user is in charge to try out a given feature,
@@ -6,8 +6,8 @@ package rollouts
 type Pilot struct {
 	// ID represent the fact that this object will be persistent in the Subject
 	ID string `ext:"ID"`
-	// FeatureFlagID is the reference ID that can tell where this user record belongs to.
-	FeatureFlagID string
+	// FlagID is the reference ID that can tell where this user record belongs to.
+	FlagID string
 	// ExternalID is the uniq id key that connect the caller services,
 	// with this service and able to use A-B/Percentage or Pilot based testings.
 	ExternalID string

@@ -14,12 +14,12 @@ func (sm *ServeMux) SetPilotEnrollmentForFeature(w http.ResponseWriter, r *http.
 
 	pilot, err := httputils.ParseFlagPilotFromForm(r)
 
-	if err != nil || pilot.FeatureFlagID == `` || pilot.ExternalID == `` {
+	if err != nil || pilot.FlagID == `` || pilot.ExternalID == `` {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	err = pu.SetPilotEnrollmentForFeature(context2.TODO(), pilot.FeatureFlagID, pilot.ExternalID, pilot.Enrolled)
+	err = pu.SetPilotEnrollmentForFeature(context2.TODO(), pilot.FlagID, pilot.ExternalID, pilot.Enrolled)
 
 	if handleError(w, err, http.StatusInternalServerError) {
 		return

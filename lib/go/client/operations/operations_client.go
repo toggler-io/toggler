@@ -25,7 +25,7 @@ type Client struct {
 }
 
 /*
-CreateRolloutFeatureFlag creates rollout feature flag
+CreateRolloutFeatureFlag creates flag rollout feature flag
 
 This operation allows you to create a new rollout feature flag.
 */
