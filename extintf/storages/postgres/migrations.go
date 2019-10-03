@@ -2,12 +2,15 @@ package postgres
 
 import (
 	"database/sql"
-	"github.com/toggler-io/toggler/extintf/storages/postgres/assets"
+
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/golang-migrate/migrate/v4/source"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	bindata "github.com/golang-migrate/migrate/v4/source/go_bindata"
 	_ "github.com/lib/pq"
+
+	"github.com/toggler-io/toggler/extintf/storages/postgres/assets"
 )
 
 //go:generate esc -o ./assets/fs.go -pkg assets -prefix assets/migrations ./assets/migrations
@@ -31,6 +34,29 @@ func Migrate(db *sql.DB) error {
 
 func NewMigrate(db *sql.DB) (*migrate.Migrate, error) {
 
+	srcDriver, err := NewBindataSourceDriver()
+
+	if err != nil {
+		return nil, err
+	}
+
+	dbDriver, err := postgres.WithInstance(db, &postgres.Config{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	m, err := migrate.NewWithInstance(`esc`, srcDriver, `postgres`, dbDriver)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return m, err
+
+}
+
+func NewBindataSourceDriver() (source.Driver, error) {
 	f, err := assets.FS(false).Open(migrationsDirectory)
 
 	if err != nil {
@@ -55,24 +81,5 @@ func NewMigrate(db *sql.DB) (*migrate.Migrate, error) {
 		return assets.FSByte(false, `/`+name)
 	})
 
-	srcDriver, err := bindata.WithInstance(s)
-
-	if err != nil {
-		return nil, err
-	}
-
-	dbDriver, err := postgres.WithInstance(db, &postgres.Config{})
-
-	if err != nil {
-		return nil, err
-	}
-
-	m, err := migrate.NewWithInstance(`esc`, srcDriver, `postgres`, dbDriver)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return m, err
-
+	return bindata.WithInstance(s)
 }
