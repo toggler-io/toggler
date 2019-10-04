@@ -103,7 +103,7 @@ func (checker *FlagChecker) GetPilotFlagStates(ctx context.Context, externalPilo
 
 	flagIndexByID := make(map[string]*Flag)
 
-	flags := checker.Storage.FindFlagsByName(ctx, featureFlagNames...)
+	flags := checker.Storage.FindReleaseFlagsByName(ctx, featureFlagNames...)
 
 	for flags.Next() {
 		var ff Flag

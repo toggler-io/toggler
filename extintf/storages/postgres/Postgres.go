@@ -316,7 +316,7 @@ func (pg *Postgres) FindPilotEntriesByExtID(ctx context.Context, pilotExtID stri
 	return iterators.NewSQLRows(rows, m)
 }
 
-func (pg *Postgres) FindFlagsByName(ctx context.Context, flagNames ...string) frameless.Iterator {
+func (pg *Postgres) FindReleaseFlagsByName(ctx context.Context, flagNames ...string) frameless.Iterator {
 
 	var namesInClause []string
 	var args []interface{}

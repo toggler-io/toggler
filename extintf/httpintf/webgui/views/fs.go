@@ -224,7 +224,7 @@ H4sIAAAAAAAC/6quTklNy8xLVVDKTczMU6qt5VJQUFCwScksswOzQKC6Wg8mrg+WqK5OzUuprQUEAAD/
 		name:    "create.html",
 		local:   "views/flag/create.html",
 		size:    2159,
-		modtime: 1568556972,
+		modtime: 1568977694,
 		compressed: `
 H4sIAAAAAAAC/8xVT2vbThC951MMc/n9epDk5CwJQkugEEpIybmMtWNpYbW77J/8wfi7l5XkRBV2apdS
 4otnNbPvvXmz0m63gjdSM2BPUuNudwEAUAr5CI0i7ytsjA6sA9ZDZsh2V4tk1jEJkD5rWAd2WG+3kH+j
@@ -258,7 +258,7 @@ YBc5U3ClfAUAAP//oPGN5jEDAAA=
 		name:    "show.html",
 		local:   "views/flag/show.html",
 		size:    5558,
-		modtime: 1568555968,
+		modtime: 1568557151,
 		compressed: `
 H4sIAAAAAAAC/9RYXW+jOhB9z68Y+aW7KxHaPidcVUorRaquqlT7fOXgCVhrbGSbKhXiv1/ZQEtoAiTt
 /VheAvH4jD1zxmegLBnuuEQgGeWSVNUMAGDB+AvEghqzJLGSFqUlkR/xo+ltbzBIkTLgJohRWtQkKkuY

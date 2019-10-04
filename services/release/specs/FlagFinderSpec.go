@@ -76,9 +76,9 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 			})
 		})
 
-		s.Describe(`FindFlagsByName`, func(s *testcase.Spec) {
+		s.Describe(`FindReleaseFlagsByName`, func(s *testcase.Spec) {
 			subject := func(t *testcase.T) frameless.Iterator {
-				return spec.Subject.FindFlagsByName(spec.ctx(), t.I(`flag names`).([]string)...)
+				return spec.Subject.FindReleaseFlagsByName(spec.ctx(), t.I(`flag names`).([]string)...)
 			}
 
 			s.Before(func(t *testcase.T) {

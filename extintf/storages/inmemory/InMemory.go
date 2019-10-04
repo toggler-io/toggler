@@ -29,7 +29,7 @@ func (s *InMemory) FindPilotEntriesByExtID(ctx context.Context, pilotExtID strin
 	return iterators.NewSlice(pilots)
 }
 
-func (s *InMemory) FindFlagsByName(ctx context.Context, names ...string) frameless.Iterator {
+func (s *InMemory) FindReleaseFlagsByName(ctx context.Context, names ...string) frameless.Iterator {
 	var flags []*release.Flag
 
 	nameIndex := make(map[string]struct{})

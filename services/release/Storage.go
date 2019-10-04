@@ -21,7 +21,7 @@ type FlagEntries = frameless.Iterator
 
 type FlagFinder interface {
 	FindReleaseFlagByName(ctx context.Context, name string) (*Flag, error)
-	FindFlagsByName(ctx context.Context, names ...string) FlagEntries
+	FindReleaseFlagsByName(ctx context.Context, names ...string) FlagEntries
 }
 
 type PilotFinder interface {

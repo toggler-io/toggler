@@ -38,7 +38,7 @@ type Redis struct {
 	keyMapping map[string]string
 }
 
-func (r *Redis) FindFlagsByName(ctx context.Context, names ...string) frameless.Iterator {
+func (r *Redis) FindReleaseFlagsByName(ctx context.Context, names ...string) frameless.Iterator {
 	flags := r.FindAll(ctx, release.Flag{})
 
 	nameIndex := make(map[string]struct{})

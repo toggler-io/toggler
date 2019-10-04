@@ -136,23 +136,23 @@ func (mr *MockStorageMockRecorder) FindReleaseFlagByName(ctx, name interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindReleaseFlagByName", reflect.TypeOf((*MockStorage)(nil).FindReleaseFlagByName), ctx, name)
 }
 
-// FindFlagsByName mocks base method
-func (m *MockStorage) FindFlagsByName(ctx context.Context, names ...string) release.FlagEntries {
+// FindReleaseFlagsByName mocks base method
+func (m *MockStorage) FindReleaseFlagsByName(ctx context.Context, names ...string) release.FlagEntries {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range names {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "FindFlagsByName", varargs...)
+	ret := m.ctrl.Call(m, "FindReleaseFlagsByName", varargs...)
 	ret0, _ := ret[0].(release.FlagEntries)
 	return ret0
 }
 
-// FindFlagsByName indicates an expected call of FindFlagsByName
-func (mr *MockStorageMockRecorder) FindFlagsByName(ctx interface{}, names ...interface{}) *gomock.Call {
+// FindReleaseFlagsByName indicates an expected call of FindReleaseFlagsByName
+func (mr *MockStorageMockRecorder) FindReleaseFlagsByName(ctx interface{}, names ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx}, names...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindFlagsByName", reflect.TypeOf((*MockStorage)(nil).FindFlagsByName), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindReleaseFlagsByName", reflect.TypeOf((*MockStorage)(nil).FindReleaseFlagsByName), varargs...)
 }
 
 // FindReleaseFlagPilotByPilotExternalID mocks base method

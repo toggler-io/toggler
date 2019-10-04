@@ -330,7 +330,7 @@ D1HwC/Xx4dK0BgQAAP//QyRBQTsAAAA=
 		name:    "1568143862_alter_table_release_flags.down.sql",
 		local:   "assets/migrations/1568143862_alter_table_release_flags.down.sql",
 		size:    188,
-		modtime: 1568555968,
+		modtime: 1568557151,
 		compressed: `
 H4sIAAAAAAAC/2TOsQrCMBRG4T1P8XNfI1NqLxJoEglB3UKEWwejhUYH395BKZbuh4/T8d56rVQfwwFH
 yyfQKOX5miWPtVwbaaXMkDjC+p7PoDpNtzxLldK+Sb6886PchRQARPbGMVL4lStsSRc0mW5g0L/XNtBm
@@ -342,7 +342,7 @@ aBecs0l/AgAA///JK7KBvAAAAA==
 		name:    "1568143862_alter_table_release_flags.up.sql",
 		local:   "assets/migrations/1568143862_alter_table_release_flags.up.sql",
 		size:    223,
-		modtime: 1568555968,
+		modtime: 1568557151,
 		compressed: `
 H4sIAAAAAAAC/2zMuwrCMBSH8T1P8Sejr9AprUcJ5ALpQd1ChNTBaKHRwbcXUYq3/ft+La21a4RQhilA
 uyXtIMs4HuOQ0+U65TiUdKhxf4vndMpSAEAgpyyB/SudcsmpPtO5nFFWrSHID+/HeSfq4+0CKSZsNG2/
