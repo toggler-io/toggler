@@ -131,7 +131,6 @@ func SpecIssuerCreateNewToken(s *testcase.Spec) {
 						continue
 					}
 
-					t.Log(token.SHA512)
 					require.NotEqual(t, last, token.SHA512)
 				}
 			})
