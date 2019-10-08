@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -e -u
+shopt -s nullglob
+: ${WDP:?"working directory path required"}
+: ${GOOS:="linux"}
+: ${GOARCH:="amd64"}
+
+if [[ ! -e ${WDP}/dist ]]; then
+	mkdir "${WDP}/dist"
+fi
+
+for f in ${WDP}/dist/*; do
+	rm "${f}"
+done
+
+outPath="${WDP}/dist/toggler"
+GOOS=${GOOS} GOARCH=${GOARCH} go build -o "${outPath}" "${WDP}/cmd/toggler/main.go"
+
+procFilePath=${WDP}/dist/Procfile
+cat >"${procFilePath}" <<EOF
+web: ./toggler http-server
+EOF
+
+zip --junk-paths dist/toggler.zip "${procFilePath}" "${outPath}"
+rm "${procFilePath}"
+rm "${outPath}"
