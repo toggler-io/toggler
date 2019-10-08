@@ -205,6 +205,12 @@ func makeHTTPServer(storage usecases.Storage, port int) *http.Server {
 func createTokenCMD(args []string, s usecases.Storage) {
 	flagSet := flag.NewFlagSet(`create-token`, flag.ExitOnError)
 
+	flagSet.Usage = func() {
+		const format = "Usage of %s: [TOKEN_OWNER_UID]\n"
+		_, _ = fmt.Fprintf(flagSet.Output(), format, args[0])
+		flagSet.PrintDefaults()
+	}
+
 	if err := flagSet.Parse(args[1:]); err != nil {
 		log.Fatal(err)
 	}
