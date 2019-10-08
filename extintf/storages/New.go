@@ -2,10 +2,12 @@ package storages
 
 import (
 	"database/sql"
-	"github.com/toggler-io/toggler/extintf/storages/redis"
 	"net/url"
 
+	"github.com/toggler-io/toggler/extintf/storages/redis"
+
 	"github.com/adamluzsi/frameless"
+
 	"github.com/toggler-io/toggler/extintf/storages/inmemory"
 	"github.com/toggler-io/toggler/extintf/storages/postgres"
 	"github.com/toggler-io/toggler/usecases"

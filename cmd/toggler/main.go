@@ -53,7 +53,7 @@ func main() {
 	setupDatabaseURL(dbURL)
 	setupCacheURL(cacheURL, cacheTTL)
 
-	storage, err := storages.New(*dbURL)
+	storage, err := storages.NewFromEnv()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -121,17 +121,13 @@ func getPort(portConfValue string) int {
 }
 
 func setupDatabaseURL(dbURL *string) {
-	if *dbURL != `` {
+	if *dbURL == `` {
 		return
 	}
 
-	connstr, isSet := os.LookupEnv(`DATABASE_URL`)
-
-	if !isSet {
-		log.Fatal(`db url env variable is missing: "DATABASE_URL"`)
+	if err := os.Setenv(`DATABASE_URL`, *dbURL); err != nil{
+		log.Fatal(err)
 	}
-
-	*dbURL = connstr
 }
 
 func setupCacheURL(cacheURL *string, cacheTTL *time.Duration) {
