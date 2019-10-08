@@ -149,6 +149,7 @@ Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
 
 ### Deployment
 * [heroku](/docs/deploy/heroku.md)
+* [AWS Elastic Beanstalk](/docs/deploy/aws/eb/README.md)
 * [on-premises](/docs/deploy/on-prem.md)
 * [Docker](/docs/deploy/docker.md)
 
