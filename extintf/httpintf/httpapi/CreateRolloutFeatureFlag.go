@@ -25,7 +25,7 @@ type CreateRolloutFeatureFlagResponse struct {
 
 /*
 
-	swagger:route POST /rollout/flag/create.json rollout feature-flag CreateRolloutFeatureFlag
+	swagger:route POST /release/flag/create.json rollout release-flag CreateRolloutFeatureFlag
 
 	Create FlagRollout Feature Flag
 

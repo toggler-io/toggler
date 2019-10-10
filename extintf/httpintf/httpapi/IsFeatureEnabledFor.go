@@ -18,7 +18,7 @@ type IsFeatureEnabledRequestPayload struct {
 	// required: true
 	// example: rollout-feature-flag
 	Feature string `json:"feature"`
-	// PilotID is the public unique ID of the pilot who's enrollment needs to be checked.
+	// PilotExtID is the public unique ID of the pilot who's enrollment needs to be checked.
 	//
 	// required: true
 	// example: pilot-public-id
@@ -29,7 +29,7 @@ type IsFeatureEnabledResponseBody = EnrollmentResponseBody
 
 /*
 
-	swagger:route POST /rollout/is-feature-enabled.json feature-flag pilot IsFeatureEnabled
+	swagger:route POST /release/is-feature-enabled.json release-flag pilot IsFeatureEnabled
 
 	Check Rollout Feature Status For Pilot
 

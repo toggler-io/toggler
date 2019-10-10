@@ -65,7 +65,7 @@ type IsFeatureEnabledOK struct {
 }
 
 func (o *IsFeatureEnabledOK) Error() string {
-	return fmt.Sprintf("[POST /rollout/is-feature-enabled.json][%d] isFeatureEnabledOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[POST /release/is-feature-enabled.json][%d] isFeatureEnabledOK  %+v", 200, o.Payload)
 }
 
 func (o *IsFeatureEnabledOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -95,7 +95,7 @@ type IsFeatureEnabledBadRequest struct {
 }
 
 func (o *IsFeatureEnabledBadRequest) Error() string {
-	return fmt.Sprintf("[POST /rollout/is-feature-enabled.json][%d] isFeatureEnabledBadRequest  %+v", 400, o.Payload)
+	return fmt.Sprintf("[POST /release/is-feature-enabled.json][%d] isFeatureEnabledBadRequest  %+v", 400, o.Payload)
 }
 
 func (o *IsFeatureEnabledBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -125,7 +125,7 @@ type IsFeatureEnabledInternalServerError struct {
 }
 
 func (o *IsFeatureEnabledInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /rollout/is-feature-enabled.json][%d] isFeatureEnabledInternalServerError  %+v", 500, o.Payload)
+	return fmt.Sprintf("[POST /release/is-feature-enabled.json][%d] isFeatureEnabledInternalServerError  %+v", 500, o.Payload)
 }
 
 func (o *IsFeatureEnabledInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

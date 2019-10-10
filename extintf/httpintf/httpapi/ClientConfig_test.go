@@ -3,18 +3,20 @@ package httpapi_test
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/toggler-io/toggler/extintf/httpintf/httpapi"
-	"github.com/toggler-io/toggler/lib/go/client"
-	"github.com/toggler-io/toggler/lib/go/client/operations"
-	"github.com/toggler-io/toggler/lib/go/models"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 
+	"github.com/toggler-io/toggler/lib/go/client"
+	"github.com/toggler-io/toggler/lib/go/client/operations"
+
+	"github.com/toggler-io/toggler/extintf/httpintf/httpapi"
+
 	"github.com/adamluzsi/testcase"
-	. "github.com/toggler-io/toggler/testing"
 	"github.com/stretchr/testify/require"
+
+	. "github.com/toggler-io/toggler/testing"
 )
 
 func TestServeMux_ClientConfig(t *testing.T) {
@@ -46,10 +48,10 @@ func TestServeMux_ClientConfig(t *testing.T) {
 			s.Then(`the request will be accepted with OK`, func(t *testcase.T) {
 				r := subject(t)
 				require.Equal(t, 200, r.Code)
-				var body httpapi.RolloutClientConfigResponseBody
+				var body httpapi.ClientConfigResponseBody
 				IsJsonResponse(t, r, &body)
-				stateIs(t, GetReleaseFlagName(t), true, body.States)
-				stateIs(t, `yet-unknown-feature`, false, body.States)
+				stateIs(t, GetReleaseFlagName(t), true, body.Release.Flags)
+				stateIs(t, `yet-unknown-feature`, false, body.Release.Flags)
 			})
 		})
 
@@ -59,10 +61,10 @@ func TestServeMux_ClientConfig(t *testing.T) {
 			s.Then(`the request will include values about toggles being flipped off`, func(t *testcase.T) {
 				r := subject(t)
 				require.Equal(t, 200, r.Code)
-				var body httpapi.RolloutClientConfigResponseBody
+				var body httpapi.ClientConfigResponseBody
 				IsJsonResponse(t, r, &body)
-				stateIs(t, GetReleaseFlagName(t), false, body.States)
-				stateIs(t, `yet-unknown-feature`, false, body.States)
+				stateIs(t, GetReleaseFlagName(t), false, body.Release.Flags)
+				stateIs(t, `yet-unknown-feature`, false, body.Release.Flags)
 			})
 		})
 
@@ -72,7 +74,7 @@ func TestServeMux_ClientConfig(t *testing.T) {
 		s.Context(`query string`, func(s *testcase.Spec) {
 			s.And(`the feature query string key`, func(s *testcase.Spec) {
 				s.Let(`request`, func(t *testcase.T) interface{} {
-					u, err := url.Parse(`/rollout/config.json`)
+					u, err := url.Parse(`/client/config.json`)
 					require.Nil(t, err)
 
 					q := u.Query()
@@ -84,17 +86,17 @@ func TestServeMux_ClientConfig(t *testing.T) {
 					return httptest.NewRequest(http.MethodGet, u.String(), bytes.NewBuffer([]byte{}))
 				})
 
-				s.Context(`is "feature"`, func(s *testcase.Spec) {
+				s.Context(`is "release_flags"`, func(s *testcase.Spec) {
 					s.Let(`feature query string key`, func(t *testcase.T) interface{} {
-						return `feature`
+						return `release_flags`
 					})
 
 					sharedSpec(s)
 				})
 
-				s.Context(`is "feature[]"`, func(s *testcase.Spec) {
+				s.Context(`is "release_flags[]"`, func(s *testcase.Spec) {
 					s.Let(`feature query string key`, func(t *testcase.T) interface{} {
-						return `feature[]`
+						return `release_flags[]`
 					})
 
 					sharedSpec(s)
@@ -104,14 +106,15 @@ func TestServeMux_ClientConfig(t *testing.T) {
 
 		s.Context(`payload serialized as json`, func(s *testcase.Spec) {
 			s.Let(`request`, func(t *testcase.T) interface{} {
-				u, err := url.Parse(`/rollout/config.json`)
+				u, err := url.Parse(`/client/config.json`)
 				require.Nil(t, err)
 				payload := bytes.NewBuffer([]byte{})
 				jsonenc := json.NewEncoder(payload)
-				require.Nil(t, jsonenc.Encode(httpapi.RolloutClientConfigRequestBody{
-					PilotID:  GetExternalPilotID(t),
-					Features: []string{GetReleaseFlagName(t), "yet-unknown-feature"},
-				}))
+
+				var confReq httpapi.ClientConfigRequest
+				confReq.Body.PilotExtID = GetExternalPilotID(t)
+				confReq.Body.ReleaseFlags = []string{GetReleaseFlagName(t), "yet-unknown-feature"}
+				require.Nil(t, jsonenc.Encode(confReq.Body))
 
 				r := httptest.NewRequest(http.MethodGet, u.String(), payload)
 				r.Header.Set(`Content-Type`, `application/json`)
@@ -131,10 +134,9 @@ func TestServeMux_ClientConfig(t *testing.T) {
 		s := httptest.NewServer(http.StripPrefix(`/api/v1`, NewServeMux(t)))
 		defer s.Close()
 
-		p := operations.NewRolloutClientConfigParams()
-		p.Body = &models.RolloutClientConfigRequestBody{}
-		p.Body.PilotID = &GetPilot(t).ExternalID
-		p.Body.Features = []string{GetReleaseFlagName(t)}
+		p := operations.NewClientConfigParams()
+		p.Body.PilotExtID = &GetPilot(t).ExternalID
+		p.Body.ReleaseFlags = []string{GetReleaseFlagName(t)}
 
 		tc := client.DefaultTransportConfig()
 		u, _ := url.Parse(s.URL)
@@ -143,14 +145,14 @@ func TestServeMux_ClientConfig(t *testing.T) {
 
 		c := client.NewHTTPClientWithConfig(nil, tc)
 
-		resp, err := c.Operations.RolloutClientConfig(p)
+		resp, err := c.Operations.ClientConfig(p)
 		if err != nil {
 			t.Fatal(err.Error())
 		}
 
 		require.NotNil(t, resp)
 		require.NotNil(t, resp.Payload)
-		require.Equal(t, GetPilotEnrollment(t), resp.Payload.States[GetReleaseFlagName(t)])
+		require.Equal(t, GetPilotEnrollment(t), resp.Payload.Release.Flags[GetReleaseFlagName(t)])
 
 	})
 

@@ -8,6 +8,7 @@ package models
 import (
 	strfmt "github.com/go-openapi/strfmt"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
 )
 
@@ -17,12 +18,39 @@ import (
 // swagger:model ClientConfigResponseBody
 type ClientConfigResponseBody struct {
 
-	// States holds the requested rollout feature flag enrollment statuses.
-	States map[string]bool `json:"states,omitempty"`
+	// release
+	Release *Release `json:"release,omitempty"`
 }
 
 // Validate validates this client config response body
 func (m *ClientConfigResponseBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateRelease(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ClientConfigResponseBody) validateRelease(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Release) { // not required
+		return nil
+	}
+
+	if m.Release != nil {
+		if err := m.Release.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("release")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -37,6 +65,37 @@ func (m *ClientConfigResponseBody) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *ClientConfigResponseBody) UnmarshalBinary(b []byte) error {
 	var res ClientConfigResponseBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// Release Release holds information related the release management
+// swagger:model Release
+type Release struct {
+
+	// Flags hold the states of the release flags of the client
+	Flags map[string]bool `json:"flags,omitempty"`
+}
+
+// Validate validates this release
+func (m *Release) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *Release) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *Release) UnmarshalBinary(b []byte) error {
+	var res Release
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -25,6 +25,39 @@ type Client struct {
 }
 
 /*
+ClientConfig returns all the flag states that was requested in the favor of a pilot
+
+This endpoint especially useful for Mobile & SPA apps.
+The endpoint can be called with HTTP GET method as well,
+POST is used officially only to support most highly abstracted http clients,
+where using payload to upload cannot be completed with other http methods.
+*/
+func (a *Client) ClientConfig(params *ClientConfigParams) (*ClientConfigOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewClientConfigParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "ClientConfig",
+		Method:             "GET",
+		PathPattern:        "/client/config.json",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &ClientConfigReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*ClientConfigOK), nil
+
+}
+
+/*
 CreateRolloutFeatureFlag creates flag rollout feature flag
 
 This operation allows you to create a new rollout feature flag.
@@ -38,7 +71,7 @@ func (a *Client) CreateRolloutFeatureFlag(params *CreateRolloutFeatureFlagParams
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "CreateRolloutFeatureFlag",
 		Method:             "POST",
-		PathPattern:        "/rollout/flag/create.json",
+		PathPattern:        "/release/flag/create.json",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http", "https"},
@@ -73,7 +106,7 @@ func (a *Client) IsFeatureEnabled(params *IsFeatureEnabledParams) (*IsFeatureEna
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "IsFeatureEnabled",
 		Method:             "POST",
-		PathPattern:        "/rollout/is-feature-enabled.json",
+		PathPattern:        "/release/is-feature-enabled.json",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http", "https"},
@@ -109,7 +142,7 @@ func (a *Client) IsFeatureGloballyEnabled(params *IsFeatureGloballyEnabledParams
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "IsFeatureGloballyEnabled",
 		Method:             "POST",
-		PathPattern:        "/rollout/is-feature-globally-enabled.json",
+		PathPattern:        "/release/is-feature-globally-enabled.json",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http", "https"},
@@ -122,39 +155,6 @@ func (a *Client) IsFeatureGloballyEnabled(params *IsFeatureGloballyEnabledParams
 		return nil, err
 	}
 	return result.(*IsFeatureGloballyEnabledOK), nil
-
-}
-
-/*
-RolloutClientConfig checks multiple rollout feature status for a certain pilot
-
-Return all the flag states that was requested in the favor of a Pilot.
-This endpoint especially useful for Mobile & SPA apps.
-The endpoint can be called with HTTP GET method as well,
-POST is used officially only to support most highly abstracted http clients.
-*/
-func (a *Client) RolloutClientConfig(params *RolloutClientConfigParams) (*RolloutClientConfigOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewRolloutClientConfigParams()
-	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "RolloutClientConfig",
-		Method:             "POST",
-		PathPattern:        "/rollout/config.json",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http", "https"},
-		Params:             params,
-		Reader:             &RolloutClientConfigReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return result.(*RolloutClientConfigOK), nil
 
 }
 

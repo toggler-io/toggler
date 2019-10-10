@@ -17,8 +17,9 @@ func NewServeMux(uc *usecases.UseCases) *ServeMux {
 		Upgrader: &websocket.Upgrader{},
 	}
 
-	featureAPI := buildFeatureAPI(mux)
-	mux.Handle(`/rollout/`, http.StripPrefix(`/rollout`, featureAPI))
+	featureAPI := buildReleasesAPI(mux)
+	mux.Handle(`/client/config.json`, http.HandlerFunc(mux.ClientConfigJSON))
+	mux.Handle(`/release/`, http.StripPrefix(`/release`, featureAPI))
 	mux.Handle(`/ws`, authMiddleware(uc, http.HandlerFunc(mux.WebsocketHandler)))
 
 	mux.HandleFunc(`/healthcheck`, func(w http.ResponseWriter, r *http.Request) {
@@ -28,9 +29,8 @@ func NewServeMux(uc *usecases.UseCases) *ServeMux {
 	return mux
 }
 
-func buildFeatureAPI(handlers *ServeMux) *http.ServeMux {
+func buildReleasesAPI(handlers *ServeMux) *http.ServeMux {
 	mux := http.NewServeMux()
-	mux.Handle(`/config.json`, http.HandlerFunc(handlers.RolloutConfigJSON))
 	mux.Handle(`/is-feature-enabled.json`, http.HandlerFunc(handlers.IsFeatureEnabledFor))
 	mux.Handle(`/is-feature-globally-enabled.json`, http.HandlerFunc(handlers.IsFeatureGloballyEnabled))
 	mux.Handle(`/flag/`, http.StripPrefix(`/flag`, buildFlagAPI(handlers)))

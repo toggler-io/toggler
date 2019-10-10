@@ -25,7 +25,7 @@ type IsFeatureGloballyEnabledResponseBody = EnrollmentResponseBody
 
 /*
 
-	swagger:route POST /rollout/is-feature-globally-enabled.json feature-flag pilot IsFeatureGloballyEnabled
+	swagger:route POST /release/is-feature-globally-enabled.json release-flag pilot IsFeatureGloballyEnabled
 
 	Check Rollout Feature Status for Global use
 

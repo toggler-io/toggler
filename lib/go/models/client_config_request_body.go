@@ -21,9 +21,9 @@ type ClientConfigRequestBody struct {
 	// Required: true
 	Features []string `json:"features"`
 
-	// PilotID is the public uniq id that identify the caller pilot
+	// PilotExtID is the public uniq id that identify the caller pilot
 	// Required: true
-	PilotID *string `json:"id"`
+	PilotExtID *string `json:"id"`
 }
 
 // Validate validates this client config request body
@@ -34,7 +34,7 @@ func (m *ClientConfigRequestBody) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validatePilotID(formats); err != nil {
+	if err := m.validatePilotExtID(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -53,9 +53,9 @@ func (m *ClientConfigRequestBody) validateFeatures(formats strfmt.Registry) erro
 	return nil
 }
 
-func (m *ClientConfigRequestBody) validatePilotID(formats strfmt.Registry) error {
+func (m *ClientConfigRequestBody) validatePilotExtID(formats strfmt.Registry) error {
 
-	if err := validate.Required("id", "body", m.PilotID); err != nil {
+	if err := validate.Required("id", "body", m.PilotExtID); err != nil {
 		return err
 	}
 

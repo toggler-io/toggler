@@ -65,7 +65,7 @@ type RolloutClientConfigOK struct {
 }
 
 func (o *RolloutClientConfigOK) Error() string {
-	return fmt.Sprintf("[POST /rollout/config.json][%d] rolloutClientConfigOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[POST /client/config.json][%d] rolloutClientConfigOK  %+v", 200, o.Payload)
 }
 
 func (o *RolloutClientConfigOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -95,7 +95,7 @@ type RolloutClientConfigBadRequest struct {
 }
 
 func (o *RolloutClientConfigBadRequest) Error() string {
-	return fmt.Sprintf("[POST /rollout/config.json][%d] rolloutClientConfigBadRequest  %+v", 400, o.Payload)
+	return fmt.Sprintf("[POST /client/config.json][%d] rolloutClientConfigBadRequest  %+v", 400, o.Payload)
 }
 
 func (o *RolloutClientConfigBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -125,7 +125,7 @@ type RolloutClientConfigInternalServerError struct {
 }
 
 func (o *RolloutClientConfigInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /rollout/config.json][%d] rolloutClientConfigInternalServerError  %+v", 500, o.Payload)
+	return fmt.Sprintf("[POST /client/config.json][%d] rolloutClientConfigInternalServerError  %+v", 500, o.Payload)
 }
 
 func (o *RolloutClientConfigInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

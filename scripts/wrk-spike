@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -e -u
+
+(
+	type wrk
+) 1>/dev/null
+
+: ${WDP:?"working directory path required"}
+
+function main() {
+	local url=${1:?"service url required"}
+	url=${url%/}
+	if [[ ! ${url} =~ ^http ]]; then
+		url="http://${url}"
+	fi
+
+	local -a opts=(${@:2})
+	\wrk "${opts[@]}" -s ${WDP}/scripts/wrk-spike.lua "${url}/api/v1/client/config.json"
+}
+
+main ${@}

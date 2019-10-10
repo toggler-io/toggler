@@ -21,7 +21,7 @@ type IsFeatureEnabledRequestPayload struct {
 	// Required: true
 	Feature *string `json:"feature"`
 
-	// PilotID is the public unique ID of the pilot who's enrollment needs to be checked.
+	// PilotExtID is the public unique ID of the pilot who's enrollment needs to be checked.
 	// Required: true
 	PilotID *string `json:"id"`
 }
