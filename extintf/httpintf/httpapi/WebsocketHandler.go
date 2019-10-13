@@ -106,13 +106,16 @@ subscription:
 		switch req.Operation {
 		case `IsFeatureEnabled`:
 			data := req.Data.(map[string]interface{})
-			enr, err := sm.UseCases.IsFeatureEnabledFor(data[`feature`].(string), data[`id`].(string))
+
+			releaseFlagName := data[`feature`].(string)
+			states, err := sm.UseCases.GetPilotFlagStates(r.Context(), data[`id`].(string), releaseFlagName)
+
 			if handle(err, http.StatusInternalServerError) {
 				continue subscription
 			}
 
-			var resp IsFeatureEnabledResponseBody
-			resp.Enrollment = enr
+			var resp EnrollmentResponseBody
+			resp.Enrollment = states[releaseFlagName]
 
 			if handle(c.WriteJSON(&resp), http.StatusInternalServerError) {
 				break subscription
@@ -139,4 +142,17 @@ subscription:
 		}
 
 	}
+}
+
+type IsFeatureEnabledRequestPayload struct {
+	// Feature is the Feature Flag name that is needed to be checked for enrollment
+	//
+	// required: true
+	// example: rollout-feature-flag
+	Feature string `json:"feature"`
+	// PilotExtID is the public unique ID of the pilot who's enrollment needs to be checked.
+	//
+	// required: true
+	// example: pilot-public-id
+	PilotID string `json:"id"`
 }

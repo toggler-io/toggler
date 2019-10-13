@@ -8,9 +8,10 @@ import (
 	"testing"
 
 	"github.com/adamluzsi/testcase"
+	"github.com/stretchr/testify/require"
+
 	"github.com/toggler-io/toggler/services/release"
 	. "github.com/toggler-io/toggler/testing"
-	"github.com/stretchr/testify/require"
 )
 
 func TestFeatureFlagChecker(t *testing.T) {
@@ -28,7 +29,7 @@ func TestFeatureFlagChecker(t *testing.T) {
 	})
 
 	s.Describe(`IsFeatureEnabledFor`, func(s *testcase.Spec) {
-		SpecFeatureFlagChecker_IsFeatureEnabledFor(s)
+		SpecFeatureFlagChecker_GetPilotFlagStatesOldIsFeatureEnabledForTests(s)
 	})
 
 	s.Describe(`IsFeatureGloballyEnabled`, func(s *testcase.Spec) {
@@ -153,62 +154,86 @@ func SpecFeatureFlagChecker_GetPilotFlagStates(s *testcase.Spec) {
 			}
 		})
 	})
+
+	s.Test(`E2E`, func(t *testcase.T) {
+		var tolerationPercentage int
+		if testing.Short() {
+			tolerationPercentage = 5
+		} else {
+			tolerationPercentage = 3
+		}
+		var samplingCount int
+		if testing.Short() {
+			samplingCount = 1000
+		} else {
+			samplingCount = 10000
+		}
+		extIDS := make([]string, 0, samplingCount)
+		for i := 0; i < samplingCount; i++ {
+			extIDS = append(extIDS, ExampleExternalPilotID())
+		}
+		expectedEnrollMaxPercentage := rand.Intn(51) + 50
+		if 100 < expectedEnrollMaxPercentage+tolerationPercentage {
+			tolerationPercentage = 100 - expectedEnrollMaxPercentage
+		}
+		releaseFlagName := GetReleaseFlagName(t)
+		flag := &release.Flag{
+			Name: releaseFlagName,
+			Rollout: release.FlagRollout{
+				Strategy: release.FlagRolloutStrategy{
+					Percentage: expectedEnrollMaxPercentage,
+				},
+			},
+		}
+		require.Nil(t, release.NewRolloutManager(GetStorage(t)).CreateFeatureFlag(context.Background(), flag))
+		defer GetStorage(t).DeleteByID(context.Background(), release.Flag{}, flag.ID)
+
+		/* start E2E test */
+
+		var enrolled, rejected int
+
+		t.Log(`given we use the constructor`)
+		ffc := release.NewFlagChecker(GetStorage(t))
+
+		for _, extID := range extIDS {
+			releaseEnrollmentStates, err := ffc.GetPilotFlagStates(context.Background(), extID, releaseFlagName)
+			require.Nil(t, err)
+
+			isIn, ok := releaseEnrollmentStates[releaseFlagName]
+			require.True(t, ok, `release flag is not present in the enrollment states`)
+
+			if isIn {
+				enrolled++
+			} else {
+				rejected++
+			}
+		}
+
+		require.True(t, enrolled > 0, `no one enrolled? fishy`)
+
+		t.Logf(`a little toleration is still accepted, as long in generally it is within the range (+%d%%)`, tolerationPercentage)
+		maximumAcceptedEnrollmentPercentage := expectedEnrollMaxPercentage + tolerationPercentage
+		minimumAcceptedEnrollmentPercentage := expectedEnrollMaxPercentage - tolerationPercentage
+
+		t.Logf(`so the total percentage in this test that fulfil the requirements is %d%%`, maximumAcceptedEnrollmentPercentage)
+		testRunResultPercentage := int(float32(enrolled) / float32(enrolled+rejected) * 100)
+
+		t.Logf(`and the actual percentage is %d%%`, testRunResultPercentage)
+		require.True(t, testRunResultPercentage <= maximumAcceptedEnrollmentPercentage)
+		require.True(t, minimumAcceptedEnrollmentPercentage <= testRunResultPercentage)
+
+	})
 }
 
-func SpecFeatureFlagChecker_IsFeatureGloballyEnabledFor(s *testcase.Spec) {
+// TODO: merge the business specification from this into the main spec suite of the GetPilotFlagStates
+func SpecFeatureFlagChecker_GetPilotFlagStatesOldIsFeatureEnabledForTests(s *testcase.Spec) {
 	subject := func(t *testcase.T) (bool, error) {
-		return featureFlagChecker(t).IsFeatureGloballyEnabled(t.I(`ReleaseFlagName`).(string))
-	}
-
-	thenItWillReportThatFeatureNotGlobballyEnabled := func(s *testcase.Spec) {
-		s.Then(`it will report that feature is not enabled globally`, func(t *testcase.T) {
-			enabled, err := subject(t)
-			require.Nil(t, err)
-			require.False(t, enabled)
-		})
-	}
-
-	thenItWillReportThatFeatureIsGloballyRolledOut := func(s *testcase.Spec) {
-		s.Then(`it will report that feature is globally rolled out`, func(t *testcase.T) {
-			enabled, err := subject(t)
-			require.Nil(t, err)
-			require.True(t, enabled)
-		})
-	}
-
-	s.When(`feature flag is not seen before`, func(s *testcase.Spec) {
-		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
-		})
-
-		thenItWillReportThatFeatureNotGlobballyEnabled(s)
-	})
-
-	s.When(`feature flag is given`, func(s *testcase.Spec) {
-		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
-		})
-
-		s.And(`it is not yet rolled out globally`, func(s *testcase.Spec) {
-			s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return 99 })
-
-			thenItWillReportThatFeatureNotGlobballyEnabled(s)
-		})
-
-		s.And(`it is rolled out globally`, func(s *testcase.Spec) {
-			s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return 100 })
-
-			thenItWillReportThatFeatureIsGloballyRolledOut(s)
-		})
-	})
-}
-
-func SpecFeatureFlagChecker_IsFeatureEnabledFor(s *testcase.Spec) {
-	subject := func(t *testcase.T) (bool, error) {
-		return featureFlagChecker(t).IsFeatureEnabledFor(
-			t.I(`ReleaseFlagName`).(string),
-			t.I(`PilotExternalID`).(string),
-		)
+		releaseFlagName := t.I(`ReleaseFlagName`).(string)
+		states, err := featureFlagChecker(t).GetPilotFlagStates(context.Background(), t.I(`PilotExternalID`).(string), releaseFlagName)
+		if err != nil {
+			return false, err
+		}
+		return states[releaseFlagName], nil
 	}
 
 	s.When(`feature was never enabled before`, func(s *testcase.Spec) {
@@ -376,6 +401,54 @@ func SpecFeatureFlagChecker_IsFeatureEnabledFor(s *testcase.Spec) {
 					require.True(t, enabled)
 				})
 			})
+		})
+	})
+}
+
+func SpecFeatureFlagChecker_IsFeatureGloballyEnabledFor(s *testcase.Spec) {
+	subject := func(t *testcase.T) (bool, error) {
+		return featureFlagChecker(t).IsFeatureGloballyEnabled(t.I(`ReleaseFlagName`).(string))
+	}
+
+	thenItWillReportThatFeatureNotGlobballyEnabled := func(s *testcase.Spec) {
+		s.Then(`it will report that feature is not enabled globally`, func(t *testcase.T) {
+			enabled, err := subject(t)
+			require.Nil(t, err)
+			require.False(t, enabled)
+		})
+	}
+
+	thenItWillReportThatFeatureIsGloballyRolledOut := func(s *testcase.Spec) {
+		s.Then(`it will report that feature is globally rolled out`, func(t *testcase.T) {
+			enabled, err := subject(t)
+			require.Nil(t, err)
+			require.True(t, enabled)
+		})
+	}
+
+	s.When(`feature flag is not seen before`, func(s *testcase.Spec) {
+		s.Before(func(t *testcase.T) {
+			require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
+		})
+
+		thenItWillReportThatFeatureNotGlobballyEnabled(s)
+	})
+
+	s.When(`feature flag is given`, func(s *testcase.Spec) {
+		s.Before(func(t *testcase.T) {
+			require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
+		})
+
+		s.And(`it is not yet rolled out globally`, func(s *testcase.Spec) {
+			s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return 99 })
+
+			thenItWillReportThatFeatureNotGlobballyEnabled(s)
+		})
+
+		s.And(`it is rolled out globally`, func(s *testcase.Spec) {
+			s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return 100 })
+
+			thenItWillReportThatFeatureIsGloballyRolledOut(s)
 		})
 	})
 }

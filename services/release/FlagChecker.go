@@ -2,11 +2,12 @@ package release
 
 import (
 	"context"
-	"github.com/adamluzsi/frameless"
-	"github.com/adamluzsi/frameless/iterators"
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/adamluzsi/frameless"
+	"github.com/adamluzsi/frameless/iterators"
 )
 
 func NewFlagChecker(s Storage) *FlagChecker {
@@ -22,42 +23,6 @@ type FlagChecker struct {
 	Storage                Storage
 	IDPercentageCalculator func(string, int64) (int, error)
 	HTTPClient             http.Client
-}
-
-// IsFeatureEnabledFor grant you the ability to
-// check whether a pilot is enrolled or not for the feature flag in subject.
-func (checker *FlagChecker) IsFeatureEnabledFor(featureFlagName string, externalPilotID string) (bool, error) {
-
-	ff, err := checker.Storage.FindReleaseFlagByName(context.TODO(), featureFlagName)
-
-	if err != nil {
-		return false, err
-	}
-
-	if ff == nil {
-		return false, nil
-	}
-
-	pilot, err := checker.Storage.FindReleaseFlagPilotByPilotExternalID(context.TODO(), ff.ID, externalPilotID)
-
-	if err != nil {
-		return false, err
-	}
-
-	if pilot != nil {
-		return pilot.Enrolled, nil
-	}
-
-	if ff.Rollout.Strategy.DecisionLogicAPI != nil {
-		return checker.makeCustomDomainAPIDecisionCheck(featureFlagName, externalPilotID, ff.Rollout.Strategy.DecisionLogicAPI)
-	}
-
-	if ff.Rollout.Strategy.Percentage == 0 {
-		return false, nil
-	}
-
-	return checker.isEnrolled(ff, externalPilotID)
-
 }
 
 func (checker *FlagChecker) IsFeatureGloballyEnabled(featureFlagName string) (bool, error) {
@@ -94,16 +59,31 @@ func (checker *FlagChecker) makeCustomDomainAPIDecisionCheck(featureFlagName str
 	return 200 <= code && code < 300, nil
 }
 
-func (checker *FlagChecker) GetPilotFlagStates(ctx context.Context, externalPilotID string, featureFlagNames ...string) (map[string]bool, error) {
+func (checker *FlagChecker) GetPilotFlagStates(ctx context.Context, pilotExtID string, flagNames ...string) (map[string]bool, error) {
 	states := make(map[string]bool)
 
-	for _, flagName := range featureFlagNames {
+	for _, flagName := range flagNames {
 		states[flagName] = false
 	}
 
 	flagIndexByID := make(map[string]*Flag)
 
-	flags := checker.Storage.FindReleaseFlagsByName(ctx, featureFlagNames...)
+	flags := checker.Storage.FindReleaseFlagsByName(ctx, flagNames...)
+
+	pilotsIter := checker.Storage.FindPilotEntriesByExtID(ctx, pilotExtID)
+	defer pilotsIter.Close()
+
+	var pilotsIndex = make(map[string]*Pilot)
+	for pilotsIter.Next() {
+		var p Pilot
+		if err := pilotsIter.Decode(&p); err != nil {
+			return nil, err
+		}
+		pilotsIndex[p.FlagID] = &p
+	}
+	if err := pilotsIter.Err(); err != nil {
+		return nil, err
+	}
 
 	for flags.Next() {
 		var ff Flag
@@ -112,7 +92,7 @@ func (checker *FlagChecker) GetPilotFlagStates(ctx context.Context, externalPilo
 		}
 		flagIndexByID[ff.ID] = &ff
 
-		enrollment, err := checker.isEnrolled(&ff, externalPilotID)
+		enrollment, err := checker.checkEnrollment(&ff, pilotExtID, pilotsIndex)
 
 		if err != nil {
 			return nil, err
@@ -121,7 +101,7 @@ func (checker *FlagChecker) GetPilotFlagStates(ctx context.Context, externalPilo
 		states[ff.Name] = enrollment
 	}
 
-	pilotEntries := checker.Storage.FindPilotEntriesByExtID(ctx, externalPilotID)
+	pilotEntries := checker.Storage.FindPilotEntriesByExtID(ctx, pilotExtID)
 	pilotEntriesThatAreRelevant := iterators.Filter(pilotEntries, func(p frameless.Entity) bool {
 		_, ok := flagIndexByID[p.(Pilot).FlagID]
 		return ok
@@ -138,10 +118,25 @@ func (checker *FlagChecker) GetPilotFlagStates(ctx context.Context, externalPilo
 	return states, nil
 }
 
-func (checker *FlagChecker) isEnrolled(ff *Flag, externalPilotID string) (bool, error) {
-	diceRollResultPercentage, err := checker.IDPercentageCalculator(externalPilotID, ff.Rollout.RandSeed)
+func (checker *FlagChecker) checkEnrollment(flag *Flag, pilotExtID string, pilotIndex map[string]*Pilot) (bool, error) {
+
+	if p, ok := pilotIndex[flag.ID]; ok {
+		return p.Enrolled, nil
+	}
+
+	if flag.Rollout.Strategy.DecisionLogicAPI != nil {
+		return checker.makeCustomDomainAPIDecisionCheck(flag.Name, pilotExtID, flag.Rollout.Strategy.DecisionLogicAPI)
+	}
+
+	if flag.Rollout.Strategy.Percentage == 0 {
+		return false, nil
+	}
+
+	diceRollResultPercentage, err := checker.IDPercentageCalculator(pilotExtID, flag.Rollout.RandSeed)
 	if err != nil {
 		return false, err
 	}
-	return diceRollResultPercentage <= ff.Rollout.Strategy.Percentage, nil
+
+	return diceRollResultPercentage <= flag.Rollout.Strategy.Percentage, nil
+
 }

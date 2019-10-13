@@ -171,8 +171,9 @@ func FindStoredReleaseFlagByName(t *testcase.T) *release.Flag {
 }
 
 func EnsureFlag(t *testcase.T, name string, prc int) {
+	ctx := context.Background()
 	rm := release.NewRolloutManager(GetStorage(t))
-	require.Nil(t, rm.CreateFeatureFlag(context.TODO(), &release.Flag{
+	require.Nil(t, rm.CreateFeatureFlag(ctx, &release.Flag{
 		Name: name,
 		Rollout: release.FlagRollout{
 			Strategy: release.FlagRolloutStrategy{
