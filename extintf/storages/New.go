@@ -4,12 +4,8 @@ import (
 	"database/sql"
 	"net/url"
 
-	"github.com/toggler-io/toggler/extintf/storages/redis"
-
 	"github.com/adamluzsi/frameless"
 
-	"github.com/toggler-io/toggler/extintf/storages/inmemory"
-	"github.com/toggler-io/toggler/extintf/storages/postgres"
 	"github.com/toggler-io/toggler/usecases"
 )
 
@@ -31,13 +27,13 @@ func New(connstr string) (usecases.Storage, error) {
 		if err != nil {
 			return nil, err
 		}
-		return postgres.NewPostgres(db)
+		return NewPostgres(db)
 
 	case `redis`:
-		return redis.New(connstr)
+		return NewRedis(connstr)
 
 	case `memory`:
-		return inmemory.New(), nil
+		return NewInMemory(), nil
 
 	default:
 		return nil, frameless.ErrNotImplemented

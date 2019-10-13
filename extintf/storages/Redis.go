@@ -1,23 +1,25 @@
-package redis
+package storages
 
 import (
 	"bytes"
 	"context"
 	"encoding/gob"
 	"fmt"
+
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/pkg/errors"
 
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources"
-	"github.com/toggler-io/toggler/services/release"
-	"github.com/toggler-io/toggler/services/security"
 	"github.com/go-redis/redis"
 	"github.com/google/uuid"
+
+	"github.com/toggler-io/toggler/services/release"
+	"github.com/toggler-io/toggler/services/security"
 )
 
-func New(connstr string) (*Redis, error) {
+func NewRedis(connstr string) (*Redis, error) {
 	r := &Redis{}
 	redisClientOpt, err := redis.ParseURL(connstr)
 	if err != nil {
@@ -28,6 +30,7 @@ func New(connstr string) (*Redis, error) {
 		reflects.FullyQualifiedName(security.Token{}):       "tokens",
 		reflects.FullyQualifiedName(release.Pilot{}):        "pilots",
 		reflects.FullyQualifiedName(release.Flag{}):         "release_flags",
+		reflects.FullyQualifiedName(release.Allow{}):        "release_allows",
 		reflects.FullyQualifiedName(resources.TestEntity{}): "test_entities",
 	}
 	return r, nil
@@ -36,6 +39,22 @@ func New(connstr string) (*Redis, error) {
 type Redis struct {
 	client     *redis.Client
 	keyMapping map[string]string
+}
+
+func (r *Redis) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...*release.Flag) release.AllowEntries {
+	flagIndex := make(map[string]struct{})
+	for _, flag := range flags {
+		flagIndex[flag.ID] = struct{}{}
+	}
+
+	return iterators.Filter(r.FindAll(ctx, release.Allow{}), func(entity frameless.Entity) bool {
+		e, ok := entity.(release.Allow)
+		if !ok {
+			return ok
+		}
+		 _, ok = flagIndex[e.FlagID]
+		 return ok
+	})
 }
 
 func (r *Redis) FindReleaseFlagsByName(ctx context.Context, names ...string) frameless.Iterator {

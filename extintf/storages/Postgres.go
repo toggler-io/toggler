@@ -1,21 +1,29 @@
-package postgres
+package storages
 
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/url"
+	"path"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/source"
+	bindata "github.com/golang-migrate/migrate/v4/source/go_bindata"
+	_ "github.com/lib/pq"
+
+	pgmigr "github.com/golang-migrate/migrate/v4/database/postgres"
+
+	"github.com/toggler-io/toggler/extintf/storages/migrations"
 	"github.com/toggler-io/toggler/services/release"
 	"github.com/toggler-io/toggler/services/security"
-	_ "github.com/lib/pq"
 )
 
 func NewPostgres(db *sql.DB) (*Postgres, error) {
@@ -28,15 +36,37 @@ func NewPostgres(db *sql.DB) (*Postgres, error) {
 	return pg, nil
 }
 
-type DB interface {
-	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
-	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
-	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
+type Postgres struct {
+	DB interface {
+		ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+		QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
+		QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
+	}
 }
 
-type Postgres struct {
-	DB
-	timeLocation *time.Location
+func (pg *Postgres) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...*release.Flag) release.AllowEntries {
+	m := releaseAllowMapper{}
+	nextPlaceholder := newPrepareQueryPlaceholderAssigner()
+
+	var query string
+	var args []interface{}
+
+	var queryWhereFlagInList []string
+	for _, f := range flags {
+		queryWhereFlagInList = append(queryWhereFlagInList, nextPlaceholder())
+		args = append(args, f.ID)
+	}
+
+	query = fmt.Sprintf(`SELECT %s FROM "release_allows" WHERE "flag_id" IN (%s)`,
+		strings.Join(m.Columns(), `, `),
+		strings.Join(queryWhereFlagInList, `, `))
+
+	rows , err := pg.DB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return iterators.NewError(err)
+	}
+
+	return iterators.NewSQLRows(rows, m)
 }
 
 func (pg *Postgres) Close() error {
@@ -50,14 +80,16 @@ func (pg *Postgres) Close() error {
 	}
 }
 
-func (pg *Postgres) Save(ctx context.Context, entity interface{}) error {
-	if currentID, ok := resources.LookupID(entity); !ok || currentID != "" {
+func (pg *Postgres) Save(ctx context.Context, ptr interface{}) error {
+	if currentID, ok := resources.LookupID(ptr); !ok || currentID != "" {
 		return fmt.Errorf("entity already have an ID: %s", currentID)
 	}
 
-	switch e := entity.(type) {
+	switch e := ptr.(type) {
+	case *release.Allow:
+		return pg.releaseAllowInsertNew(ctx, e)
 	case *release.Flag:
-		return pg.featureFlagInsertNew(ctx, e)
+		return pg.releaseFlagInsertNew(ctx, e)
 	case *release.Pilot:
 		return pg.pilotInsertNew(ctx, e)
 	case *security.Token:
@@ -77,8 +109,11 @@ func (pg *Postgres) FindByID(ctx context.Context, ptr interface{}, ID string) (b
 	}
 
 	switch e := ptr.(type) {
+	case *release.Allow:
+		return pg.releaseAllowFindByID(ctx, e, id)
+
 	case *release.Flag:
-		return pg.featureFlagFindByID(ctx, e, id)
+		return pg.releaseFlagFindByID(ctx, e, id)
 
 	case *release.Pilot:
 		return pg.pilotFindByID(ctx, e, id)
@@ -97,6 +132,8 @@ func (pg *Postgres) FindByID(ctx context.Context, ptr interface{}, ID string) (b
 func (pg *Postgres) Truncate(ctx context.Context, Type interface{}) error {
 	var tableName string
 	switch Type.(type) {
+	case release.Allow, *release.Allow:
+		tableName = `release_allows`
 	case release.Flag, *release.Flag:
 		tableName = `release_flags`
 	case release.Pilot, *release.Pilot:
@@ -124,17 +161,20 @@ func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, ID string)
 	var query string
 
 	switch Type.(type) {
+	case release.Allow, *release.Allow:
+		query = `DELETE FROM "release_allows" WHERE "id" = $1`
+
 	case release.Flag, *release.Flag:
-		query = `DELETE FROM "release_flags" WHERE id = $1`
+		query = `DELETE FROM "release_flags" WHERE "id" = $1`
 
 	case release.Pilot, *release.Pilot:
-		query = `DELETE FROM "pilots" WHERE id = $1`
+		query = `DELETE FROM "pilots" WHERE "id" = $1`
 
 	case security.Token, *security.Token:
-		query = `DELETE FROM "tokens" WHERE id = $1`
+		query = `DELETE FROM "tokens" WHERE "id" = $1`
 
 	case resources.TestEntity, *resources.TestEntity:
-		query = `DELETE FROM "test_entities" WHERE id = $1`
+		query = `DELETE FROM "test_entities" WHERE "id" = $1`
 
 	default:
 		return frameless.ErrNotImplemented
@@ -159,8 +199,11 @@ func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, ID string)
 
 func (pg *Postgres) Update(ctx context.Context, ptr interface{}) error {
 	switch e := ptr.(type) {
+	case *release.Allow:
+		return pg.releaseAllowUpdate(ctx, e)
+
 	case *release.Flag:
-		return pg.featureFlagUpdate(ctx, e)
+		return pg.releaseFlagUpdate(ctx, e)
 
 	case *release.Pilot:
 		return pg.pilotUpdate(ctx, e)
@@ -178,8 +221,11 @@ func (pg *Postgres) Update(ctx context.Context, ptr interface{}) error {
 
 func (pg *Postgres) FindAll(ctx context.Context, Type interface{}) frameless.Iterator {
 	switch Type.(type) {
+	case release.Allow, *release.Allow:
+		return pg.releaseAllowFindAll(ctx)
+
 	case release.Flag, *release.Flag:
-		return pg.featureFlagFindAll(ctx)
+		return pg.releaseFlagFindAll(ctx)
 
 	case release.Pilot, *release.Pilot:
 		return pg.pilotFindAll(ctx)
@@ -197,7 +243,7 @@ func (pg *Postgres) FindAll(ctx context.Context, Type interface{}) frameless.Ite
 
 func (pg *Postgres) FindReleaseFlagByName(ctx context.Context, name string) (*release.Flag, error) {
 
-	mapper := featureFlagMapper{}
+	mapper := releaseFlagMapper{}
 	query := fmt.Sprintf(`%s FROM "release_flags" WHERE "name" = $1`,
 		mapper.SelectClause())
 
@@ -273,23 +319,22 @@ func (pg *Postgres) FindPilotsByFeatureFlag(ctx context.Context, ff *release.Fla
 	return iterators.NewSQLRows(rows, m)
 }
 
-const tokenFindByTokenStringQuery = `
-SELECT id, sha512, duration, issued_at, owner_uid
+const tokenFindByTokenStringTemplate = `
+SELECT %s
 FROM "tokens" 
 WHERE sha512 = $1;
 `
 
+var tokenFindByTokenStringQuery = fmt.Sprintf(tokenFindByTokenStringTemplate, strings.Join(tokenMapper{}.Columns(), `,`))
+
 func (pg *Postgres) FindTokenBySHA512Hex(ctx context.Context, token string) (*security.Token, error) {
+	m := tokenMapper{}
+
 	row := pg.DB.QueryRowContext(ctx, tokenFindByTokenStringQuery, token)
+
 	var t security.Token
 
-	err := row.Scan(
-		&t.ID,
-		&t.SHA512,
-		&t.Duration,
-		&t.IssuedAt,
-		&t.OwnerUID,
-	)
+	err := m.Map(row, &t)
 
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -297,10 +342,6 @@ func (pg *Postgres) FindTokenBySHA512Hex(ctx context.Context, token string) (*se
 
 	if err != nil {
 		return nil, err
-	}
-
-	if t.IssuedAt, err = pg.ensureTimeLocation(t.IssuedAt); err != nil {
-		return &t, err
 	}
 
 	return &t, nil
@@ -327,7 +368,7 @@ func (pg *Postgres) FindReleaseFlagsByName(ctx context.Context, flagNames ...str
 		args = append(args, arg)
 	}
 
-	mapper := featureFlagMapper{}
+	mapper := releaseFlagMapper{}
 
 	query := fmt.Sprintf(`%s FROM "release_flags" WHERE "name" IN (%s)`,
 		mapper.SelectClause(),
@@ -342,7 +383,39 @@ func (pg *Postgres) FindReleaseFlagsByName(ctx context.Context, flagNames ...str
 	return iterators.NewSQLRows(flags, mapper)
 }
 
-const featureFlagInsertNewQuery = `
+const releaseAllowInsertNewQuery = `
+INSERT INTO "release_allows" ("flag_id", "ip_addr")
+VALUES ($1, $2)
+RETURNING "id";
+`
+
+func (pg *Postgres) releaseAllowInsertNew(ctx context.Context, allow *release.Allow) error {
+
+	var ipAddr sql.NullString
+
+	if allow.InternetProtocolAddress != `` {
+		ipAddr.Valid = true
+		ipAddr.String = allow.InternetProtocolAddress
+	}
+
+	if allow.FlagID == `` {
+		return errors.New(`creating release.Allow without FlagID is forbidden`)
+	}
+
+	row := pg.DB.QueryRowContext(ctx, releaseAllowInsertNewQuery,
+		allow.FlagID,
+		ipAddr,
+	)
+
+	var id sql.NullInt64
+	if err := row.Scan(&id); err != nil {
+		return err
+	}
+
+	return resources.SetID(allow, strconv.FormatInt(id.Int64, 10))
+}
+
+const releaseFlagInsertNewQuery = `
 INSERT INTO "release_flags" (
 	name,
 	rollout_rand_seed,
@@ -353,7 +426,7 @@ VALUES ($1, $2, $3, $4)
 RETURNING id;
 `
 
-func (pg *Postgres) featureFlagInsertNew(ctx context.Context, flag *release.Flag) error {
+func (pg *Postgres) releaseFlagInsertNew(ctx context.Context, flag *release.Flag) error {
 
 	var DecisionLogicAPI sql.NullString
 
@@ -362,7 +435,7 @@ func (pg *Postgres) featureFlagInsertNew(ctx context.Context, flag *release.Flag
 		DecisionLogicAPI.String = flag.Rollout.Strategy.DecisionLogicAPI.String()
 	}
 
-	row := pg.DB.QueryRowContext(ctx, featureFlagInsertNewQuery,
+	row := pg.DB.QueryRowContext(ctx, releaseFlagInsertNewQuery,
 		flag.Name,
 		flag.Rollout.RandSeed,
 		flag.Rollout.Strategy.Percentage,
@@ -444,9 +517,23 @@ func (pg *Postgres) tokenInsertNew(ctx context.Context, token *security.Token) e
 	return resources.SetID(token, strconv.FormatInt(id.Int64, 10))
 }
 
-func (pg *Postgres) featureFlagFindByID(ctx context.Context, flag *release.Flag, id int64) (bool, error) {
+func (pg *Postgres) releaseAllowFindByID(ctx context.Context, allow *release.Allow, id int64) (bool, error) {
+	mapper := releaseAllowMapper{}
+	query := fmt.Sprintf(`SELECT %s FROM "release_allows" WHERE "id" = $1`, strings.Join(mapper.Columns(), `, `))
+	row := pg.DB.QueryRowContext(ctx, query, id)
+	err := mapper.Map(row, allow)
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
 
-	mapper := featureFlagMapper{}
+func (pg *Postgres) releaseFlagFindByID(ctx context.Context, flag *release.Flag, id int64) (bool, error) {
+
+	mapper := releaseFlagMapper{}
 	query := fmt.Sprintf(`%s FROM "release_flags" WHERE "id" = $1`, mapper.SelectClause())
 	row := pg.DB.QueryRowContext(ctx, query, id)
 
@@ -508,23 +595,18 @@ func (pg *Postgres) testEntityFindByID(ctx context.Context, testEntity *resource
 	return true, nil
 }
 
-const tokenFindByIDQuery = `
-SELECT id, sha512, duration, issued_at, owner_uid
+const tokenFindByIDQueryTemplate = `
+SELECT %s
 FROM "tokens" 
 WHERE id = $1;
 `
 
-func (pg *Postgres) tokenFindByID(ctx context.Context, token *security.Token, id int64) (bool, error) {
-	row := pg.DB.QueryRowContext(ctx, tokenFindByIDQuery, id)
-	var t security.Token
+var tokenFindByIDQuery = fmt.Sprintf(tokenFindByIDQueryTemplate, strings.Join(tokenMapper{}.Columns(), `, `))
 
-	err := row.Scan(
-		&t.ID,
-		&t.SHA512,
-		&t.Duration,
-		&t.IssuedAt,
-		&t.OwnerUID,
-	)
+func (pg *Postgres) tokenFindByID(ctx context.Context, token *security.Token, id int64) (bool, error) {
+
+	row := pg.DB.QueryRowContext(ctx, tokenFindByIDQuery, id)
+	err := tokenMapper{}.Map(row, token)
 
 	if err == sql.ErrNoRows {
 		return false, nil
@@ -534,28 +616,27 @@ func (pg *Postgres) tokenFindByID(ctx context.Context, token *security.Token, id
 		return false, err
 	}
 
-	if pg.timeLocation == nil {
-		if pg.timeLocation, err = time.LoadLocation(`UTC`); err != nil {
-			return false, err
-		}
-	}
-
-	if t.IssuedAt, err = pg.ensureTimeLocation(t.IssuedAt); err != nil {
-		return false, err
-	}
-
-	*token = t
 	return true, nil
 }
 
-func (pg *Postgres) featureFlagFindAll(ctx context.Context) frameless.Iterator {
-	mapper := featureFlagMapper{}
+func (pg *Postgres) releaseFlagFindAll(ctx context.Context) frameless.Iterator {
+	mapper := releaseFlagMapper{}
 	query := fmt.Sprintf(`%s FROM "release_flags"`, mapper.SelectClause())
 	rows, err := pg.DB.QueryContext(ctx, query)
 	if err != nil {
 		return iterators.NewError(err)
 	}
 
+	return iterators.NewSQLRows(rows, mapper)
+}
+
+func (pg *Postgres) releaseAllowFindAll(ctx context.Context) frameless.Iterator {
+	mapper := releaseAllowMapper{}
+	query := fmt.Sprintf(`SELECT %s FROM "release_allows"`, strings.Join(mapper.Columns(), `, `))
+	rows, err := pg.DB.QueryContext(ctx, query)
+	if err != nil {
+		return iterators.NewError(err)
+	}
 	return iterators.NewSQLRows(rows, mapper)
 }
 
@@ -588,65 +669,39 @@ func (pg *Postgres) testEntityFindAll(ctx context.Context) frameless.Iterator {
 }
 
 const tokenFindAllQuery = `
-SELECT id, sha512, duration, issued_at, owner_uid
+SELECT %s
 FROM "tokens"
 `
 
 func (pg *Postgres) tokenFindAll(ctx context.Context) frameless.Iterator {
-	rows, err := pg.DB.QueryContext(ctx, tokenFindAllQuery)
+	m := tokenMapper{}
+
+	rows, err := pg.DB.QueryContext(ctx, fmt.Sprintf(tokenFindAllQuery, strings.Join(m.Columns(), `, `)))
 
 	if err != nil {
 		return iterators.NewError(err)
 	}
 
-	receiver, sender := iterators.NewPipe()
-
-	go func() {
-		defer sender.Close()
-
-	wrk:
-		for rows.Next() {
-
-			var t security.Token
-
-			err := rows.Scan(
-				&t.ID,
-				&t.SHA512,
-				&t.Duration,
-				&t.IssuedAt,
-				&t.OwnerUID,
-			)
-
-			if err == sql.ErrNoRows {
-				break wrk
-			}
-
-			if err != nil {
-				sender.Error(err)
-				break wrk
-			}
-
-			if t.IssuedAt, err = pg.ensureTimeLocation(t.IssuedAt); err != nil {
-				sender.Error(err)
-				break wrk
-			}
-
-			if err := sender.Encode(&t); err != nil {
-				sender.Error(err)
-				break wrk
-			}
-		}
-
-		if err := rows.Err(); err != nil {
-			sender.Error(err)
-		}
-
-	}()
-
-	return receiver
+	return iterators.NewSQLRows(rows, m)
 }
 
-const featureFlagUpdateQuery = `
+const releaseAllowUpdateQuery = `
+UPDATE "release_allows"
+SET flag_id = $2,
+	ip_addr = $3
+WHERE id = $1;
+`
+
+func (pg *Postgres) releaseAllowUpdate(ctx context.Context, allow *release.Allow) error {
+	_, err := pg.DB.ExecContext(ctx, releaseAllowUpdateQuery,
+		allow.ID,
+		allow.FlagID,
+		allow.InternetProtocolAddress,
+	)
+	return err
+}
+
+const releaseFlagUpdateQuery = `
 UPDATE "release_flags"
 SET name = $1,
     rollout_rand_seed = $2,
@@ -655,7 +710,7 @@ SET name = $1,
 WHERE id = $5;
 `
 
-func (pg *Postgres) featureFlagUpdate(ctx context.Context, flag *release.Flag) error {
+func (pg *Postgres) releaseFlagUpdate(ctx context.Context, flag *release.Flag) error {
 	var DecisionLogicAPI sql.NullString
 
 	if flag.Rollout.Strategy.DecisionLogicAPI != nil {
@@ -663,7 +718,7 @@ func (pg *Postgres) featureFlagUpdate(ctx context.Context, flag *release.Flag) e
 		DecisionLogicAPI.String = flag.Rollout.Strategy.DecisionLogicAPI.String()
 	}
 
-	_, err := pg.DB.ExecContext(ctx, featureFlagUpdateQuery,
+	_, err := pg.DB.ExecContext(ctx, releaseFlagUpdateQuery,
 		flag.Name,
 		flag.Rollout.RandSeed,
 		flag.Rollout.Strategy.Percentage,
@@ -718,25 +773,135 @@ func (pg *Postgres) testEntityUpdate(ctx context.Context, t *resources.TestEntit
 	return nil
 }
 
-func (pg *Postgres) ensureTimeLocation(t time.Time) (time.Time, error) {
-	if pg.timeLocation == nil {
-		var err error
+func newPrepareQueryPlaceholderAssigner() func() string {
+	var index int
+	return func() string {
+		index++
+		return fmt.Sprintf(`$%d`, index)
+	}
+}
 
-		if pg.timeLocation, err = time.LoadLocation(`UTC`); err != nil {
-			return t, err
+/* -------------------------- MIGRATION -------------------------- */
+
+//go:generate esc -o ./migrations/fs.go -pkg migrations ./migrations
+const pgMigrationsDirectory = `/migrations/postgres`
+
+func Migrate(db *sql.DB) error {
+
+	m, err := NewMigrate(db)
+
+	if err != nil {
+		return err
+	}
+
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		return err
+	}
+
+	return nil
+
+}
+
+func NewMigrate(db *sql.DB) (*migrate.Migrate, error) {
+
+	srcDriver, err := NewBindataSourceDriver()
+
+	if err != nil {
+		return nil, err
+	}
+
+	dbDriver, err := pgmigr.WithInstance(db, &pgmigr.Config{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	m, err := migrate.NewWithInstance(`esc`, srcDriver, `postgres`, dbDriver)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return m, err
+
+}
+
+func NewBindataSourceDriver() (source.Driver, error) {
+	f, err := migrations.FS(false).Open(pgMigrationsDirectory)
+
+	if err != nil {
+		return nil, err
+	}
+
+	fis, err := f.Readdir(-1)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var names []string
+
+	for _, fi := range fis {
+		if !fi.IsDir() {
+			names = append(names, fi.Name())
 		}
 	}
 
-	return t.In(pg.timeLocation), nil
+	s := bindata.Resource(names, func(name string) ([]byte, error) {
+		// path.Join used for `/` file separator joining.
+		// This is needed because the assets generated in an environment where "/" is used as file separator.
+		return migrations.FSByte(false, path.Join(pgMigrationsDirectory, name))
+	})
+
+	return bindata.WithInstance(s)
 }
 
-type featureFlagMapper struct{}
+type tokenMapper struct{}
 
-func (featureFlagMapper) SelectClause() string {
+func (m tokenMapper) Columns() []string {
+	return []string{`id`, `sha512`, `duration`, `issued_at`, `owner_uid`}
+}
+
+func (m tokenMapper) Map(s iterators.SQLRowScanner, ptr frameless.Entity) error {
+	var src security.Token
+	if err := s.Scan(
+		&src.ID,
+		&src.SHA512,
+		&src.Duration,
+		&src.IssuedAt,
+		&src.OwnerUID,
+	); err != nil {
+		return err
+	}
+	src.IssuedAt = src.IssuedAt.In(timeLocation)
+	return reflects.Link(src, ptr)
+}
+
+type releaseAllowMapper struct{}
+
+func (releaseAllowMapper) Columns() []string {
+	return []string{`id`, `flag_id`, `ip_addr`}
+}
+
+func (releaseAllowMapper) Map(scanner iterators.SQLRowScanner, ptr frameless.Entity) error {
+	var a release.Allow
+	var ipAddr sql.NullString
+	if err := scanner.Scan(&a.ID, &a.FlagID, &ipAddr); err != nil {
+		return err
+	}
+	if ipAddr.Valid {
+		a.InternetProtocolAddress = ipAddr.String
+	}
+	return reflects.Link(&a, ptr)
+}
+
+type releaseFlagMapper struct{}
+
+func (releaseFlagMapper) SelectClause() string {
 	return `SELECT id, name, rollout_rand_seed, rollout_strategy_percentage, rollout_strategy_decision_logic_api`
 }
 
-func (featureFlagMapper) Map(scanner iterators.SQLRowScanner, ptr frameless.Entity) error {
+func (releaseFlagMapper) Map(scanner iterators.SQLRowScanner, ptr frameless.Entity) error {
 	var ff release.Flag
 	var DecisionLogicAPI sql.NullString
 

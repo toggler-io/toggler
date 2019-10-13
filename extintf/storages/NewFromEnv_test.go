@@ -12,8 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/toggler-io/toggler/extintf/storages"
-	"github.com/toggler-io/toggler/extintf/storages/inmemory"
-	"github.com/toggler-io/toggler/extintf/storages/postgres"
 	"github.com/toggler-io/toggler/usecases"
 )
 
@@ -55,7 +53,7 @@ func TestNewFromEnv(t *testing.T) {
 			storage, err := subject()
 			require.Nil(t, err)
 			require.NotNil(t, storage)
-			_, ok := storage.(*inmemory.InMemory)
+			_, ok := storage.(*storages.InMemory)
 			require.True(t, ok)
 		})
 	})
@@ -94,7 +92,7 @@ func TestNewFromEnv(t *testing.T) {
 
 			shouldBePostgresStorage := func(t *testcase.T, s usecases.Storage) {
 				require.NotNil(t, s)
-				pg, ok := s.(*postgres.Postgres)
+				pg, ok := s.(*storages.Postgres)
 				require.True(t, ok)
 				require.Nil(t, pg.DB.(*sql.DB).Ping())
 			}

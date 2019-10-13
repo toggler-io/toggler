@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	"github.com/adamluzsi/testcase"
+	"github.com/stretchr/testify/require"
+
 	"github.com/toggler-io/toggler/extintf/caches"
-	"github.com/toggler-io/toggler/extintf/caches/nullcache"
 	. "github.com/toggler-io/toggler/testing"
 	"github.com/toggler-io/toggler/usecases"
-	"github.com/stretchr/testify/require"
 )
 
 func TestNew(t *testing.T) {
@@ -30,7 +30,7 @@ func TestNew(t *testing.T) {
 			s.Let(`connstr`, func(t *testcase.T) interface{} { return `nexthypedstoragesystem://user:pwd@localhost:8100/db` })
 
 			s.Then(`then it will return null object implementation`, func(t *testcase.T) {
-				_, isThat := onSuccess(t).(*nullcache.NullCache)
+				_, isThat := onSuccess(t).(*caches.NullCache)
 
 				require.True(t, isThat)
 			})
@@ -40,7 +40,7 @@ func TestNew(t *testing.T) {
 			s.Let(`connstr`, func(t *testcase.T) interface{} { return `db=42 host=the-answer.com` })
 
 			s.Then(`then it will return null object implementation`, func(t *testcase.T) {
-				_, isThat := onSuccess(t).(*nullcache.NullCache)
+				_, isThat := onSuccess(t).(*caches.NullCache)
 
 				require.True(t, isThat)
 			})

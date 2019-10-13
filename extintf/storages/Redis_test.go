@@ -1,16 +1,18 @@
-package redis_test
+package storages_test
 
 import (
-	"github.com/toggler-io/toggler/extintf/storages/redis"
-	testing2 "github.com/toggler-io/toggler/testing"
-	"github.com/toggler-io/toggler/usecases/specs"
-	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	"github.com/toggler-io/toggler/extintf/storages"
+	testing2 "github.com/toggler-io/toggler/testing"
+	"github.com/toggler-io/toggler/usecases/specs"
 )
 
 func BenchmarkRedis(b *testing.B) {
-	r, err := redis.New(getTestRedisConnstr(b))
+	r, err := storages.NewRedis(getTestRedisConnstr(b))
 	require.Nil(b, err)
 	specs.StorageSpec{
 		Subject:        r,
@@ -19,7 +21,7 @@ func BenchmarkRedis(b *testing.B) {
 }
 
 func TestRedis(t *testing.T) {
-	r, err := redis.New(getTestRedisConnstr(t))
+	r, err := storages.NewRedis(getTestRedisConnstr(t))
 	require.Nil(t, err)
 	specs.StorageSpec{
 		Subject:        r,

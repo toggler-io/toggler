@@ -1,4 +1,4 @@
-package redis
+package caches
 
 import (
 	"bytes"
@@ -12,16 +12,15 @@ import (
 	"time"
 )
 
-func New(connstr string, storage usecases.Storage) (*Redis, error) {
+func NewRedis(connstr string, storage usecases.Storage) (*Redis, error) {
 	redisClientOpt, err := redis.ParseURL(connstr)
-
 	if err != nil {
 		return nil, err
 	}
-
 	return &Redis{Storage: storage, client: redis.NewClient(redisClientOpt)}, nil
 }
 
+// TODO provide caching for every storage contract (function)
 type Redis struct {
 	usecases.Storage
 	client *redis.Client

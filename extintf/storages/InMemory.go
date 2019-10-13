@@ -1,19 +1,39 @@
-package inmemory
+package storages
 
 import (
 	"context"
+
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/resources/storages/memorystorage"
+
 	"github.com/toggler-io/toggler/services/release"
 	"github.com/toggler-io/toggler/services/security"
 )
 
-func New() *InMemory {
+func NewInMemory() *InMemory {
 	return &InMemory{Memory: memorystorage.NewMemory()}
 }
 
 type InMemory struct{ *memorystorage.Memory }
+
+func (s *InMemory) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...*release.Flag) release.AllowEntries {
+	var allows []*release.Allow
+
+	flagIndex := make(map[string]struct{})
+	for _, flag := range flags {
+		flagIndex[flag.ID] = struct{}{}
+	}
+
+	for _, e := range s.TableFor(release.Allow{}) {
+		allow := e.(*release.Allow)
+		if _, ok := flagIndex[allow.FlagID]; ok {
+			allows = append(allows, allow)
+		}
+	}
+
+	return iterators.NewSlice(allows)
+}
 
 func (s *InMemory) FindPilotEntriesByExtID(ctx context.Context, pilotExtID string) release.PilotEntries {
 	var pilots []*release.Pilot

@@ -2,6 +2,7 @@ package release
 
 import (
 	"context"
+
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/resources"
 )
@@ -14,8 +15,10 @@ type Storage interface {
 	resources.Truncater
 	FlagFinder
 	PilotFinder
+	AllowFinder
 }
 
+type AllowEntries = frameless.Iterator
 type PilotEntries = frameless.Iterator
 type FlagEntries = frameless.Iterator
 
@@ -28,4 +31,8 @@ type PilotFinder interface {
 	FindReleaseFlagPilotByPilotExternalID(ctx context.Context, FeatureFlagID, ExternalPilotID string) (*Pilot, error)
 	FindPilotsByFeatureFlag(ctx context.Context, ff *Flag) frameless.Iterator
 	FindPilotEntriesByExtID(ctx context.Context, pilotExtID string) PilotEntries
+}
+
+type AllowFinder interface {
+	FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...*Flag) AllowEntries
 }

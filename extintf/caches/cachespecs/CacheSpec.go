@@ -10,14 +10,15 @@ import (
 	"github.com/adamluzsi/frameless/resources"
 	frmls "github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/testcase"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/require"
+
 	"github.com/toggler-io/toggler/extintf/caches"
-	"github.com/toggler-io/toggler/extintf/storages/inmemory"
+	"github.com/toggler-io/toggler/extintf/storages"
 	"github.com/toggler-io/toggler/services/release"
 	"github.com/toggler-io/toggler/services/security"
 	"github.com/toggler-io/toggler/usecases"
 	"github.com/toggler-io/toggler/usecases/specs"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/require"
 )
 
 //go:generate mockgen -source ../../../usecases/Storage.go -destination MockStorage.go -package cachespecs
@@ -188,7 +189,7 @@ func (spec CacheSpec) setup(s *testcase.Spec) {
 	})
 
 	s.Let(`storage`, func(t *testcase.T) interface{} {
-		return inmemory.New()
+		return storages.NewInMemory()
 	})
 }
 

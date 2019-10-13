@@ -198,6 +198,25 @@ func (mr *MockStorageMockRecorder) FindPilotEntriesByExtID(ctx, pilotExtID inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindPilotEntriesByExtID", reflect.TypeOf((*MockStorage)(nil).FindPilotEntriesByExtID), ctx, pilotExtID)
 }
 
+// FindReleaseAllowsByReleaseFlags mocks base method
+func (m *MockStorage) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...*release.Flag) release.AllowEntries {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx}
+	for _, a := range flags {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "FindReleaseAllowsByReleaseFlags", varargs...)
+	ret0, _ := ret[0].(release.AllowEntries)
+	return ret0
+}
+
+// FindReleaseAllowsByReleaseFlags indicates an expected call of FindReleaseAllowsByReleaseFlags
+func (mr *MockStorageMockRecorder) FindReleaseAllowsByReleaseFlags(ctx interface{}, flags ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx}, flags...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindReleaseAllowsByReleaseFlags", reflect.TypeOf((*MockStorage)(nil).FindReleaseAllowsByReleaseFlags), varargs...)
+}
+
 // FindTokenBySHA512Hex mocks base method
 func (m *MockStorage) FindTokenBySHA512Hex(ctx context.Context, sha512hex string) (*security.Token, error) {
 	m.ctrl.T.Helper()

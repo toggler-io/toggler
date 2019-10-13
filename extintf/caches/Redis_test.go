@@ -1,20 +1,20 @@
-package redis_test
+package caches_test
 
 import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/toggler-io/toggler/extintf/caches"
 	"github.com/toggler-io/toggler/extintf/caches/cachespecs"
-	"github.com/toggler-io/toggler/extintf/caches/quickaccess/redis"
 	. "github.com/toggler-io/toggler/testing"
 	"github.com/toggler-io/toggler/usecases"
-	"github.com/stretchr/testify/require"
 )
 
 func TestRedis(t *testing.T) {
 	factory := func(s usecases.Storage) caches.Interface {
-		cache, err := redis.New(getTestRedisConnstr(t), s)
+		cache, err := caches.NewRedis(getTestRedisConnstr(t), s)
 		require.Nil(t, err)
 		return cache
 	}

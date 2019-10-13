@@ -1,19 +1,22 @@
-package postgres_test
+package storages_test
 
 import (
 	"context"
 	"database/sql"
-	"github.com/adamluzsi/frameless/iterators"
-	"github.com/adamluzsi/testcase"
-	"github.com/toggler-io/toggler/extintf/storages/postgres"
-	testing2 "github.com/toggler-io/toggler/testing"
 	"os"
 	"testing"
+
+	"github.com/adamluzsi/frameless/iterators"
+	"github.com/adamluzsi/testcase"
+
+	"github.com/toggler-io/toggler/extintf/storages"
+	testing2 "github.com/toggler-io/toggler/testing"
 
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/require"
 
 	"github.com/adamluzsi/frameless/resources"
+
 	"github.com/toggler-io/toggler/usecases/specs"
 )
 
@@ -25,7 +28,7 @@ func BenchmarkPostgres(b *testing.B) {
 	db := MustOpenDB(b)
 	defer db.Close()
 
-	storage, err := postgres.NewPostgres(db)
+	storage, err := storages.NewPostgres(db)
 	require.Nil(b, err)
 
 	specs.StorageSpec{
@@ -42,7 +45,7 @@ func TestPostgres(t *testing.T) {
 	db := MustOpenDB(t)
 	defer db.Close()
 
-	storage, err := postgres.NewPostgres(db)
+	storage, err := storages.NewPostgres(db)
 	require.Nil(t, err)
 
 	specs.StorageSpec{
@@ -76,8 +79,12 @@ func TestPostgres_Close(t *testing.T) {
 
 	s := testcase.NewSpec(t)
 
-	pg := func(t *testcase.T) *postgres.Postgres {
-		return &postgres.Postgres{DB: t.I(`DB`).(postgres.DB)}
+	pg := func(t *testcase.T) *storages.Postgres {
+		return &storages.Postgres{DB: t.I(`DB`).(interface{
+			ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+			QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
+			QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
+		})}
 	}
 
 	subject := func(t *testcase.T) error {
@@ -124,7 +131,7 @@ func TestPostgres_Close(t *testing.T) {
 			var te resources.TestEntity
 			ctx := context.Background()
 
-			pgSqlDB := &postgres.Postgres{DB: t.I(`*sql.DB`).(*sql.DB)}
+			pgSqlDB := &storages.Postgres{DB: t.I(`*sql.DB`).(*sql.DB)}
 			require.Nil(t, pgSqlDB.Truncate(ctx, te))
 			pgSqlTx := pg(t)
 

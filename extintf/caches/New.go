@@ -3,7 +3,6 @@ package caches
 import (
 	"net/url"
 
-	"github.com/toggler-io/toggler/extintf/caches/nullcache"
 	"github.com/toggler-io/toggler/usecases"
 )
 
@@ -21,6 +20,6 @@ func New(connstr string, storage usecases.Storage) (Interface, error) {
 
 	switch driver {
 	default:
-		return nullcache.NewNullCache(storage), nil
+		return NewNullCache(storage), nil
 	}
 }

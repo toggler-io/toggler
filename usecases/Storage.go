@@ -15,6 +15,7 @@ type Storage interface {
 	resources.Truncater
 	release.FlagFinder
 	release.PilotFinder
+	release.AllowFinder
 	security.TokenFinder
 	io.Closer
 }

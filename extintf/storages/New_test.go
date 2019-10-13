@@ -1,16 +1,14 @@
 package storages_test
 
 import (
-	"github.com/toggler-io/toggler/extintf/storages/redis"
 	"os"
 	"testing"
 
 	"github.com/adamluzsi/testcase"
-	"github.com/toggler-io/toggler/extintf/storages"
-	"github.com/toggler-io/toggler/extintf/storages/inmemory"
-	"github.com/toggler-io/toggler/extintf/storages/postgres"
-	"github.com/toggler-io/toggler/usecases"
 	"github.com/stretchr/testify/require"
+
+	"github.com/toggler-io/toggler/extintf/storages"
+	"github.com/toggler-io/toggler/usecases"
 )
 
 func TestNew(t *testing.T) {
@@ -45,7 +43,7 @@ func TestNew(t *testing.T) {
 			})
 
 			s.Then(`then it will return postgres implementation`, func(t *testcase.T) {
-				_, isPG := onSuccess(t).(*postgres.Postgres)
+				_, isPG := onSuccess(t).(*storages.Postgres)
 
 				require.True(t, isPG)
 			})
@@ -57,7 +55,7 @@ func TestNew(t *testing.T) {
 			})
 
 			s.Then(`then it will return "redis" storage implementation`, func(t *testcase.T) {
-				_, isThat := onSuccess(t).(*redis.Redis)
+				_, isThat := onSuccess(t).(*storages.Redis)
 
 				require.True(t, isThat)
 			})
@@ -67,7 +65,7 @@ func TestNew(t *testing.T) {
 			s.Let(`connstr`, func(t *testcase.T) interface{} { return `memory` })
 
 			s.Then(`then it will return "inmemory" implementation`, func(t *testcase.T) {
-				_, isThat := onSuccess(t).(*inmemory.InMemory)
+				_, isThat := onSuccess(t).(*storages.InMemory)
 
 				require.True(t, isThat)
 			})

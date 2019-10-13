@@ -1,4 +1,4 @@
-package nullcache
+package caches
 
 import (
 	"github.com/toggler-io/toggler/usecases"
