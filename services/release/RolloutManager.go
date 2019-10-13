@@ -151,7 +151,8 @@ func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context,
 
 }
 
-//TODO: replace with Tx
+//TODO: make operation atomic between flags and pilots
+// TODO delete ip addr allows as well
 func (manager *RolloutManager) DeleteFeatureFlag(ctx context.Context, id string) error {
 	if id == `` {
 		return frameless.ErrIDRequired
@@ -188,6 +189,15 @@ func (manager *RolloutManager) DeleteFeatureFlag(ctx context.Context, id string)
 	}
 
 	return manager.Storage.DeleteByID(ctx, Flag{}, id)
+}
+
+func (manager *RolloutManager) AllowIPAddrForFlag(ctx context.Context, flagID, ipAddr string) error {
+
+	return nil
+}
+
+func (manager *RolloutManager) RemoveIPAddrRecord(ctx context.Context, flagIpAddrAllowID string) error {
+	return nil
 }
 
 //----------------------------------------------------------------------------------------------------------------------

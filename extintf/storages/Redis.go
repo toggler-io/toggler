@@ -30,7 +30,7 @@ func NewRedis(connstr string) (*Redis, error) {
 		reflects.FullyQualifiedName(security.Token{}):       "tokens",
 		reflects.FullyQualifiedName(release.Pilot{}):        "pilots",
 		reflects.FullyQualifiedName(release.Flag{}):         "release_flags",
-		reflects.FullyQualifiedName(release.Allow{}):        "release_allows",
+		reflects.FullyQualifiedName(release.IPAllow{}):      "release_flag_ip_addr_allows",
 		reflects.FullyQualifiedName(resources.TestEntity{}): "test_entities",
 	}
 	return r, nil
@@ -47,8 +47,8 @@ func (r *Redis) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...*r
 		flagIndex[flag.ID] = struct{}{}
 	}
 
-	return iterators.Filter(r.FindAll(ctx, release.Allow{}), func(entity frameless.Entity) bool {
-		e, ok := entity.(release.Allow)
+	return iterators.Filter(r.FindAll(ctx, release.IPAllow{}), func(entity frameless.Entity) bool {
+		e, ok := entity.(release.IPAllow)
 		if !ok {
 			return ok
 		}

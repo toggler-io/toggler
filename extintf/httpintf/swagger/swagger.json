@@ -118,47 +118,6 @@
         }
       }
     },
-    "/release/is-feature-enabled.json": {
-      "post": {
-        "description": "Reply back whether the feature for a given pilot id is enabled or not.\nBy Default, this will be determined whether the flag exist,\nthe pseudo random dice roll enrolls the pilot,\nor if there any manually set enrollment status for the pilot.\nThe endpoint can be called with HTTP GET method as well,\nPOST is used officially only to support most highly abstracted http clients.",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "schemes": [
-          "http",
-          "https"
-        ],
-        "tags": [
-          "release-flag",
-          "pilot"
-        ],
-        "summary": "Check Rollout Feature Status For Pilot",
-        "operationId": "IsFeatureEnabled",
-        "parameters": [
-          {
-            "name": "Body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/IsFeatureEnabledRequestPayload"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "$ref": "#/responses/enrollmentResponse"
-          },
-          "400": {
-            "$ref": "#/responses/errorResponse"
-          },
-          "500": {
-            "$ref": "#/responses/errorResponse"
-          }
-        }
-      }
-    },
     "/release/is-feature-globally-enabled.json": {
       "post": {
         "description": "Reply back whether the feature rolled out globally or not.\nThis is especially useful for cases where you don't have pilot id.\nSuch case is batch processing, or dark launch flips.\nBy Default, this will be determined whether the flag exist,\nThen  whether the release id done to everyone or not by percentage.\nThe endpoint can be called with HTTP GET method as well,\nPOST is used officially only to support most highly abstracted http clients.",
@@ -356,28 +315,6 @@
         }
       },
       "x-go-package": "github.com/toggler-io/toggler/services/release"
-    },
-    "IsFeatureEnabledRequestPayload": {
-      "type": "object",
-      "required": [
-        "feature",
-        "id"
-      ],
-      "properties": {
-        "feature": {
-          "description": "Feature is the Feature Flag name that is needed to be checked for enrollment",
-          "type": "string",
-          "x-go-name": "Feature",
-          "example": "rollout-feature-flag"
-        },
-        "id": {
-          "description": "PilotExtID is the public unique ID of the pilot who's enrollment needs to be checked.",
-          "type": "string",
-          "x-go-name": "PilotID",
-          "example": "pilot-public-id"
-        }
-      },
-      "x-go-package": "github.com/toggler-io/toggler/extintf/httpintf/httpapi"
     },
     "IsFeatureGloballyEnabledRequestBody": {
       "type": "object",

@@ -88,41 +88,6 @@ func (a *Client) CreateRolloutFeatureFlag(params *CreateRolloutFeatureFlagParams
 }
 
 /*
-IsFeatureEnabled checks rollout feature status for pilot
-
-Reply back whether the feature for a given pilot id is enabled or not.
-By Default, this will be determined whether the flag exist,
-the pseudo random dice roll enrolls the pilot,
-or if there any manually set enrollment status for the pilot.
-The endpoint can be called with HTTP GET method as well,
-POST is used officially only to support most highly abstracted http clients.
-*/
-func (a *Client) IsFeatureEnabled(params *IsFeatureEnabledParams) (*IsFeatureEnabledOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewIsFeatureEnabledParams()
-	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "IsFeatureEnabled",
-		Method:             "POST",
-		PathPattern:        "/release/is-feature-enabled.json",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http", "https"},
-		Params:             params,
-		Reader:             &IsFeatureEnabledReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return result.(*IsFeatureEnabledOK), nil
-
-}
-
-/*
 IsFeatureGloballyEnabled checks rollout feature status for global use
 
 Reply back whether the feature rolled out globally or not.

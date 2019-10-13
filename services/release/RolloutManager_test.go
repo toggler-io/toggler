@@ -2,12 +2,14 @@ package release_test
 
 import (
 	"context"
+	"fmt"
 	"math/rand"
 	"net/url"
 	"testing"
 	"time"
 
 	"github.com/adamluzsi/testcase"
+
 	"github.com/toggler-io/toggler/services/release"
 	. "github.com/toggler-io/toggler/testing"
 
@@ -37,6 +39,7 @@ func TestRolloutManager(t *testing.T) {
 	s.Before(func(t *testcase.T) {
 		require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
 		require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Pilot{}))
+		require.Nil(t, GetStorage(t).Truncate(context.Background(), release.IPAllow{}))
 	})
 
 	SpecRolloutManagerCreateFeatureFlag(s)
@@ -45,6 +48,73 @@ func TestRolloutManager(t *testing.T) {
 	SpecRolloutManagerListFeatureFlags(s)
 	SpecRolloutManagerSetPilotEnrollmentForFeature(s)
 	SpecRolloutManagerUnsetPilotEnrollmentForFeature(s)
+	SpecRolloutManagerAllowIPAddrForFlag(s)
+}
+
+func SpecRolloutManagerAllowIPAddrForFlag(s *testcase.Spec) {
+	s.Describe(`AllowIPAddrForFlag`, func(s *testcase.Spec) {
+		subject := func(t *testcase.T) error {
+			rm := t.I(`RolloutManager`).(*release.RolloutManager)
+			return rm.AllowIPAddrForFlag(
+				context.Background(),
+				GetReleaseFlag(t).ID,
+				t.I(`ip-addr`).(string),
+			)
+		}
+
+		s.Before(func(t *testcase.T) { t.Skip(`WIP`) })
+
+		s.Before(func(t *testcase.T) {
+			t.Log(`the flag has 0 as release percentage`)
+			GetReleaseFlag(t).Rollout.Strategy.Percentage = 0
+			t.Log(`the flag is saved in the storage`)
+			require.Nil(t, GetStorage(t).Save(CTX(t), GetReleaseFlag(t)))
+		})
+
+		s.Let(`ip-addr`, func(t *testcase.T) interface{} {
+			return fmt.Sprintf(`192.168.1.%d`, rand.Intn(255))
+		})
+
+		s.Then(`upon calling it, should result in no error`, func(t *testcase.T) {
+			require.Nil(t, subject(t))
+		})
+
+		s.When(`ip address value is an invalid value`, func(s *testcase.Spec) {
+			s.Let(`ip-addr`, func(t *testcase.T) interface{} {
+				return `invalid-value`
+			})
+
+			s.Then(`it should report error about it`, func(t *testcase.T) {
+				t.Skip(`extend test coverage with IPv4 and IPv6 happy paths before this is acceptable`)
+			})
+		})
+
+		s.Describe(`relation with GetReleaseFlagPilotEnrollmentStates`, func(s *testcase.Spec) {
+			releaseFlagState := func(t *testcase.T) bool {
+				fc := release.NewFlagChecker(GetStorage(t))
+				ctx := context.WithValue(context.Background(), release.CtxPilotIpAddr, t.I(`ip-addr`).(string))
+				states, err := fc.GetReleaseFlagPilotEnrollmentStates(ctx, GetExternalPilotID(t), GetReleaseFlagName(t))
+				require.Nil(t, err)
+				return states[GetReleaseFlag(t).Name]
+			}
+
+			s.When(`the ip allow value is saved`, func(s *testcase.Spec) {
+				s.Before(func(t *testcase.T) { require.Nil(t, subject(t)) })
+
+				s.Then(`the flag will be stated as enabled`, func(t *testcase.T) {
+					require.True(t, releaseFlagState(t))
+				})
+			})
+
+			s.When(`the ip allow value is not persisted`, func(s *testcase.Spec) {
+				// nothing to do here, as implicitly this is achieved by it
+
+				s.Then(`the flag will be stated as disabled`, func(t *testcase.T) {
+					require.False(t, releaseFlagState(t))
+				})
+			})
+		})
+	})
 }
 
 func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {

@@ -57,7 +57,7 @@ func (spec StorageSpec) Benchmark(b *testing.B) {
 			}.Benchmark(b)
 		})
 
-		b.Run(`Allow`, func(b *testing.B) {
+		b.Run(`IPAllow`, func(b *testing.B) {
 			b.Skip()
 		})
 
@@ -130,7 +130,7 @@ func (spec StorageSpec) Test(t *testing.T) {
 
 		})
 
-		t.Run(`Allow`, func(t *testing.T) {
+		t.Run(`IPAllow`, func(t *testing.T) {
 			defer func() { require.Nil(t, spec.Subject.Truncate(spec.Context(), release.Flag{})) }()
 
 			ff := &FixtureFactoryForAllows{
@@ -143,7 +143,7 @@ func (spec StorageSpec) Test(t *testing.T) {
 			}
 
 			specs.CommonSpec{
-				EntityType:     release.Allow{},
+				EntityType:     release.IPAllow{},
 				FixtureFactory: ff,
 				Subject:        spec.Subject,
 			}.Test(t)
@@ -154,18 +154,18 @@ func (spec StorageSpec) Test(t *testing.T) {
 			}.Test(t)
 
 			t.Run(`multiple allow entry can be stored for one flag`, func(t *testing.T) {
-				require.Nil(t, spec.Subject.Truncate(spec.Context(), release.Allow{}))
+				require.Nil(t, spec.Subject.Truncate(spec.Context(), release.IPAllow{}))
 				require.Nil(t, spec.Subject.Truncate(spec.Context(), release.Flag{}))
 				defer func() {
 					require.Nil(t, spec.Subject.Truncate(spec.Context(), release.Flag{}))
-					require.Nil(t, spec.Subject.Truncate(spec.Context(), release.Allow{}))
+					require.Nil(t, spec.Subject.Truncate(spec.Context(), release.IPAllow{}))
 				}()
 
 				flagID := ff.GetFlagID()
 
-				a1 := ff.Create(release.Allow{}).(*release.Allow)
+				a1 := ff.Create(release.IPAllow{}).(*release.IPAllow)
 				a1.FlagID = flagID
-				a2 := ff.Create(release.Allow{}).(*release.Allow)
+				a2 := ff.Create(release.IPAllow{}).(*release.IPAllow)
 				a2.FlagID = flagID
 
 				require.Nil(t, spec.Subject.Save(spec.Context(), a1))
@@ -199,8 +199,8 @@ type FixtureFactoryForAllows struct {
 
 func (ff *FixtureFactoryForAllows) Create(EntityType interface{}) interface{} {
 	switch reflects.BaseValueOf(EntityType).Interface().(type) {
-	case release.Allow:
-		allow := ff.FixtureFactory.Create(EntityType).(*release.Allow)
+	case release.IPAllow:
+		allow := ff.FixtureFactory.Create(EntityType).(*release.IPAllow)
 		allow.FlagID = ff.GetFlagID()
 		allow.InternetProtocolAddress = fmt.Sprintf(`192.168.1.%d`, rand.Intn(255))
 		return allow

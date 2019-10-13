@@ -57,7 +57,7 @@ func (pg *Postgres) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags .
 		args = append(args, f.ID)
 	}
 
-	query = fmt.Sprintf(`SELECT %s FROM "release_allows" WHERE "flag_id" IN (%s)`,
+	query = fmt.Sprintf(`SELECT %s FROM "release_flag_ip_addr_allows" WHERE "flag_id" IN (%s)`,
 		strings.Join(m.Columns(), `, `),
 		strings.Join(queryWhereFlagInList, `, `))
 
@@ -86,7 +86,7 @@ func (pg *Postgres) Save(ctx context.Context, ptr interface{}) error {
 	}
 
 	switch e := ptr.(type) {
-	case *release.Allow:
+	case *release.IPAllow:
 		return pg.releaseAllowInsertNew(ctx, e)
 	case *release.Flag:
 		return pg.releaseFlagInsertNew(ctx, e)
@@ -109,7 +109,7 @@ func (pg *Postgres) FindByID(ctx context.Context, ptr interface{}, ID string) (b
 	}
 
 	switch e := ptr.(type) {
-	case *release.Allow:
+	case *release.IPAllow:
 		return pg.releaseAllowFindByID(ctx, e, id)
 
 	case *release.Flag:
@@ -132,8 +132,8 @@ func (pg *Postgres) FindByID(ctx context.Context, ptr interface{}, ID string) (b
 func (pg *Postgres) Truncate(ctx context.Context, Type interface{}) error {
 	var tableName string
 	switch Type.(type) {
-	case release.Allow, *release.Allow:
-		tableName = `release_allows`
+	case release.IPAllow, *release.IPAllow:
+		tableName = `release_flag_ip_addr_allows`
 	case release.Flag, *release.Flag:
 		tableName = `release_flags`
 	case release.Pilot, *release.Pilot:
@@ -161,8 +161,8 @@ func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, ID string)
 	var query string
 
 	switch Type.(type) {
-	case release.Allow, *release.Allow:
-		query = `DELETE FROM "release_allows" WHERE "id" = $1`
+	case release.IPAllow, *release.IPAllow:
+		query = `DELETE FROM "release_flag_ip_addr_allows" WHERE "id" = $1`
 
 	case release.Flag, *release.Flag:
 		query = `DELETE FROM "release_flags" WHERE "id" = $1`
@@ -199,7 +199,7 @@ func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, ID string)
 
 func (pg *Postgres) Update(ctx context.Context, ptr interface{}) error {
 	switch e := ptr.(type) {
-	case *release.Allow:
+	case *release.IPAllow:
 		return pg.releaseAllowUpdate(ctx, e)
 
 	case *release.Flag:
@@ -221,7 +221,7 @@ func (pg *Postgres) Update(ctx context.Context, ptr interface{}) error {
 
 func (pg *Postgres) FindAll(ctx context.Context, Type interface{}) frameless.Iterator {
 	switch Type.(type) {
-	case release.Allow, *release.Allow:
+	case release.IPAllow, *release.IPAllow:
 		return pg.releaseAllowFindAll(ctx)
 
 	case release.Flag, *release.Flag:
@@ -384,12 +384,12 @@ func (pg *Postgres) FindReleaseFlagsByName(ctx context.Context, flagNames ...str
 }
 
 const releaseAllowInsertNewQuery = `
-INSERT INTO "release_allows" ("flag_id", "ip_addr")
+INSERT INTO "release_flag_ip_addr_allows" ("flag_id", "ip_addr")
 VALUES ($1, $2)
 RETURNING "id";
 `
 
-func (pg *Postgres) releaseAllowInsertNew(ctx context.Context, allow *release.Allow) error {
+func (pg *Postgres) releaseAllowInsertNew(ctx context.Context, allow *release.IPAllow) error {
 
 	var ipAddr sql.NullString
 
@@ -399,7 +399,7 @@ func (pg *Postgres) releaseAllowInsertNew(ctx context.Context, allow *release.Al
 	}
 
 	if allow.FlagID == `` {
-		return errors.New(`creating release.Allow without FlagID is forbidden`)
+		return errors.New(`creating release.IPAllow without FlagID is forbidden`)
 	}
 
 	row := pg.DB.QueryRowContext(ctx, releaseAllowInsertNewQuery,
@@ -517,9 +517,9 @@ func (pg *Postgres) tokenInsertNew(ctx context.Context, token *security.Token) e
 	return resources.SetID(token, strconv.FormatInt(id.Int64, 10))
 }
 
-func (pg *Postgres) releaseAllowFindByID(ctx context.Context, allow *release.Allow, id int64) (bool, error) {
+func (pg *Postgres) releaseAllowFindByID(ctx context.Context, allow *release.IPAllow, id int64) (bool, error) {
 	mapper := releaseAllowMapper{}
-	query := fmt.Sprintf(`SELECT %s FROM "release_allows" WHERE "id" = $1`, strings.Join(mapper.Columns(), `, `))
+	query := fmt.Sprintf(`SELECT %s FROM "release_flag_ip_addr_allows" WHERE "id" = $1`, strings.Join(mapper.Columns(), `, `))
 	row := pg.DB.QueryRowContext(ctx, query, id)
 	err := mapper.Map(row, allow)
 	if err == sql.ErrNoRows {
@@ -632,7 +632,7 @@ func (pg *Postgres) releaseFlagFindAll(ctx context.Context) frameless.Iterator {
 
 func (pg *Postgres) releaseAllowFindAll(ctx context.Context) frameless.Iterator {
 	mapper := releaseAllowMapper{}
-	query := fmt.Sprintf(`SELECT %s FROM "release_allows"`, strings.Join(mapper.Columns(), `, `))
+	query := fmt.Sprintf(`SELECT %s FROM "release_flag_ip_addr_allows"`, strings.Join(mapper.Columns(), `, `))
 	rows, err := pg.DB.QueryContext(ctx, query)
 	if err != nil {
 		return iterators.NewError(err)
@@ -686,13 +686,13 @@ func (pg *Postgres) tokenFindAll(ctx context.Context) frameless.Iterator {
 }
 
 const releaseAllowUpdateQuery = `
-UPDATE "release_allows"
+UPDATE "release_flag_ip_addr_allows"
 SET flag_id = $2,
 	ip_addr = $3
 WHERE id = $1;
 `
 
-func (pg *Postgres) releaseAllowUpdate(ctx context.Context, allow *release.Allow) error {
+func (pg *Postgres) releaseAllowUpdate(ctx context.Context, allow *release.IPAllow) error {
 	_, err := pg.DB.ExecContext(ctx, releaseAllowUpdateQuery,
 		allow.ID,
 		allow.FlagID,
@@ -884,7 +884,7 @@ func (releaseAllowMapper) Columns() []string {
 }
 
 func (releaseAllowMapper) Map(scanner iterators.SQLRowScanner, ptr frameless.Entity) error {
-	var a release.Allow
+	var a release.IPAllow
 	var ipAddr sql.NullString
 	if err := scanner.Scan(&a.ID, &a.FlagID, &ipAddr); err != nil {
 		return err

@@ -5,18 +5,22 @@ shopt -s nullglob
 : ${GOOS:="linux"}
 : ${GOARCH:="amd64"}
 
-if [[ ! -e ${WDP}/dist ]]; then
-	mkdir "${WDP}/dist"
+cd "${WDP}"
+
+if [[ ! -e ./dist ]]; then
+	mkdir "./dist"
 fi
 
-for f in ${WDP}/dist/*; do
+for f in ./dist/*; do
 	rm "${f}"
 done
 
-outPath="${WDP}/dist/toggler"
-GOOS=${GOOS} GOARCH=${GOARCH} go build -o "${outPath}" "${WDP}/cmd/toggler/main.go"
+go generate ./...
 
-procFilePath=${WDP}/dist/Procfile
+outPath="./dist/toggler"
+GOOS=${GOOS} GOARCH=${GOARCH} go build -o "${outPath}" "./cmd/toggler/main.go"
+
+procFilePath=./dist/Procfile
 cat >"${procFilePath}" <<EOF
 web: ./toggler http-server
 EOF

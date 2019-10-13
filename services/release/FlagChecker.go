@@ -25,6 +25,7 @@ type FlagChecker struct {
 	HTTPClient             http.Client
 }
 
+// TODO sync with client release flag state config
 func (checker *FlagChecker) IsFeatureGloballyEnabled(featureFlagName string) (bool, error) {
 	ff, err := checker.Storage.FindReleaseFlagByName(context.TODO(), featureFlagName)
 
@@ -59,7 +60,16 @@ func (checker *FlagChecker) makeCustomDomainAPIDecisionCheck(featureFlagName str
 	return 200 <= code && code < 300, nil
 }
 
-func (checker *FlagChecker) GetPilotFlagStates(ctx context.Context, pilotExtID string, flagNames ...string) (map[string]bool, error) {
+const CtxPilotIpAddr = `pilot-ip-addr`
+
+// GetReleaseFlagPilotEnrollmentStates check the flag states for every requested release flag.
+// If a flag doesn't exist, then it will provide a turned off state to it.
+// This helps with development where the flag name already agreed and used in the clients
+// but the entity not yet been created in the system.
+// Also this help if a flag is not cleaned up from the clients, the worst thing will be a disabled feature,
+// instead of a breaking client.
+// This also makes it harder to figure out `private` release flags
+func (checker *FlagChecker) GetReleaseFlagPilotEnrollmentStates(ctx context.Context, pilotExtID string, flagNames ...string) (map[string]bool, error) {
 	states := make(map[string]bool)
 
 	for _, flagName := range flagNames {
@@ -68,7 +78,7 @@ func (checker *FlagChecker) GetPilotFlagStates(ctx context.Context, pilotExtID s
 
 	flagIndexByID := make(map[string]*Flag)
 
-	flags := checker.Storage.FindReleaseFlagsByName(ctx, flagNames...)
+	flagsIter := checker.Storage.FindReleaseFlagsByName(ctx, flagNames...)
 
 	pilotsIter := checker.Storage.FindPilotEntriesByExtID(ctx, pilotExtID)
 	defer pilotsIter.Close()
@@ -85,9 +95,12 @@ func (checker *FlagChecker) GetPilotFlagStates(ctx context.Context, pilotExtID s
 		return nil, err
 	}
 
-	for flags.Next() {
+	var flagIDToName = make(map[string]string)
+
+	var flags []*Flag
+	for flagsIter.Next() {
 		var ff Flag
-		if err := flags.Decode(&ff); err != nil {
+		if err := flagsIter.Decode(&ff); err != nil {
 			return nil, err
 		}
 		flagIndexByID[ff.ID] = &ff
@@ -99,6 +112,24 @@ func (checker *FlagChecker) GetPilotFlagStates(ctx context.Context, pilotExtID s
 		}
 
 		states[ff.Name] = enrollment
+		flags = append(flags, &ff)
+		flagIDToName[ff.ID] = ff.Name
+	}
+
+	ipAddr, pilotIpIsSet := ctx.Value(CtxPilotIpAddr).(string)
+	allowsIter := checker.Storage.FindReleaseAllowsByReleaseFlags(ctx, flags...)
+
+	for allowsIter.Next() {
+		var a IPAllow
+		if err := allowsIter.Decode(&a); err != nil {
+			return nil, err
+		}
+
+		if pilotIpIsSet {
+			if allowed, ok := a.CheckIP(ipAddr); ok && allowed {
+				states[flagIDToName[a.FlagID]] = true
+			}
+		}
 	}
 
 	pilotEntries := checker.Storage.FindPilotEntriesByExtID(ctx, pilotExtID)

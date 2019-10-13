@@ -1,1 +1,2 @@
-DROP TABLE release_allows;
+DROP INDEX find_release_flag_ip_addr_allows_by_flag_id;
+DROP TABLE release_flag_ip_addr_allows;

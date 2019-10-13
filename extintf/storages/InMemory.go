@@ -18,15 +18,15 @@ func NewInMemory() *InMemory {
 type InMemory struct{ *memorystorage.Memory }
 
 func (s *InMemory) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...*release.Flag) release.AllowEntries {
-	var allows []*release.Allow
+	var allows []*release.IPAllow
 
 	flagIndex := make(map[string]struct{})
 	for _, flag := range flags {
 		flagIndex[flag.ID] = struct{}{}
 	}
 
-	for _, e := range s.TableFor(release.Allow{}) {
-		allow := e.(*release.Allow)
+	for _, e := range s.TableFor(release.IPAllow{}) {
+		allow := e.(*release.IPAllow)
 		if _, ok := flagIndex[allow.FlagID]; ok {
 			allows = append(allows, allow)
 		}

@@ -108,7 +108,7 @@ subscription:
 			data := req.Data.(map[string]interface{})
 
 			releaseFlagName := data[`feature`].(string)
-			states, err := sm.UseCases.GetPilotFlagStates(r.Context(), data[`id`].(string), releaseFlagName)
+			states, err := sm.UseCases.GetReleaseFlagPilotEnrollmentStates(r.Context(), data[`id`].(string), releaseFlagName)
 
 			if handle(err, http.StatusInternalServerError) {
 				continue subscription

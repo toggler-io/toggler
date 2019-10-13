@@ -1,8 +1,11 @@
 package httpapi
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
+
+	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
 )
 
 // ClientConfigRequest defines the parameters that
@@ -79,7 +82,9 @@ func (sm *ServeMux) ClientConfigJSON(w http.ResponseWriter, r *http.Request) {
 		request.Body.ReleaseFlags = append(request.Body.ReleaseFlags, q[`release_flags[]`]...)
 	}
 
-	states, err := sm.UseCases.GetPilotFlagStates(r.Context(), request.Body.PilotExtID, request.Body.ReleaseFlags...)
+	ctx := context.WithValue(r.Context(), `pilot-ip-addr`, httputils.GetClientIP(r))
+
+	states, err := sm.UseCases.GetReleaseFlagPilotEnrollmentStates(ctx, request.Body.PilotExtID, request.Body.ReleaseFlags...)
 
 	if handleError(w, err, http.StatusInternalServerError) {
 		return

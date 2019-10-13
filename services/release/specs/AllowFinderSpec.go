@@ -31,7 +31,7 @@ func (spec AllowFinderSpec) Test(t *testing.T) {
 	s.Describe(`AllowFinderSpec`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
 			require.Nil(t, spec.Subject.Truncate(spec.Context(), release.Flag{}))
-			require.Nil(t, spec.Subject.Truncate(spec.Context(), release.Allow{}))
+			require.Nil(t, spec.Subject.Truncate(spec.Context(), release.IPAllow{}))
 		})
 
 		s.Describe(`FindReleaseAllowsByReleaseFlags`, func(s *testcase.Spec) {
@@ -50,7 +50,7 @@ func (spec AllowFinderSpec) Test(t *testing.T) {
 
 			s.When(`no allow stored in the resource`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, spec.Subject.Truncate(spec.Context(), release.Allow{}))
+					require.Nil(t, spec.Subject.Truncate(spec.Context(), release.IPAllow{}))
 				})
 
 				s.Then(`it will result in an empty list`, func(t *testcase.T) {
@@ -62,7 +62,7 @@ func (spec AllowFinderSpec) Test(t *testing.T) {
 
 			s.When(`allow is saved in the storage`, func(s *testcase.Spec) {
 				s.Let(`allow`, func(t *testcase.T) interface{} {
-					return spec.Create(release.Allow{}).(*release.Allow)
+					return spec.Create(release.IPAllow{}).(*release.IPAllow)
 				})
 				s.Around(func(t *testcase.T) func() {
 					var tds []func()
@@ -75,11 +75,11 @@ func (spec AllowFinderSpec) Test(t *testing.T) {
 						})
 					}
 
-					a := t.I(`allow`).(*release.Allow)
+					a := t.I(`allow`).(*release.IPAllow)
 					a.FlagID = f.ID
 					require.Nil(t, spec.Subject.Save(spec.Context(), a))
 					tds = append(tds, func() {
-						require.Nil(t, spec.Subject.DeleteByID(spec.Context(), release.Allow{}, a.ID))
+						require.Nil(t, spec.Subject.DeleteByID(spec.Context(), release.IPAllow{}, a.ID))
 					})
 
 					return func() {
@@ -95,8 +95,8 @@ func (spec AllowFinderSpec) Test(t *testing.T) {
 					s.Then(`it will return the allow flag`, func(t *testcase.T) {
 						i := subject(t)
 
-						expected := t.I(`allow`).(*release.Allow)
-						var actual release.Allow
+						expected := t.I(`allow`).(*release.IPAllow)
+						var actual release.IPAllow
 
 						require.True(t, i.Next())
 						require.Nil(t, i.Decode(&actual))
@@ -107,7 +107,7 @@ func (spec AllowFinderSpec) Test(t *testing.T) {
 					
 					s.And(`the allow ip address is empty`, func(s *testcase.Spec) {
 						s.Let(`allow`, func(t *testcase.T) interface{} {
-							a := spec.Create(release.Allow{}).(*release.Allow)
+							a := spec.Create(release.IPAllow{}).(*release.IPAllow)
 							a.InternetProtocolAddress = ``
 							return a
 						})
@@ -115,8 +115,8 @@ func (spec AllowFinderSpec) Test(t *testing.T) {
 						s.Then(`it will return the allow flag with empty ip addr`, func(t *testcase.T) {
 							i := subject(t)
 
-							expected := t.I(`allow`).(*release.Allow)
-							var actual release.Allow
+							expected := t.I(`allow`).(*release.IPAllow)
+							var actual release.IPAllow
 
 							require.True(t, i.Next())
 							require.Nil(t, i.Decode(&actual))
