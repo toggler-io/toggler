@@ -30,7 +30,7 @@ Commands:
     - start up http web-server
   * create-token
     - create token for admin user
-  * create-fixtures
+  * fixtures
     - create fixtures for local development purpose
 `
 
