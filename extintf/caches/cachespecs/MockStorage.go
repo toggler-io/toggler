@@ -156,25 +156,25 @@ func (mr *MockStorageMockRecorder) FindReleaseFlagsByName(ctx interface{}, names
 }
 
 // FindReleaseFlagPilotByPilotExternalID mocks base method
-func (m *MockStorage) FindReleaseFlagPilotByPilotExternalID(ctx context.Context, FeatureFlagID, ExternalPilotID string) (*release.Pilot, error) {
+func (m *MockStorage) FindReleaseFlagPilotByPilotExternalID(ctx context.Context, flagID, pilotExtID string) (*release.Pilot, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindReleaseFlagPilotByPilotExternalID", ctx, FeatureFlagID, ExternalPilotID)
+	ret := m.ctrl.Call(m, "FindReleaseFlagPilotByPilotExternalID", ctx, flagID, pilotExtID)
 	ret0, _ := ret[0].(*release.Pilot)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FindReleaseFlagPilotByPilotExternalID indicates an expected call of FindReleaseFlagPilotByPilotExternalID
-func (mr *MockStorageMockRecorder) FindReleaseFlagPilotByPilotExternalID(ctx, FeatureFlagID, ExternalPilotID interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) FindReleaseFlagPilotByPilotExternalID(ctx, flagID, pilotExtID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindReleaseFlagPilotByPilotExternalID", reflect.TypeOf((*MockStorage)(nil).FindReleaseFlagPilotByPilotExternalID), ctx, FeatureFlagID, ExternalPilotID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindReleaseFlagPilotByPilotExternalID", reflect.TypeOf((*MockStorage)(nil).FindReleaseFlagPilotByPilotExternalID), ctx, flagID, pilotExtID)
 }
 
 // FindPilotsByFeatureFlag mocks base method
-func (m *MockStorage) FindPilotsByFeatureFlag(ctx context.Context, ff *release.Flag) frameless.Iterator {
+func (m *MockStorage) FindPilotsByFeatureFlag(ctx context.Context, ff *release.Flag) release.PilotEntries {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindPilotsByFeatureFlag", ctx, ff)
-	ret0, _ := ret[0].(frameless.Iterator)
+	ret0, _ := ret[0].(release.PilotEntries)
 	return ret0
 }
 

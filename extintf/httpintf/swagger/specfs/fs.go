@@ -213,7 +213,7 @@ var _escData = map[string]*_escFile{
 		name:    "swagger.json",
 		local:   "swagger.json",
 		size:    15935,
-		modtime: 1570959211,
+		modtime: 1571037390,
 		compressed: `
 H4sIAAAAAAAC/+w7XW/cOJLv+RWF3hvMLmC7M9nZOVxe7jL5mA2QnfHZCfYhNoJqslrimCIVknJHGOS/
 H4qk1FJL3W3nZn3B4PKStkQWi/X9pd8eASyENb6pyC+ewvtHAAALrGutBAZlzfJXb83iEcD1Ca+tnZWN

@@ -213,7 +213,7 @@ var _escData = map[string]*_escFile{
 		name:    "fs.go",
 		local:   "migrations/fs.go",
 		size:    0,
-		modtime: 1571037391,
+		modtime: 1571442188,
 		compressed: `
 H4sIAAAAAAAC/wEAAP//AAAAAAAAAAA=
 `,
