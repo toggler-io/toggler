@@ -127,25 +127,7 @@ example connection strings:
 export DATABASE_URL="postgres://user:passwd@ec2-111.eu-west-1.compute.amazonaws.com:5432/dbname"
 ```
 
-#### Cache
-The cache external resource is an optional addition.
-By default, the service don't try to be smart, and use no cache at all.
-
-You choose to have a trade off for your storage system to use a traditional database
-that can provide your fact data with cost effectiveness, stability and maintainability perspectives.
-But then you don't want to sacrifice the service response times, so you can use a cache system to solve this.
-The Caching system do automatic cache invalidation with TTL and on Update/Delete storage operations.
-
-Currently only redis is available, but additional solutions in progress.
-
-To setup the application to use the cache, either provide the `-cache-url` cli option
-or the `CACHE_URL` environment variable.
-
-To setup the cache TTL, you can use the `-cache-ttl` cli option or the `CACHE_TTL` environment variable.
-A cache ttl duration in string format must be a unsigned sequence of
-decimal numbers, each with optional fraction and a unit suffix,
-such as "300ms", "1.5h" or "2h45m".
-Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+#### [Cache](/docs/caches/README.md)
 
 ### Deployment
 * [heroku](/docs/deploy/heroku.md)

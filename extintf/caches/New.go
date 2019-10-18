@@ -19,6 +19,10 @@ func New(connstr string, storage usecases.Storage) (Interface, error) {
 	}
 
 	switch driver {
+	case `redis`:
+		return NewRedis(connstr, storage)
+	case `memory`:
+		return NewInMemory(storage), nil
 	default:
 		return NewNullCache(storage), nil
 	}
