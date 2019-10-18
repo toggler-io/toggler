@@ -13,9 +13,12 @@ import (
 )
 
 func TestRedis(t *testing.T) {
+	cache, err := caches.NewRedis(getTestRedisConnstr(t), nil)
+	require.Nil(t, err)
+	defer cache.Close()
+
 	factory := func(s usecases.Storage) caches.Interface {
-		cache, err := caches.NewRedis(getTestRedisConnstr(t), s)
-		require.Nil(t, err)
+		cache.Storage = s
 		return cache
 	}
 

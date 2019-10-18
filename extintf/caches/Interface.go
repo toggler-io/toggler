@@ -7,5 +7,5 @@ import (
 
 type Interface interface {
 	usecases.Storage
-	SetTimeToLiveForValuesToCache(duration time.Duration) error
+	SetTimeToLiveForValuesToCache(duration time.Duration) error // SetTTL()
 }

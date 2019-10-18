@@ -20,7 +20,7 @@ func NewRedis(connstr string, storage usecases.Storage) (*Redis, error) {
 	return &Redis{Storage: storage, client: redis.NewClient(redisClientOpt)}, nil
 }
 
-// TODO provide caching for every storage contract (function)
+// TODO provide caching for every Storage contract (function)
 type Redis struct {
 	usecases.Storage
 	client *redis.Client

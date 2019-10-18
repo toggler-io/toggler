@@ -28,8 +28,8 @@ type FlagFinder interface {
 }
 
 type PilotFinder interface {
-	FindReleaseFlagPilotByPilotExternalID(ctx context.Context, FeatureFlagID, ExternalPilotID string) (*Pilot, error)
-	FindPilotsByFeatureFlag(ctx context.Context, ff *Flag) frameless.Iterator
+	FindReleaseFlagPilotByPilotExternalID(ctx context.Context, flagID, pilotExtID string) (*Pilot, error)
+	FindPilotsByFeatureFlag(ctx context.Context, ff *Flag) PilotEntries
 	FindPilotEntriesByExtID(ctx context.Context, pilotExtID string) PilotEntries
 }
 

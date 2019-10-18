@@ -36,7 +36,7 @@ func TestNew(t *testing.T) {
 			})
 		})
 
-		s.When(`the connection string is some storage specific custom connstring`, func(s *testcase.Spec) {
+		s.When(`the connection string is some Storage specific custom connstring`, func(s *testcase.Spec) {
 			s.Let(`connstr`, func(t *testcase.T) interface{} { return `db=42 host=the-answer.com` })
 
 			s.Then(`then it will return null object implementation`, func(t *testcase.T) {
