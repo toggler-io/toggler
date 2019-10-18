@@ -117,7 +117,11 @@ func (checker *FlagChecker) GetReleaseFlagPilotEnrollmentStates(ctx context.Cont
 	}
 
 	ipAddr, pilotIpIsSet := ctx.Value(CtxPilotIpAddr).(string)
-	allowsIter := checker.Storage.FindReleaseAllowsByReleaseFlags(ctx, flags...)
+
+	var allowsIter frameless.Iterator = iterators.NewEmpty()
+	if len(flags) > 0 {
+		allowsIter = checker.Storage.FindReleaseAllowsByReleaseFlags(ctx, flags...)
+	}
 
 	for allowsIter.Next() {
 		var a IPAllow
