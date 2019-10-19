@@ -29,7 +29,7 @@ import (
 func NewPostgres(db *sql.DB) (*Postgres, error) {
 	pg := &Postgres{DB: db}
 
-	if err := Migrate(db); err != nil {
+	if err := PostgresMigrate(db); err != nil {
 		return nil, err
 	}
 
@@ -786,9 +786,9 @@ func newPrepareQueryPlaceholderAssigner() func() string {
 //go:generate esc -o ./migrations/fs.go -pkg migrations ./migrations
 const pgMigrationsDirectory = `/migrations/postgres`
 
-func Migrate(db *sql.DB) error {
+func PostgresMigrate(db *sql.DB) error {
 
-	m, err := NewMigrate(db)
+	m, err := NewPostgresMigrate(db)
 
 	if err != nil {
 		return err
@@ -802,9 +802,9 @@ func Migrate(db *sql.DB) error {
 
 }
 
-func NewMigrate(db *sql.DB) (*migrate.Migrate, error) {
+func NewPostgresMigrate(db *sql.DB) (*migrate.Migrate, error) {
 
-	srcDriver, err := NewBindataSourceDriver()
+	srcDriver, err := NewPostgresBindataSourceDriver()
 
 	if err != nil {
 		return nil, err
@@ -826,7 +826,7 @@ func NewMigrate(db *sql.DB) (*migrate.Migrate, error) {
 
 }
 
-func NewBindataSourceDriver() (source.Driver, error) {
+func NewPostgresBindataSourceDriver() (source.Driver, error) {
 	f, err := migrations.FS(false).Open(pgMigrationsDirectory)
 
 	if err != nil {
