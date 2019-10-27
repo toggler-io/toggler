@@ -213,7 +213,7 @@ var _escData = map[string]*_escFile{
 		name:    "README.md",
 		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/README.md",
 		size:    6852,
-		modtime: 1571441677,
+		modtime: 1571442210,
 		compressed: `
 H4sIAAAAAAAC/6xZ244bR5J9r6+ItRZrS2AXIXkXxgpYa1tqebcBye5Rt2AYDcOMyoxipZiVWc4LKXow
 wHzNfNh8ySAis0g2Jb0M5knsqqy8RJw450TqESS/XlsKTbOqv1ZgIiDcku1h8DGRhh8IUw4EdzICbils
@@ -282,7 +282,7 @@ H4sIAAAAAAAC/wEAAP//AAAAAAAAAAA=
 		name:    "README.md",
 		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/caches/README.md",
 		size:    2062,
-		modtime: 1571442162,
+		modtime: 1571442210,
 		compressed: `
 H4sIAAAAAAAC/3RVTY7cNhPd8xSF9sI2oNFnf4mXWdiTAAngVdIOkFVUTZZaxFCkwiqqrSxyq1wgJwuK
 1PS4B86moRZL9fPeq8cXcI92IjbmpxFkIjihffDxDCwp45lgSwUKE3iGmATwFAgkwYTR6dNEEBI6SBG8
