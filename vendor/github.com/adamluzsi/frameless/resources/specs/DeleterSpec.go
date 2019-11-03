@@ -4,9 +4,10 @@ import (
 	"context"
 	"testing"
 
+	"github.com/adamluzsi/testcase"
+
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources"
-	"github.com/adamluzsi/testcase"
 
 	"github.com/adamluzsi/frameless"
 
@@ -43,7 +44,7 @@ func (spec DeleterSpec) Test(t *testing.T) {
 			return spec.FixtureFactory.Create(spec.EntityType)
 		})
 
-		s.When(`entity was saved in the Resource`, func(s *testcase.Spec) {
+		s.When(`entity was saved in the resource`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
 				require.Nil(t, spec.Subject.Save(spec.Context(), t.I(`entity`)))
 			})
@@ -55,7 +56,7 @@ func (spec DeleterSpec) Test(t *testing.T) {
 				return id
 			})
 
-			s.Then(`the entity will no longer be find-able in the Resource by the id`, func(t *testcase.T) {
+			s.Then(`the entity will no longer be find-able in the resource by the id`, func(t *testcase.T) {
 				require.Nil(t, subject(t))
 				e := reflects.New(spec.EntityType)
 				found, err := spec.Subject.FindByID(spec.Context(), e, t.I(`id`).(string))
@@ -75,7 +76,7 @@ func (spec DeleterSpec) Test(t *testing.T) {
 				})
 			})
 
-			s.And(`more similar entity is saved in the Resource as well`, func(s *testcase.Spec) {
+			s.And(`more similar entity is saved in the resource as well`, func(s *testcase.Spec) {
 				s.Let(`oth-entity`, func(t *testcase.T) interface{} {
 					return spec.FixtureFactory.Create(spec.EntityType)
 				})
@@ -107,7 +108,7 @@ func (spec DeleterSpec) Test(t *testing.T) {
 			})
 		})
 
-		s.When(`entity never saved before in the Resource`, func(s *testcase.Spec) {
+		s.When(`entity never saved before in the resource`, func(s *testcase.Spec) {
 			s.Let(`id`, func(t *testcase.T) interface{} {
 				id, _ := resources.LookupID(t.I(`entity`))
 				return id
@@ -127,14 +128,27 @@ func (spec DeleterSpec) Test(t *testing.T) {
 
 func (spec DeleterSpec) Benchmark(b *testing.B) {
 	cleanup(b, spec.Subject, spec.FixtureFactory, spec.EntityType)
-	b.Run(`DeleteByID`, func(b *testing.B) {
-		es := createEntities(b.N, spec.FixtureFactory, spec.EntityType)
-		ids := saveEntities(b, spec.Subject, spec.FixtureFactory, es...)
-		defer cleanup(b, spec.Subject, spec.FixtureFactory, spec.EntityType)
+	defer cleanup(b, spec.Subject, spec.FixtureFactory, spec.EntityType)
 
-		b.ResetTimer()
-		for _, id := range ids {
-			require.Nil(b, spec.Subject.DeleteByID(spec.FixtureFactory.Context(), spec.EntityType, id))
+	b.Run(`DeleteByID`, func(b *testing.B) {
+		var total int
+	wrk:
+		for {
+
+			b.StopTimer()
+			es := createEntities(spec.FixtureFactory, spec.EntityType)
+			ids := saveEntities(b, spec.Subject, spec.FixtureFactory, es...)
+			b.StartTimer()
+
+			for _, id := range ids {
+				require.Nil(b, spec.Subject.DeleteByID(spec.FixtureFactory.Context(), spec.EntityType, id))
+				total++
+
+				if total == b.N {
+					break wrk
+				}
+			}
+
 		}
 	})
 }

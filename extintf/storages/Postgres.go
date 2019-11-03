@@ -862,7 +862,7 @@ func (m tokenMapper) Columns() []string {
 	return []string{`id`, `sha512`, `duration`, `issued_at`, `owner_uid`}
 }
 
-func (m tokenMapper) Map(s iterators.SQLRowScanner, ptr frameless.Entity) error {
+func (m tokenMapper) Map(s iterators.SQLRowScanner, ptr interface{}) error {
 	var src security.Token
 	if err := s.Scan(
 		&src.ID,
@@ -883,16 +883,16 @@ func (releaseAllowMapper) Columns() []string {
 	return []string{`id`, `flag_id`, `ip_addr`}
 }
 
-func (releaseAllowMapper) Map(scanner iterators.SQLRowScanner, ptr frameless.Entity) error {
-	var a release.IPAllow
+func (releaseAllowMapper) Map(scanner iterators.SQLRowScanner, ptr interface{}) error {
+	var ipAllow release.IPAllow
 	var ipAddr sql.NullString
-	if err := scanner.Scan(&a.ID, &a.FlagID, &ipAddr); err != nil {
+	if err := scanner.Scan(&ipAllow.ID, &ipAllow.FlagID, &ipAddr); err != nil {
 		return err
 	}
 	if ipAddr.Valid {
-		a.InternetProtocolAddress = ipAddr.String
+		ipAllow.InternetProtocolAddress = ipAddr.String
 	}
-	return reflects.Link(&a, ptr)
+	return reflects.Link(ipAllow, ptr)
 }
 
 type releaseFlagMapper struct{}
@@ -901,7 +901,7 @@ func (releaseFlagMapper) SelectClause() string {
 	return `SELECT id, name, rollout_rand_seed, rollout_strategy_percentage, rollout_strategy_decision_logic_api`
 }
 
-func (releaseFlagMapper) Map(scanner iterators.SQLRowScanner, ptr frameless.Entity) error {
+func (releaseFlagMapper) Map(scanner iterators.SQLRowScanner, ptr interface{}) error {
 	var ff release.Flag
 	var DecisionLogicAPI sql.NullString
 
@@ -925,7 +925,7 @@ func (releaseFlagMapper) Map(scanner iterators.SQLRowScanner, ptr frameless.Enti
 		ff.Rollout.Strategy.DecisionLogicAPI = u
 	}
 
-	return reflects.Link(&ff, ptr)
+	return reflects.Link(ff, ptr)
 }
 
 type pilotMapper struct{}
@@ -935,7 +935,7 @@ func (pilotMapper) SelectClause() string {
 	return query
 }
 
-func (pilotMapper) Map(s iterators.SQLRowScanner, ptr frameless.Entity) error {
+func (pilotMapper) Map(s iterators.SQLRowScanner, ptr interface{}) error {
 	var p release.Pilot
 
 	err := s.Scan(
@@ -949,5 +949,5 @@ func (pilotMapper) Map(s iterators.SQLRowScanner, ptr frameless.Entity) error {
 		return err
 	}
 
-	return reflects.Link(&p, ptr)
+	return reflects.Link(p, ptr)
 }

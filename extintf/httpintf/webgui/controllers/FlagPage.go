@@ -70,7 +70,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 
 		var pilots []release.Pilot
 
-		if ctrl.handleError(w, r, iterators.CollectAll(ctrl.Storage.FindPilotsByFeatureFlag(r.Context(), &ff), &pilots)) {
+		if ctrl.handleError(w, r, iterators.Collect(ctrl.Storage.FindPilotsByFeatureFlag(r.Context(), &ff), &pilots)) {
 			return
 		}
 

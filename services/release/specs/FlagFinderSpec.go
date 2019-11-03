@@ -107,7 +107,7 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 					flagsIter := subject(t)
 
 					var flags []release.Flag
-					require.Nil(t, iterators.CollectAll(flagsIter, &flags))
+					require.Nil(t, iterators.Collect(flagsIter, &flags))
 
 					require.Equal(t, 3, len(flags))
 					mustContainName(t, flags, `A`)
@@ -125,7 +125,7 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 					flagsIter := subject(t)
 
 					var flags []release.Flag
-					require.Nil(t, iterators.CollectAll(flagsIter, &flags))
+					require.Nil(t, iterators.Collect(flagsIter, &flags))
 
 					require.Equal(t, 2, len(flags))
 					mustContainName(t, flags, `A`)

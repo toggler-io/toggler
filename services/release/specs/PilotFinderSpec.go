@@ -274,7 +274,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 
 				s.Then(`it will return all of them`, func(t *testcase.T) {
 					var pilots []release.Pilot
-					require.Nil(t, iterators.CollectAll(subject(t), &pilots))
+					require.Nil(t, iterators.Collect(subject(t), &pilots))
 					require.ElementsMatch(t, t.I(`expected pilots`).([]release.Pilot), pilots)
 				})
 			})

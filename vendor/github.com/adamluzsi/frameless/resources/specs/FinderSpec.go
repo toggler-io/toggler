@@ -4,11 +4,12 @@ import (
 	"context"
 	"testing"
 
+	"github.com/adamluzsi/testcase"
+
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources"
-	"github.com/adamluzsi/testcase"
 
 	"github.com/stretchr/testify/require"
 )
@@ -84,7 +85,7 @@ func (spec findByIDSpec) Test(t *testing.T) {
 			return spec.FixtureFactory.Create(spec.EntityType)
 		})
 
-		s.When(`entity was saved in the Resource`, func(s *testcase.Spec) {
+		s.When(`entity was saved in the resource`, func(s *testcase.Spec) {
 
 			s.Before(func(t *testcase.T) {
 				require.Nil(t, spec.Subject.Save(spec.Context(), t.I(`entity`)))
@@ -117,7 +118,7 @@ func (spec findByIDSpec) Test(t *testing.T) {
 				})
 			})
 
-			s.And(`more similar entity is saved in the Resource as well`, func(s *testcase.Spec) {
+			s.And(`more similar entity is saved in the resource as well`, func(s *testcase.Spec) {
 				s.Let(`oth-entity`, func(t *testcase.T) interface{} {
 					return spec.FixtureFactory.Create(spec.EntityType)
 				})
@@ -134,14 +135,14 @@ func (spec findByIDSpec) Test(t *testing.T) {
 			})
 		})
 
-		s.When(`no entity saved before in the Resource`, func(s *testcase.Spec) {
+		s.When(`no entity saved before in the resource`, func(s *testcase.Spec) {
 			s.Let(`id`, func(t *testcase.T) interface{} { return `` })
 
 			s.Before(func(t *testcase.T) {
 				require.Nil(t, spec.Subject.Truncate(spec.Context(), spec.EntityType))
 			})
 
-			s.Then(`the it will have no result`, func(t *testcase.T) {
+			s.Then(`it will have no result`, func(t *testcase.T) {
 				found, err := subject(t)
 				require.Nil(t, err)
 				require.False(t, found)
@@ -210,7 +211,7 @@ func (spec findByIDSpec) Test(t *testing.T) {
 func (spec findByIDSpec) Benchmark(b *testing.B) {
 	cleanup(b, spec.Subject, spec.FixtureFactory, spec.EntityType)
 	b.Run(`FindByID`, func(b *testing.B) {
-		es := createEntities(benchmarkEntityVolumeCount, spec.FixtureFactory, spec.EntityType)
+		es := createEntities(spec.FixtureFactory, spec.EntityType)
 		ids := saveEntities(b, spec.Subject, spec.FixtureFactory, es...)
 		defer cleanup(b, spec.Subject, spec.FixtureFactory, spec.EntityType)
 
@@ -246,7 +247,7 @@ type findAllSpec struct {
 func (spec findAllSpec) Test(t *testing.T) {
 	s := testcase.NewSpec(t)
 
-	s.Describe(`FinderAll`, func(s *testcase.Spec) {
+	s.Describe(`FindAll`, func(s *testcase.Spec) {
 
 		subject := func(t *testcase.T) frameless.Iterator {
 			return spec.Subject.FindAll(
@@ -267,7 +268,7 @@ func (spec findAllSpec) Test(t *testing.T) {
 			return spec.FixtureFactory.Create(spec.EntityType)
 		})
 
-		s.When(`entity was saved in the Resource`, func(s *testcase.Spec) {
+		s.When(`entity was saved in the resource`, func(s *testcase.Spec) {
 
 			s.Before(func(t *testcase.T) {
 				require.Nil(t, spec.Subject.Save(spec.Context(), t.I(`entity`)))
@@ -279,15 +280,15 @@ func (spec findAllSpec) Test(t *testing.T) {
 				require.Equal(t, 1, count)
 			})
 
-			s.Then(`then the returned iterator includes the stored entity`, func(t *testcase.T) {
+			s.Then(`the returned iterator includes the stored entity`, func(t *testcase.T) {
 				all := subject(t)
 				var entities []interface{}
-				require.Nil(t, iterators.CollectAll(all, &entities))
+				require.Nil(t, iterators.Collect(all, &entities))
 				require.Equal(t, 1, len(entities))
-				require.Contains(t, entities, reflects.BaseValueOf(t.I(`entity`)).Interface())
+				contains(t, entities, t.I(`entity`))
 			})
 
-			s.And(`more similar entity is saved in the Resource as well`, func(s *testcase.Spec) {
+			s.And(`more similar entity is saved in the resource as well`, func(s *testcase.Spec) {
 				s.Let(`oth-entity`, func(t *testcase.T) interface{} {
 					return spec.FixtureFactory.Create(spec.EntityType)
 				})
@@ -298,15 +299,15 @@ func (spec findAllSpec) Test(t *testing.T) {
 				s.Then(`all entity will be fetched`, func(t *testcase.T) {
 					all := subject(t)
 					var entities []interface{}
-					require.Nil(t, iterators.CollectAll(all, &entities))
+					require.Nil(t, iterators.Collect(all, &entities))
 					require.Equal(t, 2, len(entities))
-					require.Contains(t, entities, reflects.BaseValueOf(t.I(`entity`)).Interface())
-					require.Contains(t, entities, reflects.BaseValueOf(t.I(`oth-entity`)).Interface())
+					contains(t, entities, t.I(`entity`))
+					contains(t, entities, t.I(`oth-entity`))
 				})
 			})
 		})
 
-		s.When(`no entity saved before in the Resource`, func(s *testcase.Spec) {
+		s.When(`no entity saved before in the resource`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
 				require.Nil(t, spec.Subject.Truncate(spec.Context(), spec.EntityType))
 			})
@@ -338,7 +339,7 @@ func (spec findAllSpec) Test(t *testing.T) {
 func (spec findAllSpec) Benchmark(b *testing.B) {
 	cleanup(b, spec.Subject, spec.FixtureFactory, spec.EntityType)
 	b.Run(`FindAll`, func(b *testing.B) {
-		es := createEntities(benchmarkEntityVolumeCount, spec.FixtureFactory, spec.EntityType)
+		es := createEntities(spec.FixtureFactory, spec.EntityType)
 		saveEntities(b, spec.Subject, spec.FixtureFactory, es...)
 		defer cleanup(b, spec.Subject, spec.FixtureFactory, spec.EntityType)
 

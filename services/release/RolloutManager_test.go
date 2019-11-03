@@ -450,11 +450,11 @@ func SpecRolloutManagerUpdateFeatureFlag(s *testcase.Spec) {
 
 func SpecRolloutManagerListFeatureFlags(s *testcase.Spec) {
 	s.Describe(`ListFeatureFlags`, func(s *testcase.Spec) {
-		subject := func(t *testcase.T) ([]*release.Flag, error) {
+		subject := func(t *testcase.T) ([]release.Flag, error) {
 			return manager(t).ListFeatureFlags(context.TODO())
 		}
 
-		onSuccess := func(t *testcase.T) []*release.Flag {
+		onSuccess := func(t *testcase.T) []release.Flag {
 			ffs, err := subject(t)
 			require.Nil(t, err)
 			return ffs
@@ -488,7 +488,7 @@ func SpecRolloutManagerListFeatureFlags(s *testcase.Spec) {
 			s.Then(`feature flags are returned`, func(t *testcase.T) {
 				flags := onSuccess(t)
 
-				require.Equal(t, []*release.Flag{}, flags)
+				require.Equal(t, []release.Flag{}, flags)
 			})
 		})
 
@@ -515,7 +515,7 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 		})
 
 		findFlag := func(t *testcase.T) *release.Flag {
-			iter := GetStorage(t).FindAll(context.Background(), &release.Flag{})
+			iter := GetStorage(t).FindAll(context.Background(), release.Flag{})
 			require.NotNil(t, iter)
 			require.True(t, iter.Next())
 			var ff release.Flag
@@ -572,7 +572,10 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 						require.NotNil(t, pilot)
 						require.Equal(t, GetNewEnrollment(t), pilot.Enrolled)
 						require.Equal(t, GetExternalPilotID(t), pilot.ExternalID)
-						require.Equal(t, GetPilot(t), pilot)
+
+						expectedPilot := *GetPilot(t)
+						expectedPilot.Enrolled = GetNewEnrollment(t)
+						require.Equal(t, &expectedPilot, pilot)
 
 						count, err := iterators.Count(GetStorage(t).FindAll(context.Background(), release.Pilot{}))
 						require.Nil(t, err)

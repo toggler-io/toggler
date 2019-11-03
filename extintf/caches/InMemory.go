@@ -241,7 +241,7 @@ func (c *InMemory) FindAll(ctx context.Context, T interface{}) frameless.Iterato
 	v, err := c.get(namespace, c.namespaceKey(T), func(s setter) error {
 		iter := c.Storage.FindAll(ctx, T)
 		var results []interface{}
-		if err := iterators.CollectAll(iter, &results); err != nil {
+		if err := iterators.Collect(iter, &results); err != nil {
 			return err
 		}
 		s.set(results)
@@ -297,7 +297,7 @@ func (c *InMemory) FindReleaseFlagsByName(ctx context.Context, names ...string) 
 
 	v, err := c.get(namespace, key, func(s setter) error {
 		var flags []interface{}
-		if err := iterators.CollectAll(c.Storage.FindReleaseFlagsByName(ctx, names...), &flags); err != nil {
+		if err := iterators.Collect(c.Storage.FindReleaseFlagsByName(ctx, names...), &flags); err != nil {
 			return err
 		}
 		s.set(flags)
@@ -340,7 +340,7 @@ func (c *InMemory) FindPilotsByFeatureFlag(ctx context.Context, ff *release.Flag
 
 	v, err := c.get(namespace, ff.ID, func(s setter) error {
 		var pilots []interface{}
-		if err := iterators.CollectAll(c.Storage.FindPilotsByFeatureFlag(ctx, ff), &pilots); err != nil {
+		if err := iterators.Collect(c.Storage.FindPilotsByFeatureFlag(ctx, ff), &pilots); err != nil {
 			return err
 		}
 		s.set(pilots)
@@ -361,7 +361,7 @@ func (c *InMemory) FindPilotEntriesByExtID(ctx context.Context, pilotExtID strin
 
 	v, err := c.get(namespace, pilotExtID, func(s setter) error {
 		var pilots []interface{}
-		if err := iterators.CollectAll(c.Storage.FindPilotEntriesByExtID(ctx, pilotExtID), &pilots); err != nil {
+		if err := iterators.Collect(c.Storage.FindPilotEntriesByExtID(ctx, pilotExtID), &pilots); err != nil {
 			return err
 		}
 		s.set(pilots)
@@ -387,7 +387,7 @@ func (c *InMemory) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ..
 
 	v, err := c.get(namespace, strings.Join(keys, `|`), func(s setter) error {
 		var allows []interface{}
-		if err := iterators.CollectAll(c.Storage.FindReleaseAllowsByReleaseFlags(ctx, flags...), &allows); err != nil {
+		if err := iterators.Collect(c.Storage.FindReleaseAllowsByReleaseFlags(ctx, flags...), &allows); err != nil {
 			return err
 		}
 		s.set(allows)

@@ -2,6 +2,7 @@ package cachespecs
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/adamluzsi/frameless/fixtures"
@@ -167,11 +168,11 @@ func (spec CacheSpec) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 						storage.EXPECT().FindByID(gomock.Any(), gomock.Any(), gomock.Any()).
 							Times(1).
 							DoAndReturn(func(ctx context.Context, ptr interface{}, ID string) (bool, error) {
-								value := t.I(`value`)
-								id, found := resources.LookupID(value)
+								v := reflect.ValueOf(t.I(`value`))
+								id, found := resources.LookupID(v.Interface())
 								require.True(t, found)
 								require.Equal(t, ID, id)
-								require.Nil(t, reflects.Link(value, ptr))
+								require.Nil(t, reflects.Link(v.Elem().Interface(), ptr))
 								return true, nil
 							})
 

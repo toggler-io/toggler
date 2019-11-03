@@ -18,7 +18,7 @@ func NewInMemory() *InMemory {
 type InMemory struct{ *memorystorage.Memory }
 
 func (s *InMemory) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...*release.Flag) release.AllowEntries {
-	var allows []*release.IPAllow
+	var allows []release.IPAllow
 
 	flagIndex := make(map[string]struct{})
 	for _, flag := range flags {
@@ -28,7 +28,7 @@ func (s *InMemory) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ..
 	for _, e := range s.TableFor(release.IPAllow{}) {
 		allow := e.(*release.IPAllow)
 		if _, ok := flagIndex[allow.FlagID]; ok {
-			allows = append(allows, allow)
+			allows = append(allows, *allow)
 		}
 	}
 
@@ -36,13 +36,13 @@ func (s *InMemory) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ..
 }
 
 func (s *InMemory) FindPilotEntriesByExtID(ctx context.Context, pilotExtID string) release.PilotEntries {
-	var pilots []*release.Pilot
+	var pilots []release.Pilot
 
 	for _, e := range s.TableFor(release.Pilot{}) {
 		p := e.(*release.Pilot)
 
 		if p.ExternalID == pilotExtID {
-			pilots = append(pilots, p)
+			pilots = append(pilots, *p)
 		}
 	}
 
@@ -50,7 +50,7 @@ func (s *InMemory) FindPilotEntriesByExtID(ctx context.Context, pilotExtID strin
 }
 
 func (s *InMemory) FindReleaseFlagsByName(ctx context.Context, names ...string) frameless.Iterator {
-	var flags []*release.Flag
+	var flags []release.Flag
 
 	nameIndex := make(map[string]struct{})
 
@@ -62,7 +62,7 @@ func (s *InMemory) FindReleaseFlagsByName(ctx context.Context, names ...string) 
 		flag := e.(*release.Flag)
 
 		if _, ok := nameIndex[flag.Name] ; ok {
-			flags = append(flags, flag)
+			flags = append(flags, *flag)
 		}
 	}
 
@@ -72,13 +72,13 @@ func (s *InMemory) FindReleaseFlagsByName(ctx context.Context, names ...string) 
 func (s *InMemory) FindPilotsByFeatureFlag(ctx context.Context, ff *release.Flag) frameless.Iterator {
 	table := s.TableFor(release.Pilot{})
 
-	var pilots []*release.Pilot
+	var pilots []release.Pilot
 
 	for _, v := range table {
 		pilot := v.(*release.Pilot)
 
 		if pilot.FlagID == ff.ID {
-			pilots = append(pilots, pilot)
+			pilots = append(pilots, *pilot)
 		}
 	}
 
@@ -92,7 +92,8 @@ func (s *InMemory) FindReleaseFlagPilotByPilotExternalID(ctx context.Context, fe
 		pilot := v.(*release.Pilot)
 
 		if pilot.FlagID == featureFlagID && pilot.ExternalID == externalPilotID {
-			return pilot, nil
+			p := *pilot
+			return &p, nil
 		}
 	}
 
@@ -100,19 +101,15 @@ func (s *InMemory) FindReleaseFlagPilotByPilotExternalID(ctx context.Context, fe
 }
 
 func (s *InMemory) FindReleaseFlagByName(ctx context.Context, name string) (*release.Flag, error) {
-	var ptr *release.Flag
-	table := s.TableFor(ptr)
+	for _, v := range s.TableFor(release.Flag{}) {
+		flagRecord := v.(*release.Flag)
 
-	for _, v := range table {
-		flag := v.(*release.Flag)
-
-		if flag.Name == name {
-			ptr = flag
-			break
+		if flagRecord.Name == name {
+			f := *flagRecord
+			return &f, nil
 		}
 	}
-
-	return ptr, nil
+	return nil, nil
 }
 
 func (s *InMemory) FindTokenBySHA512Hex(ctx context.Context, t string) (*security.Token, error) {
@@ -122,7 +119,8 @@ func (s *InMemory) FindTokenBySHA512Hex(ctx context.Context, t string) (*securit
 		token := token.(*security.Token)
 
 		if token.SHA512 == t {
-			return token, nil
+			t := *token
+			return &t, nil
 		}
 	}
 

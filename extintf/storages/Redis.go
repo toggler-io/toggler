@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
+	"reflect"
 
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
@@ -166,6 +167,7 @@ func (r *Redis) Update(ctx context.Context, ptr interface{}) error {
 }
 
 func (r *Redis) FindAll(ctx context.Context, Type interface{}) frameless.Iterator {
+	T := reflect.TypeOf(Type)
 	if err := ctx.Err(); err != nil {
 		return iterators.NewError(err)
 	}
@@ -179,21 +181,22 @@ func (r *Redis) FindAll(ctx context.Context, Type interface{}) frameless.Iterato
 	var values []interface{}
 
 	for _, serialized := range valuesWithIDs {
-		v := reflects.New(Type)
-		if err := r.unmarshal(v, []byte(serialized)); err != nil {
+		v := reflect.New(T)
+		if err := r.unmarshal(v.Interface(), []byte(serialized)); err != nil {
 			return iterators.NewError(err)
 		}
-		values = append(values, v)
+		values = append(values, v.Elem().Interface())
 	}
 
 	return iterators.NewSlice(values)
 }
 
 func (r *Redis) FindReleaseFlagByName(ctx context.Context, name string) (*release.Flag, error) {
-	flags := r.FindAll(ctx, release.Flag{})
-	flagsByName := iterators.Filter(flags, func(flag frameless.Entity) bool {
-		return flag.(release.Flag).Name == name
+	flagsByName := iterators.Filter(r.FindAll(ctx, release.Flag{}),
+		func(flag release.Flag) bool {
+			return flag.Name == name
 	})
+
 	var flag release.Flag
 	err := iterators.First(flagsByName, &flag)
 

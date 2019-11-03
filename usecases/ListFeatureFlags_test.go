@@ -18,11 +18,11 @@ func TestUseCases_ListFeatureFlags(t *testing.T) {
 	SetupSpec(s)
 	s.Parallel()
 
-	subject := func(t *testcase.T) ([]*release.Flag, error) {
+	subject := func(t *testcase.T) ([]release.Flag, error) {
 		return GetProtectedUsecases(t).ListFeatureFlags(context.TODO())
 	}
 
-	onSuccess := func(t *testcase.T) []*release.Flag {
+	onSuccess := func(t *testcase.T) []release.Flag {
 		ffs, err := subject(t)
 		require.Nil(t, err)
 		return ffs

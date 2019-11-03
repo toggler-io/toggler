@@ -87,10 +87,10 @@ func (manager *RolloutManager) UpdateFeatureFlag(ctx context.Context, flag *Flag
 	return manager.Storage.Update(ctx, flag)
 }
 
-func (manager *RolloutManager) ListFeatureFlags(ctx context.Context) ([]*Flag, error) {
+func (manager *RolloutManager) ListFeatureFlags(ctx context.Context) ([]Flag, error) {
 	iter := manager.Storage.FindAll(ctx, Flag{})
-	ffs := []*Flag{} // empty slice required for null object pattern enforcement
-	err := iterators.CollectAll(iter, &ffs)
+	ffs := make([]Flag, 0) // empty slice required for null object pattern enforcement
+	err := iterators.Collect(iter, &ffs)
 	return ffs, err
 }
 

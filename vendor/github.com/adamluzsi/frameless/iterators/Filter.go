@@ -1,24 +1,61 @@
 package iterators
 
 import (
+	"reflect"
+
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/reflects"
 )
 
-func Filter(i frameless.Iterator, selector func(frameless.Entity) bool) *FilterIterator {
-	return &FilterIterator{src: i, match: selector}
+func Filter(i frameless.Iterator, selectorFunc interface{}) *FilterIterator {
+	iter := &FilterIterator{iterator: i, filterFunc: selectorFunc}
+	iter.init()
+	return iter
 }
 
 type FilterIterator struct {
-	src   frameless.Iterator
-	match func(frameless.Entity) bool
+	iterator   frameless.Iterator
+	filterFunc interface{}
+	matcher    func(interface{}) bool
 
-	next frameless.Entity
+	next interface{}
 	err  error
 }
 
+func (fi *FilterIterator) init() {
+	// TODO: Check arity and types here, rather than dying badly elsewhere.
+	v := reflect.ValueOf(fi.filterFunc)
+	ft := v.Type()
+
+	fi.matcher = func(arg interface{}) bool {
+		var varg reflect.Value
+
+		if arg != nil {
+			varg = reflect.ValueOf(arg)
+		} else {
+			varg = reflect.Zero(ft.In(0))
+		}
+
+		vrets := v.Call([]reflect.Value{varg})
+
+		const ErrSignatureMismatch = `Filter function expects only one return value: func(type T)(T) bool`
+
+		if len(vrets) != 1 {
+			panic(ErrSignatureMismatch)
+		}
+
+		isMatching, ok := vrets[0].Interface().(bool)
+
+		if !ok {
+			panic(ErrSignatureMismatch)
+		}
+
+		return isMatching
+	}
+}
+
 func (fi *FilterIterator) Close() error {
-	return fi.src.Close()
+	return fi.iterator.Close()
 }
 
 func (fi *FilterIterator) Err() error {
@@ -26,7 +63,7 @@ func (fi *FilterIterator) Err() error {
 		return fi.err
 	}
 
-	return fi.src.Err()
+	return fi.iterator.Err()
 }
 
 func (fi *FilterIterator) Decode(e frameless.Entity) error {
@@ -35,18 +72,16 @@ func (fi *FilterIterator) Decode(e frameless.Entity) error {
 
 func (fi *FilterIterator) Next() bool {
 
-	hasNext := fi.src.Next()
-
-	if !hasNext {
+	if !fi.iterator.Next() {
 		return false
 	}
 
-	if err := fi.src.Decode(&fi.next); err != nil {
+	if err := fi.iterator.Decode(&fi.next); err != nil {
 		fi.err = err
 		return false
 	}
 
-	if fi.match(fi.next) {
+	if fi.matcher(fi.next) {
 		return true
 	}
 
