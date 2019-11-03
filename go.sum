@@ -23,6 +23,8 @@ github.com/adamluzsi/frameless v0.0.0-20191028113046-d25550081b2f h1:f9YiKIT8kGU
 github.com/adamluzsi/frameless v0.0.0-20191028113046-d25550081b2f/go.mod h1:RuUTgIRKT2Zf2+UdKL+UNkro1PdAiDs3axz5fhIMrl4=
 github.com/adamluzsi/frameless v0.0.0-20191102230838-af0413a5dc14 h1:32cy8vBFhRWOIKa6D5gMv1MpEbZqXS80ooDDCBFEWGQ=
 github.com/adamluzsi/frameless v0.0.0-20191102230838-af0413a5dc14/go.mod h1:RuUTgIRKT2Zf2+UdKL+UNkro1PdAiDs3axz5fhIMrl4=
+github.com/adamluzsi/frameless v0.0.0-20191103025217-69f3b251a1bb h1:ZoDXCHxbtELhtiF7fKKG6fSLDHL6ApGvREcuau/Cco0=
+github.com/adamluzsi/frameless v0.0.0-20191103025217-69f3b251a1bb/go.mod h1:RuUTgIRKT2Zf2+UdKL+UNkro1PdAiDs3axz5fhIMrl4=
 github.com/adamluzsi/testcase v0.1.0 h1:Qs2KRe5BzFGPolnqYiOvnJh7LUbvxincoy0CCD0Gtcg=
 github.com/adamluzsi/testcase v0.1.0/go.mod h1:TQEoKRTCzl+HxyhnSG30/6OPpC/HPKz+hsElhv5fL6Y=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=

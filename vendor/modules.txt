@@ -4,7 +4,7 @@ github.com/Pallinder/go-randomdata
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 github.com/PuerkitoBio/urlesc
-# github.com/adamluzsi/frameless v0.0.0-20191102230838-af0413a5dc14
+# github.com/adamluzsi/frameless v0.0.0-20191103025217-69f3b251a1bb
 github.com/adamluzsi/frameless
 github.com/adamluzsi/frameless/iterators
 github.com/adamluzsi/frameless/reflects

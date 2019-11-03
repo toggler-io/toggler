@@ -150,7 +150,8 @@ func (r *Redis) Update(ctx context.Context, ptr interface{}) error {
 		return frameless.ErrIDRequired
 	}
 
-	found, err := r.FindByID(ctx, reflects.New(ptr), id)
+	// we pass a ptr down just to check the existence of the value.
+	found, err := r.FindByID(ctx, reflect.New(reflects.BaseTypeOf(ptr)).Interface(), id)
 	if err != nil && err != frameless.ErrNotFound {
 		return err
 	}

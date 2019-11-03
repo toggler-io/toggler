@@ -95,7 +95,7 @@ func (spec CacheSpec) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 		})
 
 		s.Then(`it will return the value`, func(t *testcase.T) {
-			v := reflects.New(T)
+			v := spec.new(T)
 			id, found := resources.LookupID(t.I(`value`))
 			require.True(t, found)
 			found, err := spec.cache(t).FindByID(spec.Context(), v, id)
@@ -106,7 +106,7 @@ func (spec CacheSpec) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 
 		s.And(`after value already cached`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				v := reflects.New(T)
+				v := spec.new(T)
 				id, found := resources.LookupID(t.I(`value`))
 				require.True(t, found)
 				found, err := spec.cache(t).FindByID(spec.Context(), v, id)
@@ -130,7 +130,7 @@ func (spec CacheSpec) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 				})
 
 				s.Then(`it will return the new value instead the old one`, func(t *testcase.T) {
-					v := reflects.New(T)
+					v := spec.new(T)
 					id, found := resources.LookupID(t.I(`value`))
 					require.True(t, found)
 					found, err := spec.cache(t).FindByID(spec.Context(), v, id)
@@ -148,7 +148,7 @@ func (spec CacheSpec) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 				require.True(t, found)
 
 				for i := 0; i < 42; i++ {
-					v := reflects.New(T)
+					v := spec.new(T)
 					found, err := spec.cache(t).FindByID(spec.Context(), v, id)
 					require.Nil(t, err)
 					require.True(t, found)
@@ -187,13 +187,13 @@ func (spec CacheSpec) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 						id, found := resources.LookupID(value)
 						require.True(t, found)
 
-						nv = reflects.New(T)
+						nv = spec.new(T)
 						found, err := spec.cache(t).FindByID(spec.Context(), nv, id)
 						require.Nil(t, err)
 						require.True(t, found)
 						require.Equal(t, value, nv)
 
-						nv = reflects.New(T)
+						nv = spec.new(T)
 						found, err = spec.cache(t).FindByID(spec.Context(), nv, id)
 						require.Nil(t, err)
 						require.True(t, found)
@@ -207,4 +207,8 @@ func (spec CacheSpec) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 
 func (spec CacheSpec) Benchmark(b *testing.B) {
 	b.Skip(`TODO`)
+}
+
+func (spec CacheSpec) new(T interface{}) interface {} {
+	return reflect.New(reflect.TypeOf(T)).Interface()
 }
