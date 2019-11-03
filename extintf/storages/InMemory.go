@@ -17,7 +17,7 @@ func NewInMemory() *InMemory {
 
 type InMemory struct{ *memorystorage.Memory }
 
-func (s *InMemory) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...*release.Flag) release.AllowEntries {
+func (s *InMemory) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...release.Flag) release.AllowEntries {
 	var allows []release.IPAllow
 
 	flagIndex := make(map[string]struct{})

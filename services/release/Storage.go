@@ -34,5 +34,5 @@ type PilotFinder interface {
 }
 
 type AllowFinder interface {
-	FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...*Flag) AllowEntries
+	FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...Flag) AllowEntries
 }

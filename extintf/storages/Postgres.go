@@ -44,7 +44,7 @@ type Postgres struct {
 	}
 }
 
-func (pg *Postgres) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...*release.Flag) release.AllowEntries {
+func (pg *Postgres) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...release.Flag) release.AllowEntries {
 	m := releaseAllowMapper{}
 	nextPlaceholder := newPrepareQueryPlaceholderAssigner()
 

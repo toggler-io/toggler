@@ -374,7 +374,7 @@ func (c *InMemory) FindPilotEntriesByExtID(ctx context.Context, pilotExtID strin
 	return iterators.NewSlice(v)
 }
 
-func (c *InMemory) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...*release.Flag) release.AllowEntries {
+func (c *InMemory) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...release.Flag) release.AllowEntries {
 	defer c.withLock()()
 
 	const namespace = `FindReleaseAllowsByReleaseFlags`

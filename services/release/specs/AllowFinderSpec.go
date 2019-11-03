@@ -36,7 +36,7 @@ func (spec AllowFinderSpec) Test(t *testing.T) {
 
 		s.Describe(`FindReleaseAllowsByReleaseFlags`, func(s *testcase.Spec) {
 			subject := func(t *testcase.T) release.AllowEntries {
-				return spec.Subject.FindReleaseAllowsByReleaseFlags(spec.Context(), t.I(`flag`).(*release.Flag))
+				return spec.Subject.FindReleaseAllowsByReleaseFlags(spec.Context(), *t.I(`flag`).(*release.Flag))
 			}
 
 			s.Let(`flag`, func(t *testcase.T) interface{} {

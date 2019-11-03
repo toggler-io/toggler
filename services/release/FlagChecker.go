@@ -97,7 +97,7 @@ func (checker *FlagChecker) GetReleaseFlagPilotEnrollmentStates(ctx context.Cont
 
 	var flagIDToName = make(map[string]string)
 
-	var flags []*Flag
+	var flags []Flag
 	for flagsIter.Next() {
 		var ff Flag
 		if err := flagsIter.Decode(&ff); err != nil {
@@ -112,7 +112,7 @@ func (checker *FlagChecker) GetReleaseFlagPilotEnrollmentStates(ctx context.Cont
 		}
 
 		states[ff.Name] = enrollment
-		flags = append(flags, &ff)
+		flags = append(flags, ff)
 		flagIDToName[ff.ID] = ff.Name
 	}
 

@@ -199,7 +199,7 @@ func (mr *MockStorageMockRecorder) FindPilotEntriesByExtID(ctx, pilotExtID inter
 }
 
 // FindReleaseAllowsByReleaseFlags mocks base method
-func (m *MockStorage) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...*release.Flag) release.AllowEntries {
+func (m *MockStorage) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...release.Flag) release.AllowEntries {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx}
 	for _, a := range flags {

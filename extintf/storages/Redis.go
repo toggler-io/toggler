@@ -42,7 +42,7 @@ type Redis struct {
 	keyMapping map[string]string
 }
 
-func (r *Redis) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...*release.Flag) release.AllowEntries {
+func (r *Redis) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...release.Flag) release.AllowEntries {
 	flagIndex := make(map[string]struct{})
 	for _, flag := range flags {
 		flagIndex[flag.ID] = struct{}{}
