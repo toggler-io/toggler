@@ -13,8 +13,12 @@ import (
 //go:generate esc -o ./assets/fs.go -ignore fs.go -pkg assets -prefix assets ./assets
 //go:generate esc -o ./views/fs.go  -ignore fs.go -pkg views  -prefix views  ./views
 
-func NewServeMux(uc *usecases.UseCases) *ServeMux {
-	ctrl := controllers.NewController(uc)
+func NewServeMux(uc *usecases.UseCases) (*ServeMux, error) {
+	ctrl, err := controllers.NewController(uc)
+	if err != nil {
+		return nil, nil
+	}
+
 	mux := &ServeMux{ServeMux: http.NewServeMux(), UseCases: uc}
 	mux.Handle(`/assets/`, http.StripPrefix(`/assets`, assetsFS()))
 	mux.Handle(`/`, authorized(uc, ctrl.IndexPage))
@@ -25,7 +29,7 @@ func NewServeMux(uc *usecases.UseCases) *ServeMux {
 	mux.Handle(`/pilot/`, authorized(uc, ctrl.PilotPage))
 	mux.HandleFunc(`/login`, ctrl.LoginPage)
 
-	return mux
+	return mux, nil
 }
 
 type ServeMux struct {

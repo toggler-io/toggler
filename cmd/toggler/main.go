@@ -23,7 +23,6 @@ import (
 	"github.com/toggler-io/toggler/usecases"
 )
 
-
 const commandsHelpDescription = `
 Commands:
   * http-server, server, s
@@ -125,7 +124,7 @@ func setupDatabaseURL(dbURL *string) {
 		return
 	}
 
-	if err := os.Setenv(`DATABASE_URL`, *dbURL); err != nil{
+	if err := os.Setenv(`DATABASE_URL`, *dbURL); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -189,7 +188,10 @@ func createFixtures(s usecases.Storage) {
 
 func makeHTTPServer(storage usecases.Storage, port int) *http.Server {
 	useCases := usecases.NewUseCases(storage)
-	mux := httpintf.NewServeMux(useCases)
+	mux, err := httpintf.NewServeMux(useCases)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	loggerMW := logger.New()
 	app := loggerMW.Handler(mux)

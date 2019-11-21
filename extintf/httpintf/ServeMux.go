@@ -9,18 +9,24 @@ import (
 	"github.com/toggler-io/toggler/usecases"
 )
 
-func NewServeMux(uc *usecases.UseCases) *ServeMux {
+func NewServeMux(uc *usecases.UseCases) (*ServeMux, error) {
 	mux := http.NewServeMux()
 
 	mux.Handle(`/api/v1/`, letsCORSit(http.StripPrefix(`/api/v1`, httpapi.NewServeMux(uc))))
-	mux.Handle(`/`, webgui.NewServeMux(uc))
+
+	ui, err := webgui.NewServeMux(uc)
+	if err != nil {
+		return nil, err
+	}
+
+	mux.Handle(`/`, ui)
 	mux.Handle(`/swagger.json`, letsCORSit(http.HandlerFunc(swagger.HandleSwaggerConfigJSON)))
 	mux.Handle(`/swagger-ui/`, http.StripPrefix(`/swagger-ui`, swagger.HandleSwaggerUI()))
 
 	return &ServeMux{
 		ServeMux: mux,
 		UseCases: uc,
-	}
+	}, nil
 }
 
 type ServeMux struct {
