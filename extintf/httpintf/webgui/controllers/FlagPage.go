@@ -14,7 +14,7 @@ import (
 	"github.com/toggler-io/toggler/services/release"
 )
 
-type edigPageContent struct {
+type editPageContent struct {
 	Flag   release.Flag
 	Pilots []release.Pilot
 }
@@ -74,7 +74,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		ctrl.Render(w, `/flag/show.html`, edigPageContent{Flag: ff, Pilots: pilots})
+		ctrl.Render(w, `/flag/show.html`, editPageContent{Flag: ff, Pilots: pilots})
 
 	case http.MethodPost:
 		switch strings.ToUpper(r.FormValue(`_method`)) {

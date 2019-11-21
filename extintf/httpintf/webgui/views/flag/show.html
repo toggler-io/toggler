@@ -72,7 +72,7 @@
 
                             <input name="pilot.id" type="hidden" value="{{ .ID }}">
                             <input name="pilot.extID" type="hidden" value="{{ .ExternalID }}">
-                            <input name="pilot.flagID" type="hidden" value="{{ .FeatureFlagID }}">
+                            <input name="pilot.flagID" type="hidden" value="{{ .FlagID }}">
 
                             <button type="submit" class="pure-button pure-button-primary">set</button>
 
@@ -86,7 +86,7 @@
                     <form method="post" action="/flag/pilot/unset" class="pure-form">
                         <fieldset>
                             <input name="pilot.extID" type="hidden" value="{{ .ExternalID }}">
-                            <input name="pilot.flagID" type="hidden" value="{{ .FeatureFlagID }}">
+                            <input name="pilot.flagID" type="hidden" value="{{ .FlagID }}">
                             <button type="submit" class="pure-button pure-button">unset</button>
                         </fieldset>
                     </form>

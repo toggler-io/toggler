@@ -123,7 +123,7 @@ func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
 			return manager(t).DeleteFeatureFlag(context.TODO(), t.I(`flag ID`).(string))
 		}
 
-		s.Let(`FeatureFlagName`, func(t *testcase.T) interface{} { return ExampleName() })
+		s.Let(`ReleaseFlagName`, func(t *testcase.T) interface{} { return ExampleName() })
 		s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return nil })
 		s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return rand.Intn(101) })
 		s.Let(`RolloutSeedSalt`, func(t *testcase.T) interface{} { return int64(42) })
@@ -207,7 +207,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 			return subjectWithArgs(t, GetReleaseFlag(t))
 		}
 
-		s.Let(`FeatureFlagName`, func(t *testcase.T) interface{} { return ExampleName() })
+		s.Let(`ReleaseFlagName`, func(t *testcase.T) interface{} { return ExampleName() })
 		s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return nil })
 		s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return rand.Intn(101) })
 		s.Let(`RolloutSeedSalt`, func(t *testcase.T) interface{} { return int64(42) })
@@ -379,7 +379,7 @@ func SpecRolloutManagerUpdateFeatureFlag(s *testcase.Spec) {
 			return subjectWithArgs(t, GetReleaseFlag(t))
 		}
 
-		s.Let(`FeatureFlagName`, func(t *testcase.T) interface{} { return ExampleName() })
+		s.Let(`ReleaseFlagName`, func(t *testcase.T) interface{} { return ExampleName() })
 		s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return nil })
 		s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return rand.Intn(101) })
 		s.Let(`RolloutSeedSalt`, func(t *testcase.T) interface{} { return int64(42) })

@@ -10,11 +10,11 @@
                     <fieldset>
                         <input type="hidden" name="_method" value="post">
                         <input type="hidden" name="pilot.extID" value="{{ $.PilotExternalID }}">
-                        <input type="hidden" name="pilot.flagID" value="{{ .FeatureFlagID }}">
+                        <input type="hidden" name="pilot.flagID" value="{{ .ReleaseFlagID }}">
 
 
                         <div class="pure-control-group">
-                            <label for="enrollment">{{ .FeatureFlagName }}</label>
+                            <label for="enrollment">{{ .ReleaseFlagName }}</label>
                             <select id="enrollment" name="pilot.enrollment">
                                 <option value="whitelisted" {{ if eq .PilotState "whitelisted" }}selected{{end}}>
                                     Enrolled
