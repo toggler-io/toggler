@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/toggler-io/toggler/lib/go/client"
-	"github.com/toggler-io/toggler/lib/go/client/operations"
+	"github.com/toggler-io/toggler/lib/go/client/release_flag"
 
 	"github.com/toggler-io/toggler/extintf/httpintf/httpapi"
 
@@ -134,7 +134,7 @@ func TestServeMux_ClientConfig(t *testing.T) {
 		s := httptest.NewServer(http.StripPrefix(`/api/v1`, NewServeMux(t)))
 		defer s.Close()
 
-		p := operations.NewClientConfigParams()
+		p := release_flag.NewClientConfigParams()
 		p.Body.PilotExtID = &GetPilot(t).ExternalID
 		p.Body.ReleaseFlags = []string{GetReleaseFlagName(t)}
 
@@ -145,7 +145,7 @@ func TestServeMux_ClientConfig(t *testing.T) {
 
 		c := client.NewHTTPClientWithConfig(nil, tc)
 
-		resp, err := c.Operations.ClientConfig(p)
+		resp, err := c.ReleaseFlag.ClientConfig(p)
 		if err != nil {
 			t.Fatal(err.Error())
 		}

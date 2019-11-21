@@ -213,7 +213,7 @@ var _escData = map[string]*_escFile{
 		name:    "README.md",
 		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/README.md",
 		size:    6852,
-		modtime: 1571442210,
+		modtime: 1572749977,
 		compressed: `
 H4sIAAAAAAAC/6xZ244bR5J9r6+ItRZrS2AXIXkXxgpYa1tqebcBye5Rt2AYDcOMyoxipZiVWc4LKXow
 wHzNfNh8ySAis0g2Jb0M5knsqqy8RJw450TqESS/XlsKTbOqv1ZgIiDcku1h8DGRhh8IUw4EdzICbils
@@ -282,7 +282,7 @@ H4sIAAAAAAAC/wEAAP//AAAAAAAAAAA=
 		name:    "README.md",
 		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/caches/README.md",
 		size:    2062,
-		modtime: 1571442210,
+		modtime: 1572749977,
 		compressed: `
 H4sIAAAAAAAC/3RVTY7cNhPd8xSF9sI2oNFnf4mXWdiTAAngVdIOkFVUTZZaxFCkwiqqrSxyq1wgJwuK
 1PS4B86moRZL9fPeq8cXcI92IjbmpxFkIjihffDxDCwp45lgSwUKE3iGmATwFAgkwYTR6dNEEBI6SBG8
@@ -384,7 +384,7 @@ PDX6pOe/AAAA//9JDbxCfgUAAA==
 		name:    "README.md",
 		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/deploy/aws/eb/README.md",
 		size:    1663,
-		modtime: 1570619100,
+		modtime: 1572749977,
 		compressed: `
 H4sIAAAAAAAC/2xUzXLbNhC+4yl27Es7jWj30FtzUCJP60OdjuROp6dwCSxFpCCAARaS6afvLEgpTOqj
 qMXu97d7C9u/D/DgMLPV8IHQZ0b3r1LPAQxFFybgcDw6SsAB8Jw31L2DKRTQ6EEPIWSCEf0ExvY9JfIM
@@ -408,7 +408,7 @@ fTNshhINMpk5uaLPfnd4867kd0qaDniqJ2ZEX9C5CdDAzzDK2Vu/0sH39lhSRfpuzsR+d/j88PTb49PD
 		name:    "deploy-policy.envsubst.json",
 		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/deploy/aws/eb/deploy-policy.envsubst.json",
 		size:    3356,
-		modtime: 1570619100,
+		modtime: 1572749977,
 		compressed: `
 H4sIAAAAAAAC/8yWTU/jMBCG7/yKKtpTRQWUw0q5hYJQtV2oWmAPaLVynGnw1rUte1zURfz3lfNRmigf
 TemBnpr4eWf82mNP3k56vV7PewJtmBSe3/OG5xfDwcX54OK7d5oOzpEgrECg5/eek1fu97b9l0ABxTTA
@@ -469,7 +469,7 @@ PhSFxFVvi7Ixr9oPQ5Lgq2hGuDL84PNkGlpJ/Pr/SC9o1cBf3w+Je/cXAAD//1QndS1RAQAA
 		name:    "DirectoryLayout.md",
 		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/design/DirectoryLayout.md",
 		size:    3939,
-		modtime: 1568977694,
+		modtime: 1572749977,
 		compressed: `
 H4sIAAAAAAAC/4xXz27cvhG+8ykG8OH3C7Bet0BOORQIUKD1oYABuyiKoogpaiSxS3EUDrnrvQV9Bh97
 yLPkUfwkxZCSVruWnexpJZLz9/u+Ea/gLtB/0ES4jyGZmAIq9UCQfI2Bo/Y1oGbrjnDodITGOoQKHfmW
@@ -515,7 +515,7 @@ ksSM3mZZEk4Lexramm9x+f8EAAD//5Fgv/K/AAAA
 		name:    "feature-check-per-user-basis.sd",
 		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/design/feature-check-per-user-basis.sd",
 		size:    622,
-		modtime: 1568977694,
+		modtime: 1572749977,
 		compressed: `
 H4sIAAAAAAAC/1xRy64TMQxd119hxLpFbCNdIYTED7CsZuFxnJmINKliZ674e5R5cIfuEvu8cvL50z0I
 WauCVqYpCS5SY4hMFkvGp1RsKhVH0qh4xeXrANDcd7ZSIbifGxfMbewK7H4QzwLqflmpNEmHh5saVetS
@@ -1887,7 +1887,7 @@ zLpj6YdHyjrL0w4IhVLV+/8GAAD//7KtXRBlDwAA
 		name:    "README.md",
 		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/httpapi/README.md",
 		size:    1552,
-		modtime: 1570741872,
+		modtime: 1572749977,
 		compressed: `
 H4sIAAAAAAAC/6xTMW/bPBDd+SsO9BrZ+FZt3+C42TIY6FAU8Jk6SawpkiGPcYwi/72gJMdqYrtw2lHi
 3b17796bgUe1w4agZfbotRCzGayWa1ig14vn/xb7KMS61RF0BISvtI1O7YiBbOWdtgzcIgNuDQE7oBdS
@@ -1905,7 +1905,7 @@ GZrNGK1P8J0E7Ardi4G5kcuvAAAA//83826GEAYAAA==
 		name:    "DarkLaunch.md",
 		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/release/DarkLaunch.md",
 		size:    2476,
-		modtime: 1568977694,
+		modtime: 1572749977,
 		compressed: `
 H4sIAAAAAAAC/3xWTY4ctw7e1ykIGAZsoKbf8+IdwPbgIQMEcIA4AbxkS6wqpVWSQlFdrt3cIZsYSC43
 JwkoVU//TJJld0kkv48fP+oVfJ4I7pEP8D2WYKauqz98/eHCCC6DTASJo6GcIQ7A5AmzfkscbTHiYrhj
@@ -1933,7 +1933,7 @@ TlSptp6z8HnvxyR3rm0QTXktKrXO7cXU62Jy2tD2dCI/3GXyZIRspX7X/RUAAP//cqt3vawJAAA=
 		name:    "README.md",
 		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/release/README.md",
 		size:    2864,
-		modtime: 1568977694,
+		modtime: 1572749977,
 		compressed: `
 H4sIAAAAAAAC/5RWT5PcxA+9+1OosvWrH6Qms5srtwQS2APUVrIUB4qD3NbYYtotp9U9jvn0lLrtmdll
 OXCbP9a/956efAOfxHvJqWlubuD3DyGK9yOFBF56dn98c9uJ09tInlDpls7/78fu2xLzMwbsyX5qmseB
@@ -1964,7 +1964,7 @@ mPovOQD+DgAA///CoRKzMAsAAA==
 		name:    "enrollment.md",
 		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/release/enrollment.md",
 		size:    915,
-		modtime: 1568977694,
+		modtime: 1572749977,
 		compressed: `
 H4sIAAAAAAAC/3SSwW4bPQyE73oKAj/+2yJwHyIFcu2lZ1oa7RLhSq7ItZu3L6R1GruJz+SIn2bmP/pR
 Vevm9B3sWwM9l1ZVVxSnl+JopwZnl1pC+LmgENNJtDq1qy5fdfjQxQXxFWkKvoDszRwrZWl2nZBk8gUN

@@ -11,7 +11,8 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	"github.com/toggler-io/toggler/lib/go/client/operations"
+	"github.com/toggler-io/toggler/lib/go/client/release_flag"
+	"github.com/toggler-io/toggler/lib/go/client/rollout"
 )
 
 // Default provides API on HTTP layer to the toggler service HTTP client.
@@ -57,7 +58,9 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *ProvidesAP
 	cli := new(ProvidesAPIOnHTTPLayerToTheTogglerService)
 	cli.Transport = transport
 
-	cli.Operations = operations.New(transport, formats)
+	cli.ReleaseFlag = release_flag.New(transport, formats)
+
+	cli.Rollout = rollout.New(transport, formats)
 
 	return cli
 }
@@ -103,7 +106,9 @@ func (cfg *TransportConfig) WithSchemes(schemes []string) *TransportConfig {
 
 // ProvidesAPIOnHTTPLayerToTheTogglerService is a client for provides API on HTTP layer to the toggler service
 type ProvidesAPIOnHTTPLayerToTheTogglerService struct {
-	Operations *operations.Client
+	ReleaseFlag *release_flag.Client
+
+	Rollout *rollout.Client
 
 	Transport runtime.ClientTransport
 }
@@ -112,6 +117,8 @@ type ProvidesAPIOnHTTPLayerToTheTogglerService struct {
 func (c *ProvidesAPIOnHTTPLayerToTheTogglerService) SetTransport(transport runtime.ClientTransport) {
 	c.Transport = transport
 
-	c.Operations.SetTransport(transport)
+	c.ReleaseFlag.SetTransport(transport)
+
+	c.Rollout.SetTransport(transport)
 
 }

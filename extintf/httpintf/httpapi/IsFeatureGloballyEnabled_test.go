@@ -3,19 +3,21 @@ package httpapi_test
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/toggler-io/toggler/extintf/httpintf/httpapi"
-	"github.com/toggler-io/toggler/lib/go/client"
-	"github.com/toggler-io/toggler/lib/go/client/operations"
-	"github.com/toggler-io/toggler/lib/go/models"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 
+	"github.com/toggler-io/toggler/extintf/httpintf/httpapi"
+	"github.com/toggler-io/toggler/lib/go/client"
+	"github.com/toggler-io/toggler/lib/go/client/release_flag"
+	"github.com/toggler-io/toggler/lib/go/models"
+
 	"github.com/adamluzsi/testcase"
-	. "github.com/toggler-io/toggler/testing"
 	"github.com/stretchr/testify/require"
+
+	. "github.com/toggler-io/toggler/testing"
 )
 
 func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
@@ -122,7 +124,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 		s := httptest.NewServer(http.StripPrefix(`/api/v1`, NewServeMux(t)))
 		defer s.Close()
 
-		p := operations.NewIsFeatureGloballyEnabledParams()
+		p := release_flag.NewIsFeatureGloballyEnabledParams()
 		p.Body = &models.IsFeatureGloballyEnabledRequestBody{}
 		ffName := GetReleaseFlagName(t)
 		p.Body.Feature = &ffName
@@ -134,7 +136,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 
 		c := client.NewHTTPClientWithConfig(nil, tc)
 
-		resp, err := c.Operations.IsFeatureGloballyEnabled(p)
+		resp, err := c.ReleaseFlag.IsFeatureGloballyEnabled(p)
 		if err != nil {
 			t.Fatal(err.Error())
 		}

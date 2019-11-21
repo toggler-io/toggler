@@ -5,7 +5,7 @@ set -e -u -x
 export DATABASE_URL
 
 cd ${WDP}
-go generate ./...
+go generate -x ./...
 
 go run cmd/toggler/main.go fixtures \
     -create-fixtures \
