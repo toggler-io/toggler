@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -e -u -x
+shopt -s nullglob
+
+(
+	type go
+	type zip
+	type realpath
+) 1>/dev/null
+
+: ${WDP:?"working directory path required"}
+: ${GOOS:="linux"}
+: ${GOARCH:="amd64"}
+: ${OUT:="${WDP}/dist"}
+
+cd "${WDP}"
+OUT=$(realpath "${OUT}")
+[[ -d ${OUT} ]]
+
+if [[ ! -e ${OUT} ]]; then
+	mkdir "${OUT}"
+fi
+
+declare binaryPath="${OUT}/toggler" \
+	procFilePath="${OUT}/Procfile" \
+	zipPath="${OUT}/toggler.zip"
+
+[[ -e ${procFilePath} ]] && rm "${procFilePath}"
+[[ -e ${binaryPath} ]] && rm "${binaryPath}"
+[[ -e ${zipPath} ]] && rm "${zipPath}"
+
+go generate ./...
+
+GOOS=${GOOS} GOARCH=${GOARCH} go build -o "${binaryPath}" "./cmd/toggler/main.go"
+
+cat >"${procFilePath}" <<EOF
+web: ./toggler http-server
+EOF
+
+zip --junk-paths "${zipPath}" "${procFilePath}" "${binaryPath}"
+
+[[ -e ${procFilePath} ]] && rm "${procFilePath}"
+[[ -e ${binaryPath} ]] && rm "${binaryPath}"
