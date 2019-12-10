@@ -61,7 +61,7 @@ func (pg *Postgres) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags .
 		strings.Join(m.Columns(), `, `),
 		strings.Join(queryWhereFlagInList, `, `))
 
-	rows , err := pg.DB.QueryContext(ctx, query, args...)
+	rows, err := pg.DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		return iterators.NewError(err)
 	}
@@ -71,9 +71,9 @@ func (pg *Postgres) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags .
 
 func (pg *Postgres) Close() error {
 	switch db := pg.DB.(type) {
-	case *sql.DB:
+	case interface{ Close() error }:
 		return db.Close()
-	case *sql.Tx:
+	case interface{ Commit() error }:
 		return db.Commit()
 	default:
 		return frameless.ErrNotImplemented
