@@ -16,7 +16,7 @@ import (
 func NewServeMux(uc *usecases.UseCases) (*ServeMux, error) {
 	ctrl, err := controllers.NewController(uc)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 
 	mux := &ServeMux{ServeMux: http.NewServeMux(), UseCases: uc}
