@@ -57,6 +57,7 @@ func serveJSON(w http.ResponseWriter, data interface{}) {
 	buf := bytes.NewBuffer([]byte{})
 
 	if err := json.NewEncoder(buf).Encode(data); err != nil {
+		log.Println(`ERROR`, err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}

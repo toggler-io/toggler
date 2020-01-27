@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
@@ -84,11 +85,13 @@ func (sm *ServeMux) CreateRolloutFeatureFlagFORM(w http.ResponseWriter, r *http.
 	}
 
 	if ff.Name == `` {
+		log.Println(`ERROR`, `missing flag name`)
 		http.Error(w, `missing flag name`, http.StatusBadRequest)
 		return
 	}
 
 	if ff.ID != `` {
+		log.Println(`ERROR`, `unexpected flag id received`)
 		http.Error(w, `unexpected flag id received`, http.StatusBadRequest)
 		return
 	}

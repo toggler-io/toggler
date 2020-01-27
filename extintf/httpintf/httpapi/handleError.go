@@ -47,7 +47,6 @@ func handleError(w http.ResponseWriter, err error, errCode int) (errorWasHandled
 	}
 
 	if err == usecases.ErrInvalidToken {
-
 		_, _ = w.Write(toErrResp(http.StatusUnauthorized))
 		return true
 	}

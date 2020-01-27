@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/toggler-io/toggler/extintf/httpintf/webgui/cookies"
@@ -22,6 +23,7 @@ func (ctrl *Controller) LoginPage(w http.ResponseWriter, r *http.Request) {
 
 		valid, err := ctrl.UseCases.Doorkeeper.VerifyTextToken(r.Context(), token)
 		if err != nil {
+			log.Println(`ERROR`, err.Error())
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}

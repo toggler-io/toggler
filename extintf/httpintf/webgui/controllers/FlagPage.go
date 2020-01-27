@@ -40,6 +40,7 @@ func (ctrl *Controller) flagListAction(w http.ResponseWriter, r *http.Request) {
 	flags, err := ctrl.UseCases.RolloutManager.ListFeatureFlags(r.Context())
 
 	if err != nil {
+		log.Println(`ERROR`, err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}

@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -67,6 +68,7 @@ func (sm *ServeMux) IsFeatureGloballyEnabled(w http.ResponseWriter, r *http.Requ
 	enrollment, err := sm.UseCases.FlagChecker.IsFeatureGloballyEnabled(featureName)
 
 	if err != nil {
+		log.Println(`ERROR`, err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
