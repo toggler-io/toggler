@@ -213,7 +213,7 @@ var _escData = map[string]*_escFile{
 		name:    "fs.go",
 		local:   "migrations/fs.go",
 		size:    0,
-		modtime: 1574378160,
+		modtime: 1580165167,
 		compressed: `
 H4sIAAAAAAAC/wEAAP//AAAAAAAAAAA=
 `,
@@ -364,7 +364,7 @@ X6gePRnqGAusgrf/dm+t5uYeAAD//6bKr1vfAAAA
 		name:    "1570774790_create_release_allows_table.down.sql",
 		local:   "migrations/postgres/1570774790_create_release_allows_table.down.sql",
 		size:    95,
-		modtime: 1572749977,
+		modtime: 1574862205,
 		compressed: `
 H4sIAAAAAAAC/3IJ8g9Q8PRzcY1QSMvMS4kvSs1JTSxOjU/LSUyPzyyIT0xJKYpPzMnJLy+OT6qECqdY
 c4H1hTg6+bgq4NFiDQgAAP//1QXxzl8AAAA=
@@ -375,7 +375,7 @@ c4H1hTg6+bgq4NFiDQgAAP//1QXxzl8AAAA=
 		name:    "1570774790_create_release_allows_table.up.sql",
 		local:   "migrations/postgres/1570774790_create_release_allows_table.up.sql",
 		size:    255,
-		modtime: 1572749977,
+		modtime: 1574862205,
 		compressed: `
 H4sIAAAAAAAC/3yOQQqDMBBF9znFXyr0Bq5iGyQ0HUuMUFchkliE0BYtlN6+qOnWWf558+cdteBGwPBS
 CUwhBjcHO0R3t+PLOu8n62J8fmaWMQAYPdYpZdUILbkC1QbUKoWrlheuO5xFd1jZrcUvrCSzJH9226cH

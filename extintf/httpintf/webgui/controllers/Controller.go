@@ -33,10 +33,6 @@ type Renderer interface {
 	Render(http.ResponseWriter, string, interface{})
 }
 
-func (ctrl *Controller) GetProtectedUsecases(r *http.Request) *usecases.ProtectedUsecases {
-	return r.Context().Value(`*usecases.ProtectedUsecases`).(*usecases.ProtectedUsecases)
-}
-
 func (ctrl *Controller) handleError(w http.ResponseWriter, r *http.Request, err error) bool {
 	if err == nil {
 		return false

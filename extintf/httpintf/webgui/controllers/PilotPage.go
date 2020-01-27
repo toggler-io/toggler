@@ -64,9 +64,7 @@ func (ctrl *Controller) pilotEditPage(w http.ResponseWriter, r *http.Request) {
 
 	pilotExtID := r.URL.Query().Get(`ext-id`)
 
-	protectedUsecases := ctrl.GetProtectedUsecases(r)
-
-	pilots := protectedUsecases.RolloutManager.FindPilotEntriesByExtID(r.Context(), pilotExtID)
+	pilots := ctrl.UseCases.RolloutManager.FindPilotEntriesByExtID(r.Context(), pilotExtID)
 
 	pilotsIndex := make(map[string]release.Pilot) // FlagID => Pilot
 
@@ -80,7 +78,7 @@ func (ctrl *Controller) pilotEditPage(w http.ResponseWriter, r *http.Request) {
 		pilotsIndex[p.FlagID] = p
 	}
 
-	ffs, err := protectedUsecases.RolloutManager.ListFeatureFlags(r.Context())
+	ffs, err := ctrl.UseCases.RolloutManager.ListFeatureFlags(r.Context())
 
 	if httputils.HandleError(w, err, http.StatusInternalServerError) {
 		return
@@ -121,7 +119,6 @@ func (ctrl *Controller) pilotFlagSetRollout(w http.ResponseWriter, r *http.Reque
 
 	err := ctrl.setPilotManualEnrollmentForFlag(
 		r.Context(),
-		ctrl.GetProtectedUsecases(r).RolloutManager,
 		newEnrollmentStatus,
 		pilot.FlagID,
 		pilot.ExternalID,
@@ -139,7 +136,8 @@ func (ctrl *Controller) pilotFlagSetRollout(w http.ResponseWriter, r *http.Reque
 
 }
 
-func (ctrl *Controller) setPilotManualEnrollmentForFlag(ctx context.Context, rm *release.RolloutManager, newEnrollmentStatus string, flagID, pilotExtID string) error {
+func (ctrl *Controller) setPilotManualEnrollmentForFlag(ctx context.Context, newEnrollmentStatus string, flagID, pilotExtID string) error {
+	var rm = ctrl.UseCases.RolloutManager
 	switch newEnrollmentStatus {
 	case `whitelisted`:
 		return rm.SetPilotEnrollmentForFeature(ctx, flagID, pilotExtID, true)

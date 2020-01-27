@@ -22,7 +22,8 @@ func TestUseCases_IsFeatureGloballyEnabled(t *testing.T) {
 
 	subject := func(t *testcase.T) (bool, error) {
 		uc := t.I(`UseCases`).(*usecases.UseCases)
-		return uc.IsFeatureGloballyEnabled(t.I(`ReleaseFlagName`).(string))
+		// TODO: fix this
+		return uc.FlagChecker.IsFeatureGloballyEnabled(t.I(`ReleaseFlagName`).(string))
 	}
 
 	isEnrolled := func(t *testcase.T) bool {

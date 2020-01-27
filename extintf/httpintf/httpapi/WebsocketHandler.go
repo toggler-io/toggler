@@ -108,7 +108,7 @@ subscription:
 			data := req.Data.(map[string]interface{})
 
 			releaseFlagName := data[`feature`].(string)
-			states, err := sm.UseCases.GetReleaseFlagPilotEnrollmentStates(r.Context(), data[`id`].(string), releaseFlagName)
+			states, err := sm.UseCases.FlagChecker.GetReleaseFlagPilotEnrollmentStates(r.Context(), data[`id`].(string), releaseFlagName)
 
 			if handle(err, http.StatusInternalServerError) {
 				continue subscription
@@ -123,7 +123,7 @@ subscription:
 
 		case `IsFeatureGloballyEnabled`:
 			data := req.Data.(map[string]interface{})
-			enr, err := sm.UseCases.IsFeatureGloballyEnabled(data[`feature`].(string))
+			enr, err := sm.UseCases.FlagChecker.IsFeatureGloballyEnabled(data[`feature`].(string))
 			if handle(err, http.StatusInternalServerError) {
 				continue subscription
 			}

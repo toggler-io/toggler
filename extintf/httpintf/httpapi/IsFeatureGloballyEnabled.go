@@ -64,7 +64,7 @@ func (sm *ServeMux) IsFeatureGloballyEnabled(w http.ResponseWriter, r *http.Requ
 		}
 	}
 
-	enrollment, err := sm.UseCases.IsFeatureGloballyEnabled(featureName)
+	enrollment, err := sm.UseCases.FlagChecker.IsFeatureGloballyEnabled(featureName)
 
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

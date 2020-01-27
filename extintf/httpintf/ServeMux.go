@@ -14,7 +14,7 @@ func NewServeMux(uc *usecases.UseCases) (*ServeMux, error) {
 
 	mux.Handle(`/api/v1/`, letsCORSit(http.StripPrefix(`/api/v1`, httpapi.NewServeMux(uc))))
 
-	ui, err := webgui.NewServeMux(uc)
+	ui, err := webgui.NewHandler(uc)
 	if err != nil {
 		return nil, err
 	}

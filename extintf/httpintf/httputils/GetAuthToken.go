@@ -3,30 +3,27 @@ package httputils
 import (
 	"net/http"
 
+	"github.com/toggler-io/toggler/extintf/httpintf/webgui/cookies"
 	"github.com/toggler-io/toggler/usecases"
 )
 
 func GetAuthToken(r *http.Request) (string, error) {
-	token := r.URL.Query().Get(`token`)
+	var token string
+	token = r.Header.Get(`X-Auth-Token`)
 
 	if token == `` {
-		token = r.Header.Get(`X-Auth-Token`)
+		token = r.URL.Query().Get(`token`)
 	}
 
 	if token == `` {
-		token = r.Header.Get(`X-API-Key`)
-	}
-
-	if token == `` {
-		cookie, err := r.Cookie(`token`)
-
-		if err != http.ErrNoCookie && err != nil {
-			return "", err
+		tokenBS, ok, err := cookies.LookupAuthToken(r)
+		if err != nil {
+			return ``, err
 		}
-
-		if cookie != nil {
-			token = cookie.Value
+		if !ok {
+			return ``, nil
 		}
+		token = string(tokenBS)
 	}
 
 	return token, nil

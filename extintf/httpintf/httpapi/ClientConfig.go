@@ -84,7 +84,7 @@ func (sm *ServeMux) ClientConfigJSON(w http.ResponseWriter, r *http.Request) {
 
 	ctx := context.WithValue(r.Context(), `pilot-ip-addr`, httputils.GetClientIP(r))
 
-	states, err := sm.UseCases.GetReleaseFlagPilotEnrollmentStates(ctx, request.Body.PilotExtID, request.Body.ReleaseFlags...)
+	states, err := sm.UseCases.FlagChecker.GetReleaseFlagPilotEnrollmentStates(ctx, request.Body.PilotExtID, request.Body.ReleaseFlags...)
 
 	if handleError(w, err, http.StatusInternalServerError) {
 		return

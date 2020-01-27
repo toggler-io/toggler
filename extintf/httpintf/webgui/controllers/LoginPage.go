@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"github.com/toggler-io/toggler/usecases"
 	"net/http"
-	"time"
+
+	"github.com/toggler-io/toggler/extintf/httpintf/webgui/cookies"
 )
 
 func (ctrl *Controller) LoginPage(w http.ResponseWriter, r *http.Request) {
@@ -20,21 +20,17 @@ func (ctrl *Controller) LoginPage(w http.ResponseWriter, r *http.Request) {
 
 		token := r.FormValue(`token`)
 
-		_, err := ctrl.ProtectedUsecases(r.Context(), token)
-
-		if err == usecases.ErrInvalidToken {
-			http.Redirect(w, r, `/login`, http.StatusFound)
-			return
-		}
-
+		valid, err := ctrl.UseCases.Doorkeeper.VerifyTextToken(r.Context(), token)
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
+		if !valid {
+			http.Redirect(w, r, `/login`, http.StatusFound)
+			return
+		}
 
-		expiration := time.Now().Add(365 * 24 * time.Hour)
-		cookie := http.Cookie{Name: `token`, Value: token, Expires: expiration}
-		http.SetCookie(w, &cookie)
+		cookies.SetAuthToken(w, []byte(token))
 		http.Redirect(w, r, `/`, http.StatusFound)
 
 	default:

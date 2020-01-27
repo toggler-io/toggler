@@ -37,7 +37,7 @@ func (ctrl *Controller) FlagPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ctrl *Controller) flagListAction(w http.ResponseWriter, r *http.Request) {
-	flags, err := ctrl.GetProtectedUsecases(r).ListFeatureFlags(r.Context())
+	flags, err := ctrl.UseCases.RolloutManager.ListFeatureFlags(r.Context())
 
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -57,7 +57,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 		id := r.Form.Get(`id`)
 
 		var ff release.Flag
-		found, err := ctrl.Storage.FindByID(r.Context(), &ff, id)
+		found, err := ctrl.UseCases.RolloutManager.Storage.FindByID(r.Context(), &ff, id)
 
 		if ctrl.handleError(w, r, err) {
 			return
@@ -70,7 +70,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 
 		var pilots []release.Pilot
 
-		if ctrl.handleError(w, r, iterators.Collect(ctrl.Storage.FindPilotsByFeatureFlag(r.Context(), &ff), &pilots)) {
+		if ctrl.handleError(w, r, iterators.Collect(ctrl.UseCases.RolloutManager.Storage.FindPilotsByFeatureFlag(r.Context(), &ff), &pilots)) {
 			return
 		}
 
@@ -85,7 +85,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			if ctrl.handleError(w, r, ctrl.GetProtectedUsecases(r).UpdateFeatureFlag(r.Context(), ff)) {
+			if ctrl.handleError(w, r, ctrl.UseCases.RolloutManager.UpdateFeatureFlag(r.Context(), ff)) {
 				return
 			}
 
@@ -108,7 +108,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			if ctrl.handleError(w, r, ctrl.GetProtectedUsecases(r).CreateFeatureFlag(r.Context(), ff)) {
+			if ctrl.handleError(w, r, ctrl.UseCases.RolloutManager.CreateFeatureFlag(r.Context(), ff)) {
 				return
 			}
 
@@ -135,7 +135,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			if ctrl.handleError(w, r, ctrl.GetProtectedUsecases(r).DeleteFeatureFlag(r.Context(), flagID)) {
+			if ctrl.handleError(w, r, ctrl.UseCases.RolloutManager.DeleteFeatureFlag(r.Context(), flagID)) {
 				return
 			}
 
@@ -164,7 +164,7 @@ func (ctrl *Controller) flagSetPilotAction(w http.ResponseWriter, r *http.Reques
 			return
 		}
 
-		if ctrl.handleError(w, r, ctrl.GetProtectedUsecases(r).SetPilotEnrollmentForFeature(r.Context(), p.FlagID, p.ExternalID, p.Enrolled)) {
+		if ctrl.handleError(w, r, ctrl.UseCases.RolloutManager.SetPilotEnrollmentForFeature(r.Context(), p.FlagID, p.ExternalID, p.Enrolled)) {
 			return
 		}
 
@@ -184,7 +184,7 @@ func (ctrl *Controller) flagUnsetPilotAction(w http.ResponseWriter, r *http.Requ
 	featureFlagID := r.FormValue(`pilot.flagID`)
 	pilotExternalID := r.FormValue(`pilot.extID`)
 
-	err := ctrl.GetProtectedUsecases(r).UnsetPilotEnrollmentForFeature(r.Context(), featureFlagID, pilotExternalID)
+	err := ctrl.UseCases.RolloutManager.UnsetPilotEnrollmentForFeature(r.Context(), featureFlagID, pilotExternalID)
 
 	if ctrl.handleError(w, r, err) {
 		return
@@ -224,7 +224,7 @@ func (ctrl *Controller) flagCreateNewAction(w http.ResponseWriter, r *http.Reque
 			return
 		}
 
-		err = ctrl.GetProtectedUsecases(r).CreateFeatureFlag(context.TODO(), ff)
+		err = ctrl.UseCases.RolloutManager.CreateFeatureFlag(context.TODO(), ff)
 
 		if err != nil {
 			log.Println(err)
