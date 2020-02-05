@@ -73,8 +73,8 @@ func TestWebsocket(t *testing.T) {
 		})
 
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Save(context.Background(), GetReleaseFlag(t)))
-			require.Nil(t, GetStorage(t).Save(context.Background(), GetPilot(t)))
+			require.Nil(t, GetStorage(t).Create(context.Background(), GetReleaseFlag(t)))
+			require.Nil(t, GetStorage(t).Create(context.Background(), GetPilot(t)))
 		})
 
 		s.Then(`it will reply with the enrollment`, func(t *testcase.T) {
@@ -100,7 +100,7 @@ func TestWebsocket(t *testing.T) {
 		s.Before(func(t *testcase.T) {
 			ff := GetReleaseFlag(t)
 			ff.Rollout.Strategy.Percentage = t.I(`rnd`).(int)
-			require.Nil(t, GetStorage(t).Save(context.Background(), ff))
+			require.Nil(t, GetStorage(t).Create(context.Background(), ff))
 		})
 
 		s.Then(`it will reply with the enrollment`, func(t *testcase.T) {

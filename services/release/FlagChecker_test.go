@@ -88,7 +88,7 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates(s *testcase.Spec
 		})
 
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Save(context.Background(), GetReleaseFlag(t)))
+			require.Nil(t, GetStorage(t).Create(context.Background(), GetReleaseFlag(t)))
 		})
 
 		// fix the value, so the dependency sub context can work with an assumption
@@ -131,7 +131,7 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates(s *testcase.Spec
 
 			s.And(`manually removed from the flag`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Save(context.Background(), &release.Pilot{
+					require.Nil(t, GetStorage(t).Create(context.Background(), &release.Pilot{
 						ExternalID: GetExternalPilotID(t),
 						FlagID:     GetReleaseFlag(t).ID,
 						Enrolled:   false,
@@ -157,7 +157,7 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates(s *testcase.Spec
 
 			s.And(`the pilot is white listed`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Save(context.Background(), &release.Pilot{
+					require.Nil(t, GetStorage(t).Create(context.Background(), &release.Pilot{
 						ExternalID: GetExternalPilotID(t),
 						FlagID:     GetReleaseFlag(t).ID,
 						Enrolled:   true,
@@ -183,7 +183,7 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates(s *testcase.Spec
 					s.Around(func(t *testcase.T) func() {
 						// TODO move it into the rollout manager logic
 						a := &release.IPAllow{FlagID: GetReleaseFlag(t).ID, InternetProtocolAddress: t.I(`ip-addr`).(string)}
-						require.Nil(t, GetStorage(t).Save(context.Background(), a))
+						require.Nil(t, GetStorage(t).Create(context.Background(), a))
 						return func() {
 							require.Nil(t, GetStorage(t).DeleteByID(context.Background(), release.IPAllow{}, a.ID))
 						}
@@ -301,7 +301,7 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates_BackwardCompatib
 
 	s.When(`feature is configured with rollout strategy`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
+			require.Nil(t, GetStorage(t).Create(context.TODO(), GetReleaseFlag(t)))
 		})
 
 		s.And(`by rollout percentage`, func(s *testcase.Spec) {
@@ -355,7 +355,7 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates_BackwardCompatib
 								Enrolled:   false,
 							}
 
-							require.Nil(t, GetStorage(t).Save(context.TODO(), pilot))
+							require.Nil(t, GetStorage(t).Create(context.TODO(), pilot))
 
 						})
 
@@ -384,7 +384,7 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates_BackwardCompatib
 						s.Let(`PilotEnrollment`, func(t *testcase.T) interface{} { return true })
 
 						s.Before(func(t *testcase.T) {
-							require.Nil(t, GetStorage(t).Save(context.TODO(), GetPilot(t)))
+							require.Nil(t, GetStorage(t).Create(context.TODO(), GetPilot(t)))
 						})
 
 						s.Then(`the pilot is enrolled for the feature`, func(t *testcase.T) {
@@ -487,7 +487,7 @@ func SpecFeatureFlagChecker_IsFeatureGloballyEnabledFor(s *testcase.Spec) {
 
 	s.When(`feature flag is given`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
+			require.Nil(t, GetStorage(t).Create(context.TODO(), GetReleaseFlag(t)))
 		})
 
 		s.And(`it is not yet rolled out globally`, func(s *testcase.Spec) {

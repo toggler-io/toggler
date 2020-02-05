@@ -38,7 +38,7 @@ func TestServeMux_SetPilotEnrollmentForFeature(t *testing.T) {
 	})
 
 	s.Before(func(t *testcase.T) {
-		require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
+		require.Nil(t, GetStorage(t).Create(context.TODO(), GetReleaseFlag(t)))
 	})
 
 	s.Let(`request`, func(t *testcase.T) interface{} {

@@ -8,7 +8,7 @@ import (
 )
 
 type Storage interface {
-	resources.Saver
+	resources.Creator
 	resources.Finder
 	resources.Updater
 	resources.Deleter

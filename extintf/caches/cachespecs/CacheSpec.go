@@ -86,7 +86,7 @@ func (spec CacheSpec) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 
 		s.Around(func(t *testcase.T) func() {
 			value := t.I(`value`)
-			require.Nil(t, spec.storage(t).Save(spec.Context(), value))
+			require.Nil(t, spec.storage(t).Create(spec.Context(), value))
 			id, found := resources.LookupID(value)
 			require.True(t, found)
 			return func() {
@@ -159,7 +159,7 @@ func (spec CacheSpec) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 			s.And(`when the storage is sensitive to continuous requests`, func(s *testcase.Spec) {
 				s.Context(`for finding the same flag By ID`, func(s *testcase.Spec) {
 					spec.mockStorage(s, func(t *testcase.T, storage *MockStorage) {
-						storage.EXPECT().Save(gomock.Any(), gomock.Any()).
+						storage.EXPECT().Create(gomock.Any(), gomock.Any()).
 							AnyTimes().
 							DoAndReturn(func(ctx context.Context, e interface{}) error {
 								return resources.SetID(e, fixtures.RandomString(7))

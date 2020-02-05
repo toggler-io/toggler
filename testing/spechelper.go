@@ -144,7 +144,7 @@ func GetUniqUserID(t *testcase.T) string {
 
 func SpecPilotEnrolmentIs(t *testcase.T, enrollment bool) {
 	if GetReleaseFlag(t).ID == `` {
-		require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
+		require.Nil(t, GetStorage(t).Create(context.TODO(), GetReleaseFlag(t)))
 	}
 
 	rm := release.NewRolloutManager(GetStorage(t))

@@ -68,7 +68,7 @@ func SpecRolloutManagerAllowIPAddrForFlag(s *testcase.Spec) {
 			t.Log(`the flag has 0 as release percentage`)
 			GetReleaseFlag(t).Rollout.Strategy.Percentage = 0
 			t.Log(`the flag is saved in the storage`)
-			require.Nil(t, GetStorage(t).Save(CTX(t), GetReleaseFlag(t)))
+			require.Nil(t, GetStorage(t).Create(CTX(t), GetReleaseFlag(t)))
 		})
 
 		s.Let(`ip-addr`, func(t *testcase.T) interface{} {
@@ -149,7 +149,7 @@ func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
 			})
 
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
+				require.Nil(t, GetStorage(t).Create(context.TODO(), GetReleaseFlag(t)))
 				require.NotEmpty(t, GetReleaseFlag(t).ID)
 			})
 
@@ -178,7 +178,7 @@ func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
 						othFlag.Name = `oth flag`
 						othFlag.ID = ``
 
-						require.Nil(t, GetStorage(t).Save(CTX(t), &othFlag))
+						require.Nil(t, GetStorage(t).Create(CTX(t), &othFlag))
 						require.Nil(t, manager(t).SetPilotEnrollmentForFeature(CTX(t), othFlag.ID, ExampleExternalPilotID(), true))
 						require.Nil(t, manager(t).SetPilotEnrollmentForFeature(CTX(t), othFlag.ID, ExampleExternalPilotID(), false))
 					})
@@ -336,7 +336,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 
 			s.Context(`had been persisted previously`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
+					require.Nil(t, GetStorage(t).Create(context.TODO(), GetReleaseFlag(t)))
 					require.NotEmpty(t, GetReleaseFlag(t).ID)
 				})
 
@@ -420,7 +420,7 @@ func SpecRolloutManagerUpdateFeatureFlag(s *testcase.Spec) {
 
 			s.Context(`had been persisted previously`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
+					require.Nil(t, GetStorage(t).Create(context.TODO(), GetReleaseFlag(t)))
 					require.NotEmpty(t, GetReleaseFlag(t).ID)
 				})
 
@@ -538,7 +538,7 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 		s.When(`feature flag already configured`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
+				require.Nil(t, GetStorage(t).Create(context.TODO(), GetReleaseFlag(t)))
 			})
 
 			s.Then(`flag will not be recreated`, func(t *testcase.T) {
@@ -554,7 +554,7 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 			s.And(`pilot already exists`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Save(context.TODO(), GetPilot(t)))
+					require.Nil(t, GetStorage(t).Create(context.TODO(), GetPilot(t)))
 				})
 
 				s.And(`and pilot is has the opposite enrollment status`, func(s *testcase.Spec) {
@@ -645,7 +645,7 @@ func SpecRolloutManagerUnsetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 		s.When(`feature flag already configured`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
+				require.Nil(t, GetStorage(t).Create(context.TODO(), GetReleaseFlag(t)))
 			})
 
 			s.Then(`flag will not be recreated`, func(t *testcase.T) {
@@ -671,7 +671,7 @@ func SpecRolloutManagerUnsetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 			s.And(`pilot already exists`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Save(CTX(t), GetPilot(t)))
+					require.Nil(t, GetStorage(t).Create(CTX(t), GetPilot(t)))
 				})
 
 				s.Then(`pilot manual enrollment will be removed`, func(t *testcase.T) {

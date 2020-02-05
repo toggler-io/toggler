@@ -119,7 +119,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 			GetReleaseFlag(t).Rollout.Strategy.Percentage = 100
 		}
 
-		require.Nil(t, GetStorage(t).Save(CTX(t), GetReleaseFlag(t)))
+		require.Nil(t, GetStorage(t).Create(CTX(t), GetReleaseFlag(t)))
 
 		s := httptest.NewServer(http.StripPrefix(`/api/v1`, NewServeMux(t)))
 		defer s.Close()

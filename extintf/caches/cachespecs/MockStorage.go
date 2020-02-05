@@ -36,18 +36,18 @@ func (m *MockStorage) EXPECT() *MockStorageMockRecorder {
 	return m.recorder
 }
 
-// Save mocks base method
-func (m *MockStorage) Save(ctx context.Context, ptr interface{}) error {
+// Create mocks base method
+func (m *MockStorage) Create(ctx context.Context, ptr interface{}) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save", ctx, ptr)
+	ret := m.ctrl.Call(m, "Create", ctx, ptr)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Save indicates an expected call of Save
-func (mr *MockStorageMockRecorder) Save(ctx, ptr interface{}) *gomock.Call {
+// Create indicates an expected call of Create
+func (mr *MockStorageMockRecorder) Create(ctx, ptr interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockStorage)(nil).Save), ctx, ptr)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockStorage)(nil).Create), ctx, ptr)
 }
 
 // FindByID mocks base method

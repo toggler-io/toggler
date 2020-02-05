@@ -61,7 +61,7 @@ func (spec TokenFinderSpec) Test(t *testing.T) {
 
 		s.When(`token is stored in the storage already`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, spec.Subject.Save(spec.Context(), t.I(`token object`).(*security.Token)))
+				require.Nil(t, spec.Subject.Create(spec.Context(), t.I(`token object`).(*security.Token)))
 			})
 
 			s.Then(`token will be retrieved`, func(t *testcase.T) {

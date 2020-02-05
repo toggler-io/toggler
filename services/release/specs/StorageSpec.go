@@ -40,7 +40,7 @@ func (spec StorageSpec) Benchmark(b *testing.B) {
 				FixtureFactory: spec.FixtureFactory,
 				GetFlagID: func() string {
 					f := spec.FixtureFactory.Create(release.Flag{}).(*release.Flag)
-					require.Nil(b, spec.Subject.Save(spec.Context(), f))
+					require.Nil(b, spec.Subject.Create(spec.Context(), f))
 					return f.ID
 				},
 			}
@@ -82,7 +82,7 @@ func (spec StorageSpec) Test(t *testing.T) {
 
 			s.Context(`name is uniq across storage`, func(s *testcase.Spec) {
 				subject := func(t *testcase.T) error {
-					return spec.Subject.Save(spec.Context(), t.I(`flag`).(*release.Flag))
+					return spec.Subject.Create(spec.Context(), t.I(`flag`).(*release.Flag))
 				}
 
 				s.Before(func(t *testcase.T) {
@@ -112,7 +112,7 @@ func (spec StorageSpec) Test(t *testing.T) {
 				FixtureFactory: spec.FixtureFactory,
 				GetFlagID: func() string {
 					f := spec.FixtureFactory.Create(release.Flag{}).(*release.Flag)
-					require.Nil(t, spec.Subject.Save(spec.Context(), f))
+					require.Nil(t, spec.Subject.Create(spec.Context(), f))
 					return f.ID
 				},
 			}
@@ -137,7 +137,7 @@ func (spec StorageSpec) Test(t *testing.T) {
 				FixtureFactory: spec.FixtureFactory,
 				GetFlagID: func() string {
 					flag := spec.FixtureFactory.Create(release.Flag{}).(*release.Flag)
-					require.Nil(t, spec.Subject.Save(spec.Context(), flag))
+					require.Nil(t, spec.Subject.Create(spec.Context(), flag))
 					return flag.ID
 				},
 			}
@@ -168,8 +168,8 @@ func (spec StorageSpec) Test(t *testing.T) {
 				a2 := ff.Create(release.IPAllow{}).(*release.IPAllow)
 				a2.FlagID = flagID
 
-				require.Nil(t, spec.Subject.Save(spec.Context(), a1))
-				require.Nil(t, spec.Subject.Save(spec.Context(), a2))
+				require.Nil(t, spec.Subject.Create(spec.Context(), a1))
+				require.Nil(t, spec.Subject.Create(spec.Context(), a2))
 			})
 		})
 	})

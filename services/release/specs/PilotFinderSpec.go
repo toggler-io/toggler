@@ -33,7 +33,7 @@ func (spec pilotFinderSpec) Benchmark(b *testing.B) {
 
 		b.Run(`FindPilotsByFeatureFlag`, func(b *testing.B) {
 			flag := spec.Create(release.Flag{}).(*release.Flag)
-			require.Nil(b, spec.Subject.Save(spec.Context(), flag))
+			require.Nil(b, spec.Subject.Create(spec.Context(), flag))
 			pilots := CreateEntities(specs.BenchmarkEntityVolumeCount(), spec.FixtureFactory, release.Pilot{})
 			SaveEntities(b, spec.Subject, spec.FixtureFactory, pilots...)
 
@@ -108,7 +108,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 			s.When(`feature flag exists`, func(s *testcase.Spec) {
 				s.Let(`ff`, func(t *testcase.T) interface{} {
 					ff := &release.Flag{Name: t.I(`flagName`).(string)}
-					require.Nil(t, spec.Subject.Save(spec.ctx(), ff))
+					require.Nil(t, spec.Subject.Create(spec.ctx(), ff))
 					return ff
 				})
 
@@ -119,7 +119,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 						expectedPilots := t.I(`expectedPilots`).([]*release.Pilot)
 
 						for _, pilot := range expectedPilots {
-							require.Nil(t, spec.Subject.Save(spec.ctx(), pilot))
+							require.Nil(t, spec.Subject.Create(spec.ctx(), pilot))
 						}
 					})
 
@@ -189,7 +189,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 				s.Let(`featureFlagID`, func(t *testcase.T) interface{} {
 					ff := &release.Flag{Name: t.I(`flagName`).(string)}
 					ff.Rollout.Strategy.Percentage = 100
-					require.Nil(t, spec.Subject.Save(spec.ctx(), ff))
+					require.Nil(t, spec.Subject.Create(spec.ctx(), ff))
 					return ff.ID
 				})
 
@@ -200,7 +200,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 						require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Pilot{}))
 						featureFlagID := t.I(`featureFlagID`).(string)
 						pilot := &release.Pilot{FlagID: featureFlagID, ExternalID: ExternalPublicPilotID}
-						require.Nil(t, spec.Subject.Save(spec.ctx(), pilot))
+						require.Nil(t, spec.Subject.Create(spec.ctx(), pilot))
 					})
 
 					s.Then(`asd`, func(t *testcase.T) {
@@ -240,9 +240,9 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 				s.Before(func(t *testcase.T) {
 					ctx := spec.ctx()
 					extID := ExampleExternalPilotID()
-					require.Nil(t, spec.Subject.Save(ctx, &release.Pilot{FlagID: `1`, ExternalID: extID, Enrolled: true}))
-					require.Nil(t, spec.Subject.Save(ctx, &release.Pilot{FlagID: `2`, ExternalID: extID, Enrolled: true}))
-					require.Nil(t, spec.Subject.Save(ctx, &release.Pilot{FlagID: `3`, ExternalID: extID, Enrolled: false}))
+					require.Nil(t, spec.Subject.Create(ctx, &release.Pilot{FlagID: `1`, ExternalID: extID, Enrolled: true}))
+					require.Nil(t, spec.Subject.Create(ctx, &release.Pilot{FlagID: `2`, ExternalID: extID, Enrolled: true}))
+					require.Nil(t, spec.Subject.Create(ctx, &release.Pilot{FlagID: `3`, ExternalID: extID, Enrolled: false}))
 				})
 
 				s.Then(`it will return an empty result set`, func(t *testcase.T) {
@@ -263,7 +263,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 							Enrolled:   rand.Intn(1) == 0,
 						}
 
-						require.Nil(t, spec.Subject.Save(spec.ctx(), &pilot))
+						require.Nil(t, spec.Subject.Create(spec.ctx(), &pilot))
 						pilots = append(pilots, pilot)
 					}
 

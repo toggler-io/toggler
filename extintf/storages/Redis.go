@@ -266,7 +266,7 @@ func (r *Redis) FindTokenBySHA512Hex(ctx context.Context, sha512hex string) (*se
 	return &t, nil
 }
 
-func (r *Redis) Save(ctx context.Context, ptr interface{}) error {
+func (r *Redis) Create(ctx context.Context, ptr interface{}) error {
 	currentID, found := resources.LookupID(ptr)
 
 	if !found {

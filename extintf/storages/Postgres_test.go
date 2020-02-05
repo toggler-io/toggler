@@ -135,7 +135,7 @@ func TestPostgres_Close(t *testing.T) {
 			require.Nil(t, pgSqlDB.Truncate(ctx, te))
 			pgSqlTx := pg(t)
 
-			require.Nil(t, pgSqlTx.Save(ctx, &te))
+			require.Nil(t, pgSqlTx.Create(ctx, &te))
 			require.Nil(t, pgSqlTx.Close())
 
 			count, err := iterators.Count(pgSqlDB.FindAll(ctx, te))

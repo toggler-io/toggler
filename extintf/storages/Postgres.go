@@ -80,7 +80,7 @@ func (pg *Postgres) Close() error {
 	}
 }
 
-func (pg *Postgres) Save(ctx context.Context, ptr interface{}) error {
+func (pg *Postgres) Create(ctx context.Context, ptr interface{}) error {
 	if currentID, ok := resources.LookupID(ptr); !ok || currentID != "" {
 		return fmt.Errorf("entity already have an ID: %s", currentID)
 	}

@@ -54,7 +54,7 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 
 	s.Before(func(t *testcase.T) {
 		t.Log(`given we have flag already stored`)
-		require.Nil(t, GetStorage(t).Save(context.TODO(), GetReleaseFlag(t)))
+		require.Nil(t, GetStorage(t).Create(context.TODO(), GetReleaseFlag(t)))
 	})
 
 	s.When(`request is sent to the JSON endpoint`, func(s *testcase.Spec) {

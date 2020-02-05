@@ -55,7 +55,7 @@ func (manager *RolloutManager) CreateFeatureFlag(ctx context.Context, flag *Flag
 		return ErrFlagAlreadyExist
 	}
 
-	return manager.Storage.Save(ctx, flag)
+	return manager.Storage.Create(ctx, flag)
 }
 
 func (manager *RolloutManager) UpdateFeatureFlag(ctx context.Context, flag *Flag) error {
@@ -147,7 +147,7 @@ func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context,
 		return manager.Storage.Update(ctx, pilot)
 	}
 
-	return manager.Save(ctx, &Pilot{FlagID: ff.ID, ExternalID: externalPilotID, Enrolled: isEnrolled})
+	return manager.Create(ctx, &Pilot{FlagID: ff.ID, ExternalID: externalPilotID, Enrolled: isEnrolled})
 
 }
 

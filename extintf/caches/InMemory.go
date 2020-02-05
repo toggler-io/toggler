@@ -198,10 +198,10 @@ func (c *InMemory) withLock() func() {
 
 ////////////////////////////////////////// cached actions //////////////////////////////////////////
 
-func (c *InMemory) Save(ctx context.Context, value interface{}) error {
+func (c *InMemory) Create(ctx context.Context, value interface{}) error {
 	defer c.withLock()()
 	c.dropCache()
-	return c.Storage.Save(ctx, value)
+	return c.Storage.Create(ctx, value)
 }
 
 func (c *InMemory) FindByID(ctx context.Context, ptr interface{}, id string) (_found bool, _err error) {

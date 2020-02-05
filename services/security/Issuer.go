@@ -48,7 +48,7 @@ func (i *Issuer) CreateNewToken(ctx context.Context, ownerUID string, issueAt *t
 		return textToken, token, err
 	}
 
-	return textToken, token, i.Storage.Save(ctx, token)
+	return textToken, token, i.Storage.Create(ctx, token)
 
 }
 

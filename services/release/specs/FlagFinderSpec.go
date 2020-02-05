@@ -64,7 +64,7 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 				})
 
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, spec.Subject.Save(spec.ctx(), t.I(`ff`).(*release.Flag)))
+					require.Nil(t, spec.Subject.Create(spec.ctx(), t.I(`ff`).(*release.Flag)))
 				})
 
 				s.Then(`searching for it returns the flag entity`, func(t *testcase.T) {
@@ -83,9 +83,9 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 
 			s.Before(func(t *testcase.T) {
 				ctx := spec.ctx()
-				require.Nil(t, spec.Subject.Save(ctx, &release.Flag{Name: `A`}))
-				require.Nil(t, spec.Subject.Save(ctx, &release.Flag{Name: `B`}))
-				require.Nil(t, spec.Subject.Save(ctx, &release.Flag{Name: `C`}))
+				require.Nil(t, spec.Subject.Create(ctx, &release.Flag{Name: `A`}))
+				require.Nil(t, spec.Subject.Create(ctx, &release.Flag{Name: `B`}))
+				require.Nil(t, spec.Subject.Create(ctx, &release.Flag{Name: `C`}))
 			})
 
 			mustContainName := func(t *testcase.T, ffs []release.Flag, name string) {

@@ -44,7 +44,7 @@ func (spec AllowFinderSpec) Test(t *testing.T) {
 			})
 			s.Around(func(t *testcase.T) func() {
 				f := t.I(`flag`).(*release.Flag)
-				require.Nil(t, spec.Subject.Save(spec.Context(), f))
+				require.Nil(t, spec.Subject.Create(spec.Context(), f))
 				return func() { require.Nil(t, spec.Subject.DeleteByID(spec.Context(), release.Flag{}, f.ID)) }
 			})
 
@@ -69,7 +69,7 @@ func (spec AllowFinderSpec) Test(t *testing.T) {
 
 					f := t.I(`allow's flag`).(*release.Flag)
 					if f.ID == `` { // don't try to save again if flag is already saved
-						require.Nil(t, spec.Subject.Save(spec.Context(), f))
+						require.Nil(t, spec.Subject.Create(spec.Context(), f))
 						tds = append(tds, func() {
 							require.Nil(t, spec.Subject.DeleteByID(spec.Context(), release.Flag{}, f.ID))
 						})
@@ -77,7 +77,7 @@ func (spec AllowFinderSpec) Test(t *testing.T) {
 
 					a := t.I(`allow`).(*release.IPAllow)
 					a.FlagID = f.ID
-					require.Nil(t, spec.Subject.Save(spec.Context(), a))
+					require.Nil(t, spec.Subject.Create(spec.Context(), a))
 					tds = append(tds, func() {
 						require.Nil(t, spec.Subject.DeleteByID(spec.Context(), release.IPAllow{}, a.ID))
 					})

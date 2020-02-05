@@ -128,8 +128,8 @@ func TestServeMux_ClientConfig(t *testing.T) {
 
 	s.Test(`swagger integration`, func(t *testcase.T) {
 
-		require.Nil(t, GetStorage(t).Save(CTX(t), GetReleaseFlag(t)))
-		require.Nil(t, GetStorage(t).Save(CTX(t), GetPilot(t)))
+		require.Nil(t, GetStorage(t).Create(CTX(t), GetReleaseFlag(t)))
+		require.Nil(t, GetStorage(t).Create(CTX(t), GetPilot(t)))
 
 		s := httptest.NewServer(http.StripPrefix(`/api/v1`, NewServeMux(t)))
 		defer s.Close()

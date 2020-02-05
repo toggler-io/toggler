@@ -15,9 +15,9 @@ func CreateEntities(count int , f specs.FixtureFactory, T interface{}) []interfa
 	return es
 }
 
-func SaveEntities(b *testing.B, r resources.Saver, f specs.FixtureFactory, es ...interface{}) {
+func SaveEntities(b *testing.B, r resources.Creator, f specs.FixtureFactory, es ...interface{}) {
 	for _, e := range es {
-		require.Nil(b, r.Save(f.Context(), e))
+		require.Nil(b, r.Create(f.Context(), e))
 	}
 }
 
