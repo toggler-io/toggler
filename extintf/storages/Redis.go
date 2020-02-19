@@ -199,9 +199,9 @@ func (r *Redis) FindReleaseFlagByName(ctx context.Context, name string) (*releas
 	})
 
 	var flag release.Flag
-	err := iterators.First(flagsByName, &flag)
+	found, err := iterators.First(flagsByName, &flag)
 
-	if err == frameless.ErrNotFound {
+	if !found {
 		return nil, nil
 	}
 
@@ -220,9 +220,9 @@ func (r *Redis) FindReleaseFlagPilotByPilotExternalID(ctx context.Context, relea
 		return p.FlagID == releaseFlagID && p.ExternalID == pilotExternalID
 	})
 	var p release.Pilot
-	err := iterators.First(pilotsByIDs, &p)
+	found, err := iterators.First(pilotsByIDs, &p)
 
-	if err == frameless.ErrNotFound {
+	if !found {
 		return nil, nil
 	}
 
@@ -253,9 +253,9 @@ func (r *Redis) FindTokenBySHA512Hex(ctx context.Context, sha512hex string) (*se
 		return token.(security.Token).SHA512 == sha512hex
 	})
 	var t security.Token
-	err := iterators.First(tokensBySHA512, &t)
+	found, err := iterators.First(tokensBySHA512, &t)
 
-	if err == frameless.ErrNotFound {
+	if !found {
 		return nil, nil
 	}
 
