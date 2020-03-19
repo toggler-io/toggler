@@ -121,7 +121,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 
 		require.Nil(t, GetStorage(t).Create(CTX(t), GetReleaseFlag(t)))
 
-		s := httptest.NewServer(http.StripPrefix(`/api/v1`, NewServeMux(t)))
+		s := httptest.NewServer(http.StripPrefix(`/api`, NewServeMux(t)))
 		defer s.Close()
 
 		p := release_flag.NewIsFeatureGloballyEnabledParams()

@@ -131,7 +131,7 @@ func TestServeMux_ClientConfig(t *testing.T) {
 		require.Nil(t, GetStorage(t).Create(CTX(t), GetReleaseFlag(t)))
 		require.Nil(t, GetStorage(t).Create(CTX(t), GetPilot(t)))
 
-		s := httptest.NewServer(http.StripPrefix(`/api/v1`, NewServeMux(t)))
+		s := httptest.NewServer(http.StripPrefix(`/api`, NewServeMux(t)))
 		defer s.Close()
 
 		p := release_flag.NewClientConfigParams()

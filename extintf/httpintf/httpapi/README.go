@@ -3,7 +3,7 @@
 // The purpose of this application is to provide API over HTTP to toggler service,
 // in which you can interact with the service in a programmatic way.
 //
-//     BasePath: /api/v1
+//     BasePath: /api
 //     Version: v1
 //
 //     Consumes:

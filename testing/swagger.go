@@ -18,7 +18,7 @@ func SetupSpecWithSwaggerClient(s *testcase.Spec) {
 
 	s.Let(`httptest.NewServer/httpapi`, func(t *testcase.T) interface{} {
 		m := t.I(`httpapi.ServeMux`).(*httpapi.ServeMux)
-		return httptest.NewServer(http.StripPrefix(`/api/v1`, m))
+		return httptest.NewServer(http.StripPrefix(`/api`, m))
 	})
 
 	s.After(func(t *testcase.T) {

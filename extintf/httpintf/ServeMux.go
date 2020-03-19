@@ -12,7 +12,7 @@ import (
 func NewServeMux(uc *usecases.UseCases) (*ServeMux, error) {
 	mux := http.NewServeMux()
 
-	mux.Handle(`/api/v1/`, letsCORSit(http.StripPrefix(`/api/v1`, httpapi.NewServeMux(uc))))
+	mux.Handle(`/api/`, letsCORSit(http.StripPrefix(`/api`, httpapi.NewServeMux(uc))))
 
 	ui, err := webgui.NewHandler(uc)
 	if err != nil {

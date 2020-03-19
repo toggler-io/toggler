@@ -1,6 +1,6 @@
 # package httpapi
 
-## GET /api/v1/ws
+## GET /api/ws
 
 This is a Websocket endpoint that able to execute operation it receives.
 The operation correspond with the HTTP API endpoint operation names.
@@ -47,7 +47,7 @@ response
 {"enrollment": true}
 ```
 
-## GET /api/v1/client/config.json
+## GET /api/client/config.json
 
 This endpoint able to answer multiple feature flag state for a specific pilot.
 
@@ -76,7 +76,7 @@ response
 }
 ```
 
-## GET /api/v1/release/is-feature-enabled.json
+## GET /api/release/is-feature-enabled.json
 
 Get rollout feature flag status for a pilot
 
@@ -95,7 +95,7 @@ response
 {"enrollment": true}
 ```
 
-## GET /api/v1/release/is-feature-globally-enabled.json
+## GET /api/release/is-feature-globally-enabled.json
 
 Get rollout feature flag status for global
 

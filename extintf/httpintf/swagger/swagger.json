@@ -11,7 +11,7 @@
     "title": "provides API on HTTP layer to the toggler service.",
     "version": "v1"
   },
-  "basePath": "/api/v1",
+  "basePath": "/api",
   "paths": {
     "/client/config.json": {
       "get": {
