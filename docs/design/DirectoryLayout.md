@@ -29,9 +29,10 @@ which helps explains what directory responsible to contain what.
 │           └── assets
 │               └── migrations -> pg db schema migration files
 ├── Procfile                   -> heroku integration
-├── services                   -> service's domain entities, rules and usecase 
+├── domains                    -> domain entities, rules, interactors regarding differend domain spaces 
 │   ├── rollouts               -> rollout related domain implementations
-│   │   └── specs              -> rollouts service dependency's specifications 
+│   │   └── specs              -> rollouts service dependency's specifications
+│   │ ... 
 │   └── security               -> security related domain rules
 │       └── specs              -> security service dependency's specifications
 ├── testing                    -> internal testing pkg

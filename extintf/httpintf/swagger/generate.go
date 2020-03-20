@@ -1,6 +1,9 @@
 package swagger
 
+//go:generate rm -f ./specfs/fs.go
 //go:generate esc -o ./specfs/fs.go -pkg specfs swagger.json
+
+//go:generate rm -f ./uifs/fs.go
 //go:generate esc -o ./uifs/fs.go -pkg uifs -prefix assets/swagger-ui ./assets
 
 //go:generate swagger generate spec --work-dir .. --output swagger.json

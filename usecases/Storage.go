@@ -1,10 +1,12 @@
 package usecases
 
 import (
-	"github.com/adamluzsi/frameless/resources"
-	"github.com/toggler-io/toggler/services/release"
-	"github.com/toggler-io/toggler/services/security"
 	"io"
+
+	"github.com/adamluzsi/frameless/resources"
+
+	"github.com/toggler-io/toggler/domains/release"
+	"github.com/toggler-io/toggler/domains/security"
 )
 
 type Storage interface {

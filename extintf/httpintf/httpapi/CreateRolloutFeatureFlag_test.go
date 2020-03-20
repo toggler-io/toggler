@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/toggler-io/toggler/services/security"
+	"github.com/toggler-io/toggler/domains/security"
 	"net/http"
 	"net/http/httptest"
 	"net/url"

@@ -2,7 +2,7 @@ package usecases_test
 
 import (
 	"context"
-	"github.com/toggler-io/toggler/services/release"
+	"github.com/toggler-io/toggler/domains/release"
 	. "github.com/toggler-io/toggler/testing"
 	"github.com/toggler-io/toggler/usecases"
 	"github.com/adamluzsi/testcase"

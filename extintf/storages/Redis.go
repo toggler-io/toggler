@@ -16,8 +16,8 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/google/uuid"
 
-	"github.com/toggler-io/toggler/services/release"
-	"github.com/toggler-io/toggler/services/security"
+	"github.com/toggler-io/toggler/domains/release"
+	"github.com/toggler-io/toggler/domains/security"
 )
 
 func NewRedis(connstr string) (*Redis, error) {

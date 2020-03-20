@@ -10,7 +10,7 @@ import (
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 
-	"github.com/toggler-io/toggler/services/release"
+	"github.com/toggler-io/toggler/domains/release"
 )
 
 type StorageSpec struct {

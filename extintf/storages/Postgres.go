@@ -22,8 +22,8 @@ import (
 	pgmigr "github.com/golang-migrate/migrate/v4/database/postgres"
 
 	"github.com/toggler-io/toggler/extintf/storages/migrations"
-	"github.com/toggler-io/toggler/services/release"
-	"github.com/toggler-io/toggler/services/security"
+	"github.com/toggler-io/toggler/domains/release"
+	"github.com/toggler-io/toggler/domains/security"
 )
 
 func NewPostgres(db *sql.DB) (*Postgres, error) {

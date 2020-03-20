@@ -3,7 +3,7 @@ package controllers
 import (
 	"context"
 	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
-	"github.com/toggler-io/toggler/services/release"
+	"github.com/toggler-io/toggler/domains/release"
 	"github.com/pkg/errors"
 	"log"
 	"net/http"

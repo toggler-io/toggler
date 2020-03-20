@@ -18,8 +18,8 @@ import (
 	"github.com/unrolled/logger"
 
 	"github.com/toggler-io/toggler/extintf/httpintf"
-	"github.com/toggler-io/toggler/services/release"
-	"github.com/toggler-io/toggler/services/security"
+	"github.com/toggler-io/toggler/domains/release"
+	"github.com/toggler-io/toggler/domains/security"
 	"github.com/toggler-io/toggler/usecases"
 )
 

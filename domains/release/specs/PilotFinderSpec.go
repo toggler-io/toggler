@@ -10,7 +10,7 @@ import (
 	"github.com/adamluzsi/testcase"
 	. "github.com/toggler-io/toggler/testing"
 
-	"github.com/toggler-io/toggler/services/release"
+	"github.com/toggler-io/toggler/domains/release"
 
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/resources/specs"

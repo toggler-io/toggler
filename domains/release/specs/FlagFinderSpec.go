@@ -8,7 +8,7 @@ import (
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/testcase"
-	"github.com/toggler-io/toggler/services/release"
+	"github.com/toggler-io/toggler/domains/release"
 	. "github.com/toggler-io/toggler/testing"
 	"github.com/stretchr/testify/require"
 )

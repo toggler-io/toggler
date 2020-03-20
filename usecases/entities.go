@@ -5,8 +5,8 @@ package usecases
 
 import (
 	"github.com/adamluzsi/frameless"
-	"github.com/toggler-io/toggler/services/release"
-	"github.com/toggler-io/toggler/services/security"
+	"github.com/toggler-io/toggler/domains/release"
+	"github.com/toggler-io/toggler/domains/security"
 )
 
 func NewUseCases(s Storage) *UseCases {

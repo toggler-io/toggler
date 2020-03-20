@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/adamluzsi/frameless/resources/specs"
-	"github.com/toggler-io/toggler/services/security"
+	"github.com/toggler-io/toggler/domains/security"
 )
 
 type StorageSpec struct {

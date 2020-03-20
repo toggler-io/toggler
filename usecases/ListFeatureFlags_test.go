@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/toggler-io/toggler/services/release"
+	"github.com/toggler-io/toggler/domains/release"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 

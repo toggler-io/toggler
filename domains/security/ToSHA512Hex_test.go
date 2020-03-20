@@ -1,7 +1,7 @@
 package security_test
 
 import (
-	"github.com/toggler-io/toggler/services/security"
+	"github.com/toggler-io/toggler/domains/security"
 	"github.com/stretchr/testify/require"
 	"testing"
 )

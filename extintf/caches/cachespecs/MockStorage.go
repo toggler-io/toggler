@@ -8,8 +8,8 @@ import (
 	context "context"
 	frameless "github.com/adamluzsi/frameless"
 	gomock "github.com/golang/mock/gomock"
-	release "github.com/toggler-io/toggler/services/release"
-	security "github.com/toggler-io/toggler/services/security"
+	release "github.com/toggler-io/toggler/domains/release"
+	security "github.com/toggler-io/toggler/domains/security"
 	reflect "reflect"
 )
 

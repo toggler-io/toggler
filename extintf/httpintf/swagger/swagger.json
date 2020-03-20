@@ -284,7 +284,7 @@
           "$ref": "#/definitions/FlagRollout"
         }
       },
-      "x-go-package": "github.com/toggler-io/toggler/services/release"
+      "x-go-package": "github.com/toggler-io/toggler/domains/release"
     },
     "FlagRollout": {
       "type": "object",
@@ -299,7 +299,7 @@
           "$ref": "#/definitions/FlagRolloutStrategy"
         }
       },
-      "x-go-package": "github.com/toggler-io/toggler/services/release"
+      "x-go-package": "github.com/toggler-io/toggler/domains/release"
     },
     "FlagRolloutStrategy": {
       "type": "object",
@@ -314,7 +314,7 @@
           "x-go-name": "Percentage"
         }
       },
-      "x-go-package": "github.com/toggler-io/toggler/services/release"
+      "x-go-package": "github.com/toggler-io/toggler/domains/release"
     },
     "IsFeatureGloballyEnabledRequestBody": {
       "type": "object",

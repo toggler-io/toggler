@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	frmlspecs "github.com/adamluzsi/frameless/resources/specs"
-	rollspecs "github.com/toggler-io/toggler/services/release/specs"
-	secuspecs "github.com/toggler-io/toggler/services/security/specs"
+	rollspecs "github.com/toggler-io/toggler/domains/release/specs"
+	secuspecs "github.com/toggler-io/toggler/domains/security/specs"
 
 	"github.com/toggler-io/toggler/usecases"
 )

@@ -1,3 +1,4 @@
+//go:generate mockgen -source ../../../usecases/Storage.go -destination MockStorage.go -package cachespecs
 package cachespecs
 
 import (
@@ -15,13 +16,11 @@ import (
 
 	"github.com/toggler-io/toggler/extintf/caches"
 	"github.com/toggler-io/toggler/extintf/storages"
-	"github.com/toggler-io/toggler/services/release"
-	"github.com/toggler-io/toggler/services/security"
+	"github.com/toggler-io/toggler/domains/release"
+	"github.com/toggler-io/toggler/domains/security"
 	"github.com/toggler-io/toggler/usecases"
 	"github.com/toggler-io/toggler/usecases/specs"
 )
-
-//go:generate mockgen -source ../../../usecases/Storage.go -destination MockStorage.go -package cachespecs
 
 type CacheSpec struct {
 	Factory func(usecases.Storage) caches.Interface

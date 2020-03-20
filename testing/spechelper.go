@@ -3,8 +3,8 @@ package testing
 import (
 	"context"
 	"github.com/adamluzsi/testcase"
-	"github.com/toggler-io/toggler/services/release"
-	"github.com/toggler-io/toggler/services/security"
+	"github.com/toggler-io/toggler/domains/release"
+	"github.com/toggler-io/toggler/domains/security"
 	"github.com/stretchr/testify/require"
 	"math/rand"
 	"net/url"

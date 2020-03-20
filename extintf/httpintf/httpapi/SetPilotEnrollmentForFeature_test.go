@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/adamluzsi/testcase"
-	"github.com/toggler-io/toggler/services/release"
+	"github.com/toggler-io/toggler/domains/release"
 	"github.com/stretchr/testify/require"
 
 	. "github.com/toggler-io/toggler/testing"
