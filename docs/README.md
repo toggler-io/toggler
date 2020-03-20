@@ -38,7 +38,7 @@ If your answer yes to most of them,
 then you can stop here, because adding this service to your stack would not solve too much.
 else, please continue...
 
-## Why toggler, why not ${COMPANY_NAME} ?
+## Why toggler, why not ${PRODUCT_NAME} ?
 
 `toggler` primary goal is to provide a vendor-lock free solution to a wide range of audience.
 The API's follow simple conventions, making transition easy to almost any other service
