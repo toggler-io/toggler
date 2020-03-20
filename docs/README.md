@@ -94,6 +94,30 @@ For examples, you can check the already existing storage implementations as well
 
 ## Quick Start / Setup
 
+### Local Development
+
+You need to ensure the following dependencies:
+- go compiler (must have)
+- bash (should have)
+    * some script is written in `bash`
+- docker-compose (should have)
+    * +docker
+- [direnv](https://github.com/direnv/direnv) (nice to have)
+
+To provision the project, execute the following command:
+```bash
+. .envrc
+./bin/provision
+# or
+provision
+docker-compose up --detach
+```
+
+To execute the tests:
+```bash
+go test ./...
+``` 
+
 ### Configuration
 The application can be configured trough either CLI option or with environment variables.
 It follows the convention that works easily with SaaS platforms or containerization based solutions.
