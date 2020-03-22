@@ -35,11 +35,11 @@ func (spec TokenFinderSpec) Test(t *testing.T) {
 	})
 
 	s.Before(func(t *testcase.T) {
-		require.Nil(t, spec.Subject.Truncate(spec.Context(), security.Token{}))
+		require.Nil(t, spec.Subject.DeleteAll(spec.Context(), security.Token{}))
 	})
 
 	s.After(func(t *testcase.T) {
-		require.Nil(t, spec.Subject.Truncate(spec.Context(), security.Token{}))
+		require.Nil(t, spec.Subject.DeleteAll(spec.Context(), security.Token{}))
 	})
 
 	s.Describe(`FindTokenBySHA512Hex`, func(s *testcase.Spec) {
@@ -50,7 +50,7 @@ func (spec TokenFinderSpec) Test(t *testing.T) {
 		s.Let(`token SHA512`, func(t *testcase.T) interface{} { return `the answer is 42` })
 
 		s.When(`no token stored in the storage yet`, func(s *testcase.Spec) {
-			s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.Truncate(spec.Context(), security.Token{})) })
+			s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.DeleteAll(spec.Context(), security.Token{})) })
 
 			s.Then(`it will return nil token without any error`, func(t *testcase.T) {
 				token, err := subject(t)

@@ -56,13 +56,13 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 		})
 
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Flag{}))
-			require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Pilot{}))
+			require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.Flag{}))
+			require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.Pilot{}))
 		})
 
 		s.After(func(t *testcase.T) {
-			require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Flag{}))
-			require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Pilot{}))
+			require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.Flag{}))
+			require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.Pilot{}))
 		})
 
 		s.Describe(`FindPilotsByFeatureFlag`, func(s *testcase.Spec) {
@@ -91,7 +91,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 
 			s.When(`feature object is nil`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Flag{}))
+					require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.Flag{}))
 				})
 				s.Let(`ff`, func(t *testcase.T) interface{} { return nil })
 				thenNoPilotsFound(s)
@@ -99,7 +99,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 
 			s.When(`feature object has no reference`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Flag{}))
+					require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.Flag{}))
 				})
 				s.Let(`ff`, func(t *testcase.T) interface{} { return &release.Flag{} })
 				thenNoPilotsFound(s)
@@ -179,7 +179,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 
 			s.When(`feature was never enabled before`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Flag{}))
+					require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.Flag{}))
 				})
 				s.Let(`featureFlagID`, func(t *testcase.T) interface{} { return "not exinsting ID" })
 				ThenNoPilotsFound(s)
@@ -197,7 +197,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 
 				s.And(`the given there is a registered pilot for the feature`, func(s *testcase.Spec) {
 					s.Before(func(t *testcase.T) {
-						require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Pilot{}))
+						require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.Pilot{}))
 						featureFlagID := t.I(`featureFlagID`).(string)
 						pilot := &release.Pilot{FlagID: featureFlagID, ExternalID: ExternalPublicPilotID}
 						require.Nil(t, spec.Subject.Create(spec.ctx(), pilot))
@@ -227,7 +227,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 			})
 
 			s.When(`there is no pilot records`, func(s *testcase.Spec) {
-				s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Pilot{})) })
+				s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.Pilot{})) })
 
 				s.Then(`it will return an empty result set`, func(t *testcase.T) {
 					count, err := iterators.Count(subject(t))

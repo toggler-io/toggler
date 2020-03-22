@@ -24,8 +24,8 @@ func TestFeatureFlagChecker(t *testing.T) {
 	s.Let(`PseudoRandPercentage`, func(t *testcase.T) interface{} { return int(0) })
 
 	s.Before(func(t *testcase.T) {
-		require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
-		require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Pilot{}))
+		require.Nil(t, GetStorage(t).DeleteAll(context.Background(), release.Flag{}))
+		require.Nil(t, GetStorage(t).DeleteAll(context.Background(), release.Pilot{}))
 	})
 
 	s.Describe(`IsFeatureGloballyEnabled`, func(s *testcase.Spec) {
@@ -58,8 +58,8 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates(s *testcase.Spec
 
 	cleanup := func(t *testcase.T) {
 		ctx := context.Background()
-		require.Nil(t, GetStorage(t).Truncate(ctx, release.Pilot{}))
-		require.Nil(t, GetStorage(t).Truncate(ctx, release.Flag{}))
+		require.Nil(t, GetStorage(t).DeleteAll(ctx, release.Pilot{}))
+		require.Nil(t, GetStorage(t).DeleteAll(ctx, release.Flag{}))
 	}
 
 	s.Before(cleanup)
@@ -289,7 +289,7 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates_BackwardCompatib
 
 	s.When(`feature was never enabled before`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
+			require.Nil(t, GetStorage(t).DeleteAll(context.Background(), release.Flag{}))
 		})
 
 		s.Then(`it will tell that feature flag is not enabled`, func(t *testcase.T) {
@@ -479,7 +479,7 @@ func SpecFeatureFlagChecker_IsFeatureGloballyEnabledFor(s *testcase.Spec) {
 
 	s.When(`feature flag is not seen before`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
+			require.Nil(t, GetStorage(t).DeleteAll(context.Background(), release.Flag{}))
 		})
 
 		thenItWillReportThatFeatureNotGlobballyEnabled(s)

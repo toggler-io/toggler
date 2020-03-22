@@ -36,11 +36,11 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 
 	s.Describe(`FlagFinderSpec`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Flag{}))
+			require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.Flag{}))
 		})
 
 		s.After(func(t *testcase.T) {
-			require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Flag{}))
+			require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.Flag{}))
 		})
 
 		s.Describe(`FindReleaseFlagByName`, func(s *testcase.Spec) {
@@ -51,7 +51,7 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 			}
 
 			s.When(`we don't have feature flag yet`, func(s *testcase.Spec) {
-				s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.Truncate(spec.ctx(), release.Flag{})) })
+				s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.Flag{})) })
 
 				s.Then(`we receive back nil pointer`, func(t *testcase.T) {
 					require.Nil(t, subject(t))

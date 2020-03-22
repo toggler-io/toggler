@@ -37,9 +37,9 @@ func TestRolloutManager(t *testing.T) {
 	})
 
 	s.Before(func(t *testcase.T) {
-		require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
-		require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Pilot{}))
-		require.Nil(t, GetStorage(t).Truncate(context.Background(), release.IPAllow{}))
+		require.Nil(t, GetStorage(t).DeleteAll(context.Background(), release.Flag{}))
+		require.Nil(t, GetStorage(t).DeleteAll(context.Background(), release.Pilot{}))
+		require.Nil(t, GetStorage(t).DeleteAll(context.Background(), release.IPAllow{}))
 	})
 
 	SpecRolloutManagerCreateFeatureFlag(s)
@@ -324,7 +324,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 
 			s.Context(`was not stored until now`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
+					require.Nil(t, GetStorage(t).DeleteAll(context.Background(), release.Flag{}))
 				})
 
 				s.Then(`it will be persisted`, func(t *testcase.T) {
@@ -410,7 +410,7 @@ func SpecRolloutManagerUpdateFeatureFlag(s *testcase.Spec) {
 
 			s.Context(`was not stored until now`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
+					require.Nil(t, GetStorage(t).DeleteAll(context.Background(), release.Flag{}))
 				})
 
 				s.Then(`it will report error about the missing ID`, func(t *testcase.T) {
@@ -482,7 +482,7 @@ func SpecRolloutManagerListFeatureFlags(s *testcase.Spec) {
 
 		s.When(`no feature present in the system`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
+				require.Nil(t, GetStorage(t).DeleteAll(context.Background(), release.Flag{}))
 			})
 
 			s.Then(`feature flags are returned`, func(t *testcase.T) {
@@ -528,7 +528,7 @@ func SpecRolloutManagerSetPilotEnrollmentForFeature(s *testcase.Spec) {
 		s.When(`no feature flag is seen ever before`, func(s *testcase.Spec) {
 			s.Let(`FlagID`, func(t *testcase.T) interface{} { return `` })
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
+				require.Nil(t, GetStorage(t).DeleteAll(context.Background(), release.Flag{}))
 			})
 
 			s.Then(`error returned`, func(t *testcase.T) {
@@ -635,7 +635,7 @@ func SpecRolloutManagerUnsetPilotEnrollmentForFeature(s *testcase.Spec) {
 		s.When(`no feature flag is seen ever before`, func(s *testcase.Spec) {
 			s.Let(`FlagID`, func(t *testcase.T) interface{} { return `` })
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, GetStorage(t).Truncate(context.Background(), release.Flag{}))
+				require.Nil(t, GetStorage(t).DeleteAll(context.Background(), release.Flag{}))
 			})
 
 			s.Then(`error returned`, func(t *testcase.T) {
@@ -661,7 +661,7 @@ func SpecRolloutManagerUnsetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 			s.And(`pilot not exist for the flag`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Truncate(CTX(t), release.Pilot{}))
+					require.Nil(t, GetStorage(t).DeleteAll(CTX(t), release.Pilot{}))
 				})
 
 				s.Then(`it will return without any error`, func(t *testcase.T) {

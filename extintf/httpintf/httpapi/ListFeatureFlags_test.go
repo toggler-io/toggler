@@ -58,7 +58,7 @@ func TestServeMux_ListFeatureFlags(t *testing.T) {
 
 		s.And(`no flag present in the system`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, GetStorage(t).Truncate(context.Background(), security.Token{}))
+				require.Nil(t, GetStorage(t).DeleteAll(context.Background(), security.Token{}))
 			})
 
 			s.Then(`empty result received`, func(t *testcase.T) {

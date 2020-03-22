@@ -84,7 +84,7 @@ func (r *Redis) DeleteByID(ctx context.Context, Type interface{}, ID string) err
 	return r.Storage.DeleteByID(ctx, Type, ID)
 }
 
-func (r *Redis) Truncate(ctx context.Context, Type interface{}) error {
+func (r *Redis) DeleteAll(ctx context.Context, Type interface{}) error {
 	keysRes := r.client.Keys(reflects.FullyQualifiedName(Type) + `*`)
 
 	if err := keysRes.Err(); err != nil && err != redis.Nil {
@@ -102,7 +102,7 @@ func (r *Redis) Truncate(ctx context.Context, Type interface{}) error {
 		}
 	}
 
-	return r.Storage.Truncate(ctx, Type)
+	return r.Storage.DeleteAll(ctx, Type)
 }
 
 func (r *Redis) Update(ctx context.Context, ptr interface{}) error {

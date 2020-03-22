@@ -30,8 +30,8 @@ func (spec AllowFinderSpec) Test(t *testing.T) {
 	s := testcase.NewSpec(t)
 	s.Describe(`AllowFinderSpec`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, spec.Subject.Truncate(spec.Context(), release.Flag{}))
-			require.Nil(t, spec.Subject.Truncate(spec.Context(), release.IPAllow{}))
+			require.Nil(t, spec.Subject.DeleteAll(spec.Context(), release.Flag{}))
+			require.Nil(t, spec.Subject.DeleteAll(spec.Context(), release.IPAllow{}))
 		})
 
 		s.Describe(`FindReleaseAllowsByReleaseFlags`, func(s *testcase.Spec) {
@@ -50,7 +50,7 @@ func (spec AllowFinderSpec) Test(t *testing.T) {
 
 			s.When(`no allow stored in the resource`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, spec.Subject.Truncate(spec.Context(), release.IPAllow{}))
+					require.Nil(t, spec.Subject.DeleteAll(spec.Context(), release.IPAllow{}))
 				})
 
 				s.Then(`it will result in an empty list`, func(t *testcase.T) {

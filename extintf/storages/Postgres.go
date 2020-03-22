@@ -129,7 +129,7 @@ func (pg *Postgres) FindByID(ctx context.Context, ptr interface{}, ID string) (b
 	}
 }
 
-func (pg *Postgres) Truncate(ctx context.Context, Type interface{}) error {
+func (pg *Postgres) DeleteAll(ctx context.Context, Type interface{}) error {
 	var tableName string
 	switch Type.(type) {
 	case release.IPAllow, *release.IPAllow:

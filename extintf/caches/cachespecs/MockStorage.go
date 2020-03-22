@@ -107,18 +107,18 @@ func (mr *MockStorageMockRecorder) DeleteByID(ctx, T, id interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByID", reflect.TypeOf((*MockStorage)(nil).DeleteByID), ctx, T, id)
 }
 
-// Truncate mocks base method
-func (m *MockStorage) Truncate(ctx context.Context, T interface{}) error {
+// DeleteAll mocks base method
+func (m *MockStorage) DeleteAll(ctx context.Context, T interface{}) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Truncate", ctx, T)
+	ret := m.ctrl.Call(m, "DeleteAll", ctx, T)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Truncate indicates an expected call of Truncate
-func (mr *MockStorageMockRecorder) Truncate(ctx, T interface{}) *gomock.Call {
+// DeleteAll indicates an expected call of DeleteAll
+func (mr *MockStorageMockRecorder) DeleteAll(ctx, T interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Truncate", reflect.TypeOf((*MockStorage)(nil).Truncate), ctx, T)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAll", reflect.TypeOf((*MockStorage)(nil).DeleteAll), ctx, T)
 }
 
 // FindReleaseFlagByName mocks base method

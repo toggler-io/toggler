@@ -126,7 +126,7 @@ func (r *Redis) DeleteByID(ctx context.Context, Type interface{}, ID string) err
 	return nil
 }
 
-func (r *Redis) Truncate(ctx context.Context, Type interface{}) error {
+func (r *Redis) DeleteAll(ctx context.Context, Type interface{}) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}

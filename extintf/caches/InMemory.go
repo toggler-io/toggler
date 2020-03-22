@@ -267,10 +267,10 @@ func (c *InMemory) DeleteByID(ctx context.Context, T interface{}, id string) err
 	return c.Storage.DeleteByID(ctx, T, id)
 }
 
-func (c *InMemory) Truncate(ctx context.Context, T interface{}) error {
+func (c *InMemory) DeleteAll(ctx context.Context, T interface{}) error {
 	defer c.withLock()()
 	c.dropCache()
-	return c.Storage.Truncate(ctx, T)
+	return c.Storage.DeleteAll(ctx, T)
 }
 
 func (c *InMemory) FindReleaseFlagByName(ctx context.Context, name string) (*release.Flag, error) {

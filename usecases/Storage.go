@@ -14,7 +14,6 @@ type Storage interface {
 	resources.Finder
 	resources.Updater
 	resources.Deleter
-	resources.Truncater
 	release.FlagFinder
 	release.PilotFinder
 	release.AllowFinder

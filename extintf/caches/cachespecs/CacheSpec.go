@@ -175,7 +175,7 @@ func (spec CacheSpec) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 								return true, nil
 							})
 
-						storage.EXPECT().Truncate(gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+						storage.EXPECT().DeleteAll(gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 						storage.EXPECT().DeleteByID(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 						storage.EXPECT().Close().AnyTimes().Return(nil)
 					})

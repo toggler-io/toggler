@@ -35,7 +35,7 @@ func (spec StorageSpec) Benchmark(b *testing.B) {
 		})
 
 		b.Run(`Pilot`, func(b *testing.B) {
-			defer func() { require.Nil(b, spec.Subject.Truncate(spec.Context(), release.Flag{})) }()
+			defer func() { require.Nil(b, spec.Subject.DeleteAll(spec.Context(), release.Flag{})) }()
 			ff := &FixtureFactoryForPilots{
 				FixtureFactory: spec.FixtureFactory,
 				GetFlagID: func() string {
@@ -86,7 +86,7 @@ func (spec StorageSpec) Test(t *testing.T) {
 				}
 
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, spec.Subject.Truncate(spec.Context(), release.Flag{}))
+					require.Nil(t, spec.Subject.DeleteAll(spec.Context(), release.Flag{}))
 				})
 
 				s.Let(`flag`, func(t *testcase.T) interface{} {
@@ -106,7 +106,7 @@ func (spec StorageSpec) Test(t *testing.T) {
 		})
 
 		t.Run(`Pilot`, func(t *testing.T) {
-			defer func() { require.Nil(t, spec.Subject.Truncate(spec.Context(), release.Flag{})) }()
+			defer func() { require.Nil(t, spec.Subject.DeleteAll(spec.Context(), release.Flag{})) }()
 
 			ff := &FixtureFactoryForPilots{
 				FixtureFactory: spec.FixtureFactory,
@@ -131,7 +131,7 @@ func (spec StorageSpec) Test(t *testing.T) {
 		})
 
 		t.Run(`IPAllow`, func(t *testing.T) {
-			defer func() { require.Nil(t, spec.Subject.Truncate(spec.Context(), release.Flag{})) }()
+			defer func() { require.Nil(t, spec.Subject.DeleteAll(spec.Context(), release.Flag{})) }()
 
 			ff := &FixtureFactoryForAllows{
 				FixtureFactory: spec.FixtureFactory,
@@ -154,11 +154,11 @@ func (spec StorageSpec) Test(t *testing.T) {
 			}.Test(t)
 
 			t.Run(`multiple allow entry can be stored for one flag`, func(t *testing.T) {
-				require.Nil(t, spec.Subject.Truncate(spec.Context(), release.IPAllow{}))
-				require.Nil(t, spec.Subject.Truncate(spec.Context(), release.Flag{}))
+				require.Nil(t, spec.Subject.DeleteAll(spec.Context(), release.IPAllow{}))
+				require.Nil(t, spec.Subject.DeleteAll(spec.Context(), release.Flag{}))
 				defer func() {
-					require.Nil(t, spec.Subject.Truncate(spec.Context(), release.Flag{}))
-					require.Nil(t, spec.Subject.Truncate(spec.Context(), release.IPAllow{}))
+					require.Nil(t, spec.Subject.DeleteAll(spec.Context(), release.Flag{}))
+					require.Nil(t, spec.Subject.DeleteAll(spec.Context(), release.IPAllow{}))
 				}()
 
 				flagID := ff.GetFlagID()

@@ -20,7 +20,3 @@ func SaveEntities(b *testing.B, r resources.Creator, f specs.FixtureFactory, es 
 		require.Nil(b, r.Create(f.Context(), e))
 	}
 }
-
-func TruncateEntities(b *testing.B, t resources.Truncater, f specs.FixtureFactory, T interface{}) {
-	require.Nil(b, t.Truncate(f.Context(), T))
-}

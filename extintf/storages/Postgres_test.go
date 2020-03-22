@@ -132,7 +132,7 @@ func TestPostgres_Close(t *testing.T) {
 			ctx := context.Background()
 
 			pgSqlDB := &storages.Postgres{DB: t.I(`*sql.DB`).(*sql.DB)}
-			require.Nil(t, pgSqlDB.Truncate(ctx, te))
+			require.Nil(t, pgSqlDB.DeleteAll(ctx, te))
 			pgSqlTx := pg(t)
 
 			require.Nil(t, pgSqlTx.Create(ctx, &te))
