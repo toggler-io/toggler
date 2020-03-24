@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/Pallinder/go-randomdata v1.2.0
-	github.com/adamluzsi/frameless v0.0.0-20200322223549-78d857111fcb
+	github.com/adamluzsi/frameless v0.0.0-20200324205007-75dea8849153
 	github.com/adamluzsi/testcase v0.0.0-20200311225700-8d8777f2f819
 	github.com/go-openapi/errors v0.19.2
 	github.com/go-openapi/runtime v0.19.7
@@ -24,6 +24,8 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/russross/blackfriday v2.0.0+incompatible
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.5.1
 	github.com/unrolled/logger v0.0.0-20190327162521-be1a2406c7c9
+	golang.org/x/net v0.0.0-20191028085509-fe3aa8a45271 // indirect
+	golang.org/x/sys v0.0.0-20191027211539-f8518d3b3627 // indirect
 )

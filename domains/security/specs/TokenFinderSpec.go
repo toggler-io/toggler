@@ -29,7 +29,7 @@ func (spec TokenFinderSpec) Test(t *testing.T) {
 		return &security.Token{
 			OwnerUID: t.I(`uid`).(string),
 			SHA512:   t.I(`token SHA512`).(string),
-			IssuedAt: fixtures.RandomTimeUTC(),
+			IssuedAt: fixtures.Random.Time().UTC(),
 			Duration: 1 * time.Second,
 		}
 	})

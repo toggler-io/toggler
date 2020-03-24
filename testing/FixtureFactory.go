@@ -8,10 +8,10 @@ import (
 
 	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/frameless/reflects"
-	"github.com/adamluzsi/frameless/resources/specs"
+	"github.com/google/uuid"
+
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/security"
-	"github.com/google/uuid"
 )
 
 func NewFixtureFactory() *FixtureFactory {
@@ -19,7 +19,7 @@ func NewFixtureFactory() *FixtureFactory {
 }
 
 type FixtureFactory struct {
-	specs.GenericFixtureFactory
+	fixtures.GenericFixtureFactory
 }
 
 // this ensures that the randoms have better variety between test runs with -count n
@@ -34,7 +34,7 @@ func (ff *FixtureFactory) Create(EntityType interface{}) interface{} {
 		flag.Rollout.Strategy.DecisionLogicAPI = nil
 
 		if rnd.Intn(2) == 0 {
-			u, err := url.ParseRequestURI(fmt.Sprintf(`http://google.com/%s`, url.PathEscape(fixtures.RandomString(13))))
+			u, err := url.ParseRequestURI(fmt.Sprintf(`http://google.com/%s`, url.PathEscape(fixtures.Random.String())))
 
 			if err != nil {
 				panic(err)

@@ -161,7 +161,7 @@ func (spec CacheSpec) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 						storage.EXPECT().Create(gomock.Any(), gomock.Any()).
 							AnyTimes().
 							DoAndReturn(func(ctx context.Context, e interface{}) error {
-								return resources.SetID(e, fixtures.RandomString(7))
+								return resources.SetID(e, fixtures.Random.String())
 							})
 
 						storage.EXPECT().FindByID(gomock.Any(), gomock.Any(), gomock.Any()).
@@ -208,6 +208,6 @@ func (spec CacheSpec) Benchmark(b *testing.B) {
 	b.Skip(`TODO`)
 }
 
-func (spec CacheSpec) new(T interface{}) interface {} {
+func (spec CacheSpec) new(T interface{}) interface{} {
 	return reflect.New(reflect.TypeOf(T)).Interface()
 }
