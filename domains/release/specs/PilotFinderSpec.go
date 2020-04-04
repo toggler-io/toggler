@@ -2,12 +2,13 @@ package specs
 
 import (
 	"context"
-	"github.com/adamluzsi/frameless/iterators"
 	"math/rand"
 	"strconv"
 	"testing"
 
+	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/testcase"
+
 	. "github.com/toggler-io/toggler/testing"
 
 	"github.com/toggler-io/toggler/domains/release"
@@ -76,7 +77,9 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 			}
 
 			subject := func(t *testcase.T) frameless.Iterator {
-				return spec.Subject.FindPilotsByFeatureFlag(spec.ctx(), getFF(t))
+				pilotEntriesIter := spec.Subject.FindPilotsByFeatureFlag(spec.ctx(), getFF(t))
+				t.Defer(pilotEntriesIter.Close)
+				return pilotEntriesIter
 			}
 
 			thenNoPilotsFound := func(s *testcase.Spec) {
@@ -218,8 +221,9 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 
 		s.Describe(`FindPilotEntriesByExtID`, func(s *testcase.Spec) {
 			subject := func(t *testcase.T) frameless.Iterator {
-				ctx := spec.ctx()
-				return spec.Subject.FindPilotEntriesByExtID(ctx, GetExternalPilotID(t))
+				pilotEntriesIter := spec.Subject.FindPilotEntriesByExtID(spec.ctx(), GetExternalPilotID(t))
+				t.Defer(pilotEntriesIter.Close)
+				return pilotEntriesIter
 			}
 
 			s.Let(`PilotExternalID`, func(t *testcase.T) interface{} {

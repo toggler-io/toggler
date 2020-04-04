@@ -36,7 +36,10 @@ func (spec AllowFinderSpec) Test(t *testing.T) {
 
 		s.Describe(`FindReleaseAllowsByReleaseFlags`, func(s *testcase.Spec) {
 			subject := func(t *testcase.T) release.AllowEntries {
-				return spec.Subject.FindReleaseAllowsByReleaseFlags(spec.Context(), *t.I(`flag`).(*release.Flag))
+				flag := *t.I(`flag`).(*release.Flag)
+				allowEntriesIter := spec.Subject.FindReleaseAllowsByReleaseFlags(spec.Context(), flag)
+				t.Defer(allowEntriesIter.Close)
+				return allowEntriesIter
 			}
 
 			s.Let(`flag`, func(t *testcase.T) interface{} {
@@ -104,7 +107,7 @@ func (spec AllowFinderSpec) Test(t *testing.T) {
 						require.Nil(t, i.Err())
 						require.Equal(t, expected, &actual)
 					})
-					
+
 					s.And(`the allow ip address is empty`, func(s *testcase.Spec) {
 						s.Let(`allow`, func(t *testcase.T) interface{} {
 							a := spec.Create(release.IPAllow{}).(*release.IPAllow)
