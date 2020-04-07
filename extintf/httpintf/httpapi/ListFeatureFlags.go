@@ -7,7 +7,7 @@ import (
 	"github.com/toggler-io/toggler/usecases"
 )
 
-func (sm *ServeMux) ListFeatureFlags(w http.ResponseWriter, r *http.Request) {
+func (sm *Handler) ListFeatureFlags(w http.ResponseWriter, r *http.Request) {
 
 	pu := r.Context().Value(`ProtectedUsecases`).(*usecases.ProtectedUsecases)
 

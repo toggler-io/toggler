@@ -10,7 +10,7 @@ import (
 	"github.com/toggler-io/toggler/usecases"
 )
 
-func (sm *ServeMux) UpdateFeatureFlagJSON(w http.ResponseWriter, r *http.Request) {
+func (sm *Handler) UpdateFeatureFlagJSON(w http.ResponseWriter, r *http.Request) {
 
 	pu := r.Context().Value(`ProtectedUsecases`).(*usecases.ProtectedUsecases)
 
@@ -32,7 +32,7 @@ func (sm *ServeMux) UpdateFeatureFlagJSON(w http.ResponseWriter, r *http.Request
 
 }
 
-func (sm *ServeMux) UpdateFeatureFlagFORM(w http.ResponseWriter, r *http.Request) {
+func (sm *Handler) UpdateFeatureFlagFORM(w http.ResponseWriter, r *http.Request) {
 
 	pu := r.Context().Value(`ProtectedUsecases`).(*usecases.ProtectedUsecases)
 

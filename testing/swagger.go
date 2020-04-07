@@ -12,12 +12,12 @@ import (
 
 func SetupSpecWithSwaggerClient(s *testcase.Spec) {
 
-	s.Let(`httpapi.ServeMux`, func(t *testcase.T) interface{} {
-		return httpapi.NewServeMux(usecases.NewUseCases(GetStorage(t)))
+	s.Let(`httpapi.Handler`, func(t *testcase.T) interface{} {
+		return httpapi.NewHandler(usecases.NewUseCases(GetStorage(t)))
 	})
 
 	s.Let(`httptest.NewServer/httpapi`, func(t *testcase.T) interface{} {
-		m := t.I(`httpapi.ServeMux`).(*httpapi.ServeMux)
+		m := t.I(`httpapi.Handler`).(*httpapi.Handler)
 		return httptest.NewServer(http.StripPrefix(`/api`, m))
 	})
 

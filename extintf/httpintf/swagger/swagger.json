@@ -13,70 +13,6 @@
   },
   "basePath": "/api",
   "paths": {
-    "/client/config.json": {
-      "get": {
-        "description": "This endpoint especially useful for Mobile \u0026 SPA apps.\nThe endpoint can be called with HTTP GET method as well,\nPOST is used officially only to support most highly abstracted http clients,\nwhere using payload to upload cannot be completed with other http methods.",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "schemes": [
-          "http",
-          "https"
-        ],
-        "tags": [
-          "release-flag",
-          "pilot"
-        ],
-        "summary": "Return all the flag states that was requested in the favor of a Pilot.",
-        "operationId": "ClientConfig",
-        "parameters": [
-          {
-            "name": "Body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "required": [
-                "id",
-                "release_flags"
-              ],
-              "properties": {
-                "id": {
-                  "description": "PilotExtID is the public uniq id that identify the caller pilot",
-                  "type": "string",
-                  "x-go-name": "PilotExtID",
-                  "example": "pilot-external-id-which-is-uniq-in-the-system"
-                },
-                "release_flags": {
-                  "description": "ReleaseFlags are the list of private release flag name that should be matched against the pilot and state the enrollment for each.",
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  },
-                  "x-go-name": "ReleaseFlags",
-                  "example": [
-                    "my-release-flag"
-                  ]
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "$ref": "#/responses/clientConfigResponse"
-          },
-          "400": {
-            "$ref": "#/responses/errorResponse"
-          },
-          "500": {
-            "$ref": "#/responses/errorResponse"
-          }
-        }
-      }
-    },
     "/release/flag/create.json": {
       "post": {
         "description": "This operation allows you to create a new rollout feature flag.",
@@ -149,6 +85,70 @@
         "responses": {
           "200": {
             "$ref": "#/responses/enrollmentResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/v/client-config": {
+      "get": {
+        "description": "This endpoint especially useful for Mobile \u0026 SPA apps.\nThe endpoint can be called with HTTP GET method as well,\nPOST is used officially only to support most highly abstracted http clients,\nwhere using payload to upload cannot be completed with other http methods.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "release-flag",
+          "pilot"
+        ],
+        "summary": "Return all the flag states that was requested in the favor of a Pilot.",
+        "operationId": "getClientConfig",
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "id",
+                "release_flags"
+              ],
+              "properties": {
+                "id": {
+                  "description": "PilotExtID is the public uniq id that identify the caller pilot",
+                  "type": "string",
+                  "x-go-name": "PilotExtID",
+                  "example": "pilot-external-id-which-is-uniq-in-the-system"
+                },
+                "release_flags": {
+                  "description": "ReleaseFlags are the list of private release flag name that should be matched against the pilot and state the enrollment for each.",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "x-go-name": "ReleaseFlags",
+                  "example": [
+                    "my-release-flag"
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/clientConfigResponse"
           },
           "400": {
             "$ref": "#/responses/errorResponse"

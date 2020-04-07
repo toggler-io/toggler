@@ -3,22 +3,25 @@ package httpapi
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
+
+	"github.com/adamluzsi/gorest"
+	"github.com/gorilla/websocket"
 
 	"github.com/toggler-io/toggler/usecases"
 )
 
-func NewServeMux(uc *usecases.UseCases) *ServeMux {
-	mux := &ServeMux{
+func NewHandler(uc *usecases.UseCases) *Handler {
+	mux := &Handler{
 		UseCases: uc,
 		ServeMux: http.NewServeMux(),
 		Upgrader: &websocket.Upgrader{},
 	}
 
+	gorest.Mount(mux.ServeMux, `/v`, NewViewsHandler(uc))
+
 	featureAPI := buildReleasesAPI(mux)
-	mux.Handle(`/client/config.json`, http.HandlerFunc(mux.ClientConfigJSON))
 	mux.Handle(`/release/`, http.StripPrefix(`/release`, featureAPI))
 	mux.Handle(`/ws`, authMiddleware(uc, http.HandlerFunc(mux.WebsocketHandler)))
 
@@ -29,14 +32,14 @@ func NewServeMux(uc *usecases.UseCases) *ServeMux {
 	return mux
 }
 
-func buildReleasesAPI(handlers *ServeMux) *http.ServeMux {
+func buildReleasesAPI(handlers *Handler) *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.Handle(`/is-feature-globally-enabled.json`, http.HandlerFunc(handlers.IsFeatureGloballyEnabled))
 	mux.Handle(`/flag/`, http.StripPrefix(`/flag`, buildFlagAPI(handlers)))
 	return mux
 }
 
-func buildFlagAPI(handlers *ServeMux) http.Handler {
+func buildFlagAPI(handlers *Handler) http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle(`/create.form`, http.HandlerFunc(handlers.CreateRolloutFeatureFlagFORM))
 	mux.Handle(`/create.json`, http.HandlerFunc(handlers.CreateRolloutFeatureFlagJSON))
@@ -47,7 +50,7 @@ func buildFlagAPI(handlers *ServeMux) http.Handler {
 	return authMiddleware(handlers.UseCases, mux)
 }
 
-type ServeMux struct {
+type Handler struct {
 	*http.ServeMux
 	*usecases.UseCases
 	*websocket.Upgrader

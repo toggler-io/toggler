@@ -26,7 +26,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 
 	subject := func(t *testcase.T) *httptest.ResponseRecorder {
 		rr := httptest.NewRecorder()
-		NewServeMux(t).ServeHTTP(rr, t.I(`request`).(*http.Request))
+		NewHandler(t).ServeHTTP(rr, t.I(`request`).(*http.Request))
 		return rr
 	}
 
@@ -121,7 +121,7 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 
 		require.Nil(t, GetStorage(t).Create(CTX(t), GetReleaseFlag(t)))
 
-		s := httptest.NewServer(http.StripPrefix(`/api`, NewServeMux(t)))
+		s := httptest.NewServer(http.StripPrefix(`/api`, NewHandler(t)))
 		defer s.Close()
 
 		p := release_flag.NewIsFeatureGloballyEnabledParams()

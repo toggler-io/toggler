@@ -73,7 +73,7 @@ type WSLoadBalanceErrResp struct {
 		  503: wsLoadBalanceErrResponse
 
 */
-func (sm *ServeMux) WebsocketHandler(w http.ResponseWriter, r *http.Request) {
+func (sm *Handler) WebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	//TODO: 503 Service Unavailable for rand based load balancing
 
 	c, err := sm.Upgrader.Upgrade(w, r, nil)

@@ -1,6 +1,7 @@
 package httpintf
 
 import (
+	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
 	"github.com/toggler-io/toggler/extintf/httpintf/swagger"
 	"net/http"
 
@@ -12,7 +13,7 @@ import (
 func NewServeMux(uc *usecases.UseCases) (*ServeMux, error) {
 	mux := http.NewServeMux()
 
-	mux.Handle(`/api/`, letsCORSit(http.StripPrefix(`/api`, httpapi.NewServeMux(uc))))
+	mux.Handle(`/api/`, httputils.CORS(http.StripPrefix(`/api`, httpapi.NewHandler(uc))))
 
 	ui, err := webgui.NewHandler(uc)
 	if err != nil {
@@ -20,7 +21,7 @@ func NewServeMux(uc *usecases.UseCases) (*ServeMux, error) {
 	}
 
 	mux.Handle(`/`, ui)
-	mux.Handle(`/swagger.json`, letsCORSit(http.HandlerFunc(swagger.HandleSwaggerConfigJSON)))
+	mux.Handle(`/swagger.json`, httputils.CORS(http.HandlerFunc(swagger.HandleSwaggerConfigJSON)))
 	mux.Handle(`/swagger-ui/`, http.StripPrefix(`/swagger-ui`, swagger.HandleSwaggerUI()))
 
 	return &ServeMux{
@@ -32,18 +33,4 @@ func NewServeMux(uc *usecases.UseCases) (*ServeMux, error) {
 type ServeMux struct {
 	*http.ServeMux
 	*usecases.UseCases
-}
-
-func letsCORSit(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set(`Access-Control-Request-Method`, `*`)
-		w.Header().Set(`Access-Control-Allow-Headers`, `*`)
-		w.Header().Set(`Access-Control-Allow-Origin`, `*`)
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(200)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
 }

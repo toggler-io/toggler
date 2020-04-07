@@ -52,7 +52,7 @@ type IsFeatureGloballyEnabledResponseBody = EnrollmentResponseBody
 		  500: errorResponse
 
 */
-func (sm *ServeMux) IsFeatureGloballyEnabled(w http.ResponseWriter, r *http.Request) {
+func (sm *Handler) IsFeatureGloballyEnabled(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var featureName string
 

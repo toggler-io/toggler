@@ -20,7 +20,7 @@ func TestWebsocket(t *testing.T) {
 	SetupSpecCommonVariables(s)
 
 	server := func(t *testcase.T) *httptest.Server { return t.I(`server`).(*httptest.Server) }
-	s.Let(`server`, func(t *testcase.T) interface{} { return httptest.NewServer(NewServeMux(t)) })
+	s.Let(`server`, func(t *testcase.T) interface{} { return httptest.NewServer(NewHandler(t)) })
 	s.After(func(t *testcase.T) { server(t).Close() })
 
 	s.Let(`url`, func(t *testcase.T) interface{} {

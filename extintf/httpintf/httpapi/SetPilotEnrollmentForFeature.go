@@ -8,7 +8,7 @@ import (
 	"github.com/toggler-io/toggler/usecases"
 )
 
-func (sm *ServeMux) SetPilotEnrollmentForFeature(w http.ResponseWriter, r *http.Request) {
+func (sm *Handler) SetPilotEnrollmentForFeature(w http.ResponseWriter, r *http.Request) {
 
 	pu := r.Context().Value(`ProtectedUsecases`).(*usecases.ProtectedUsecases)
 

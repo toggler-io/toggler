@@ -8,4 +8,7 @@ package swagger
 
 //go:generate swagger generate spec --work-dir .. --output swagger.json
 //go:generate swagger validate swagger.json
+
+//go:generate rm -rf ${WDP}/lib/go
+//go:generate mkdir -p ${WDP}/lib/go
 //go:generate swagger generate client --quiet --spec swagger.json --target ${WDP}/lib/go

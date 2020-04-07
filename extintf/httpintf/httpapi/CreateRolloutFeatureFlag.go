@@ -46,7 +46,7 @@ type CreateRolloutFeatureFlagResponse struct {
 		  500: errorResponse
 
 */
-func (sm *ServeMux) CreateRolloutFeatureFlagJSON(w http.ResponseWriter, r *http.Request) {
+func (sm *Handler) CreateRolloutFeatureFlagJSON(w http.ResponseWriter, r *http.Request) {
 
 	pu := r.Context().Value(`ProtectedUsecases`).(*usecases.ProtectedUsecases)
 
@@ -68,7 +68,7 @@ func (sm *ServeMux) CreateRolloutFeatureFlagJSON(w http.ResponseWriter, r *http.
 
 }
 
-func (sm *ServeMux) CreateRolloutFeatureFlagFORM(w http.ResponseWriter, r *http.Request) {
+func (sm *Handler) CreateRolloutFeatureFlagFORM(w http.ResponseWriter, r *http.Request) {
 
 	pu := r.Context().Value(`ProtectedUsecases`).(*usecases.ProtectedUsecases)
 

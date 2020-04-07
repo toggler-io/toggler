@@ -6,10 +6,22 @@ import (
 	"net/http"
 
 	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
+	"github.com/toggler-io/toggler/usecases"
 )
 
+func NewViewsHandler(uc *usecases.UseCases) http.Handler {
+	vc := ViewsController{UseCases: uc}
+	m := http.NewServeMux()
+	m.HandleFunc(`/client-config`, vc.ClientConfig)
+	return m
+}
+
+type ViewsController struct {
+	UseCases *usecases.UseCases
+}
+
 // ClientConfigRequest defines the parameters that
-// swagger:parameters ClientConfig
+// swagger:parameters getClientConfig
 type ClientConfigRequest struct {
 	// in: body
 	Body struct {
@@ -45,7 +57,7 @@ type ClientConfigResponseBody struct {
 
 /*
 
-	swagger:route GET /client/config.json release-flag pilot ClientConfig
+	swagger:route GET /v/client-config release-flag pilot getClientConfig
 
 	Return all the flag states that was requested in the favor of a Pilot.
 	This endpoint especially useful for Mobile & SPA apps.
@@ -67,7 +79,8 @@ type ClientConfigResponseBody struct {
 		  500: errorResponse
 
 */
-func (sm *ServeMux) ClientConfigJSON(w http.ResponseWriter, r *http.Request) {
+
+func (ctrl ViewsController) ClientConfig(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	payloadDecoder := json.NewDecoder(r.Body)
 
@@ -84,7 +97,7 @@ func (sm *ServeMux) ClientConfigJSON(w http.ResponseWriter, r *http.Request) {
 
 	ctx := context.WithValue(r.Context(), `pilot-ip-addr`, httputils.GetClientIP(r))
 
-	states, err := sm.UseCases.FlagChecker.GetReleaseFlagPilotEnrollmentStates(ctx, request.Body.PilotExtID, request.Body.ReleaseFlags...)
+	states, err := ctrl.UseCases.FlagChecker.GetReleaseFlagPilotEnrollmentStates(ctx, request.Body.PilotExtID, request.Body.ReleaseFlags...)
 
 	if handleError(w, err, http.StatusInternalServerError) {
 		return

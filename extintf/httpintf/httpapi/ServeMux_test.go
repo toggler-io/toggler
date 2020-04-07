@@ -14,8 +14,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func NewServeMux(t *testcase.T) *httpapi.ServeMux {
-	return httpapi.NewServeMux(usecases.NewUseCases(GetStorage(t)))
+func NewHandler(t *testcase.T) *httpapi.Handler {
+	return httpapi.NewHandler(usecases.NewUseCases(GetStorage(t)))
 }
 
 func TestServeMuxRoutingPOC(t *testing.T) {

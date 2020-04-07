@@ -19,28 +19,28 @@ import (
 	models "github.com/toggler-io/toggler/lib/go/models"
 )
 
-// ClientConfigReader is a Reader for the ClientConfig structure.
-type ClientConfigReader struct {
+// GetClientConfigReader is a Reader for the GetClientConfig structure.
+type GetClientConfigReader struct {
 	formats strfmt.Registry
 }
 
 // ReadResponse reads a server response into the received o.
-func (o *ClientConfigReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
+func (o *GetClientConfigReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
 	case 200:
-		result := NewClientConfigOK()
+		result := NewGetClientConfigOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
 	case 400:
-		result := NewClientConfigBadRequest()
+		result := NewGetClientConfigBadRequest()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return nil, result
 	case 500:
-		result := NewClientConfigInternalServerError()
+		result := NewGetClientConfigInternalServerError()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -51,28 +51,28 @@ func (o *ClientConfigReader) ReadResponse(response runtime.ClientResponse, consu
 	}
 }
 
-// NewClientConfigOK creates a ClientConfigOK with default headers values
-func NewClientConfigOK() *ClientConfigOK {
-	return &ClientConfigOK{}
+// NewGetClientConfigOK creates a GetClientConfigOK with default headers values
+func NewGetClientConfigOK() *GetClientConfigOK {
+	return &GetClientConfigOK{}
 }
 
-/*ClientConfigOK handles this case with default header values.
+/*GetClientConfigOK handles this case with default header values.
 
 ClientConfigResponse returns information about the requester's rollout feature enrollment statuses.
 */
-type ClientConfigOK struct {
+type GetClientConfigOK struct {
 	Payload *models.ClientConfigResponseBody
 }
 
-func (o *ClientConfigOK) Error() string {
-	return fmt.Sprintf("[GET /client/config.json][%d] clientConfigOK  %+v", 200, o.Payload)
+func (o *GetClientConfigOK) Error() string {
+	return fmt.Sprintf("[GET /v/client-config][%d] getClientConfigOK  %+v", 200, o.Payload)
 }
 
-func (o *ClientConfigOK) GetPayload() *models.ClientConfigResponseBody {
+func (o *GetClientConfigOK) GetPayload() *models.ClientConfigResponseBody {
 	return o.Payload
 }
 
-func (o *ClientConfigOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+func (o *GetClientConfigOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.ClientConfigResponseBody)
 
@@ -84,29 +84,29 @@ func (o *ClientConfigOK) readResponse(response runtime.ClientResponse, consumer 
 	return nil
 }
 
-// NewClientConfigBadRequest creates a ClientConfigBadRequest with default headers values
-func NewClientConfigBadRequest() *ClientConfigBadRequest {
-	return &ClientConfigBadRequest{}
+// NewGetClientConfigBadRequest creates a GetClientConfigBadRequest with default headers values
+func NewGetClientConfigBadRequest() *GetClientConfigBadRequest {
+	return &GetClientConfigBadRequest{}
 }
 
-/*ClientConfigBadRequest handles this case with default header values.
+/*GetClientConfigBadRequest handles this case with default header values.
 
 ErrorResponse will contains a response about request that had some kind of problem.
 The details will be included in the body.
 */
-type ClientConfigBadRequest struct {
+type GetClientConfigBadRequest struct {
 	Payload *models.ErrorResponseBody
 }
 
-func (o *ClientConfigBadRequest) Error() string {
-	return fmt.Sprintf("[GET /client/config.json][%d] clientConfigBadRequest  %+v", 400, o.Payload)
+func (o *GetClientConfigBadRequest) Error() string {
+	return fmt.Sprintf("[GET /v/client-config][%d] getClientConfigBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *ClientConfigBadRequest) GetPayload() *models.ErrorResponseBody {
+func (o *GetClientConfigBadRequest) GetPayload() *models.ErrorResponseBody {
 	return o.Payload
 }
 
-func (o *ClientConfigBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+func (o *GetClientConfigBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.ErrorResponseBody)
 
@@ -118,29 +118,29 @@ func (o *ClientConfigBadRequest) readResponse(response runtime.ClientResponse, c
 	return nil
 }
 
-// NewClientConfigInternalServerError creates a ClientConfigInternalServerError with default headers values
-func NewClientConfigInternalServerError() *ClientConfigInternalServerError {
-	return &ClientConfigInternalServerError{}
+// NewGetClientConfigInternalServerError creates a GetClientConfigInternalServerError with default headers values
+func NewGetClientConfigInternalServerError() *GetClientConfigInternalServerError {
+	return &GetClientConfigInternalServerError{}
 }
 
-/*ClientConfigInternalServerError handles this case with default header values.
+/*GetClientConfigInternalServerError handles this case with default header values.
 
 ErrorResponse will contains a response about request that had some kind of problem.
 The details will be included in the body.
 */
-type ClientConfigInternalServerError struct {
+type GetClientConfigInternalServerError struct {
 	Payload *models.ErrorResponseBody
 }
 
-func (o *ClientConfigInternalServerError) Error() string {
-	return fmt.Sprintf("[GET /client/config.json][%d] clientConfigInternalServerError  %+v", 500, o.Payload)
+func (o *GetClientConfigInternalServerError) Error() string {
+	return fmt.Sprintf("[GET /v/client-config][%d] getClientConfigInternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *ClientConfigInternalServerError) GetPayload() *models.ErrorResponseBody {
+func (o *GetClientConfigInternalServerError) GetPayload() *models.ErrorResponseBody {
 	return o.Payload
 }
 
-func (o *ClientConfigInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+func (o *GetClientConfigInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.ErrorResponseBody)
 
@@ -152,10 +152,10 @@ func (o *ClientConfigInternalServerError) readResponse(response runtime.ClientRe
 	return nil
 }
 
-/*ClientConfigBody client config body
-swagger:model ClientConfigBody
+/*GetClientConfigBody get client config body
+swagger:model GetClientConfigBody
 */
-type ClientConfigBody struct {
+type GetClientConfigBody struct {
 
 	// PilotExtID is the public uniq id that identify the caller pilot
 	// Required: true
@@ -166,8 +166,8 @@ type ClientConfigBody struct {
 	ReleaseFlags []string `json:"release_flags"`
 }
 
-// Validate validates this client config body
-func (o *ClientConfigBody) Validate(formats strfmt.Registry) error {
+// Validate validates this get client config body
+func (o *GetClientConfigBody) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := o.validatePilotExtID(formats); err != nil {
@@ -184,7 +184,7 @@ func (o *ClientConfigBody) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (o *ClientConfigBody) validatePilotExtID(formats strfmt.Registry) error {
+func (o *GetClientConfigBody) validatePilotExtID(formats strfmt.Registry) error {
 
 	if err := validate.Required("Body"+"."+"id", "body", o.PilotExtID); err != nil {
 		return err
@@ -193,7 +193,7 @@ func (o *ClientConfigBody) validatePilotExtID(formats strfmt.Registry) error {
 	return nil
 }
 
-func (o *ClientConfigBody) validateReleaseFlags(formats strfmt.Registry) error {
+func (o *GetClientConfigBody) validateReleaseFlags(formats strfmt.Registry) error {
 
 	if err := validate.Required("Body"+"."+"release_flags", "body", o.ReleaseFlags); err != nil {
 		return err
@@ -203,7 +203,7 @@ func (o *ClientConfigBody) validateReleaseFlags(formats strfmt.Registry) error {
 }
 
 // MarshalBinary interface implementation
-func (o *ClientConfigBody) MarshalBinary() ([]byte, error) {
+func (o *GetClientConfigBody) MarshalBinary() ([]byte, error) {
 	if o == nil {
 		return nil, nil
 	}
@@ -211,8 +211,8 @@ func (o *ClientConfigBody) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (o *ClientConfigBody) UnmarshalBinary(b []byte) error {
-	var res ClientConfigBody
+func (o *GetClientConfigBody) UnmarshalBinary(b []byte) error {
+	var res GetClientConfigBody
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
