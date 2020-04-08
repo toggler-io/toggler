@@ -13,11 +13,11 @@ import (
 func TestUseCases_IsFeatureGloballyEnabled(t *testing.T) {
 
 	s := testcase.NewSpec(t)
-	SetupSpecCommonVariables(s)
+	SetUp(s)
 	s.Parallel()
 
 	s.Let(`UseCases`, func(t *testcase.T) interface{} {
-		return usecases.NewUseCases(t.I(`TestStorage`).(*TestStorage))
+		return usecases.NewUseCases(ExampleStorage(t))
 	})
 
 	subject := func(t *testcase.T) (bool, error) {
@@ -34,7 +34,7 @@ func TestUseCases_IsFeatureGloballyEnabled(t *testing.T) {
 
 	s.When(`flag is already configured`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			EnsureFlag(t, GetReleaseFlagName(t), t.I(`percentage`).(int))
+			EnsureFlag(t, ExampleReleaseFlagName(t), t.I(`percentage`).(int))
 		})
 
 		s.And(`with global rollout (100%)`, func(s *testcase.Spec) {

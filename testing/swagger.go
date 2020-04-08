@@ -13,7 +13,7 @@ import (
 func SetupSpecWithSwaggerClient(s *testcase.Spec) {
 
 	s.Let(`httpapi.Handler`, func(t *testcase.T) interface{} {
-		return httpapi.NewHandler(usecases.NewUseCases(GetStorage(t)))
+		return httpapi.NewHandler(usecases.NewUseCases(ExampleStorage(t)))
 	})
 
 	s.Let(`httptest.NewServer/httpapi`, func(t *testcase.T) interface{} {

@@ -9,12 +9,11 @@ import (
 	"fmt"
 
 	"github.com/go-openapi/runtime"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 )
 
 // New creates a new release flag API client.
-func New(transport runtime.ClientTransport, formats strfmt.Registry) *Client {
+func New(transport runtime.ClientTransport, formats strfmt.Registry) ClientService {
 	return &Client{transport: transport, formats: formats}
 }
 
@@ -26,10 +25,19 @@ type Client struct {
 	formats   strfmt.Registry
 }
 
-/*
-IsFeatureGloballyEnabled checks rollout feature status for global use
+// ClientService is the interface for Client methods
+type ClientService interface {
+	IsFeatureGloballyEnabled(params *IsFeatureGloballyEnabledParams) (*IsFeatureGloballyEnabledOK, error)
 
-Reply back whether the feature rolled out globally or not.
+	Websocket(params *WebsocketParams, authInfo runtime.ClientAuthInfoWriter) (*WebsocketOK, error)
+
+	SetTransport(transport runtime.ClientTransport)
+}
+
+/*
+  IsFeatureGloballyEnabled checks rollout feature status for global use
+
+  Reply back whether the feature rolled out globally or not.
 This is especially useful for cases where you don't have pilot id.
 Such case is batch processing, or dark launch flips.
 By Default, this will be determined whether the flag exist,
@@ -69,9 +77,9 @@ func (a *Client) IsFeatureGloballyEnabled(params *IsFeatureGloballyEnabledParams
 }
 
 /*
-Websocket sockets API to check rollout feature flag status
+  Websocket sockets API to check rollout feature flag status
 
-This endpoint currently meant to used by servers and not by clients.
+  This endpoint currently meant to used by servers and not by clients.
 The  reason behind is that it is much more easy to calculate with server quantity,
 than with client quantity, and therefore the load balancing is much more deterministic for the service.
 The websocket based communication allows for servers to do low latency quick requests,
@@ -110,45 +118,6 @@ func (a *Client) Websocket(params *WebsocketParams, authInfo runtime.ClientAuthI
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for Websocket: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-GetClientConfig returns all the flag states that was requested in the favor of a pilot
-
-This endpoint especially useful for Mobile & SPA apps.
-The endpoint can be called with HTTP GET method as well,
-POST is used officially only to support most highly abstracted http clients,
-where using payload to upload cannot be completed with other http methods.
-*/
-func (a *Client) GetClientConfig(params *GetClientConfigParams) (*GetClientConfigOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewGetClientConfigParams()
-	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "getClientConfig",
-		Method:             "GET",
-		PathPattern:        "/v/client-config",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http", "https"},
-		Params:             params,
-		Reader:             &GetClientConfigReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	})
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*GetClientConfigOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for getClientConfig: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

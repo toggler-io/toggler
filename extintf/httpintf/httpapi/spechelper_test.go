@@ -17,7 +17,7 @@ func UpdateReleaseFlagRolloutPercentage(t *testcase.T, featureFlagName string, r
 }
 
 func CreateSecurityTokenString(t *testcase.T) string {
-	textToken, token, err := security.NewIssuer(GetStorage(t)).CreateNewToken(context.TODO(), GetUniqUserID(t), nil, nil)
+	textToken, token, err := security.NewIssuer(ExampleStorage(t)).CreateNewToken(context.TODO(), GetUniqueUserID(t), nil, nil)
 	require.Nil(t, err)
 	require.NotNil(t, token)
 	require.NotEmpty(t, token.SHA512)

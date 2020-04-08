@@ -12,7 +12,7 @@ import (
 
 func (sm *Handler) UpdateFeatureFlagJSON(w http.ResponseWriter, r *http.Request) {
 
-	pu := r.Context().Value(`ProtectedUsecases`).(*usecases.ProtectedUsecases)
+	pu := r.Context().Value(`ProtectedUseCases`).(*usecases.ProtectedUseCases)
 
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
@@ -34,7 +34,7 @@ func (sm *Handler) UpdateFeatureFlagJSON(w http.ResponseWriter, r *http.Request)
 
 func (sm *Handler) UpdateFeatureFlagFORM(w http.ResponseWriter, r *http.Request) {
 
-	pu := r.Context().Value(`ProtectedUsecases`).(*usecases.ProtectedUsecases)
+	pu := r.Context().Value(`ProtectedUseCases`).(*usecases.ProtectedUseCases)
 
 	if handleError(w, r.ParseForm(), http.StatusBadRequest) {
 		return

@@ -1,4 +1,4 @@
-//go:generate mockgen -source ../../../usecases/Storage.go -destination MockStorage.go -package cachespecs
+//go:generate mockgen -package cachespecs -source ../../../usecases/Storage.go -destination MockStorage.go
 package cachespecs
 
 import (

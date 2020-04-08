@@ -18,14 +18,14 @@ func TestFeatureFlagChecker(t *testing.T) {
 	t.Parallel()
 
 	s := testcase.NewSpec(t)
-	SetupSpecCommonVariables(s)
+	SetUp(s)
 	s.Parallel()
 
 	s.Let(`PseudoRandPercentage`, func(t *testcase.T) interface{} { return int(0) })
 
 	s.Before(func(t *testcase.T) {
-		require.Nil(t, GetStorage(t).DeleteAll(context.Background(), release.Flag{}))
-		require.Nil(t, GetStorage(t).DeleteAll(context.Background(), release.Pilot{}))
+		require.Nil(t, ExampleStorage(t).DeleteAll(context.Background(), release.Flag{}))
+		require.Nil(t, ExampleStorage(t).DeleteAll(context.Background(), release.Pilot{}))
 	})
 
 	s.Describe(`IsFeatureGloballyEnabled`, func(s *testcase.Spec) {
@@ -58,8 +58,8 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates(s *testcase.Spec
 
 	cleanup := func(t *testcase.T) {
 		ctx := context.Background()
-		require.Nil(t, GetStorage(t).DeleteAll(ctx, release.Pilot{}))
-		require.Nil(t, GetStorage(t).DeleteAll(ctx, release.Flag{}))
+		require.Nil(t, ExampleStorage(t).DeleteAll(ctx, release.Pilot{}))
+		require.Nil(t, ExampleStorage(t).DeleteAll(ctx, release.Flag{}))
 	}
 
 	s.Before(cleanup)
@@ -67,10 +67,10 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates(s *testcase.Spec
 
 	s.When(`no flag is set`, func(s *testcase.Spec) {
 		s.Let(`flag names`, func(t *testcase.T) interface{} {
-			return []string{GetReleaseFlagName(t)}
+			return []string{ExampleReleaseFlagName(t)}
 		})
 		s.Before(func(t *testcase.T) {
-			f, err := GetStorage(t).FindReleaseFlagByName(context.Background(), GetReleaseFlagName(t))
+			f, err := ExampleStorage(t).FindReleaseFlagByName(context.Background(), ExampleReleaseFlagName(t))
 			require.Nil(t, err)
 			require.Nil(t, f, `there should be no release flag in the storage`)
 		})
@@ -78,17 +78,17 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates(s *testcase.Spec
 		s.Then(`it will return with flipped off states`, func(t *testcase.T) {
 			states, err := subject(t)
 			require.Nil(t, err)
-			stateIs(t, states, GetReleaseFlagName(t), false)
+			stateIs(t, states, ExampleReleaseFlagName(t), false)
 		})
 	})
 
 	s.When(`flag exists`, func(s *testcase.Spec) {
 		s.Let(`flag names`, func(t *testcase.T) interface{} {
-			return []string{GetReleaseFlagName(t)}
+			return []string{ExampleReleaseFlagName(t)}
 		})
 
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Create(context.Background(), GetReleaseFlag(t)))
+			require.Nil(t, ExampleStorage(t).Create(context.Background(), ExampleReleaseFlag(t)))
 		})
 
 		// fix the value, so the dependency sub context can work with an assumption
@@ -99,14 +99,14 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates(s *testcase.Spec
 				return `non-existent`
 			})
 			s.Let(`flag names`, func(t *testcase.T) interface{} {
-				return []string{GetReleaseFlagName(t), t.I(`non-existent-flag-name`).(string)}
+				return []string{ExampleReleaseFlagName(t), t.I(`non-existent-flag-name`).(string)}
 			})
 
 			s.Then(`flag state returned even for the existing one`, func(t *testcase.T) {
 				states, err := subject(t)
 				require.Nil(t, err)
 				require.Equal(t, 2, len(states))
-				_, ok := states[GetReleaseFlagName(t)]
+				_, ok := states[ExampleReleaseFlagName(t)]
 				require.True(t, ok, `flag state should be returned`)
 			})
 
@@ -126,14 +126,14 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates(s *testcase.Spec
 			s.Then(`it is expected to receive switched ON state for the flag`, func(t *testcase.T) {
 				states, err := subject(t)
 				require.Nil(t, err)
-				stateIs(t, states, GetReleaseFlagName(t), true)
+				stateIs(t, states, ExampleReleaseFlagName(t), true)
 			})
 
 			s.And(`manually removed from the flag`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Create(context.Background(), &release.Pilot{
+					require.Nil(t, ExampleStorage(t).Create(context.Background(), &release.Pilot{
 						ExternalID: GetExternalPilotID(t),
-						FlagID:     GetReleaseFlag(t).ID,
+						FlagID:     ExampleReleaseFlag(t).ID,
 						Enrolled:   false,
 					}))
 				})
@@ -141,7 +141,7 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates(s *testcase.Spec
 				s.Then(`the pilot flag state will be set to OFF`, func(t *testcase.T) {
 					states, err := subject(t)
 					require.Nil(t, err)
-					stateIs(t, states, GetReleaseFlagName(t), false)
+					stateIs(t, states, ExampleReleaseFlagName(t), false)
 				})
 			})
 		})
@@ -152,14 +152,14 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates(s *testcase.Spec
 			s.Then(`it is expected to receive switched OFF state for the flag`, func(t *testcase.T) {
 				states, err := subject(t)
 				require.Nil(t, err)
-				stateIs(t, states, GetReleaseFlagName(t), false)
+				stateIs(t, states, ExampleReleaseFlagName(t), false)
 			})
 
 			s.And(`the pilot is white listed`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, GetStorage(t).Create(context.Background(), &release.Pilot{
+					require.Nil(t, ExampleStorage(t).Create(context.Background(), &release.Pilot{
 						ExternalID: GetExternalPilotID(t),
-						FlagID:     GetReleaseFlag(t).ID,
+						FlagID:     ExampleReleaseFlag(t).ID,
 						Enrolled:   true,
 					}))
 				})
@@ -167,7 +167,7 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates(s *testcase.Spec
 				s.Then(`the pilot flag state will be set to ON`, func(t *testcase.T) {
 					states, err := subject(t)
 					require.Nil(t, err)
-					stateIs(t, states, GetReleaseFlagName(t), true)
+					stateIs(t, states, ExampleReleaseFlagName(t), true)
 				})
 			})
 
@@ -182,17 +182,17 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates(s *testcase.Spec
 				s.And(`the ip address is configured to be allowed for the release`, func(s *testcase.Spec) {
 					s.Around(func(t *testcase.T) func() {
 						// TODO move it into the rollout manager logic
-						a := &release.IPAllow{FlagID: GetReleaseFlag(t).ID, InternetProtocolAddress: t.I(`ip-addr`).(string)}
-						require.Nil(t, GetStorage(t).Create(context.Background(), a))
+						a := &release.IPAllow{FlagID: ExampleReleaseFlag(t).ID, InternetProtocolAddress: t.I(`ip-addr`).(string)}
+						require.Nil(t, ExampleStorage(t).Create(context.Background(), a))
 						return func() {
-							require.Nil(t, GetStorage(t).DeleteByID(context.Background(), release.IPAllow{}, a.ID))
+							require.Nil(t, ExampleStorage(t).DeleteByID(context.Background(), release.IPAllow{}, a.ID))
 						}
 					})
 
 					s.Then(`the pilot is enrolled`, func(t *testcase.T) {
 						states, err := subject(t)
 						require.Nil(t, err)
-						require.True(t, states[GetReleaseFlagName(t)])
+						require.True(t, states[ExampleReleaseFlagName(t)])
 					})
 				})
 			})
@@ -201,7 +201,7 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates(s *testcase.Spec
 		s.Then(`it will always return state for the requested flag`, func(t *testcase.T) {
 			states, err := subject(t)
 			require.Nil(t, err)
-			_, ok := states[GetReleaseFlagName(t)]
+			_, ok := states[ExampleReleaseFlagName(t)]
 			require.True(t, ok, `flag state should be returned`)
 		})
 	})
@@ -227,7 +227,7 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates(s *testcase.Spec
 		if 100 < expectedEnrollMaxPercentage+tolerationPercentage {
 			tolerationPercentage = 100 - expectedEnrollMaxPercentage
 		}
-		releaseFlagName := GetReleaseFlagName(t)
+		releaseFlagName := ExampleReleaseFlagName(t)
 		flag := &release.Flag{
 			Name: releaseFlagName,
 			Rollout: release.FlagRollout{
@@ -236,15 +236,15 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates(s *testcase.Spec
 				},
 			},
 		}
-		require.Nil(t, release.NewRolloutManager(GetStorage(t)).CreateFeatureFlag(context.Background(), flag))
-		defer GetStorage(t).DeleteByID(context.Background(), release.Flag{}, flag.ID)
+		require.Nil(t, release.NewRolloutManager(ExampleStorage(t)).CreateFeatureFlag(context.Background(), flag))
+		defer ExampleStorage(t).DeleteByID(context.Background(), release.Flag{}, flag.ID)
 
 		/* start E2E test */
 
 		var enrolled, rejected int
 
 		t.Log(`given we use the constructor`)
-		ffc := release.NewFlagChecker(GetStorage(t))
+		ffc := release.NewFlagChecker(ExampleStorage(t))
 
 		for _, extID := range extIDS {
 			releaseEnrollmentStates, err := ffc.GetReleaseFlagPilotEnrollmentStates(context.Background(), extID, releaseFlagName)
@@ -289,7 +289,7 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates_BackwardCompatib
 
 	s.When(`feature was never enabled before`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).DeleteAll(context.Background(), release.Flag{}))
+			require.Nil(t, ExampleStorage(t).DeleteAll(context.Background(), release.Flag{}))
 		})
 
 		s.Then(`it will tell that feature flag is not enabled`, func(t *testcase.T) {
@@ -301,7 +301,7 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates_BackwardCompatib
 
 	s.When(`feature is configured with rollout strategy`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Create(context.TODO(), GetReleaseFlag(t)))
+			require.Nil(t, ExampleStorage(t).Create(context.TODO(), ExampleReleaseFlag(t)))
 		})
 
 		s.And(`by rollout percentage`, func(s *testcase.Spec) {
@@ -336,7 +336,7 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates_BackwardCompatib
 
 				s.And(`the next pseudo rand int is less or eq with the rollout percentage`, func(s *testcase.Spec) {
 					s.Let(`PseudoRandPercentage`, func(t *testcase.T) interface{} {
-						ffPerc := GetReleaseFlag(t).Rollout.Strategy.Percentage
+						ffPerc := ExampleReleaseFlag(t).Rollout.Strategy.Percentage
 						return ffPerc - rand.Intn(ffPerc)
 					})
 
@@ -350,12 +350,12 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates_BackwardCompatib
 						s.Before(func(t *testcase.T) {
 
 							pilot := &release.Pilot{
-								FlagID:     GetReleaseFlag(t).ID,
+								FlagID:     ExampleReleaseFlag(t).ID,
 								ExternalID: t.I(`PilotExternalID`).(string),
 								Enrolled:   false,
 							}
 
-							require.Nil(t, GetStorage(t).Create(context.TODO(), pilot))
+							require.Nil(t, ExampleStorage(t).Create(context.TODO(), pilot))
 
 						})
 
@@ -371,7 +371,7 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates_BackwardCompatib
 				s.And(`the next pseudo rand int is is greater than the rollout percentage`, func(s *testcase.Spec) {
 
 					s.Let(`PseudoRandPercentage`, func(t *testcase.T) interface{} {
-						return GetReleaseFlag(t).Rollout.Strategy.Percentage + 1
+						return ExampleReleaseFlag(t).Rollout.Strategy.Percentage + 1
 					})
 
 					s.Then(`pilot is not enrolled for the feature`, func(t *testcase.T) {
@@ -384,7 +384,7 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates_BackwardCompatib
 						s.Let(`PilotEnrollment`, func(t *testcase.T) interface{} { return true })
 
 						s.Before(func(t *testcase.T) {
-							require.Nil(t, GetStorage(t).Create(context.TODO(), GetPilot(t)))
+							require.Nil(t, ExampleStorage(t).Create(context.TODO(), ExamplePilot(t)))
 						})
 
 						s.Then(`the pilot is enrolled for the feature`, func(t *testcase.T) {
@@ -479,7 +479,7 @@ func SpecFeatureFlagChecker_IsFeatureGloballyEnabledFor(s *testcase.Spec) {
 
 	s.When(`feature flag is not seen before`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).DeleteAll(context.Background(), release.Flag{}))
+			require.Nil(t, ExampleStorage(t).DeleteAll(context.Background(), release.Flag{}))
 		})
 
 		thenItWillReportThatFeatureNotGlobballyEnabled(s)
@@ -487,7 +487,7 @@ func SpecFeatureFlagChecker_IsFeatureGloballyEnabledFor(s *testcase.Spec) {
 
 	s.When(`feature flag is given`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Create(context.TODO(), GetReleaseFlag(t)))
+			require.Nil(t, ExampleStorage(t).Create(context.TODO(), ExampleReleaseFlag(t)))
 		})
 
 		s.And(`it is not yet rolled out globally`, func(s *testcase.Spec) {
@@ -506,7 +506,7 @@ func SpecFeatureFlagChecker_IsFeatureGloballyEnabledFor(s *testcase.Spec) {
 
 func featureFlagChecker(t *testcase.T) *release.FlagChecker {
 	return &release.FlagChecker{
-		Storage: t.I(`TestStorage`).(*TestStorage),
+		Storage: ExampleStorage(t),
 		IDPercentageCalculator: func(id string, seedSalt int64) (int, error) {
 			require.Equal(t, t.I(`PilotExternalID`).(string), id)
 			require.Equal(t, t.I(`RolloutSeedSalt`).(int64), seedSalt)

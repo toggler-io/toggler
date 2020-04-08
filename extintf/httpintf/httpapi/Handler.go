@@ -20,6 +20,7 @@ func NewHandler(uc *usecases.UseCases) *Handler {
 	}
 
 	gorest.Mount(mux.ServeMux, `/v`, NewViewsHandler(uc))
+	gorest.Mount(mux.ServeMux, `/release-flags`, gorest.NewHandler(ReleaseFlagController{UseCases: uc}))
 
 	featureAPI := buildReleasesAPI(mux)
 	mux.Handle(`/release/`, http.StripPrefix(`/release`, featureAPI))
@@ -41,8 +42,6 @@ func buildReleasesAPI(handlers *Handler) *http.ServeMux {
 
 func buildFlagAPI(handlers *Handler) http.Handler {
 	mux := http.NewServeMux()
-	mux.Handle(`/create.form`, http.HandlerFunc(handlers.CreateRolloutFeatureFlagFORM))
-	mux.Handle(`/create.json`, http.HandlerFunc(handlers.CreateRolloutFeatureFlagJSON))
 	mux.Handle(`/update.form`, http.HandlerFunc(handlers.UpdateFeatureFlagFORM))
 	mux.Handle(`/update.json`, http.HandlerFunc(handlers.UpdateFeatureFlagJSON))
 	mux.Handle(`/list.json`, http.HandlerFunc(handlers.ListFeatureFlags))

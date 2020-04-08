@@ -13,9 +13,9 @@
   },
   "basePath": "/api",
   "paths": {
-    "/release/flag/create.json": {
+    "/release-flags": {
       "post": {
-        "description": "This operation allows you to create a new rollout feature flag.",
+        "description": "This operation allows you to create a new release flag.",
         "consumes": [
           "application/json"
         ],
@@ -27,23 +27,29 @@
           "https"
         ],
         "tags": [
-          "rollout",
-          "release-flag"
+          "release",
+          "feature",
+          "flag"
         ],
-        "summary": "Create FlagRollout Feature Flag",
-        "operationId": "CreateRolloutFeatureFlag",
+        "summary": "Create a release flag that can be used for managing a feature rollout.",
+        "operationId": "createReleaseFlag",
         "parameters": [
           {
             "name": "Body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/Flag"
+              "type": "object",
+              "properties": {
+                "Flag": {
+                  "$ref": "#/definitions/Flag"
+                }
+              }
             }
           }
         ],
         "responses": {
           "200": {
-            "$ref": "#/responses/createRolloutFeatureFlagResponse"
+            "$ref": "#/responses/createReleaseFlagResponse"
           },
           "400": {
             "$ref": "#/responses/errorResponse"
@@ -95,7 +101,7 @@
         }
       }
     },
-    "/v/client-config": {
+    "/v/config": {
       "get": {
         "description": "This endpoint especially useful for Mobile \u0026 SPA apps.\nThe endpoint can be called with HTTP GET method as well,\nPOST is used officially only to support most highly abstracted http clients,\nwhere using payload to upload cannot be completed with other http methods.",
         "consumes": [
@@ -109,11 +115,13 @@
           "https"
         ],
         "tags": [
-          "release-flag",
-          "pilot"
+          "pilot",
+          "release",
+          "feature",
+          "flag"
         ],
         "summary": "Return all the flag states that was requested in the favor of a Pilot.",
-        "operationId": "getClientConfig",
+        "operationId": "getPilotConfig",
         "parameters": [
           {
             "name": "Body",
@@ -148,7 +156,7 @@
         ],
         "responses": {
           "200": {
-            "$ref": "#/responses/clientConfigResponse"
+            "$ref": "#/responses/getPilotConfigResponse"
           },
           "400": {
             "$ref": "#/responses/errorResponse"
@@ -205,29 +213,6 @@
     }
   },
   "definitions": {
-    "ClientConfigResponseBody": {
-      "description": "The content expected to be cached in some form of state container.",
-      "type": "object",
-      "title": "ClientConfigResponseBody will contain the requested feature flag states for a certain pilot.",
-      "properties": {
-        "release": {
-          "description": "Release holds information related the release management",
-          "type": "object",
-          "properties": {
-            "flags": {
-              "description": "Flags hold the states of the release flags of the client",
-              "type": "object",
-              "additionalProperties": {
-                "type": "boolean"
-              },
-              "x-go-name": "Flags"
-            }
-          },
-          "x-go-name": "Release"
-        }
-      },
-      "x-go-package": "github.com/toggler-io/toggler/extintf/httpintf/httpapi"
-    },
     "EnrollmentResponseBody": {
       "description": "The content will be always given, regardless if the flag exists or not.\nThis helps the developers to use it as a null object, regardless the toggler service state.",
       "type": "object",
@@ -401,14 +386,8 @@
     }
   },
   "responses": {
-    "clientConfigResponse": {
-      "description": "ClientConfigResponse returns information about the requester's rollout feature enrollment statuses.",
-      "schema": {
-        "$ref": "#/definitions/ClientConfigResponseBody"
-      }
-    },
-    "createRolloutFeatureFlagResponse": {
-      "description": "CreateRolloutFeatureFlagResponse returns information about the requester's rollout feature enrollment status.",
+    "createReleaseFlagResponse": {
+      "description": "CreateReleaseFlagResponse returns",
       "schema": {
         "type": "object"
       }
@@ -423,6 +402,29 @@
       "description": "ErrorResponse will contains a response about request that had some kind of problem.\nThe details will be included in the body.",
       "schema": {
         "$ref": "#/definitions/ErrorResponseBody"
+      }
+    },
+    "getPilotConfigResponse": {
+      "description": "GetPilotConfigResponse returns information about the requester's rollout feature enrollment statuses.",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "release": {
+            "description": "Release holds information related the release management",
+            "type": "object",
+            "properties": {
+              "flags": {
+                "description": "Flags hold the states of the release flags of the client",
+                "type": "object",
+                "additionalProperties": {
+                  "type": "boolean"
+                },
+                "x-go-name": "Flags"
+              }
+            },
+            "x-go-name": "Release"
+          }
+        }
       }
     },
     "wsLoadBalanceErrResponse": {

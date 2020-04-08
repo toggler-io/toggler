@@ -13,7 +13,7 @@ import (
 	"github.com/toggler-io/toggler/extintf/httpintf"
 	"github.com/toggler-io/toggler/extintf/httpintf/httpapi"
 	"github.com/toggler-io/toggler/lib/go/client"
-	"github.com/toggler-io/toggler/lib/go/client/release_flag"
+	"github.com/toggler-io/toggler/lib/go/client/pilot"
 	"github.com/toggler-io/toggler/usecases"
 
 	"github.com/adamluzsi/testcase"
@@ -27,26 +27,26 @@ func TestViewsController(t *testing.T) {
 	s := testcase.NewSpec(t)
 	s.Parallel()
 
-	SetupSpecCommonVariables(s)
+	SetUp(s)
 	GivenThisIsAJSONAPI(s)
 
 	LetHandler(s, func(t *testcase.T) http.Handler { return NewHandler(t) })
 
-	s.Describe(`GET /v/client-config - ClientConfig`, SpecViewsControllerClientConfig)
+	s.Describe(`GET /v/config - GetPilotConfig`, SpecViewsControllerClientConfig)
 
 	s.Test(`swagger integration`, func(t *testcase.T) {
-		require.Nil(t, GetStorage(t).Create(CTX(t), GetReleaseFlag(t)))
-		require.Nil(t, GetStorage(t).Create(CTX(t), GetPilot(t)))
+		require.Nil(t, ExampleStorage(t).Create(GetContext(t), ExampleReleaseFlag(t)))
+		require.Nil(t, ExampleStorage(t).Create(GetContext(t), ExamplePilot(t)))
 
-		sm, err := httpintf.NewServeMux(usecases.NewUseCases(GetStorage(t)))
+		sm, err := httpintf.NewServeMux(usecases.NewUseCases(ExampleStorage(t)))
 		require.Nil(t, err)
 
 		s := httptest.NewServer(sm)
 		defer s.Close()
 
-		p := release_flag.NewGetClientConfigParams()
-		p.Body.PilotExtID = &GetPilot(t).ExternalID
-		p.Body.ReleaseFlags = []string{GetReleaseFlagName(t)}
+		p := pilot.NewGetPilotConfigParams()
+		p.Body.PilotExtID = &ExamplePilot(t).ExternalID
+		p.Body.ReleaseFlags = []string{ExampleReleaseFlagName(t)}
 
 		tc := client.DefaultTransportConfig()
 		u, _ := url.Parse(s.URL)
@@ -55,25 +55,25 @@ func TestViewsController(t *testing.T) {
 
 		c := client.NewHTTPClientWithConfig(nil, tc)
 
-		resp, err := c.ReleaseFlag.GetClientConfig(p)
+		resp, err := c.Pilot.GetPilotConfig(p)
 		if err != nil {
 			t.Fatal(err.Error())
 		}
 
 		require.NotNil(t, resp)
 		require.NotNil(t, resp.Payload)
-		require.Equal(t, GetPilotEnrollment(t), resp.Payload.Release.Flags[GetReleaseFlagName(t)])
+		require.Equal(t, GetPilotEnrollment(t), resp.Payload.Release.Flags[ExampleReleaseFlagName(t)])
 	})
 }
 
 func SpecViewsControllerClientConfig(s *testcase.Spec) {
 	LetMethodValue(s, `GET`)
-	LetPathValue(s, `/v/client-config`)
+	LetPathValue(s, `/v/config`)
 
-	var onSuccess = func(t *testcase.T) httpapi.ClientConfigResponse {
+	var onSuccess = func(t *testcase.T) httpapi.GetPilotConfigResponse {
 		r := ServeHTTP(t)
-		require.Equal(t, 200, r.Code)
-		var resp httpapi.ClientConfigResponse
+		require.Equal(t, 200, r.Code, r.Body.String())
+		var resp httpapi.GetPilotConfigResponse
 		IsJsonResponse(t, r, &resp.Body)
 		return resp
 	}
@@ -92,7 +92,7 @@ func SpecViewsControllerClientConfig(s *testcase.Spec) {
 
 			s.Then(`the request will be accepted with OK`, func(t *testcase.T) {
 				response := onSuccess(t)
-				stateIs(t, GetReleaseFlagName(t), true, response.Body.Release.Flags)
+				stateIs(t, ExampleReleaseFlagName(t), true, response.Body.Release.Flags)
 				stateIs(t, `yet-unknown-feature`, false, response.Body.Release.Flags)
 			})
 		})
@@ -102,7 +102,7 @@ func SpecViewsControllerClientConfig(s *testcase.Spec) {
 
 			s.Then(`the request will include values about toggles being flipped off`, func(t *testcase.T) {
 				response := onSuccess(t)
-				stateIs(t, GetReleaseFlagName(t), false, response.Body.Release.Flags)
+				stateIs(t, ExampleReleaseFlagName(t), false, response.Body.Release.Flags)
 				stateIs(t, `yet-unknown-feature`, false, response.Body.Release.Flags)
 			})
 		})
@@ -111,7 +111,7 @@ func SpecViewsControllerClientConfig(s *testcase.Spec) {
 	s.When(`params sent trough`, func(s *testcase.Spec) {
 		s.Context(`query string`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				Query(t).Set(t.I(`feature query string key`).(string), GetReleaseFlagName(t))
+				Query(t).Set(t.I(`feature query string key`).(string), ExampleReleaseFlagName(t))
 				Query(t).Add(t.I(`feature query string key`).(string), `yet-unknown-feature`)
 				Query(t).Set(`id`, GetExternalPilotID(t))
 			})
@@ -134,9 +134,9 @@ func SpecViewsControllerClientConfig(s *testcase.Spec) {
 				Header(t).Set(`Content-Type`, `application/json`)
 				payload := bytes.NewBuffer([]byte{})
 				jsonenc := json.NewEncoder(payload)
-				var confReq httpapi.ClientConfigRequest
+				var confReq httpapi.GetPilotConfigRequest
 				confReq.Body.PilotExtID = GetExternalPilotID(t)
-				confReq.Body.ReleaseFlags = []string{GetReleaseFlagName(t), "yet-unknown-feature"}
+				confReq.Body.ReleaseFlags = []string{ExampleReleaseFlagName(t), "yet-unknown-feature"}
 				require.Nil(t, jsonenc.Encode(confReq.Body))
 				return payload
 			})

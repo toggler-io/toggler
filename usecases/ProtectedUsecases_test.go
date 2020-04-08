@@ -14,14 +14,13 @@ import (
 )
 
 func TestUseCases_ProtectedUsecases(t *testing.T) {
-
+	t.Log(`deprecated`)
 	s := testcase.NewSpec(t)
-	SetupSpecCommonVariables(s)
-	SetupSpec(s)
 	s.Parallel()
+	SetUp(s)
 
-	subject := func(t *testcase.T) (*usecases.ProtectedUsecases, error) {
-		return GetUseCases(t).ProtectedUsecases(context.TODO(), t.I(`TokenString`).(string))
+	subject := func(t *testcase.T) (*usecases.ProtectedUseCases, error) {
+		return ExampleUseCases(t).ProtectedUsecases(context.TODO(), t.I(`TokenString`).(string))
 	}
 
 	s.When(`token doesn't exist`, func(s *testcase.Spec) {
@@ -30,7 +29,7 @@ func TestUseCases_ProtectedUsecases(t *testing.T) {
 		})
 
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).DeleteAll(context.Background(), security.Token{}))
+			require.Nil(t, ExampleStorage(t).DeleteAll(context.Background(), security.Token{}))
 		})
 
 		s.Then(`we receive back error`, func(t *testcase.T) {

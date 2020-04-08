@@ -13,10 +13,9 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
+	"github.com/go-openapi/strfmt"
 
-	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.com/toggler-io/toggler/lib/go/models"
+	"github.com/toggler-io/toggler/lib/go/models"
 )
 
 // NewIsFeatureGloballyEnabledParams creates a new IsFeatureGloballyEnabledParams object
