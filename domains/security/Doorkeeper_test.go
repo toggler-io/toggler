@@ -21,7 +21,7 @@ func TestDoorkeeper(t *testing.T) {
 
 	s.Let(`token`, func(t *testcase.T) interface{} {
 		issuer := security.NewIssuer(ExampleStorage(t))
-		textToken, token, err := issuer.CreateNewToken(context.TODO(), GetUniqueUserID(t), nil, nil)
+		textToken, token, err := issuer.CreateNewToken(context.TODO(), ExampleUniqueUserID(t), nil, nil)
 		t.Let(`text token`, textToken)
 		require.Nil(t, err)
 		return token

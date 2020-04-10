@@ -16,7 +16,7 @@ import (
 func TestFeatureFlag(t *testing.T) {
 	s := testcase.NewSpec(t)
 
-	s.Let(`ReleaseFlagName`, func(t *testcase.T) interface{} { return ExampleName() })
+	s.Let(`ReleaseFlagName`, func(t *testcase.T) interface{} { return RandomName() })
 	s.Let(`RolloutSeedSalt`, func(t *testcase.T) interface{} { return time.Now().Unix() })
 	s.Let(`RolloutPercentage`, func(t *testcase.T) interface{} { return int(0) })
 	s.Let(`RolloutApiURL`, func(t *testcase.T) interface{} { return nil })

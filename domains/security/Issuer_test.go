@@ -36,7 +36,7 @@ func SpecIssuerRevokeToken(s *testcase.Spec) {
 	s.When(`token exists`, func(s *testcase.Spec) {
 		s.Let(`token`, func(t *testcase.T) interface{} {
 			issuer := t.I(`issuer`).(*security.Issuer)
-			_, token, err := issuer.CreateNewToken(context.TODO(), GetUniqueUserID(t), nil, nil)
+			_, token, err := issuer.CreateNewToken(context.TODO(), ExampleUniqueUserID(t), nil, nil)
 			require.Nil(t, err)
 			return token
 		})
@@ -82,7 +82,7 @@ func SpecIssuerCreateNewToken(s *testcase.Spec) {
 		return err
 	}
 	givenWeHaveValidParameters := func(s *testcase.Spec) {
-		s.Let(`userUID`, func(t *testcase.T) interface{} { return ExampleUniqUserID() })
+		s.Let(`userUID`, func(t *testcase.T) interface{} { return RandomUniqUserID() })
 		s.Let(`issueAt`, func(t *testcase.T) interface{} { ia := time.Now().UTC(); return &ia })
 		s.Let(`duration`, func(t *testcase.T) interface{} { d := 42 * time.Hour; return &d })
 	}

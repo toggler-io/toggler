@@ -55,7 +55,7 @@ func TestViewsController(t *testing.T) {
 
 		c := client.NewHTTPClientWithConfig(nil, tc)
 
-		resp, err := c.Pilot.GetPilotConfig(p)
+		resp, err := c.Pilot.GetPilotConfig(p, authInfo(t))
 		if err != nil {
 			t.Fatal(err.Error())
 		}

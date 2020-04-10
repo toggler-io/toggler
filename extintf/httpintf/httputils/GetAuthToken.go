@@ -7,9 +7,9 @@ import (
 	"github.com/toggler-io/toggler/usecases"
 )
 
-func GetAuthToken(r *http.Request) (string, error) {
+func GetAppToken(r *http.Request) (string, error) {
 	var token string
-	token = r.Header.Get(`X-Auth-Token`)
+	token = r.Header.Get(`X-App-Token`)
 
 	if token == `` {
 		token = r.URL.Query().Get(`token`)

@@ -13,21 +13,23 @@ import (
 // The details will be included in the body.
 // swagger:response errorResponse
 type ErrorResponse struct {
-	// Error describe and error that meant to be consumed by a software engineer.
+	// Body describe and error that meant to be consumed by a software engineer.
 	// in: body
 	Body struct {
-		// Error contains the details of the error
-		Error struct {
-			// The constant code of the error that can be used for localisation
-			// Example: 401
-			Code int `json:"code"`
-			// The message that describe the error to the developer who do the integration.
-			// Not meant to be propagated to the end-user.
-			// The Message may change in the future, it it helps readability,
-			// please do not rely on the content in any way other than just reading it.
-			Message string `json:"message"`
-		} `json:"error"`
+		Error Error `json:"error"`
 	}
+}
+
+// Error contains the details of the error
+type Error struct {
+	// The constant code of the error that can be used for localisation
+	// Example: 401
+	Code int `json:"code"`
+	// The message that describe the error to the developer who do the integration.
+	// Not meant to be propagated to the end-user.
+	// The Message may change in the future, it it helps readability,
+	// please do not rely on the content in any way other than just reading it.
+	Message string `json:"message"`
 }
 
 func handleError(w http.ResponseWriter, err error, errCode int) (errorWasHandled bool) {
@@ -66,5 +68,5 @@ func handleError(w http.ResponseWriter, err error, errCode int) (errorWasHandled
 	}
 
 	return false
-	
+
 }

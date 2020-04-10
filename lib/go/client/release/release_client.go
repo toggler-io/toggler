@@ -27,7 +27,7 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	CreateReleaseFlag(params *CreateReleaseFlagParams) (*CreateReleaseFlagOK, error)
+	CreateReleaseFlag(params *CreateReleaseFlagParams, authInfo runtime.ClientAuthInfoWriter) (*CreateReleaseFlagOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -37,7 +37,7 @@ type ClientService interface {
 
   This operation allows you to create a new release flag.
 */
-func (a *Client) CreateReleaseFlag(params *CreateReleaseFlagParams) (*CreateReleaseFlagOK, error) {
+func (a *Client) CreateReleaseFlag(params *CreateReleaseFlagParams, authInfo runtime.ClientAuthInfoWriter) (*CreateReleaseFlagOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewCreateReleaseFlagParams()
@@ -52,6 +52,7 @@ func (a *Client) CreateReleaseFlag(params *CreateReleaseFlagParams) (*CreateRele
 		Schemes:            []string{"http", "https"},
 		Params:             params,
 		Reader:             &CreateReleaseFlagReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})

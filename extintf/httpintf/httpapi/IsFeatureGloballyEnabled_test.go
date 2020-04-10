@@ -136,7 +136,8 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 
 		c := client.NewHTTPClientWithConfig(nil, tc)
 
-		resp, err := c.ReleaseFlag.IsFeatureGloballyEnabled(p)
+		resp, err := c.ReleaseFlag.IsFeatureGloballyEnabled(p, authInfo(t))
+
 		if err != nil {
 			t.Fatal(err.Error())
 		}
@@ -146,5 +147,5 @@ func TestServeMux_IsFeatureGloballyEnabled(t *testing.T) {
 		require.Equal(t, enr, resp.Payload.Enrollment)
 
 	})
-
 }
+

@@ -9,6 +9,7 @@ import (
 	"github.com/adamluzsi/gorest"
 	"github.com/gorilla/websocket"
 
+	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
 	"github.com/toggler-io/toggler/usecases"
 )
 
@@ -20,11 +21,12 @@ func NewHandler(uc *usecases.UseCases) *Handler {
 	}
 
 	gorest.Mount(mux.ServeMux, `/v`, NewViewsHandler(uc))
-	gorest.Mount(mux.ServeMux, `/release-flags`, gorest.NewHandler(ReleaseFlagController{UseCases: uc}))
+
+	gorest.Mount(mux.ServeMux, `/release-flags`,
+		httputils.AuthMiddleware(gorest.NewHandler(ReleaseFlagController{UseCases: uc}), uc))
 
 	featureAPI := buildReleasesAPI(mux)
 	mux.Handle(`/release/`, http.StripPrefix(`/release`, featureAPI))
-	mux.Handle(`/ws`, authMiddleware(http.HandlerFunc(mux.WebsocketHandler), uc))
 
 	mux.HandleFunc(`/healthcheck`, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
@@ -46,7 +48,7 @@ func buildFlagAPI(handlers *Handler) http.Handler {
 	mux.Handle(`/update.json`, http.HandlerFunc(handlers.UpdateFeatureFlagJSON))
 	mux.Handle(`/list.json`, http.HandlerFunc(handlers.ListFeatureFlags))
 	mux.Handle(`/set-enrollment-manually.json`, http.HandlerFunc(handlers.SetPilotEnrollmentForFeature))
-	return authMiddleware(mux, handlers.UseCases)
+	return httputils.AuthMiddleware(mux, handlers.UseCases)
 }
 
 type Handler struct {

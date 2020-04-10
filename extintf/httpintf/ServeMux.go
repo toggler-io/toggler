@@ -1,9 +1,13 @@
 package httpintf
 
 import (
-	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
-	"github.com/toggler-io/toggler/extintf/httpintf/swagger"
 	"net/http"
+
+	"github.com/adamluzsi/gorest"
+
+	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
+	"github.com/toggler-io/toggler/extintf/httpintf/httpws"
+	"github.com/toggler-io/toggler/extintf/httpintf/swagger"
 
 	"github.com/toggler-io/toggler/extintf/httpintf/httpapi"
 	"github.com/toggler-io/toggler/extintf/httpintf/webgui"
@@ -14,6 +18,7 @@ func NewServeMux(uc *usecases.UseCases) (*ServeMux, error) {
 	mux := http.NewServeMux()
 
 	mux.Handle(`/api/`, httputils.CORS(http.StripPrefix(`/api`, httpapi.NewHandler(uc))))
+	mux.Handle(`/ws/`, httputils.CORS(http.StripPrefix(`/ws`, httpws.NewHandler(uc))))
 
 	ui, err := webgui.NewHandler(uc)
 	if err != nil {
@@ -21,8 +26,7 @@ func NewServeMux(uc *usecases.UseCases) (*ServeMux, error) {
 	}
 
 	mux.Handle(`/`, ui)
-	mux.Handle(`/swagger.json`, httputils.CORS(http.HandlerFunc(swagger.HandleSwaggerConfigJSON)))
-	mux.Handle(`/swagger-ui/`, http.StripPrefix(`/swagger-ui`, swagger.HandleSwaggerUI()))
+	gorest.Mount(mux, `/swagger`, swagger.NewHandler())
 
 	return &ServeMux{
 		ServeMux: mux,

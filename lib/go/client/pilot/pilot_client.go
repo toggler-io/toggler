@@ -27,7 +27,7 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	GetPilotConfig(params *GetPilotConfigParams) (*GetPilotConfigOK, error)
+	GetPilotConfig(params *GetPilotConfigParams, authInfo runtime.ClientAuthInfoWriter) (*GetPilotConfigOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -40,7 +40,7 @@ The endpoint can be called with HTTP GET method as well,
 POST is used officially only to support most highly abstracted http clients,
 where using payload to upload cannot be completed with other http methods.
 */
-func (a *Client) GetPilotConfig(params *GetPilotConfigParams) (*GetPilotConfigOK, error) {
+func (a *Client) GetPilotConfig(params *GetPilotConfigParams, authInfo runtime.ClientAuthInfoWriter) (*GetPilotConfigOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetPilotConfigParams()
@@ -55,6 +55,7 @@ func (a *Client) GetPilotConfig(params *GetPilotConfigParams) (*GetPilotConfigOK
 		Schemes:            []string{"http", "https"},
 		Params:             params,
 		Reader:             &GetPilotConfigReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
