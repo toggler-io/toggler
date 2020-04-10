@@ -24,7 +24,7 @@ func NewHandler(uc *usecases.UseCases) *Handler {
 
 	featureAPI := buildReleasesAPI(mux)
 	mux.Handle(`/release/`, http.StripPrefix(`/release`, featureAPI))
-	mux.Handle(`/ws`, authMiddleware(uc, http.HandlerFunc(mux.WebsocketHandler)))
+	mux.Handle(`/ws`, authMiddleware(http.HandlerFunc(mux.WebsocketHandler), uc))
 
 	mux.HandleFunc(`/healthcheck`, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
@@ -46,7 +46,7 @@ func buildFlagAPI(handlers *Handler) http.Handler {
 	mux.Handle(`/update.json`, http.HandlerFunc(handlers.UpdateFeatureFlagJSON))
 	mux.Handle(`/list.json`, http.HandlerFunc(handlers.ListFeatureFlags))
 	mux.Handle(`/set-enrollment-manually.json`, http.HandlerFunc(handlers.SetPilotEnrollmentForFeature))
-	return authMiddleware(handlers.UseCases, mux)
+	return authMiddleware(mux, handlers.UseCases)
 }
 
 type Handler struct {
