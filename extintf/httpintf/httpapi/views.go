@@ -12,7 +12,7 @@ import (
 func NewViewsHandler(uc *usecases.UseCases) http.Handler {
 	vc := ViewsController{UseCases: uc}
 	m := http.NewServeMux()
-	m.HandleFunc(`/client-config`, vc.ClientConfig)
+	m.HandleFunc(`/config`, vc.GetPilotConfig)
 	return m
 }
 
@@ -20,9 +20,9 @@ type ViewsController struct {
 	UseCases *usecases.UseCases
 }
 
-// ClientConfigRequest defines the parameters that
-// swagger:parameters getClientConfig
-type ClientConfigRequest struct {
+// GetPilotConfigRequest defines the parameters that
+// swagger:parameters getPilotConfig
+type GetPilotConfigRequest struct {
 	// in: body
 	Body struct {
 		// PilotExtID is the public uniq id that identify the caller pilot
@@ -38,26 +38,24 @@ type ClientConfigRequest struct {
 	}
 }
 
-// ClientConfigResponse returns information about the requester's rollout feature enrollment statuses.
-// swagger:response clientConfigResponse
-type ClientConfigResponse struct {
+// GetPilotConfigResponse returns information about the requester's rollout feature enrollment statuses.
+// swagger:response getPilotConfigResponse
+type GetPilotConfigResponse struct {
+	// Body will contain the requested feature flag states for a certain pilot.
+	// The content expected to be cached in some form of state container.
 	// in: body
-	Body ClientConfigResponseBody
-}
-
-// ClientConfigResponseBody will contain the requested feature flag states for a certain pilot.
-// The content expected to be cached in some form of state container.
-type ClientConfigResponseBody struct {
-	// Release holds information related the release management
-	Release struct {
-		// Flags hold the states of the release flags of the client
-		Flags map[string]bool `json:"flags"`
-	} `json:"release"`
+	Body struct {
+		// Release holds information related the release management
+		Release struct {
+			// Flags hold the states of the release flags of the client
+			Flags map[string]bool `json:"flags"`
+		} `json:"release"`
+	}
 }
 
 /*
 
-	swagger:route GET /v/client-config release-flag pilot getClientConfig
+	swagger:route GET /v/config pilot release feature flag getPilotConfig
 
 	Return all the flag states that was requested in the favor of a Pilot.
 	This endpoint especially useful for Mobile & SPA apps.
@@ -74,17 +72,17 @@ type ClientConfigResponseBody struct {
 		Schemes: http, https
 
 		Responses:
-		  200: clientConfigResponse
+		  200: getPilotConfigResponse
 		  400: errorResponse
 		  500: errorResponse
 
 */
 
-func (ctrl ViewsController) ClientConfig(w http.ResponseWriter, r *http.Request) {
+func (ctrl ViewsController) GetPilotConfig(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	payloadDecoder := json.NewDecoder(r.Body)
 
-	var request ClientConfigRequest
+	var request GetPilotConfigRequest
 	parseErr := payloadDecoder.Decode(&request.Body)
 
 	if parseErr != nil {
@@ -103,7 +101,7 @@ func (ctrl ViewsController) ClientConfig(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	var body ClientConfigResponseBody
-	body.Release.Flags = states
-	serveJSON(w, body)
+	var resp GetPilotConfigResponse
+	resp.Body.Release.Flags = states
+	serveJSON(w, resp.Body)
 }

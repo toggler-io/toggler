@@ -38,7 +38,13 @@ func handleError(w http.ResponseWriter, err error, errCode int) (errorWasHandled
 	toErrResp := func(code int) []byte {
 		var errResp ErrorResponseBody
 		errResp.Error.Code = code
-		errResp.Error.Message = http.StatusText(code)
+
+		if 400 <= errCode && errCode < 500 {
+			errResp.Error.Message = err.Error()
+		} else {
+			errResp.Error.Message = http.StatusText(code)
+		}
+
 		body, mErr := json.Marshal(errResp)
 		if mErr != nil {
 			panic(mErr)
@@ -57,7 +63,8 @@ func handleError(w http.ResponseWriter, err error, errCode int) (errorWasHandled
 	}
 
 	if err != nil {
-		http.Error(w, http.StatusText(errCode), errCode)
+		w.WriteHeader(errCode)
+		_, _ = w.Write(toErrResp(http.StatusUnauthorized))
 		return true
 	}
 
@@ -74,7 +81,18 @@ func authMiddleware(uc *usecases.UseCases, next http.Handler) http.Handler {
 			return
 		}
 
-		pu, err := uc.ProtectedUsecases(context.TODO(), token)
+		valid, err := uc.Doorkeeper.VerifyTextToken(r.Context(), token)
+
+		if handleError(w, err, http.StatusInternalServerError) {
+			return
+		}
+
+		if !valid {
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
+		}
+
+		pu, err := uc.ProtectedUsecases(r.Context(), token)
 
 		if err == usecases.ErrInvalidToken {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
@@ -85,8 +103,8 @@ func authMiddleware(uc *usecases.UseCases, next http.Handler) http.Handler {
 			return
 		}
 
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), `ProtectedUsecases`, pu)))
+		// Deprecated
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), `ProtectedUseCases`, pu)))
 
 	})
 }
-

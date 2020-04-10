@@ -12,38 +12,37 @@ import (
 
 func TestDoorkeeper(t *testing.T) {
 	s := testcase.NewSpec(t)
-	SetupSpecCommonVariables(s)
 	s.Parallel()
+	SetUp(s)
 
 	s.Let(`doorkeeper`, func(t *testcase.T) interface{} {
-		return security.NewDoorkeeper(GetStorage(t))
+		return security.NewDoorkeeper(ExampleStorage(t))
 	})
 
-	s.Let(`Token`, func(t *testcase.T) interface{} {
-		issuer := security.NewIssuer(GetStorage(t))
-		textToken, token, err := issuer.CreateNewToken(context.TODO(), GetUniqUserID(t), nil, nil)
-		*(t.I(`*TextToken`).(*string)) = textToken
+	s.Let(`token`, func(t *testcase.T) interface{} {
+		issuer := security.NewIssuer(ExampleStorage(t))
+		textToken, token, err := issuer.CreateNewToken(context.TODO(), GetUniqueUserID(t), nil, nil)
+		t.Let(`text token`, textToken)
 		require.Nil(t, err)
 		return token
-	})
-
-	s.Let(`*TextToken`, func(t *testcase.T) interface{} {
-		var textToken string
-		return &textToken
-	})
-
-	s.Let(`TextToken`, func(t *testcase.T) interface{} {
-		t.I(`Token`)
-		return *(t.I(`*TextToken`).(*string))
 	})
 
 	SpecDoorkeeperVerifyTextToken(s)
 }
 
 func SpecDoorkeeperVerifyTextToken(s *testcase.Spec) {
+	var getToken = func(t *testcase.T) *security.Token {
+		return t.I(`token`).(*security.Token)
+	}
+
+	var getTextToken = func(t *testcase.T) string {
+		getToken(t) // trigger setup
+		return t.I(`text token`).(string)
+	}
+
 	s.Describe(`VerifyTextToken`, func(s *testcase.Spec) {
 		subject := func(t *testcase.T) (bool, error) {
-			return doorkeeper(t).VerifyTextToken(context.TODO(), GetTextToken(t))
+			return doorkeeper(t).VerifyTextToken(context.TODO(), getTextToken(t))
 		}
 
 		onSuccess := func(t *testcase.T) bool {
@@ -54,7 +53,7 @@ func SpecDoorkeeperVerifyTextToken(s *testcase.Spec) {
 
 		s.When(`token is a known resource`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				persisted, err := GetStorage(t).FindByID(context.Background(), &security.Token{}, GetToken(t).ID)
+				persisted, err := ExampleStorage(t).FindByID(context.Background(), &security.Token{}, getToken(t).ID)
 				require.Nil(t, err)
 				require.True(t, persisted)
 			})
@@ -66,7 +65,7 @@ func SpecDoorkeeperVerifyTextToken(s *testcase.Spec) {
 
 		s.When(`token is unknown`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, GetStorage(t).DeleteByID(context.Background(), security.Token{}, GetToken(t).ID))
+				require.Nil(t, ExampleStorage(t).DeleteByID(context.Background(), security.Token{}, getToken(t).ID))
 			})
 
 			s.Then(`it will reject it`, func(t *testcase.T) {

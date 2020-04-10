@@ -9,7 +9,7 @@ import (
 
 func (sm *Handler) ListFeatureFlags(w http.ResponseWriter, r *http.Request) {
 
-	pu := r.Context().Value(`ProtectedUsecases`).(*usecases.ProtectedUsecases)
+	pu := r.Context().Value(`ProtectedUseCases`).(*usecases.ProtectedUseCases)
 
 	ffs, err := pu.ListFeatureFlags(context.TODO())
 

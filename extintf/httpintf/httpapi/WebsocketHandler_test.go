@@ -17,7 +17,7 @@ import (
 
 func TestWebsocket(t *testing.T) {
 	s := testcase.NewSpec(t)
-	SetupSpecCommonVariables(s)
+	SetUp(s)
 
 	server := func(t *testcase.T) *httptest.Server { return t.I(`server`).(*httptest.Server) }
 	s.Let(`server`, func(t *testcase.T) interface{} { return httptest.NewServer(NewHandler(t)) })
@@ -67,14 +67,14 @@ func TestWebsocket(t *testing.T) {
 
 		s.Let(`data`, func(t *testcase.T) interface{} {
 			return httpapi.IsFeatureEnabledRequestPayload{
-				Feature: GetReleaseFlagName(t),
+				Feature: ExampleReleaseFlagName(t),
 				PilotID: GetExternalPilotID(t),
 			}
 		})
 
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).Create(context.Background(), GetReleaseFlag(t)))
-			require.Nil(t, GetStorage(t).Create(context.Background(), GetPilot(t)))
+			require.Nil(t, ExampleStorage(t).Create(context.Background(), ExampleReleaseFlag(t)))
+			require.Nil(t, ExampleStorage(t).Create(context.Background(), ExamplePilot(t)))
 		})
 
 		s.Then(`it will reply with the enrollment`, func(t *testcase.T) {
@@ -90,7 +90,7 @@ func TestWebsocket(t *testing.T) {
 		})
 
 		s.Let(`data`, func(t *testcase.T) interface{} {
-			return httpapi.IsFeatureGloballyEnabledRequestBody{Feature: GetReleaseFlagName(t)}
+			return httpapi.IsFeatureGloballyEnabledRequestBody{Feature: ExampleReleaseFlagName(t)}
 		})
 
 		s.Let(`rnd`, func(t *testcase.T) interface{} {
@@ -98,9 +98,9 @@ func TestWebsocket(t *testing.T) {
 		})
 
 		s.Before(func(t *testcase.T) {
-			ff := GetReleaseFlag(t)
+			ff := ExampleReleaseFlag(t)
 			ff.Rollout.Strategy.Percentage = t.I(`rnd`).(int)
-			require.Nil(t, GetStorage(t).Create(context.Background(), ff))
+			require.Nil(t, ExampleStorage(t).Create(context.Background(), ff))
 		})
 
 		s.Then(`it will reply with the enrollment`, func(t *testcase.T) {

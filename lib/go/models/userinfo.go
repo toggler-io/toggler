@@ -9,5 +9,6 @@ package models
 // password details for a URL. An existing Userinfo value is guaranteed
 // to have a username set (potentially empty, as allowed by RFC 2396),
 // and optionally a password.
+//
 // swagger:model Userinfo
 type Userinfo interface{}

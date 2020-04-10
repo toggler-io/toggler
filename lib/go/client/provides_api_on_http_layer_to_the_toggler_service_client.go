@@ -8,11 +8,11 @@ package client
 import (
 	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
+	"github.com/go-openapi/strfmt"
 
-	strfmt "github.com/go-openapi/strfmt"
-
+	"github.com/toggler-io/toggler/lib/go/client/pilot"
+	"github.com/toggler-io/toggler/lib/go/client/release"
 	"github.com/toggler-io/toggler/lib/go/client/release_flag"
-	"github.com/toggler-io/toggler/lib/go/client/rollout"
 )
 
 // Default provides API on HTTP layer to the toggler service HTTP client.
@@ -57,11 +57,9 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *ProvidesAP
 
 	cli := new(ProvidesAPIOnHTTPLayerToTheTogglerService)
 	cli.Transport = transport
-
+	cli.Pilot = pilot.New(transport, formats)
+	cli.Release = release.New(transport, formats)
 	cli.ReleaseFlag = release_flag.New(transport, formats)
-
-	cli.Rollout = rollout.New(transport, formats)
-
 	return cli
 }
 
@@ -106,9 +104,11 @@ func (cfg *TransportConfig) WithSchemes(schemes []string) *TransportConfig {
 
 // ProvidesAPIOnHTTPLayerToTheTogglerService is a client for provides API on HTTP layer to the toggler service
 type ProvidesAPIOnHTTPLayerToTheTogglerService struct {
-	ReleaseFlag *release_flag.Client
+	Pilot pilot.ClientService
 
-	Rollout *rollout.Client
+	Release release.ClientService
+
+	ReleaseFlag release_flag.ClientService
 
 	Transport runtime.ClientTransport
 }
@@ -116,9 +116,7 @@ type ProvidesAPIOnHTTPLayerToTheTogglerService struct {
 // SetTransport changes the transport on the client and all its subresources
 func (c *ProvidesAPIOnHTTPLayerToTheTogglerService) SetTransport(transport runtime.ClientTransport) {
 	c.Transport = transport
-
+	c.Pilot.SetTransport(transport)
+	c.Release.SetTransport(transport)
 	c.ReleaseFlag.SetTransport(transport)
-
-	c.Rollout.SetTransport(transport)
-
 }

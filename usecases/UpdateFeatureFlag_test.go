@@ -10,23 +10,22 @@ import (
 
 func TestUseCases_UpdateFeatureFlag(t *testing.T) {
 	s := testcase.NewSpec(t)
-	SetupSpecCommonVariables(s)
-	SetupSpec(s)
 	s.Parallel()
+	SetUp(s)
 
 	subject := func(t *testcase.T) error {
-		return GetProtectedUsecases(t).UpdateFeatureFlag(context.TODO(), GetReleaseFlag(t))
+		return GetProtectedUsecases(t).UpdateFeatureFlag(context.TODO(), ExampleReleaseFlag(t))
 	}
 
 	s.Context(`Given the feature flag already exists`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetProtectedUsecases(t).CreateFeatureFlag(context.TODO(), GetReleaseFlag(t)))
+			require.Nil(t, GetProtectedUsecases(t).CreateFeatureFlag(context.TODO(), ExampleReleaseFlag(t)))
 		})
 
 		s.Then(`it will be update changes`, func(t *testcase.T) {
-			GetReleaseFlag(t).Rollout.Strategy.Percentage = 42
+			ExampleReleaseFlag(t).Rollout.Strategy.Percentage = 42
 			require.Nil(t, subject(t))
-			require.Equal(t, GetReleaseFlag(t), FindStoredReleaseFlagByName(t))
+			require.Equal(t, ExampleReleaseFlag(t), FindStoredExampleReleaseFlagByName(t))
 		})
 	})
 

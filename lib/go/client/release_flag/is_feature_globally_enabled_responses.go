@@ -10,10 +10,9 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/strfmt"
 
-	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.com/toggler-io/toggler/lib/go/models"
+	"github.com/toggler-io/toggler/lib/go/models"
 )
 
 // IsFeatureGloballyEnabledReader is a Reader for the IsFeatureGloballyEnabled structure.

@@ -6,8 +6,7 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -29,6 +28,7 @@ import (
 //
 // URL's String method uses the EscapedPath method to obtain the path. See the
 // EscapedPath method for more details.
+//
 // swagger:model URL
 type URL struct {
 

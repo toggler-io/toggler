@@ -15,7 +15,7 @@ import (
 )
 
 func NewHandler(t *testcase.T) *httpapi.Handler {
-	return httpapi.NewHandler(usecases.NewUseCases(GetStorage(t)))
+	return httpapi.NewHandler(usecases.NewUseCases(ExampleStorage(t)))
 }
 
 func TestServeMuxRoutingPOC(t *testing.T) {

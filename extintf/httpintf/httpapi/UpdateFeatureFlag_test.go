@@ -26,7 +26,7 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 		return rr
 	}
 
-	SetupSpecCommonVariables(s)
+	SetUp(s)
 
 	s.Let(`enrollment query value`, func(t *testcase.T) interface{} {
 		return strconv.FormatBool(GetPilotEnrollment(t))
@@ -54,7 +54,7 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 
 	s.Before(func(t *testcase.T) {
 		t.Log(`given we have flag already stored`)
-		require.Nil(t, GetStorage(t).Create(context.TODO(), GetReleaseFlag(t)))
+		require.Nil(t, ExampleStorage(t).Create(context.TODO(), ExampleReleaseFlag(t)))
 	})
 
 	s.When(`request is sent to the JSON endpoint`, func(s *testcase.Spec) {
@@ -64,7 +64,7 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 		})
 
 		s.Let(`payload bytes`, func(t *testcase.T) interface{} {
-			bs, err := json.Marshal(GetReleaseFlag(t))
+			bs, err := json.Marshal(ExampleReleaseFlag(t))
 			require.Nil(t, err)
 			return bs
 		})
@@ -91,14 +91,14 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 
 		s.Let(`payload bytes`, func(t *testcase.T) interface{} {
 			data := url.Values{}
-			data.Set(`flag.id`, GetReleaseFlag(t).ID)
-			data.Set(`flag.name`, GetReleaseFlag(t).Name)
-			data.Set(`flag.rollout.randSeed`, strconv.FormatInt(GetReleaseFlag(t).Rollout.RandSeed, 10))
-			data.Set(`flag.rollout.strategy.percentage`, strconv.Itoa(GetReleaseFlag(t).Rollout.Strategy.Percentage))
+			data.Set(`flag.id`, ExampleReleaseFlag(t).ID)
+			data.Set(`flag.name`, ExampleReleaseFlag(t).Name)
+			data.Set(`flag.rollout.randSeed`, strconv.FormatInt(ExampleReleaseFlag(t).Rollout.RandSeed, 10))
+			data.Set(`flag.rollout.strategy.percentage`, strconv.Itoa(ExampleReleaseFlag(t).Rollout.Strategy.Percentage))
 
 			var decisionLogicAPI string
-			if GetReleaseFlag(t).Rollout.Strategy.DecisionLogicAPI != nil {
-				decisionLogicAPI = GetReleaseFlag(t).Rollout.Strategy.DecisionLogicAPI.String()
+			if ExampleReleaseFlag(t).Rollout.Strategy.DecisionLogicAPI != nil {
+				decisionLogicAPI = ExampleReleaseFlag(t).Rollout.Strategy.DecisionLogicAPI.String()
 			}
 			data.Set(`flag.rollout.strategy.decisionLogicApi`, decisionLogicAPI)
 
@@ -184,9 +184,9 @@ func SpecServeMux_UpdateFeatureFlag(s *testcase.Spec, subject func(t *testcase.T
 			r := subject(t)
 			require.Equal(t, 200, r.Code, r.Body.String())
 
-			stored := FindStoredReleaseFlagByName(t)
+			stored := FindStoredExampleReleaseFlagByName(t)
 
-			require.Equal(t, GetReleaseFlag(t), stored)
+			require.Equal(t, ExampleReleaseFlag(t), stored)
 		})
 	})
 }

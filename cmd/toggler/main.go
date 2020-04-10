@@ -165,25 +165,11 @@ func fixturesCMD(args []string, s usecases.Storage) {
 }
 
 func createFixtures(s usecases.Storage) {
-	useCases := usecases.NewUseCases(s)
-	issuer := security.Issuer{Storage: s}
-
-	tstr, t, err := issuer.CreateNewToken(context.Background(), `testing`, nil, nil)
-	if err != nil {
-		panic(err)
-	}
-	defer s.DeleteByID(context.Background(), *t, t.ID)
-
-	pu, err := useCases.ProtectedUsecases(context.Background(), tstr)
-
-	if err != nil {
-		panic(err)
-	}
-
+	uc := usecases.NewUseCases(s)
 	ff := release.Flag{Name: `test`}
-	_ = pu.CreateFeatureFlag(context.TODO(), &ff)
-	_ = pu.SetPilotEnrollmentForFeature(context.Background(), ff.ID, `test-public-pilot-id-1`, true)
-	_ = pu.SetPilotEnrollmentForFeature(context.Background(), ff.ID, `test-public-pilot-id-2`, false)
+	_ = uc.RolloutManager.CreateFeatureFlag(context.TODO(), &ff)
+	_ = uc.RolloutManager.SetPilotEnrollmentForFeature(context.Background(), ff.ID, `test-public-pilot-id-1`, true)
+	_ = uc.RolloutManager.SetPilotEnrollmentForFeature(context.Background(), ff.ID, `test-public-pilot-id-2`, false)
 }
 
 func makeHTTPServer(storage usecases.Storage, port int) *http.Server {

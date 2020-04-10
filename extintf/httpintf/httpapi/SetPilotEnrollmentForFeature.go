@@ -10,7 +10,7 @@ import (
 
 func (sm *Handler) SetPilotEnrollmentForFeature(w http.ResponseWriter, r *http.Request) {
 
-	pu := r.Context().Value(`ProtectedUsecases`).(*usecases.ProtectedUsecases)
+	pu := r.Context().Value(`ProtectedUseCases`).(*usecases.ProtectedUseCases)
 
 	pilot, err := httputils.ParseFlagPilotFromForm(r)
 

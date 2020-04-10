@@ -14,11 +14,11 @@ import (
 
 func TestNew(t *testing.T) {
 	s := testcase.NewSpec(t)
-	SetupSpecCommonVariables(s)
+	SetUp(s)
 
 	s.Describe(`New`, func(s *testcase.Spec) {
 		subject := func(t *testcase.T) (usecases.Storage, error) {
-			return caches.New(t.I(`connstr`).(string), GetStorage(t))
+			return caches.New(t.I(`connstr`).(string), ExampleStorage(t))
 		}
 
 		onSuccess := func(t *testcase.T) usecases.Storage {

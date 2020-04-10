@@ -6,8 +6,7 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -15,6 +14,7 @@ import (
 //
 // The content will be always given, regardless if the flag exists or not.
 // This helps the developers to use it as a null object, regardless the toggler service state.
+//
 // swagger:model EnrollmentResponseBody
 type EnrollmentResponseBody struct {
 

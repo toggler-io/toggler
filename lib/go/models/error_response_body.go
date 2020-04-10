@@ -6,13 +6,13 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // ErrorResponseBody ErrorResponseBody describe and error that meant to be consumed by a software engineer.
+//
 // swagger:model ErrorResponseBody
 type ErrorResponseBody struct {
 
@@ -71,6 +71,7 @@ func (m *ErrorResponseBody) UnmarshalBinary(b []byte) error {
 }
 
 // Error Error contains the details of the error
+//
 // swagger:model Error
 type Error struct {
 
