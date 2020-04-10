@@ -35,11 +35,7 @@ type WebsocketResponseBody = EnrollmentResponseBody
 // In case there is a load balancer that handle this transparently, this error may not be received.
 //
 // swagger:response wsLoadBalanceErrResponse
-type WSLoadBalanceErrResp struct {
-	// Error contains the details of the error
-	// in: body
-	Body ErrorResponseBody
-}
+type WSLoadBalanceErrResp ErrorResponse
 
 /*
 
@@ -88,10 +84,10 @@ func (sm *Handler) WebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			return false
 		}
-		var errResp ErrorResponseBody
-		errResp.Error.Code = code
-		errResp.Error.Message = err.Error()
-		return c.WriteJSON(errResp) != nil
+		var errResp ErrorResponse
+		errResp.Body.Error.Code = code
+		errResp.Body.Error.Message = err.Error()
+		return c.WriteJSON(errResp.Body) != nil
 	}
 
 subscription:

@@ -1,51 +1,48 @@
 package httpapi
 
 import (
-	"context"
 	"encoding/json"
-	"github.com/adamluzsi/frameless"
-	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
-	"github.com/toggler-io/toggler/usecases"
 	"net/http"
+
+	"github.com/adamluzsi/frameless"
+
+	"github.com/toggler-io/toggler/usecases"
 )
 
 // ErrorResponse will contains a response about request that had some kind of problem.
 // The details will be included in the body.
 // swagger:response errorResponse
 type ErrorResponse struct {
-	// Error contains the details of the error
+	// Error describe and error that meant to be consumed by a software engineer.
 	// in: body
-	Body ErrorResponseBody
-}
-
-// ErrorResponseBody describe and error that meant to be consumed by a software engineer.
-type ErrorResponseBody struct {
-	// Error contains the details of the error
-	Error struct {
-		// The constant code of the error that can be used for localisation
-		// Example: 401
-		Code int `json:"code"`
-		// The message that describe the error to the developer who do the integration.
-		// Not meant to be propagated to the end-user.
-		// The Message may change in the future, it it helps readability,
-		// please do not rely on the content in any way other than just reading it.
-		Message string `json:"message"`
-	} `json:"error"`
+	Body struct {
+		// Error contains the details of the error
+		Error struct {
+			// The constant code of the error that can be used for localisation
+			// Example: 401
+			Code int `json:"code"`
+			// The message that describe the error to the developer who do the integration.
+			// Not meant to be propagated to the end-user.
+			// The Message may change in the future, it it helps readability,
+			// please do not rely on the content in any way other than just reading it.
+			Message string `json:"message"`
+		} `json:"error"`
+	}
 }
 
 func handleError(w http.ResponseWriter, err error, errCode int) (errorWasHandled bool) {
 
 	toErrResp := func(code int) []byte {
-		var errResp ErrorResponseBody
-		errResp.Error.Code = code
+		var errResp ErrorResponse
+		errResp.Body.Error.Code = code
 
 		if 400 <= errCode && errCode < 500 {
-			errResp.Error.Message = err.Error()
+			errResp.Body.Error.Message = err.Error()
 		} else {
-			errResp.Error.Message = http.StatusText(code)
+			errResp.Body.Error.Message = http.StatusText(code)
 		}
 
-		body, mErr := json.Marshal(errResp)
+		body, mErr := json.Marshal(errResp.Body)
 		if mErr != nil {
 			panic(mErr)
 		}
@@ -69,42 +66,5 @@ func handleError(w http.ResponseWriter, err error, errCode int) (errorWasHandled
 	}
 
 	return false
-}
-
-func authMiddleware(uc *usecases.UseCases, next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		token, err := httputils.GetAuthToken(r)
-
-		if err != nil {
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			return
-		}
-
-		valid, err := uc.Doorkeeper.VerifyTextToken(r.Context(), token)
-
-		if handleError(w, err, http.StatusInternalServerError) {
-			return
-		}
-
-		if !valid {
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			return
-		}
-
-		pu, err := uc.ProtectedUsecases(r.Context(), token)
-
-		if err == usecases.ErrInvalidToken {
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			return
-		}
-
-		if handleError(w, err, http.StatusInternalServerError) {
-			return
-		}
-
-		// Deprecated
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), `ProtectedUseCases`, pu)))
-
-	})
+	
 }
