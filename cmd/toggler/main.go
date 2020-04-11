@@ -12,14 +12,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/toggler-io/toggler/extintf/caches"
-	"github.com/toggler-io/toggler/extintf/storages"
+	"github.com/toggler-io/toggler/external/resource/caches"
+	"github.com/toggler-io/toggler/external/resource/storages"
 
 	"github.com/unrolled/logger"
 
-	"github.com/toggler-io/toggler/extintf/httpintf"
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/security"
+	"github.com/toggler-io/toggler/external/interface/httpintf"
 	"github.com/toggler-io/toggler/usecases"
 )
 
