@@ -115,7 +115,7 @@ func TestReleaseFlagController(t *testing.T) {
 
 			c := client.NewHTTPClientWithConfig(nil, tc)
 
-			resp, err := c.Release.CreateReleaseFlag(p)
+			resp, err := c.Release.CreateReleaseFlag(p, authInfoWithToken(t))
 			if err != nil {
 				t.Fatal(err.Error())
 			}

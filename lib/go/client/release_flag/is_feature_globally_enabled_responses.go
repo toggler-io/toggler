@@ -9,8 +9,10 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 
 	"github.com/toggler-io/toggler/lib/go/models"
 )
@@ -91,20 +93,20 @@ ErrorResponse will contains a response about request that had some kind of probl
 The details will be included in the body.
 */
 type IsFeatureGloballyEnabledBadRequest struct {
-	Payload *models.ErrorResponseBody
+	Payload *IsFeatureGloballyEnabledBadRequestBody
 }
 
 func (o *IsFeatureGloballyEnabledBadRequest) Error() string {
 	return fmt.Sprintf("[POST /release/is-feature-globally-enabled.json][%d] isFeatureGloballyEnabledBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *IsFeatureGloballyEnabledBadRequest) GetPayload() *models.ErrorResponseBody {
+func (o *IsFeatureGloballyEnabledBadRequest) GetPayload() *IsFeatureGloballyEnabledBadRequestBody {
 	return o.Payload
 }
 
 func (o *IsFeatureGloballyEnabledBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorResponseBody)
+	o.Payload = new(IsFeatureGloballyEnabledBadRequestBody)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -125,25 +127,143 @@ ErrorResponse will contains a response about request that had some kind of probl
 The details will be included in the body.
 */
 type IsFeatureGloballyEnabledInternalServerError struct {
-	Payload *models.ErrorResponseBody
+	Payload *IsFeatureGloballyEnabledInternalServerErrorBody
 }
 
 func (o *IsFeatureGloballyEnabledInternalServerError) Error() string {
 	return fmt.Sprintf("[POST /release/is-feature-globally-enabled.json][%d] isFeatureGloballyEnabledInternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *IsFeatureGloballyEnabledInternalServerError) GetPayload() *models.ErrorResponseBody {
+func (o *IsFeatureGloballyEnabledInternalServerError) GetPayload() *IsFeatureGloballyEnabledInternalServerErrorBody {
 	return o.Payload
 }
 
 func (o *IsFeatureGloballyEnabledInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorResponseBody)
+	o.Payload = new(IsFeatureGloballyEnabledInternalServerErrorBody)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 
+	return nil
+}
+
+/*IsFeatureGloballyEnabledBadRequestBody is feature globally enabled bad request body
+swagger:model IsFeatureGloballyEnabledBadRequestBody
+*/
+type IsFeatureGloballyEnabledBadRequestBody struct {
+
+	// error
+	Error *models.Error `json:"error,omitempty"`
+}
+
+// Validate validates this is feature globally enabled bad request body
+func (o *IsFeatureGloballyEnabledBadRequestBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateError(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *IsFeatureGloballyEnabledBadRequestBody) validateError(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Error) { // not required
+		return nil
+	}
+
+	if o.Error != nil {
+		if err := o.Error.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("isFeatureGloballyEnabledBadRequest" + "." + "error")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *IsFeatureGloballyEnabledBadRequestBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *IsFeatureGloballyEnabledBadRequestBody) UnmarshalBinary(b []byte) error {
+	var res IsFeatureGloballyEnabledBadRequestBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*IsFeatureGloballyEnabledInternalServerErrorBody is feature globally enabled internal server error body
+swagger:model IsFeatureGloballyEnabledInternalServerErrorBody
+*/
+type IsFeatureGloballyEnabledInternalServerErrorBody struct {
+
+	// error
+	Error *models.Error `json:"error,omitempty"`
+}
+
+// Validate validates this is feature globally enabled internal server error body
+func (o *IsFeatureGloballyEnabledInternalServerErrorBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateError(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *IsFeatureGloballyEnabledInternalServerErrorBody) validateError(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Error) { // not required
+		return nil
+	}
+
+	if o.Error != nil {
+		if err := o.Error.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("isFeatureGloballyEnabledInternalServerError" + "." + "error")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *IsFeatureGloballyEnabledInternalServerErrorBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *IsFeatureGloballyEnabledInternalServerErrorBody) UnmarshalBinary(b []byte) error {
+	var res IsFeatureGloballyEnabledInternalServerErrorBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

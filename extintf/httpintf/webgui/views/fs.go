@@ -285,7 +285,7 @@ UeLvAAAA//8AwZenqBUAAA==
 		name:    "layout.html",
 		local:   "views/layout.html",
 		size:    2293,
-		modtime: 1565156367,
+		modtime: 1586569394,
 		compressed: `
 H4sIAAAAAAAC/7yWUWvrNhTH3/spFN3XKVrZHi4jNoyuZYMWRulbKUOxjp3TypKRjpOFkO8+JDuJkzhQ
 unCfcmQd//8/nejI2mw0lGiB8UZVwLfbG8YYm020K2jdAFtQbfLuWQyZUbbKOFi+ewhK5zcpTmNCMpCT
@@ -296,9 +296,9 @@ QJwtPJQZlyoEoCCb1kMRul9Ro50WIQyZPqMR3y+dJaFWEFwNvcZBZCLEK5bMELC/7tn3t/xrjJVHHYSH
 +jLFc6fX+U0/oXHJUGe80+WsMCqEjKetWZ1uKPYEtu3biB3hqx71W0TiSTFGj2g/9pqpYnGdA9y98p+q
 nre+As+wcPZIPOWERtl8JtPPwVaqIeFuLR1D7xoLNVeepRW14nYX1Frcil9PUaLEsARJ6jinX+9plogV
 Rlvt/rRvPH/ZnXpDyr1Ea841DAYaset3yHk+EtQ831dflkZVEq2Gf/mYeCz9IwZiD0ZVIXLNpMH/61d4
-UAQXDe/SdLK8gmODxpEs0eqLhn/HFHb38ngFO+2KIJ/vf//j6X5aX7aMaV92G80/6ioZVqqqwIsWLyEw
-Ur6Kn9B/5kZFpMMraf+N6o/SzmRrTrpCalwOuy4NR/pOod3z9d/Qsb775azvNhuCujFxn/Qq0/7mcWp4
-FHcXAhZ8cTgk34NscfoeeDwt0vz+ze7g68/DdI/ZbMDq7fa/AAAA//+yy/SV9QgAAA==
+UAQXDe/SdLK8gmODxpEs0eqLhn/HFHb38ngFO+2KIJ/vf//j6X5aX7aMaV92G80/6ioZVqqqwMsWLyEw
+Ur6Kn9B/5kZFpP4V0WLaf6P6o7Qz2ZqTrpAal8OuS8ORvlNo93z9N3Ss734567vNhqBuTNwnvcq0v3mc
+Gh7F3YWABV8cDsn3IFucvgceT4s0v3+zO/j68zDdYzYbsHq7/S8AAP//xUOCrfUIAAA=
 `,
 	},
 

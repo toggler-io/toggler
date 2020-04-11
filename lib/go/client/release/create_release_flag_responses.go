@@ -59,21 +59,23 @@ func NewCreateReleaseFlagOK() *CreateReleaseFlagOK {
 CreateReleaseFlagResponse returns
 */
 type CreateReleaseFlagOK struct {
-	Payload interface{}
+	Payload *CreateReleaseFlagOKBody
 }
 
 func (o *CreateReleaseFlagOK) Error() string {
 	return fmt.Sprintf("[POST /release-flags][%d] createReleaseFlagOK  %+v", 200, o.Payload)
 }
 
-func (o *CreateReleaseFlagOK) GetPayload() interface{} {
+func (o *CreateReleaseFlagOK) GetPayload() *CreateReleaseFlagOKBody {
 	return o.Payload
 }
 
 func (o *CreateReleaseFlagOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
+	o.Payload = new(CreateReleaseFlagOKBody)
+
 	// response payload
-	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 
@@ -91,20 +93,20 @@ ErrorResponse will contains a response about request that had some kind of probl
 The details will be included in the body.
 */
 type CreateReleaseFlagBadRequest struct {
-	Payload *models.ErrorResponseBody
+	Payload *CreateReleaseFlagBadRequestBody
 }
 
 func (o *CreateReleaseFlagBadRequest) Error() string {
 	return fmt.Sprintf("[POST /release-flags][%d] createReleaseFlagBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *CreateReleaseFlagBadRequest) GetPayload() *models.ErrorResponseBody {
+func (o *CreateReleaseFlagBadRequest) GetPayload() *CreateReleaseFlagBadRequestBody {
 	return o.Payload
 }
 
 func (o *CreateReleaseFlagBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorResponseBody)
+	o.Payload = new(CreateReleaseFlagBadRequestBody)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -125,20 +127,20 @@ ErrorResponse will contains a response about request that had some kind of probl
 The details will be included in the body.
 */
 type CreateReleaseFlagInternalServerError struct {
-	Payload *models.ErrorResponseBody
+	Payload *CreateReleaseFlagInternalServerErrorBody
 }
 
 func (o *CreateReleaseFlagInternalServerError) Error() string {
 	return fmt.Sprintf("[POST /release-flags][%d] createReleaseFlagInternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *CreateReleaseFlagInternalServerError) GetPayload() *models.ErrorResponseBody {
+func (o *CreateReleaseFlagInternalServerError) GetPayload() *CreateReleaseFlagInternalServerErrorBody {
 	return o.Payload
 }
 
 func (o *CreateReleaseFlagInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorResponseBody)
+	o.Payload = new(CreateReleaseFlagInternalServerErrorBody)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -148,13 +150,72 @@ func (o *CreateReleaseFlagInternalServerError) readResponse(response runtime.Cli
 	return nil
 }
 
+/*CreateReleaseFlagBadRequestBody create release flag bad request body
+swagger:model CreateReleaseFlagBadRequestBody
+*/
+type CreateReleaseFlagBadRequestBody struct {
+
+	// error
+	Error *models.Error `json:"error,omitempty"`
+}
+
+// Validate validates this create release flag bad request body
+func (o *CreateReleaseFlagBadRequestBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateError(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *CreateReleaseFlagBadRequestBody) validateError(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Error) { // not required
+		return nil
+	}
+
+	if o.Error != nil {
+		if err := o.Error.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("createReleaseFlagBadRequest" + "." + "error")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *CreateReleaseFlagBadRequestBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *CreateReleaseFlagBadRequestBody) UnmarshalBinary(b []byte) error {
+	var res CreateReleaseFlagBadRequestBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
 /*CreateReleaseFlagBody create release flag body
 swagger:model CreateReleaseFlagBody
 */
 type CreateReleaseFlagBody struct {
 
 	// flag
-	Flag *models.Flag `json:"Flag,omitempty"`
+	Flag *models.Flag `json:"flag,omitempty"`
 }
 
 // Validate validates this create release flag body
@@ -180,7 +241,7 @@ func (o *CreateReleaseFlagBody) validateFlag(formats strfmt.Registry) error {
 	if o.Flag != nil {
 		if err := o.Flag.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("Body" + "." + "Flag")
+				return ve.ValidateName("Body" + "." + "flag")
 			}
 			return err
 		}
@@ -200,6 +261,124 @@ func (o *CreateReleaseFlagBody) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (o *CreateReleaseFlagBody) UnmarshalBinary(b []byte) error {
 	var res CreateReleaseFlagBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*CreateReleaseFlagInternalServerErrorBody create release flag internal server error body
+swagger:model CreateReleaseFlagInternalServerErrorBody
+*/
+type CreateReleaseFlagInternalServerErrorBody struct {
+
+	// error
+	Error *models.Error `json:"error,omitempty"`
+}
+
+// Validate validates this create release flag internal server error body
+func (o *CreateReleaseFlagInternalServerErrorBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateError(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *CreateReleaseFlagInternalServerErrorBody) validateError(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Error) { // not required
+		return nil
+	}
+
+	if o.Error != nil {
+		if err := o.Error.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("createReleaseFlagInternalServerError" + "." + "error")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *CreateReleaseFlagInternalServerErrorBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *CreateReleaseFlagInternalServerErrorBody) UnmarshalBinary(b []byte) error {
+	var res CreateReleaseFlagInternalServerErrorBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*CreateReleaseFlagOKBody create release flag o k body
+swagger:model CreateReleaseFlagOKBody
+*/
+type CreateReleaseFlagOKBody struct {
+
+	// flag
+	Flag *models.Flag `json:"flag,omitempty"`
+}
+
+// Validate validates this create release flag o k body
+func (o *CreateReleaseFlagOKBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateFlag(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *CreateReleaseFlagOKBody) validateFlag(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Flag) { // not required
+		return nil
+	}
+
+	if o.Flag != nil {
+		if err := o.Flag.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("createReleaseFlagOK" + "." + "flag")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *CreateReleaseFlagOKBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *CreateReleaseFlagOKBody) UnmarshalBinary(b []byte) error {
+	var res CreateReleaseFlagOKBody
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

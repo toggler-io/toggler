@@ -33,7 +33,7 @@ func TestServeMux_UpdateFeatureFlag(t *testing.T) {
 	})
 
 	s.Let(`TokenString`, func(t *testcase.T) interface{} {
-		return GetTextToken(t)
+		return ExampleTextToken(t)
 	})
 
 	s.Let(`request`, func(t *testcase.T) interface{} {
@@ -172,7 +172,7 @@ func SpecServeMux_UpdateFeatureFlag(s *testcase.Spec, subject func(t *testcase.T
 
 	s.And(`valid token provided`, func(s *testcase.Spec) {
 		s.Let(`TokenString`, func(t *testcase.T) interface{} {
-			return GetTextToken(t)
+			return ExampleTextToken(t)
 		})
 
 		s.Then(`call succeed`, func(t *testcase.T) {

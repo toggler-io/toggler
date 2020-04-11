@@ -27,9 +27,7 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	IsFeatureGloballyEnabled(params *IsFeatureGloballyEnabledParams) (*IsFeatureGloballyEnabledOK, error)
-
-	Websocket(params *WebsocketParams, authInfo runtime.ClientAuthInfoWriter) (*WebsocketOK, error)
+	IsFeatureGloballyEnabled(params *IsFeatureGloballyEnabledParams, authInfo runtime.ClientAuthInfoWriter) (*IsFeatureGloballyEnabledOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -45,7 +43,7 @@ Then  whether the release id done to everyone or not by percentage.
 The endpoint can be called with HTTP GET method as well,
 POST is used officially only to support most highly abstracted http clients.
 */
-func (a *Client) IsFeatureGloballyEnabled(params *IsFeatureGloballyEnabledParams) (*IsFeatureGloballyEnabledOK, error) {
+func (a *Client) IsFeatureGloballyEnabled(params *IsFeatureGloballyEnabledParams, authInfo runtime.ClientAuthInfoWriter) (*IsFeatureGloballyEnabledOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewIsFeatureGloballyEnabledParams()
@@ -60,6 +58,7 @@ func (a *Client) IsFeatureGloballyEnabled(params *IsFeatureGloballyEnabledParams
 		Schemes:            []string{"http", "https"},
 		Params:             params,
 		Reader:             &IsFeatureGloballyEnabledReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})
@@ -73,51 +72,6 @@ func (a *Client) IsFeatureGloballyEnabled(params *IsFeatureGloballyEnabledParams
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for IsFeatureGloballyEnabled: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-  Websocket sockets API to check rollout feature flag status
-
-  This endpoint currently meant to used by servers and not by clients.
-The  reason behind is that it is much more easy to calculate with server quantity,
-than with client quantity, and therefore the load balancing is much more deterministic for the service.
-The websocket based communication allows for servers to do low latency quick requests,
-which is ideal to check flag status for individual requests that the server receives.
-Because the nature of the persistent connection, TCP connection overhead is minimal.
-The endpoint able to serve back whether the feature for a given pilot id is enabled or not.
-The endpoint also able to serve back global flag state checks as well.
-The flag enrollment interpretation use the same logic as it is described in the documentation.
-*/
-func (a *Client) Websocket(params *WebsocketParams, authInfo runtime.ClientAuthInfoWriter) (*WebsocketOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewWebsocketParams()
-	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "Websocket",
-		Method:             "GET",
-		PathPattern:        "/ws",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &WebsocketReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	})
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*WebsocketOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for Websocket: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

@@ -94,20 +94,20 @@ ErrorResponse will contains a response about request that had some kind of probl
 The details will be included in the body.
 */
 type GetPilotConfigBadRequest struct {
-	Payload *models.ErrorResponseBody
+	Payload *GetPilotConfigBadRequestBody
 }
 
 func (o *GetPilotConfigBadRequest) Error() string {
 	return fmt.Sprintf("[GET /v/config][%d] getPilotConfigBadRequest  %+v", 400, o.Payload)
 }
 
-func (o *GetPilotConfigBadRequest) GetPayload() *models.ErrorResponseBody {
+func (o *GetPilotConfigBadRequest) GetPayload() *GetPilotConfigBadRequestBody {
 	return o.Payload
 }
 
 func (o *GetPilotConfigBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorResponseBody)
+	o.Payload = new(GetPilotConfigBadRequestBody)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -128,26 +128,85 @@ ErrorResponse will contains a response about request that had some kind of probl
 The details will be included in the body.
 */
 type GetPilotConfigInternalServerError struct {
-	Payload *models.ErrorResponseBody
+	Payload *GetPilotConfigInternalServerErrorBody
 }
 
 func (o *GetPilotConfigInternalServerError) Error() string {
 	return fmt.Sprintf("[GET /v/config][%d] getPilotConfigInternalServerError  %+v", 500, o.Payload)
 }
 
-func (o *GetPilotConfigInternalServerError) GetPayload() *models.ErrorResponseBody {
+func (o *GetPilotConfigInternalServerError) GetPayload() *GetPilotConfigInternalServerErrorBody {
 	return o.Payload
 }
 
 func (o *GetPilotConfigInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ErrorResponseBody)
+	o.Payload = new(GetPilotConfigInternalServerErrorBody)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 
+	return nil
+}
+
+/*GetPilotConfigBadRequestBody get pilot config bad request body
+swagger:model GetPilotConfigBadRequestBody
+*/
+type GetPilotConfigBadRequestBody struct {
+
+	// error
+	Error *models.Error `json:"error,omitempty"`
+}
+
+// Validate validates this get pilot config bad request body
+func (o *GetPilotConfigBadRequestBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateError(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetPilotConfigBadRequestBody) validateError(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Error) { // not required
+		return nil
+	}
+
+	if o.Error != nil {
+		if err := o.Error.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("getPilotConfigBadRequest" + "." + "error")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetPilotConfigBadRequestBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetPilotConfigBadRequestBody) UnmarshalBinary(b []byte) error {
+	var res GetPilotConfigBadRequestBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }
 
@@ -212,6 +271,65 @@ func (o *GetPilotConfigBody) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (o *GetPilotConfigBody) UnmarshalBinary(b []byte) error {
 	var res GetPilotConfigBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*GetPilotConfigInternalServerErrorBody get pilot config internal server error body
+swagger:model GetPilotConfigInternalServerErrorBody
+*/
+type GetPilotConfigInternalServerErrorBody struct {
+
+	// error
+	Error *models.Error `json:"error,omitempty"`
+}
+
+// Validate validates this get pilot config internal server error body
+func (o *GetPilotConfigInternalServerErrorBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateError(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetPilotConfigInternalServerErrorBody) validateError(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Error) { // not required
+		return nil
+	}
+
+	if o.Error != nil {
+		if err := o.Error.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("getPilotConfigInternalServerError" + "." + "error")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetPilotConfigInternalServerErrorBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetPilotConfigInternalServerErrorBody) UnmarshalBinary(b []byte) error {
+	var res GetPilotConfigInternalServerErrorBody
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

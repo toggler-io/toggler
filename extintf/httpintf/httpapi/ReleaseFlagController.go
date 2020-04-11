@@ -45,6 +45,9 @@ type CreateReleaseFlagResponse struct {
 
 		Schemes: http, https
 
+		Security:
+		  AppToken: []
+
 		Responses:
 		  200: createReleaseFlagResponse
 		  400: errorResponse

@@ -1,18 +1,21 @@
-package httpapi_test
+package httpws_test
 
 import (
 	"context"
-	"github.com/adamluzsi/testcase"
-	"github.com/toggler-io/toggler/extintf/httpintf/httpapi"
-	. "github.com/toggler-io/toggler/testing"
-	"github.com/gorilla/websocket"
-	"github.com/stretchr/testify/require"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/adamluzsi/testcase"
+	"github.com/gorilla/websocket"
+	"github.com/stretchr/testify/require"
+
+	"github.com/toggler-io/toggler/extintf/httpintf/httpapi"
+	"github.com/toggler-io/toggler/extintf/httpintf/httpws"
+	. "github.com/toggler-io/toggler/testing"
 )
 
 func TestWebsocket(t *testing.T) {
@@ -20,7 +23,7 @@ func TestWebsocket(t *testing.T) {
 	SetUp(s)
 
 	server := func(t *testcase.T) *httptest.Server { return t.I(`server`).(*httptest.Server) }
-	s.Let(`server`, func(t *testcase.T) interface{} { return httptest.NewServer(NewHandler(t)) })
+	s.Let(`server`, func(t *testcase.T) interface{} { return httptest.NewServer(httpapi.NewHandler(t)) })
 	s.After(func(t *testcase.T) { server(t).Close() })
 
 	s.Let(`url`, func(t *testcase.T) interface{} {
@@ -53,7 +56,7 @@ func TestWebsocket(t *testing.T) {
 	s.After(func(t *testcase.T) { require.Nil(t, ws(t).Close()) })
 
 	subject := func(t *testcase.T, resp interface{}) {
-		var req httpapi.WebsocketRequestPayload
+		var req httpws.WebsocketRequestPayload
 		req.Operation = t.I(`operation`).(string)
 		req.Data = t.I(`data`)
 		require.Nil(t, ws(t).WriteJSON(req))
@@ -66,7 +69,7 @@ func TestWebsocket(t *testing.T) {
 		})
 
 		s.Let(`data`, func(t *testcase.T) interface{} {
-			return httpapi.IsFeatureEnabledRequestPayload{
+			return httpws.IsFeatureEnabledRequestPayload{
 				Feature: ExampleReleaseFlagName(t),
 				PilotID: GetExternalPilotID(t),
 			}

@@ -133,7 +133,7 @@ func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
 			return manager(t).DeleteFeatureFlag(context.TODO(), t.I(`flag ID`).(string))
 		}
 
-		s.Let(ExampleReleaseFlagNameLetVar, func(t *testcase.T) interface{} { return ExampleName() })
+		s.Let(ExampleReleaseFlagNameLetVar, func(t *testcase.T) interface{} { return RandomName() })
 		s.Let(ExampleRolloutApiURLLetVar, func(t *testcase.T) interface{} { return nil })
 		s.Let(ExampleRolloutPercentageLetVar, func(t *testcase.T) interface{} { return rand.Intn(101) })
 		s.Let(ExampleRolloutSeedSaltLetVar, func(t *testcase.T) interface{} { return int64(42) })
@@ -171,8 +171,8 @@ func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
 
 			s.And(`there are pilots manually set for the feature`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					require.Nil(t, manager(t).SetPilotEnrollmentForFeature(GetContext(t), t.I(`flag ID`).(string), ExampleExternalPilotID(), true))
-					require.Nil(t, manager(t).SetPilotEnrollmentForFeature(GetContext(t), t.I(`flag ID`).(string), ExampleExternalPilotID(), false))
+					require.Nil(t, manager(t).SetPilotEnrollmentForFeature(GetContext(t), t.I(`flag ID`).(string), RandomExternalPilotID(), true))
+					require.Nil(t, manager(t).SetPilotEnrollmentForFeature(GetContext(t), t.I(`flag ID`).(string), RandomExternalPilotID(), false))
 				})
 
 				s.Then(`it will remove the pilots as well for the feature`, func(t *testcase.T) {
@@ -189,8 +189,8 @@ func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
 						othFlag.ID = ``
 
 						require.Nil(t, ExampleStorage(t).Create(GetContext(t), &othFlag))
-						require.Nil(t, manager(t).SetPilotEnrollmentForFeature(GetContext(t), othFlag.ID, ExampleExternalPilotID(), true))
-						require.Nil(t, manager(t).SetPilotEnrollmentForFeature(GetContext(t), othFlag.ID, ExampleExternalPilotID(), false))
+						require.Nil(t, manager(t).SetPilotEnrollmentForFeature(GetContext(t), othFlag.ID, RandomExternalPilotID(), true))
+						require.Nil(t, manager(t).SetPilotEnrollmentForFeature(GetContext(t), othFlag.ID, RandomExternalPilotID(), false))
 					})
 
 					s.Then(`they will be unaffected by the subject flag removal`, func(t *testcase.T) {
@@ -217,7 +217,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 			return subjectWithArgs(t, getReleaseFlag(t))
 		}
 
-		s.Let(ExampleReleaseFlagNameLetVar, func(t *testcase.T) interface{} { return ExampleName() })
+		s.Let(ExampleReleaseFlagNameLetVar, func(t *testcase.T) interface{} { return RandomName() })
 		s.Let(ExampleRolloutApiURLLetVar, func(t *testcase.T) interface{} { return nil })
 		s.Let(ExampleRolloutPercentageLetVar, func(t *testcase.T) interface{} { return rand.Intn(101) })
 		s.Let(ExampleRolloutSeedSaltLetVar, func(t *testcase.T) interface{} { return int64(42) })
@@ -389,7 +389,7 @@ func SpecRolloutManagerUpdateFeatureFlag(s *testcase.Spec) {
 			return subjectWithArgs(t, getReleaseFlag(t))
 		}
 
-		s.Let(ExampleReleaseFlagNameLetVar, func(t *testcase.T) interface{} { return ExampleName() })
+		s.Let(ExampleReleaseFlagNameLetVar, func(t *testcase.T) interface{} { return RandomName() })
 		s.Let(ExampleRolloutApiURLLetVar, func(t *testcase.T) interface{} { return nil })
 		s.Let(ExampleRolloutPercentageLetVar, func(t *testcase.T) interface{} { return rand.Intn(101) })
 		s.Let(ExampleRolloutSeedSaltLetVar, func(t *testcase.T) interface{} { return int64(42) })

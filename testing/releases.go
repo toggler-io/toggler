@@ -30,15 +30,15 @@ const (
 func init() {
 	setups = append(setups, func(s *testcase.Spec) {
 		s.Let(ExampleReleaseFlagNameLetVar, func(t *testcase.T) interface{} {
-			return ExampleName()
+			return RandomName()
 		})
 
 		s.Let(ExamplePilotExternalIDLetVar, func(t *testcase.T) interface{} {
-			return ExampleExternalPilotID()
+			return RandomExternalPilotID()
 		})
 
 		s.Let(UniqueUserIDLetVar, func(t *testcase.T) interface{} {
-			return ExampleUniqUserID()
+			return RandomUniqUserID()
 		})
 
 		s.Let(ExamplePilotEnrollmentLetVar, func(t *testcase.T) interface{} {
@@ -143,7 +143,7 @@ func ExampleReleaseFlag(t *testcase.T) *release.Flag {
 	return GetReleaseFlag(t, ExampleReleaseFlagLetVar)
 }
 
-func GetUniqueUserID(t *testcase.T) string {
+func ExampleUniqueUserID(t *testcase.T) string {
 	return t.I(UniqueUserIDLetVar).(string)
 }
 

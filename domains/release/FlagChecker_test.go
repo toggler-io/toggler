@@ -221,7 +221,7 @@ func SpecFeatureFlagChecker_GetReleaseFlagPilotEnrollmentStates(s *testcase.Spec
 		}
 		extIDS := make([]string, 0, samplingCount)
 		for i := 0; i < samplingCount; i++ {
-			extIDS = append(extIDS, ExampleExternalPilotID())
+			extIDS = append(extIDS, RandomExternalPilotID())
 		}
 		expectedEnrollMaxPercentage := rand.Intn(51) + 50
 		if 100 < expectedEnrollMaxPercentage+tolerationPercentage {

@@ -9,19 +9,19 @@ import (
 //nolint:gochecknoglobals
 var mutex sync.Mutex
 
-func ExampleName() string {
+func RandomName() string {
 	mutex.Lock()
 	defer mutex.Unlock()
 	return randomdata.SillyName()
 }
 
-func ExampleExternalPilotID() string {
+func RandomExternalPilotID() string {
 	mutex.Lock()
 	defer mutex.Unlock()
 	return randomdata.MacAddress()
 }
 
-func ExampleUniqUserID() string {
+func RandomUniqUserID() string {
 	mutex.Lock()
 	defer mutex.Unlock()
 	return randomdata.MacAddress()

@@ -1,17 +1,16 @@
-package httpapi
+package httputils
 
 import (
 	"context"
 	"net/http"
 
-	"github.com/toggler-io/toggler/extintf/httpintf/httputils"
 	"github.com/toggler-io/toggler/usecases"
 )
 
-func authMiddleware(next http.Handler, uc *usecases.UseCases) http.Handler {
+func AuthMiddleware(next http.Handler, uc *usecases.UseCases) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		token, err := httputils.GetAuthToken(r)
+		token, err := GetAppToken(r)
 
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
@@ -20,12 +19,15 @@ func authMiddleware(next http.Handler, uc *usecases.UseCases) http.Handler {
 
 		valid, err := uc.Doorkeeper.VerifyTextToken(r.Context(), token)
 
-		if handleError(w, err, http.StatusInternalServerError) {
+		if err != nil {
+			code := http.StatusInternalServerError
+			http.Error(w, http.StatusText(code), code)
 			return
 		}
 
 		if !valid {
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			code := http.StatusUnauthorized
+			http.Error(w, http.StatusText(code), code)
 			return
 		}
 
@@ -37,7 +39,9 @@ func authMiddleware(next http.Handler, uc *usecases.UseCases) http.Handler {
 			return
 		}
 
-		if handleError(w, err, http.StatusInternalServerError) {
+		if err != nil {
+			code := http.StatusInternalServerError
+			http.Error(w, http.StatusText(code), code)
 			return
 		}
 

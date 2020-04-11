@@ -1,10 +1,19 @@
-package httpapi
+package httpws
 
 import (
 	"net/http"
 
+	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
+
+	"github.com/toggler-io/toggler/extintf/httpintf/httpapi"
+	"github.com/toggler-io/toggler/usecases"
 )
+
+type Controller struct {
+	UseCases *usecases.UseCases
+	Upgrader *websocket.Upgrader
+}
 
 // WebsocketRequestPayload is the payload that is expected to be received in the websocket connection.
 //
@@ -25,7 +34,7 @@ type WebsocketRequestPayload struct {
 	Data interface{} `json:"data"`
 }
 
-type WebsocketResponseBody = EnrollmentResponseBody
+type WebsocketResponseBody = httpapi.EnrollmentResponseBody
 
 // WSLoadBalanceErrResp will be received in case the receiver server cannot take more ws connections.
 // This error must be handled by retrying the call until it succeed.
@@ -35,11 +44,11 @@ type WebsocketResponseBody = EnrollmentResponseBody
 // In case there is a load balancer that handle this transparently, this error may not be received.
 //
 // swagger:response wsLoadBalanceErrResponse
-type WSLoadBalanceErrResp ErrorResponse
+type WSLoadBalanceErrResp httpapi.ErrorResponse
 
 /*
 
-	swagger:route GET /ws release-flag pilot global websocket Websocket
+	swagger:route GET / ws release flag pilot global server-side websocket Websocket
 
 	Socket API to check Rollout Feature Flag Status
 
@@ -69,10 +78,10 @@ type WSLoadBalanceErrResp ErrorResponse
 		  503: wsLoadBalanceErrResponse
 
 */
-func (sm *Handler) WebsocketHandler(w http.ResponseWriter, r *http.Request) {
+func (ctrl *Controller) WebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	//TODO: 503 Service Unavailable for rand based load balancing
 
-	c, err := sm.Upgrader.Upgrade(w, r, nil)
+	c, err := ctrl.Upgrader.Upgrade(w, r, nil)
 
 	if err != nil {
 		return
@@ -84,7 +93,7 @@ func (sm *Handler) WebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			return false
 		}
-		var errResp ErrorResponse
+		var errResp httpapi.ErrorResponse
 		errResp.Body.Error.Code = code
 		errResp.Body.Error.Message = err.Error()
 		return c.WriteJSON(errResp.Body) != nil
@@ -104,13 +113,13 @@ subscription:
 			data := req.Data.(map[string]interface{})
 
 			releaseFlagName := data[`feature`].(string)
-			states, err := sm.UseCases.FlagChecker.GetReleaseFlagPilotEnrollmentStates(r.Context(), data[`id`].(string), releaseFlagName)
+			states, err := ctrl.UseCases.FlagChecker.GetReleaseFlagPilotEnrollmentStates(r.Context(), data[`id`].(string), releaseFlagName)
 
 			if handle(err, http.StatusInternalServerError) {
 				continue subscription
 			}
 
-			var resp EnrollmentResponseBody
+			var resp httpapi.EnrollmentResponseBody
 			resp.Enrollment = states[releaseFlagName]
 
 			if handle(c.WriteJSON(&resp), http.StatusInternalServerError) {
@@ -119,12 +128,12 @@ subscription:
 
 		case `IsFeatureGloballyEnabled`:
 			data := req.Data.(map[string]interface{})
-			enr, err := sm.UseCases.FlagChecker.IsFeatureGloballyEnabled(data[`feature`].(string))
+			enr, err := ctrl.UseCases.FlagChecker.IsFeatureGloballyEnabled(data[`feature`].(string))
 			if handle(err, http.StatusInternalServerError) {
 				continue subscription
 			}
 
-			var resp IsFeatureGloballyEnabledResponseBody
+			var resp httpapi.IsFeatureGloballyEnabledResponseBody
 			resp.Enrollment = enr
 
 			if handle(c.WriteJSON(&resp), http.StatusInternalServerError) {

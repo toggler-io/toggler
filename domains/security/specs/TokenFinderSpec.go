@@ -24,7 +24,7 @@ type TokenFinderSpec struct {
 func (spec TokenFinderSpec) Test(t *testing.T) {
 	s := testcase.NewSpec(t)
 
-	s.Let(`uid`, func(t *testcase.T) interface{} { return ExampleUniqUserID() })
+	s.Let(`uid`, func(t *testcase.T) interface{} { return RandomUniqUserID() })
 	s.Let(`token object`, func(t *testcase.T) interface{} {
 		return &security.Token{
 			OwnerUID: t.I(`uid`).(string),
