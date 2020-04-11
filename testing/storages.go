@@ -3,7 +3,7 @@ package testing
 import (
 	"github.com/adamluzsi/testcase"
 
-	"github.com/toggler-io/toggler/extintf/storages"
+	"github.com/toggler-io/toggler/external/resource/storages"
 )
 
 const ExampleStorageLetVar = `TestStorage`

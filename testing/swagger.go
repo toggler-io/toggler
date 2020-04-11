@@ -1,13 +1,15 @@
 package testing
 
 import (
-	"github.com/adamluzsi/testcase"
-	"github.com/toggler-io/toggler/extintf/httpintf/httpapi"
-	"github.com/toggler-io/toggler/lib/go/client"
-	"github.com/toggler-io/toggler/usecases"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+
+	"github.com/adamluzsi/testcase"
+
+	"github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
+	"github.com/toggler-io/toggler/lib/go/client"
+	"github.com/toggler-io/toggler/usecases"
 )
 
 func SetupSpecWithSwaggerClient(s *testcase.Spec) {
