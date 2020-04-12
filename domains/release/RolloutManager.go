@@ -87,6 +87,7 @@ func (manager *RolloutManager) UpdateFeatureFlag(ctx context.Context, flag *Flag
 	return manager.Storage.Update(ctx, flag)
 }
 
+// TODO convert this into a stream
 func (manager *RolloutManager) ListFeatureFlags(ctx context.Context) ([]Flag, error) {
 	iter := manager.Storage.FindAll(ctx, Flag{})
 	ffs := make([]Flag, 0) // empty slice required for null object pattern enforcement
@@ -153,6 +154,7 @@ func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context,
 
 //TODO: make operation atomic between flags and pilots
 // TODO delete ip addr allows as well
+// TODO: rename
 func (manager *RolloutManager) DeleteFeatureFlag(ctx context.Context, id string) error {
 	if id == `` {
 		return frameless.ErrIDRequired

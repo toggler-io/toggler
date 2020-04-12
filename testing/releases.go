@@ -119,6 +119,15 @@ func FindStoredReleaseFlagByName(t *testcase.T, name string) *release.Flag {
 	return f
 }
 
+func GivenWeHaveReleaseFlag(s *testcase.Spec, vn string) {
+	s.Let(vn, func(t *testcase.T) interface{} {
+		rf := FixtureFactory{}.Create(release.Flag{}).(*release.Flag)
+		require.Nil(t, ExampleRolloutManager(t).Create(GetContext(t), rf))
+		t.Defer(func() { _ = ExampleRolloutManager(t).DeleteFeatureFlag(GetContext(t), rf.ID) })
+		return rf
+	})
+}
+
 func EnsureFlag(t *testcase.T, name string, prc int) {
 	rm := release.NewRolloutManager(ExampleStorage(t))
 	require.Nil(t, rm.CreateFeatureFlag(GetContext(t), &release.Flag{
@@ -147,6 +156,10 @@ func ExampleUniqueUserID(t *testcase.T) string {
 	return t.I(UniqueUserIDLetVar).(string)
 }
 
+func ExampleRolloutManager(t *testcase.T) *release.RolloutManager {
+	return release.NewRolloutManager(ExampleStorage(t))
+}
+
 func SpecPilotEnrolmentIs(t *testcase.T, enrollment bool) {
 	if ExampleReleaseFlag(t).ID == `` {
 		require.Nil(t, ExampleStorage(t).Create(context.TODO(), ExampleReleaseFlag(t)))
@@ -154,4 +167,11 @@ func SpecPilotEnrolmentIs(t *testcase.T, enrollment bool) {
 
 	rm := release.NewRolloutManager(ExampleStorage(t))
 	require.Nil(t, rm.SetPilotEnrollmentForFeature(context.TODO(), ExampleReleaseFlag(t).ID, GetExternalPilotID(t), enrollment, ))
+}
+
+func NoReleaseFlagPresentInTheStorage(s *testcase.Spec) {
+	s.Before(func(t *testcase.T) {
+		// TODO: replace with flag manager list+delete
+		require.Nil(t, ExampleStorage(t).DeleteAll(GetContext(t), release.Flag{}))
+	})
 }
