@@ -17,7 +17,7 @@ func NewHandler(uc *usecases.UseCases) http.Handler {
 		Upgrader: &websocket.Upgrader{},
 	}
 
-	mux.Handle(`/`, httputils.AuthMiddleware(http.HandlerFunc(ctrl.WebsocketHandler), uc))
+	mux.Handle(`/`, httputils.AuthMiddleware(http.HandlerFunc(ctrl.WebsocketHandler), uc, http.Error))
 
 	return mux
 }

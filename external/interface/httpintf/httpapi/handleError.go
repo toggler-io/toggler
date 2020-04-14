@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/adamluzsi/frameless"
@@ -32,41 +33,39 @@ type Error struct {
 	Message string `json:"message"`
 }
 
-func handleError(w http.ResponseWriter, err error, errCode int) (errorWasHandled bool) {
+func ErrorWriterFunc(w http.ResponseWriter, error string, code int) {
+	var errResp ErrorResponse
+	errResp.Body.Error.Code = code
 
-	toErrResp := func(code int) []byte {
-		var errResp ErrorResponse
-		errResp.Body.Error.Code = code
-
-		if 400 <= errCode && errCode < 500 {
-			errResp.Body.Error.Message = err.Error()
-		} else {
-			errResp.Body.Error.Message = http.StatusText(code)
-		}
-
-		body, mErr := json.Marshal(errResp.Body)
-		if mErr != nil {
-			panic(mErr)
-		}
-		return body
+	if 400 <= code && code < 500 {
+		errResp.Body.Error.Message = error
+	} else {
+		errResp.Body.Error.Message = http.StatusText(code)
 	}
 
+	w.WriteHeader(code)
+
+	if err := json.NewEncoder(w).Encode(errResp.Body); err != nil {
+		log.Println(`ERROR`, err.Error())
+	}
+}
+
+func handleError(w http.ResponseWriter, err error, errCode int) bool {
 	if err == usecases.ErrInvalidToken {
-		_, _ = w.Write(toErrResp(http.StatusUnauthorized))
+		const code = http.StatusUnauthorized
+		ErrorWriterFunc(w, http.StatusText(code), code)
 		return true
 	}
 
 	if err == frameless.ErrNotFound {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		ErrorWriterFunc(w, `not found`, http.StatusBadRequest)
 		return true
 	}
 
 	if err != nil {
-		w.WriteHeader(errCode)
-		_, _ = w.Write(toErrResp(http.StatusUnauthorized))
+		ErrorWriterFunc(w, err.Error(), errCode)
 		return true
 	}
 
 	return false
-
 }

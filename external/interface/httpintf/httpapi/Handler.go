@@ -21,9 +21,7 @@ func NewHandler(uc *usecases.UseCases) *Handler {
 	}
 
 	gorest.Mount(mux.ServeMux, `/v`, NewViewsHandler(uc))
-
-	gorest.Mount(mux.ServeMux, `/release-flags`,
-		httputils.AuthMiddleware(gorest.NewHandler(ReleaseFlagController{UseCases: uc}), uc))
+	gorest.Mount(mux.ServeMux, `/release-flags`, NewReleaseFlagHandler(uc))
 
 	featureAPI := buildReleasesAPI(mux)
 	mux.Handle(`/release/`, http.StripPrefix(`/release`, featureAPI))
@@ -37,7 +35,6 @@ func NewHandler(uc *usecases.UseCases) *Handler {
 
 func buildReleasesAPI(handlers *Handler) *http.ServeMux {
 	mux := http.NewServeMux()
-	mux.Handle(`/is-feature-globally-enabled.json`, http.HandlerFunc(handlers.IsFeatureGloballyEnabled))
 	mux.Handle(`/flag/`, http.StripPrefix(`/flag`, buildFlagAPI(handlers)))
 	return mux
 }
@@ -47,7 +44,7 @@ func buildFlagAPI(handlers *Handler) http.Handler {
 	mux.Handle(`/update.form`, http.HandlerFunc(handlers.UpdateFeatureFlagFORM))
 	mux.Handle(`/update.json`, http.HandlerFunc(handlers.UpdateFeatureFlagJSON))
 	mux.Handle(`/set-enrollment-manually.json`, http.HandlerFunc(handlers.SetPilotEnrollmentForFeature))
-	return httputils.AuthMiddleware(mux, handlers.UseCases)
+	return httputils.AuthMiddleware(mux, handlers.UseCases, ErrorWriterFunc)
 }
 
 type Handler struct {

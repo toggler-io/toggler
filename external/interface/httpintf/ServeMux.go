@@ -6,7 +6,6 @@ import (
 	"github.com/adamluzsi/gorest"
 
 	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
-	"github.com/toggler-io/toggler/external/interface/httpintf/httpws"
 	"github.com/toggler-io/toggler/external/interface/httpintf/swagger"
 
 	"github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
@@ -14,11 +13,11 @@ import (
 	"github.com/toggler-io/toggler/usecases"
 )
 
-func NewServeMux(uc *usecases.UseCases) (*ServeMux, error) {
+func NewServeMux(uc *usecases.UseCases) (*http.ServeMux, error) {
 	mux := http.NewServeMux()
 
 	mux.Handle(`/api/`, httputils.CORS(http.StripPrefix(`/api`, httpapi.NewHandler(uc))))
-	mux.Handle(`/ws/`, httputils.CORS(http.StripPrefix(`/ws`, httpws.NewHandler(uc))))
+	//mux.Handle(`/ws/`, httputils.CORS(http.StripPrefix(`/ws`, httpws.NewHandler(uc))))
 
 	ui, err := webgui.NewHandler(uc)
 	if err != nil {
@@ -28,13 +27,5 @@ func NewServeMux(uc *usecases.UseCases) (*ServeMux, error) {
 	mux.Handle(`/`, ui)
 	gorest.Mount(mux, `/swagger`, swagger.NewHandler())
 
-	return &ServeMux{
-		ServeMux: mux,
-		UseCases: uc,
-	}, nil
-}
-
-type ServeMux struct {
-	*http.ServeMux
-	*usecases.UseCases
+	return mux, nil
 }

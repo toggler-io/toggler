@@ -77,7 +77,6 @@ type GetPilotConfigResponse struct {
 		  500: errorResponse
 
 */
-
 func (ctrl ViewsController) GetPilotConfig(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	payloadDecoder := json.NewDecoder(r.Body)

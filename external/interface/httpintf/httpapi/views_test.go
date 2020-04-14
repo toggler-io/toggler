@@ -10,15 +10,13 @@ import (
 
 	. "github.com/adamluzsi/testcase/httpspec"
 
+	"github.com/adamluzsi/testcase"
+	"github.com/stretchr/testify/require"
+
 	"github.com/toggler-io/toggler/external/interface/httpintf"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
 	"github.com/toggler-io/toggler/lib/go/client"
 	"github.com/toggler-io/toggler/lib/go/client/pilot"
-	"github.com/toggler-io/toggler/usecases"
-
-	"github.com/adamluzsi/testcase"
-	"github.com/stretchr/testify/require"
-
 	. "github.com/toggler-io/toggler/testing"
 )
 
@@ -33,37 +31,6 @@ func TestViewsController(t *testing.T) {
 	LetHandler(s, func(t *testcase.T) http.Handler { return NewHandler(t) })
 
 	s.Describe(`GET /v/config - GetPilotConfig`, SpecViewsControllerClientConfig)
-
-	s.Test(`swagger integration`, func(t *testcase.T) {
-		require.Nil(t, ExampleStorage(t).Create(GetContext(t), ExampleReleaseFlag(t)))
-		require.Nil(t, ExampleStorage(t).Create(GetContext(t), ExamplePilot(t)))
-
-		sm, err := httpintf.NewServeMux(usecases.NewUseCases(ExampleStorage(t)))
-		require.Nil(t, err)
-
-		s := httptest.NewServer(sm)
-		defer s.Close()
-
-		p := pilot.NewGetPilotConfigParams()
-		p.Body.PilotExtID = &ExamplePilot(t).ExternalID
-		p.Body.ReleaseFlags = []string{ExampleReleaseFlagName(t)}
-
-		tc := client.DefaultTransportConfig()
-		u, _ := url.Parse(s.URL)
-		tc.Host = u.Host
-		tc.Schemes = []string{`http`}
-
-		c := client.NewHTTPClientWithConfig(nil, tc)
-
-		resp, err := c.Pilot.GetPilotConfig(p, authInfo(t))
-		if err != nil {
-			t.Fatal(err.Error())
-		}
-
-		require.NotNil(t, resp)
-		require.NotNil(t, resp.Payload)
-		require.Equal(t, GetPilotEnrollment(t), resp.Payload.Release.Flags[ExampleReleaseFlagName(t)])
-	})
 }
 
 func SpecViewsControllerClientConfig(s *testcase.Spec) {
@@ -143,5 +110,36 @@ func SpecViewsControllerClientConfig(s *testcase.Spec) {
 
 			sharedSpec(s)
 		})
+	})
+
+	s.Test(`swagger integration`, func(t *testcase.T) {
+		require.Nil(t, ExampleStorage(t).Create(GetContext(t), ExampleReleaseFlag(t)))
+		require.Nil(t, ExampleStorage(t).Create(GetContext(t), ExamplePilot(t)))
+
+		sm, err := httpintf.NewServeMux(ExampleUseCases(t))
+		require.Nil(t, err)
+
+		s := httptest.NewServer(sm)
+		defer s.Close()
+
+		p := pilot.NewGetPilotConfigParams()
+		p.Body.PilotExtID = &ExamplePilot(t).ExternalID
+		p.Body.ReleaseFlags = []string{ExampleReleaseFlagName(t)}
+
+		tc := client.DefaultTransportConfig()
+		u, _ := url.Parse(s.URL)
+		tc.Host = u.Host
+		tc.Schemes = []string{`http`}
+
+		c := client.NewHTTPClientWithConfig(nil, tc)
+
+		resp, err := c.Pilot.GetPilotConfig(p, publicAuth(t))
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+
+		require.NotNil(t, resp)
+		require.NotNil(t, resp.Payload)
+		require.Equal(t, GetPilotEnrollment(t), resp.Payload.Release.Flags[ExampleReleaseFlagName(t)])
 	})
 }

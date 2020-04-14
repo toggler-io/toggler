@@ -19,8 +19,16 @@ github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWX
 github.com/Shopify/toxiproxy v2.1.4+incompatible/go.mod h1:OXgGpZ6Cli1/URJOF1DMxUHB2q5Ap20/P/eIdh4G0pI=
 github.com/adamluzsi/frameless v0.0.0-20200324205007-75dea8849153 h1:USrx322ZA7Zy0Y91034OXduKl78Jz1MyeImqyMXZrqg=
 github.com/adamluzsi/frameless v0.0.0-20200324205007-75dea8849153/go.mod h1:NriyXxliKEWi14+BtRb5n1zFnAz+QZKMf1tlr/JvbVs=
+github.com/adamluzsi/frameless v0.0.0-20200413181804-aacd058d6a57 h1:rX3Zmaf5QaFq6hr3dXfNelfmsiKET0Cb//vz+m1Upbg=
+github.com/adamluzsi/frameless v0.0.0-20200413181804-aacd058d6a57/go.mod h1:NriyXxliKEWi14+BtRb5n1zFnAz+QZKMf1tlr/JvbVs=
 github.com/adamluzsi/gorest v0.0.0-20200407230257-22a7674677eb h1:+53bM4aBfs2/w1EqXWVW72UdtWWGFBOBLJvAlYcsAds=
 github.com/adamluzsi/gorest v0.0.0-20200407230257-22a7674677eb/go.mod h1:69IlqF8PSCN7uPwFE2ZKhXyg0yk8gk7P474s9N5Gtvs=
+github.com/adamluzsi/gorest v0.0.0-20200413184605-fe09a5ebe1c9 h1:SVPgITPpyZsp3HLs1F9jCPdiNQeM6q2f9bJ/djvrAoM=
+github.com/adamluzsi/gorest v0.0.0-20200413184605-fe09a5ebe1c9/go.mod h1:/VmlPKn7WLAoUrOfbyVmjRp/0i9Swc/rXE2bGwLx2tU=
+github.com/adamluzsi/gorest v0.0.0-20200413185023-d1fce80352a3 h1:QJMnBMfW1WkiGKmLceimkCLHldkPvrTwg9fK0vPq9+M=
+github.com/adamluzsi/gorest v0.0.0-20200413185023-d1fce80352a3/go.mod h1:/VmlPKn7WLAoUrOfbyVmjRp/0i9Swc/rXE2bGwLx2tU=
+github.com/adamluzsi/gorest v0.0.0-20200414213947-a420fa68c7fb h1:1/87yvR8DCa9tqnzViL1zMpDiRrVMbXXiHCbqK/00kE=
+github.com/adamluzsi/gorest v0.0.0-20200414213947-a420fa68c7fb/go.mod h1:/VmlPKn7WLAoUrOfbyVmjRp/0i9Swc/rXE2bGwLx2tU=
 github.com/adamluzsi/testcase v0.0.0-20200311225700-8d8777f2f819/go.mod h1:5fkkVjnuSXgj9BFcfki1zXwmECPRRHbg8ihPetnCU9o=
 github.com/adamluzsi/testcase v0.5.0/go.mod h1:5fkkVjnuSXgj9BFcfki1zXwmECPRRHbg8ihPetnCU9o=
 github.com/adamluzsi/testcase v0.5.1 h1:55YMybrPoBC/P9YMe3aAp9ixACLnNWQqRgY9Rw/fcGU=

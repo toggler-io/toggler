@@ -59,3 +59,7 @@ func (flag Flag) Verify() error {
 
 	return nil
 }
+
+func (s FlagRolloutStrategy) IsGlobal() bool {
+	return s.Percentage == 100
+}

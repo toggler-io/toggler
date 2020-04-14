@@ -1,7 +1,6 @@
 package httpapi
 
 import (
-	context2 "context"
 	"net/http"
 
 	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
@@ -19,7 +18,7 @@ func (sm *Handler) SetPilotEnrollmentForFeature(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	err = pu.SetPilotEnrollmentForFeature(context2.TODO(), pilot.FlagID, pilot.ExternalID, pilot.Enrolled)
+	err = pu.SetPilotEnrollmentForFeature(r.Context(), pilot.FlagID, pilot.ExternalID, pilot.Enrolled)
 
 	if handleError(w, err, http.StatusInternalServerError) {
 		return

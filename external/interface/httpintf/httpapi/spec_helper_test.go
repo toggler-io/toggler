@@ -14,10 +14,6 @@ import (
 	. "github.com/toggler-io/toggler/testing"
 )
 
-func UpdateReleaseFlagRolloutPercentage(t *testcase.T, featureFlagName string, rolloutPercentage int) {
-	EnsureFlag(t, featureFlagName, rolloutPercentage)
-}
-
 func CreateSecurityTokenString(t *testcase.T) string {
 	textToken, token, err := security.NewIssuer(ExampleStorage(t)).CreateNewToken(context.TODO(), ExampleUniqueUserID(t), nil, nil)
 	require.Nil(t, err)
@@ -31,15 +27,15 @@ func IsJsonResponse(t *testcase.T, r *httptest.ResponseRecorder, ptr interface{}
 	require.Nil(t, json.NewDecoder(r.Body).Decode(ptr))
 }
 
-func authInfo(t *testcase.T) runtime.ClientAuthInfoWriterFunc {
+func publicAuth(t *testcase.T) runtime.ClientAuthInfoWriterFunc {
 	return func(request runtime.ClientRequest, registry strfmt.Registry) error {
 		return request.SetHeaderParam(`X-APP-KEY`, `example-app-key`)
 	}
 }
 
-func authInfoWithToken(t *testcase.T) runtime.ClientAuthInfoWriterFunc {
+func protectedAuth(t *testcase.T) runtime.ClientAuthInfoWriterFunc {
 	return func(request runtime.ClientRequest, registry strfmt.Registry) error {
-		if err := authInfo(t)(request, registry); err != nil {
+		if err := publicAuth(t)(request, registry); err != nil {
 			return err
 		}
 		
