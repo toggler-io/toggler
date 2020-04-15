@@ -29,9 +29,6 @@ func New(connstr string) (usecases.Storage, error) {
 		}
 		return NewPostgres(db)
 
-	case `redis`:
-		return NewRedis(connstr)
-
 	case `memory`:
 		return NewInMemory(), nil
 

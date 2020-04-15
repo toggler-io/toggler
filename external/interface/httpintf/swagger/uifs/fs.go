@@ -213,7 +213,7 @@ var _escData = map[string]*_escFile{
 		name:    "favicon-16x16.png",
 		local:   "assets/swagger-ui/favicon-16x16.png",
 		size:    665,
-		modtime: 1564697370,
+		modtime: 1586913508,
 		compressed: `
 H4sIAAAAAAAC/wCZAmb9iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABNVBMVEVisTRh
 sTReqzVbpTVXoDdVnTdSlzhRljgvXkAuXUAtWkErV0EzZj40Zj85bz0lTkMkTUMkT0MmTUIkS0IjTEIh
@@ -234,7 +234,7 @@ zUo5hMDku9EAAAAASUVORK5CYIIBAAD//1yhqVOZAgAA
 		name:    "favicon-32x32.png",
 		local:   "assets/swagger-ui/favicon-32x32.png",
 		size:    628,
-		modtime: 1564697370,
+		modtime: 1586913508,
 		compressed: `
 H4sIAAAAAAAC/wB0Aov9iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAkFBMVEUAAAAQ
 M0QWNUYWNkYXNkYALjoWNUYYOEUXN0YaPEUPMUAUM0QVNUYWNkYWNUYWNUUWNUYVNEYWNkYWNUYWM0eF
@@ -254,7 +254,7 @@ s1bDfhxWbIZVYDXITA7Lo6E0Ktgg9eB4KWuR44aj7ppBVPazhQH7/M/KgWe9X1qAg8XypT6nxIMJH+T9
 		name:    "index.html",
 		local:   "assets/swagger-ui/index.html",
 		size:    1388,
-		modtime: 1586570079,
+		modtime: 1586913508,
 		compressed: `
 H4sIAAAAAAAC/5xUW0/bTBB9z68YlgfgE2t/gIQqY/uBS1WkVEWFPFRVVa29Y2fKZjfaXecC4r9XvsRO
 G0qlKg8ezzlzdufMOPEe5/Dh4eMYCmPBeeEpB0nOW8oqT0ZDVmmpELKKlATO01G8d/3p6uHL3Q1M/Uyl
@@ -274,7 +274,7 @@ RaPNlm4vQBy2qxmH7R/lzwAAAP//d/y1gWwFAAA=
 		name:    "oauth2-redirect.html",
 		local:   "assets/swagger-ui/oauth2-redirect.html",
 		size:    2388,
-		modtime: 1564697370,
+		modtime: 1586913508,
 		compressed: `
 H4sIAAAAAAAC/8xWTW/jNhC9+1dMeIgkWFXQHuUoQRHsIQW2W2yQXoIgoKmxzYYm5SFlw7X93wtKsiUl
 cuvelocoIt88zceboW+vciPctkBYuKW6G936Byiu5xlD/dPzE7sb3U5NvgWjleF5xqjUYeR3b/y2fzaW
@@ -297,7 +297,7 @@ bTggFCjXxyq7BTZFToBFF326JAn3wL4aQpB6ZlJoI6gOU2AsmgwMmx+r1SqH/6vR+uXa74G99FtvxqXC
 		name:    "swagger-ui-bundle.js",
 		local:   "assets/swagger-ui/swagger-ui-bundle.js",
 		size:    973601,
-		modtime: 1564697370,
+		modtime: 1586913508,
 		compressed: `
 H4sIAAAAAAAC/9S9iXbjNtIw+ioS/3wMEEFqyb0koQxrenES9z7t7iyjKD40BVmMKUABQduKyfvs92Aj
 QYqS3T3zzX/vOX3aIvalUKgq1NJdZDQSMaOAIAFvPXb+J4mEh7HYrAlbdMjNmnGR+v5WzorNs4RM9J+B
@@ -5144,7 +5144,7 @@ GaCBXJo43+dqX3aVU7FlxtP/9+TJNxoH5XjrRlGA5h/Pz5zC6q4zTen23fycmEs3+p8AAAD//90HilQh
 		name:    "swagger-ui-bundle.js.map",
 		local:   "assets/swagger-ui/swagger-ui-bundle.js.map",
 		size:    4149416,
-		modtime: 1564697370,
+		modtime: 1586913508,
 		compressed: `
 H4sIAAAAAAAC/8z9/3PjtpIoiv8rt3ynPnVv1SjeTM7JyW596tWTZXlGJ5alI8kzyd59xYLIloQxCTAA
 aFl5//wrdAMgKNszFkk7+4MtAgQbIAg0+nv/v2f3oDSX4uw/fnp/pmWlUtBn//F/zvawLll69x/n58s9
@@ -23093,7 +23093,7 @@ IfdEUzmPk8bnVoOkyzzE79O0aIwajc3/CwAA///WnEO8qFA/AA==
 		name:    "swagger-ui-standalone-preset.js",
 		local:   "assets/swagger-ui/swagger-ui-standalone-preset.js",
 		size:    291088,
-		modtime: 1564697370,
+		modtime: 1586913508,
 		compressed: `
 H4sIAAAAAAAC/9S9+3fbNtIA+vv+FRLvflygglXJifOgDGvTxNk6jZNuHu2mOlofmoIk1jKogKAd1+L/
 fg9eBECRspPtt9+9pz2xiDcGg8HMYGbQnRc04WlGAUcE3gbZ+e8k4QHG/GZNsnmHfFlnjOdhuJVzmc2K
@@ -24614,7 +24614,7 @@ T1JevTuLauaNc9/IGD9om+BjDpvwfwMAAP//bQMUvRBxBAA=
 		name:    "swagger-ui-standalone-preset.js.map",
 		local:   "assets/swagger-ui/swagger-ui-standalone-preset.js.map",
 		size:    1297846,
-		modtime: 1564697370,
+		modtime: 1586913508,
 		compressed: `
 H4sIAAAAAAAC/8y953fbOPcw+L/onbPljP14UibJ/M42iqJkxmqW5GQy775HhyIhiTFFMARpWdkv23vv
 vffe++77Ye3/a88tKJSdKZHy+PlgmQDBC+Di4uI2AH9f60aUKpV5669enLSUrMtYqNZf/fXWViyKKL7+
@@ -30162,7 +30162,7 @@ HmqmSZ3W/t58CortXuZUlxSHEE2dugzQW2JX46gRuzrn50K00SyKuv8KAAD//+Pp1pO2zRMA
 		name:    "swagger-ui.css",
 		local:   "assets/swagger-ui/swagger-ui.css",
 		size:    141676,
-		modtime: 1564697370,
+		modtime: 1586913508,
 		compressed: `
 H4sIAAAAAAAC/+y9e3PbOLI3/P/zKfTsVmomO6ZCUqIuVs3WkWMn42zsjJ3bJFtbU5QISbQBUoekLrbe
 +e5v8SoCaFxIe/bsU3U2m4xN/LrRaDQazcaF3XjnLpcoMjb+4f90Oq/+9n87QRgRF/uPqDuP48522DW7
@@ -30530,7 +30530,7 @@ AgA=
 		name:    "swagger-ui.css.map",
 		local:   "assets/swagger-ui/swagger-ui.css.map",
 		size:    482550,
-		modtime: 1564697371,
+		modtime: 1586913508,
 		compressed: `
 H4sIAAAAAAAC/6z9WZPbuLL3C3+XdUv2I4qiKGq/VwJESTW3u1yuLr/xxA5ZVpMUJ3EWdb78CeQ/024P
 66wd7n1n//6JRCIBJEBN9f/8qz/WTVIW//qvmf2vpuzqw7H513/9//81HD+d94f0vyaTyf+ZNPVh0rRj
@@ -32017,7 +32017,7 @@ PdrjX/3XxVd1eao28NeybL5affXVx/8/AAD//zGTMnz2XAcA
 		name:    "swagger-ui.js",
 		local:   "assets/swagger-ui/swagger-ui.js",
 		size:    393770,
-		modtime: 1564697371,
+		modtime: 1586913508,
 		compressed: `
 H4sIAAAAAAAC/+z963bbuLYoCL+KjF2HBZRhRvItCRWUtuM4VV4rjrNipy5L0fKBSUhihQJVIGhbZfJ7
 ju9fP0O/WT9CD1x4kyjJlVp79zk9egwPiwQmQFwmJiYm5mVnnHJfhjGHDEv0COLb35gvASFyMWfxuMMe
@@ -33870,7 +33870,7 @@ u/y7zldE/RcAAP//Ng/AdioCBgA=
 		name:    "swagger-ui.js.map",
 		local:   "assets/swagger-ui/swagger-ui.js.map",
 		size:    1476063,
-		modtime: 1564697371,
+		modtime: 1586913508,
 		compressed: `
 H4sIAAAAAAAC/8y9V3MjOdYo+FduMBRrIsSu6aqenp4vNnY3RVISuyiRTVJV1d/9bmSAmSCJUmYiG0DK
 zL6s99577733u/dhpf+1gXMOkEhKVSKTLM19EJXwHjj+/H2dG660kEXnL94dd7SsVMJ15y/+eueWL0qW

@@ -213,7 +213,7 @@ var _escData = map[string]*_escFile{
 		name:    "api.json",
 		local:   "api.json",
 		size:    21976,
-		modtime: 1586913344,
+		modtime: 1586913585,
 		compressed: `
 H4sIAAAAAAAC/+xc/2/buJL/PX/FwO8W+x7g2Hm9vT1cf7nLtmlfsd1tLkkPd4iDYiyNJG4oUiWpuEaR
 //0wpCTLsmQ72Xa37XNRIDa/czhfPjMc+uMRwCjSypY52dFTuD4CABhhUUgRoRNaTX+zWo2OAG7G3LYw

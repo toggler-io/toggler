@@ -49,18 +49,6 @@ func TestNew(t *testing.T) {
 			})
 		})
 
-		s.When(`the connection string is "redis"`, func(s *testcase.Spec) {
-			s.Let(`connstr`, func(t *testcase.T) interface{} {
-				return os.Getenv(`TEST_STORAGE_URL_REDIS`)
-			})
-
-			s.Then(`then it will return "redis" storage implementation`, func(t *testcase.T) {
-				_, isThat := onSuccess(t).(*storages.Redis)
-
-				require.True(t, isThat)
-			})
-		})
-
 		s.When(`the connection string is a "memory"`, func(s *testcase.Spec) {
 			s.Let(`connstr`, func(t *testcase.T) interface{} { return `memory` })
 

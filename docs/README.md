@@ -131,8 +131,6 @@ It use behavior based specification, and has multiple implementation that fulfil
 This could potentially remove the burden on your team to introduce a new db just for the sake of the project.
 
 You can choose from the following
-
-* [Redis](https://github.com/antirez/redis)
 * [Postgres](https://github.com/postgres/postgres)
 * InMemory (for testing purposes only)
 
@@ -142,9 +140,7 @@ or by providing the `-database-url` cli option to the executable.
 To use one of the implementation, all you have to do is
 to provide the connection string in the CLI option or in the environment variable.
 
-example connection strings:
-> redis://user:passwd@ec2-111.eu-west-1.compute.amazonaws.com:17379
-
+example connection string:
 > postgres://user:passwd@ec2-111.eu-west-1.compute.amazonaws.com:5432/dbname
 
 ```bash
