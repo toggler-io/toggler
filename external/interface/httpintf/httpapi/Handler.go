@@ -9,7 +9,6 @@ import (
 	"github.com/adamluzsi/gorest"
 	"github.com/gorilla/websocket"
 
-	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
 	"github.com/toggler-io/toggler/usecases"
 )
 
@@ -23,26 +22,11 @@ func NewHandler(uc *usecases.UseCases) *Handler {
 	gorest.Mount(mux.ServeMux, `/v`, NewViewsHandler(uc))
 	gorest.Mount(mux.ServeMux, `/release-flags`, NewReleaseFlagHandler(uc))
 
-	featureAPI := buildReleasesAPI(mux)
-	mux.Handle(`/release/`, http.StripPrefix(`/release`, featureAPI))
-
 	mux.HandleFunc(`/healthcheck`, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 	})
 
 	return mux
-}
-
-func buildReleasesAPI(handlers *Handler) *http.ServeMux {
-	mux := http.NewServeMux()
-	mux.Handle(`/flag/`, http.StripPrefix(`/flag`, buildFlagAPI(handlers)))
-	return mux
-}
-
-func buildFlagAPI(handlers *Handler) http.Handler {
-	mux := http.NewServeMux()
-	mux.Handle(`/set-enrollment-manually.json`, http.HandlerFunc(handlers.SetPilotEnrollmentForFeature))
-	return httputils.AuthMiddleware(mux, handlers.UseCases, ErrorWriterFunc)
 }
 
 type Handler struct {
