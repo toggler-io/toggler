@@ -117,7 +117,7 @@
         }
       }
     },
-    "/release-flags/{id}": {
+    "/release-flags/{flagID}": {
       "put": {
         "security": [
           {
@@ -147,9 +147,9 @@
         "parameters": [
           {
             "type": "string",
-            "x-go-name": "ID",
-            "description": "ID is the release flag id or the alias name.",
-            "name": "id",
+            "x-go-name": "FlagID",
+            "description": "FlagID is the release flag id or the alias name.",
+            "name": "flagID",
             "in": "path",
             "required": true
           },
@@ -179,7 +179,7 @@
         }
       }
     },
-    "/release-flags/{id}/global": {
+    "/release-flags/{flagID}/global": {
       "get": {
         "description": "Reply back whether the feature rolled out globally or not.\nThis is especially useful for cases where you don't have pilot id.\nSuch case is batch processing, or dark launch flips.\nBy Default, this will be determined whether the flag exist,\nThen  whether the release id done to everyone or not by percentage.\nThe endpoint can be called with HTTP GET method as well,\nPOST is used officially only to support most highly abstracted http clients.",
         "consumes": [
@@ -203,9 +203,9 @@
         "parameters": [
           {
             "type": "string",
-            "x-go-name": "ID",
-            "description": "ID is the release flag id or the alias name.",
-            "name": "id",
+            "x-go-name": "FlagID",
+            "description": "FlagID is the release flag id or the alias name.",
+            "name": "flagID",
             "in": "path",
             "required": true
           }
@@ -213,6 +213,195 @@
         "responses": {
           "200": {
             "$ref": "#/responses/getReleaseFlagGlobalStatesResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/release-flags/{flagID}/pilots": {
+      "get": {
+        "security": [
+          {
+            "AppToken": [
+              "[]"
+            ]
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "release",
+          "feature",
+          "flag"
+        ],
+        "summary": "List all the release flag that can be used to manage a feature rollout.",
+        "operationId": "listReleasePilots",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "ReleaseFlagID",
+            "description": "ReleaseFlagID is the release flag id or the alias name.",
+            "name": "flagID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/listReleasePilotResponse"
+          },
+          "401": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "AppToken": [
+              "[]"
+            ]
+          }
+        ],
+        "description": "This operation allows you to create a new release flag.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "release",
+          "feature",
+          "flag"
+        ],
+        "summary": "Create a release flag that can be used for managing a feature rollout.",
+        "operationId": "createReleasePilot",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "ReleaseFlagID",
+            "description": "ReleaseFlagID is the release flag id or the alias name.",
+            "name": "flagID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "pilot": {
+                  "$ref": "#/definitions/ReleasePilotView"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/createReleasePilotResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "401": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/release-flags/{flagID}/pilots/{pilotID}": {
+      "put": {
+        "security": [
+          {
+            "AppToken": [
+              "[]"
+            ]
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "release",
+          "feature",
+          "flag",
+          "pilot"
+        ],
+        "summary": "Update a release flag.",
+        "operationId": "updateReleasePilot",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "ReleaseFlagID",
+            "description": "ReleaseFlagID is the release flag id or the alias name.",
+            "name": "flagID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "PilotID",
+            "description": "PilotID is the release flag id or the alias name.",
+            "name": "pilotID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "pilot": {
+                  "$ref": "#/definitions/ReleasePilotView"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/updateReleasePilotResponse"
           },
           "400": {
             "$ref": "#/responses/errorResponse"
@@ -353,6 +542,31 @@
       },
       "x-go-package": "github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
     },
+    "ReleasePilotView": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "description": "ID represent the fact that this object will be persistent in the Subject",
+          "type": "string"
+        },
+        "enrolled": {
+          "description": "Enrolled states that whether the Pilot for the given feature is enrolled, or blacklisted",
+          "type": "boolean",
+          "x-go-name": "Enrolled"
+        },
+        "external_id": {
+          "description": "ExternalID is the unique id that connect links a pilot with the caller services.\nThe caller service is the service that use the release toggles for example and need A/B testing or Canary launch.",
+          "type": "string",
+          "x-go-name": "ExternalID"
+        },
+        "release_flag_id": {
+          "description": "ReleasePilotID is the reference ID that can tell where this user record belongs to.",
+          "type": "string",
+          "x-go-name": "ReleasePilotID"
+        }
+      },
+      "x-go-package": "github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
+    },
     "URL": {
       "description": "The general form represented is:\n\n[scheme:][//[userinfo@]host][/]path[?query][#fragment]\n\nURLs that do not start with a slash after the scheme are interpreted as:\n\nscheme:opaque[?query][#fragment]\n\nNote that the Path field is stored in decoded form: /%47%6f%2f becomes /Go/.\nA consequence is that it is impossible to tell which slashes in the Path were\nslashes in the raw URL and which were %2f. This distinction is rarely important,\nbut when it is, the code should use RawPath, an optional field which only gets\nset if the default encoding is different from Path.\n\nURL's String method uses the EscapedPath method to obtain the path. See the\nEscapedPath method for more details.",
       "type": "object",
@@ -402,6 +616,17 @@
         "properties": {
           "flag": {
             "$ref": "#/definitions/ReleaseFlagView"
+          }
+        }
+      }
+    },
+    "createReleasePilotResponse": {
+      "description": "CreateReleasePilotResponse",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "pilot": {
+            "$ref": "#/definitions/ReleasePilotView"
           }
         }
       }
@@ -468,6 +693,21 @@
         }
       }
     },
+    "listReleasePilotResponse": {
+      "description": "ListReleasePilotResponse",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "pilots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/ReleasePilotView"
+            },
+            "x-go-name": "Pilots"
+          }
+        }
+      }
+    },
     "updateReleaseFlagResponse": {
       "description": "UpdateReleaseFlagResponse",
       "schema": {
@@ -475,6 +715,17 @@
         "properties": {
           "flag": {
             "$ref": "#/definitions/ReleaseFlagView"
+          }
+        }
+      }
+    },
+    "updateReleasePilotResponse": {
+      "description": "UpdateReleasePilotResponse",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "pilot": {
+            "$ref": "#/definitions/ReleasePilotView"
           }
         }
       }

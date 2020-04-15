@@ -334,7 +334,7 @@ func SpecReleaseFlagControllerReleaseFlagGlobalStats(s *testcase.Spec) {
 			defer s.Close()
 
 			p := swagger.NewGetReleaseFlagGlobalStatesParams()
-			p.ID = GetReleaseFlag(t, `release-flag`).ID
+			p.FlagID = GetReleaseFlag(t, `release-flag`).ID
 
 			tc := client.DefaultTransportConfig()
 			u, _ := url.Parse(s.URL)
@@ -417,7 +417,7 @@ func SpecReleaseFlagControllerUpdate(s *testcase.Spec) {
 
 		// TODO: ensure validation
 		p := swagger.NewUpdateReleaseFlagParams()
-		p.ID = id
+		p.FlagID = id
 		p.Body.Flag = &models.ReleaseFlagView{
 			ID:   id,
 			Name: fixtures.Random.String(),

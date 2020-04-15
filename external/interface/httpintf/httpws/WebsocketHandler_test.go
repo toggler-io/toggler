@@ -96,7 +96,7 @@ func TestWebsocket(t *testing.T) {
 
 		s.Let(`data`, func(t *testcase.T) interface{} {
 			var req httpapi.GetReleaseFlagGlobalStatesRequest
-			req.ID = ExampleReleaseFlagName(t)
+			req.FlagID = ExampleReleaseFlagName(t)
 			return req
 		})
 

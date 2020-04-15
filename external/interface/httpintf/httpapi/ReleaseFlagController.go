@@ -252,11 +252,11 @@ func (ctrl ReleaseFlagController) ContextWithResource(ctx context.Context, resou
 // that holds the feature flag name that needs to be observed from global rollout perspective.
 // swagger:parameters getReleaseFlagGlobalStates
 type GetReleaseFlagGlobalStatesRequest struct {
-	// ID is the release flag id or the alias name.
+	// FlagID is the release flag id or the alias name.
 	//
 	// in: path
 	// required: true
-	ID string `json:"id"`
+	FlagID string `json:"flagID"`
 }
 
 // GetReleaseFlagGlobalStatesResponse
@@ -272,7 +272,7 @@ type GetReleaseFlagGlobalStatesResponse struct {
 /*
 
 	GetReleaseFlagGlobalStates
-	swagger:route GET /release-flags/{id}/global release feature flag pilot getReleaseFlagGlobalStates
+	swagger:route GET /release-flags/{flagID}/global release feature flag pilot getReleaseFlagGlobalStates
 
 	Get Release flag statistics regarding global state by the name of the release flag.
 
@@ -314,11 +314,11 @@ func (ctrl ReleaseFlagController) GetReleaseFlagGlobalStates(w http.ResponseWrit
 // UpdateReleaseFlagRequest
 // swagger:parameters updateReleaseFlag
 type UpdateReleaseFlagRequest struct {
-	// ID is the release flag id or the alias name.
+	// FlagID is the release flag id or the alias name.
 	//
 	// in: path
 	// required: true
-	ID string `json:"id"`
+	FlagID string `json:"flagID"`
 	// in: body
 	Body struct {
 		Flag ReleaseFlagView `json:"flag"`
@@ -337,7 +337,7 @@ type UpdateReleaseFlagResponse struct {
 /*
 
 	Update
-	swagger:route PUT /release-flags/{id} release feature flag pilot updateReleaseFlag
+	swagger:route PUT /release-flags/{flagID} release feature flag pilot updateReleaseFlag
 
 	Update a release flag.
 
