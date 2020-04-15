@@ -7,7 +7,7 @@ import (
 // Flag is the basic entity with properties that feature flag holds
 type Flag struct {
 	// ID represent the fact that this object will be persistent in the Subject
-	ID      string      `ext:"ID" json:"id"`
+	ID      string      `ext:"ID" json:"id,omitempty"`
 	Name    string      `json:"name"`
 	Rollout FlagRollout `json:"rollout"`
 }
@@ -58,4 +58,8 @@ func (flag Flag) Verify() error {
 	}
 
 	return nil
+}
+
+func (s FlagRolloutStrategy) IsGlobal() bool {
+	return s.Percentage == 100
 }

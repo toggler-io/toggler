@@ -1,0 +1,753 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "The purpose of this application is to provide API over HTTP to toggler service,\nin which you can interact with the service in a programmatic way.",
+    "title": "provides API on HTTP layer to the toggler service.",
+    "termsOfService": "there are no TOS at this moment, use at your own risk we take no responsibility",
+    "version": "0.2.0"
+  },
+  "basePath": "/api",
+  "paths": {
+    "/release-flags": {
+      "get": {
+        "security": [
+          {
+            "AppToken": [
+              "[]"
+            ]
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "release",
+          "feature",
+          "flag"
+        ],
+        "summary": "List all the release flag that can be used to manage a feature rollout.",
+        "operationId": "listReleaseFlags",
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/listReleaseFlagResponse"
+          },
+          "401": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "AppToken": [
+              "[]"
+            ]
+          }
+        ],
+        "description": "This operation allows you to create a new release flag.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "release",
+          "feature",
+          "flag"
+        ],
+        "summary": "Create a release flag that can be used for managing a feature rollout.",
+        "operationId": "createReleaseFlag",
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "flag": {
+                  "$ref": "#/definitions/ReleaseFlagView"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/createReleaseFlagResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "401": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/release-flags/{flagID}": {
+      "put": {
+        "security": [
+          {
+            "AppToken": [
+              "[]"
+            ]
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "release",
+          "feature",
+          "flag",
+          "pilot"
+        ],
+        "summary": "Update a release flag.",
+        "operationId": "updateReleaseFlag",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "FlagID",
+            "description": "FlagID is the release flag id or the alias name.",
+            "name": "flagID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "flag": {
+                  "$ref": "#/definitions/ReleaseFlagView"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/updateReleaseFlagResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/release-flags/{flagID}/global": {
+      "get": {
+        "description": "Reply back whether the feature rolled out globally or not.\nThis is especially useful for cases where you don't have pilot id.\nSuch case is batch processing, or dark launch flips.\nBy Default, this will be determined whether the flag exist,\nThen  whether the release id done to everyone or not by percentage.\nThe endpoint can be called with HTTP GET method as well,\nPOST is used officially only to support most highly abstracted http clients.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "release",
+          "feature",
+          "flag",
+          "pilot"
+        ],
+        "summary": "Get Release flag statistics regarding global state by the name of the release flag.",
+        "operationId": "getReleaseFlagGlobalStates",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "FlagID",
+            "description": "FlagID is the release flag id or the alias name.",
+            "name": "flagID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/getReleaseFlagGlobalStatesResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/release-flags/{flagID}/pilots": {
+      "get": {
+        "security": [
+          {
+            "AppToken": [
+              "[]"
+            ]
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "release",
+          "feature",
+          "flag"
+        ],
+        "summary": "List all the release flag that can be used to manage a feature rollout.",
+        "operationId": "listReleasePilots",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "ReleaseFlagID",
+            "description": "ReleaseFlagID is the release flag id or the alias name.",
+            "name": "flagID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/listReleasePilotResponse"
+          },
+          "401": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "AppToken": [
+              "[]"
+            ]
+          }
+        ],
+        "description": "This operation allows you to create a new release flag.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "release",
+          "feature",
+          "flag"
+        ],
+        "summary": "Create a release flag that can be used for managing a feature rollout.",
+        "operationId": "createReleasePilot",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "ReleaseFlagID",
+            "description": "ReleaseFlagID is the release flag id or the alias name.",
+            "name": "flagID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "pilot": {
+                  "$ref": "#/definitions/ReleasePilotView"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/createReleasePilotResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "401": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/release-flags/{flagID}/pilots/{pilotID}": {
+      "put": {
+        "security": [
+          {
+            "AppToken": [
+              "[]"
+            ]
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "release",
+          "feature",
+          "flag",
+          "pilot"
+        ],
+        "summary": "Update a release flag.",
+        "operationId": "updateReleasePilot",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "ReleaseFlagID",
+            "description": "ReleaseFlagID is the release flag id or the alias name.",
+            "name": "flagID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "PilotID",
+            "description": "PilotID is the release flag id or the alias name.",
+            "name": "pilotID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "pilot": {
+                  "$ref": "#/definitions/ReleasePilotView"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/updateReleasePilotResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/v/config": {
+      "get": {
+        "description": "This endpoint especially useful for Mobile \u0026 SPA apps.\nThe endpoint can be called with HTTP GET method as well,\nPOST is used officially only to support most highly abstracted http clients,\nwhere using payload to upload cannot be completed with other http methods.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "pilot",
+          "release",
+          "feature",
+          "flag"
+        ],
+        "summary": "Return all the flag states that was requested in the favor of a Pilot.",
+        "operationId": "getPilotConfig",
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "id",
+                "release_flags"
+              ],
+              "properties": {
+                "id": {
+                  "description": "PilotExtID is the public uniq id that identify the caller pilot",
+                  "type": "string",
+                  "x-go-name": "PilotExtID",
+                  "example": "pilot-external-id-which-is-uniq-in-the-system"
+                },
+                "release_flags": {
+                  "description": "ReleaseFlags are the list of private release flag name that should be matched against the pilot and state the enrollment for each.",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "x-go-name": "ReleaseFlags",
+                  "example": [
+                    "my-release-flag"
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/getPilotConfigResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Error": {
+      "description": "Error contains the details of the error",
+      "type": "object",
+      "properties": {
+        "code": {
+          "description": "The constant code of the error that can be used for localisation",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Code",
+          "example": 401
+        },
+        "message": {
+          "description": "The message that describe the error to the developer who do the integration.\nNot meant to be propagated to the end-user.\nThe Message may change in the future, it it helps readability,\nplease do not rely on the content in any way other than just reading it.",
+          "type": "string",
+          "x-go-name": "Message"
+        }
+      },
+      "x-go-package": "github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
+    },
+    "ReleaseFlagView": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "ID represent the fact that this object will be persistent in the Subject",
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "rollout": {
+          "type": "object",
+          "properties": {
+            "rand_seed_salt": {
+              "description": "RandSeed allows you to configure the randomness for the percentage based pilot enrollment selection.\nThis value could have been neglected by using the flag name as random seed,\nbut that would reduce the flexibility for edge cases where you want\nto use a similar pilot group as a successful flag rollout before.",
+              "type": "integer",
+              "format": "int64",
+              "x-go-name": "RandSeed"
+            },
+            "strategy": {
+              "description": "Strategy expects to determines the behavior of the rollout workflow.\nthe actual behavior implementation is with the RolloutManager,\nbut the configuration data is located here",
+              "type": "object",
+              "properties": {
+                "decision_logic_api": {
+                  "$ref": "#/definitions/URL"
+                },
+                "percentage": {
+                  "description": "Percentage allows you to define how many of your user base should be enrolled pseudo randomly.",
+                  "type": "integer",
+                  "format": "int64",
+                  "x-go-name": "Percentage"
+                }
+              },
+              "x-go-name": "Strategy"
+            }
+          },
+          "x-go-name": "Rollout"
+        }
+      },
+      "x-go-package": "github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
+    },
+    "ReleasePilotView": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "description": "ID represent the fact that this object will be persistent in the Subject",
+          "type": "string"
+        },
+        "enrolled": {
+          "description": "Enrolled states that whether the Pilot for the given feature is enrolled, or blacklisted",
+          "type": "boolean",
+          "x-go-name": "Enrolled"
+        },
+        "external_id": {
+          "description": "ExternalID is the unique id that connect links a pilot with the caller services.\nThe caller service is the service that use the release toggles for example and need A/B testing or Canary launch.",
+          "type": "string",
+          "x-go-name": "ExternalID"
+        },
+        "release_flag_id": {
+          "description": "ReleasePilotID is the reference ID that can tell where this user record belongs to.",
+          "type": "string",
+          "x-go-name": "ReleasePilotID"
+        }
+      },
+      "x-go-package": "github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
+    },
+    "URL": {
+      "description": "The general form represented is:\n\n[scheme:][//[userinfo@]host][/]path[?query][#fragment]\n\nURLs that do not start with a slash after the scheme are interpreted as:\n\nscheme:opaque[?query][#fragment]\n\nNote that the Path field is stored in decoded form: /%47%6f%2f becomes /Go/.\nA consequence is that it is impossible to tell which slashes in the Path were\nslashes in the raw URL and which were %2f. This distinction is rarely important,\nbut when it is, the code should use RawPath, an optional field which only gets\nset if the default encoding is different from Path.\n\nURL's String method uses the EscapedPath method to obtain the path. See the\nEscapedPath method for more details.",
+      "type": "object",
+      "title": "A URL represents a parsed URL (technically, a URI reference).",
+      "properties": {
+        "ForceQuery": {
+          "type": "boolean"
+        },
+        "Fragment": {
+          "type": "string"
+        },
+        "Host": {
+          "type": "string"
+        },
+        "Opaque": {
+          "type": "string"
+        },
+        "Path": {
+          "type": "string"
+        },
+        "RawPath": {
+          "type": "string"
+        },
+        "RawQuery": {
+          "type": "string"
+        },
+        "Scheme": {
+          "type": "string"
+        },
+        "User": {
+          "$ref": "#/definitions/Userinfo"
+        }
+      },
+      "x-go-package": "net/url"
+    },
+    "Userinfo": {
+      "description": "The Userinfo type is an immutable encapsulation of username and\npassword details for a URL. An existing Userinfo value is guaranteed\nto have a username set (potentially empty, as allowed by RFC 2396),\nand optionally a password.",
+      "type": "object",
+      "x-go-package": "net/url"
+    }
+  },
+  "responses": {
+    "createReleaseFlagResponse": {
+      "description": "CreateReleaseFlagResponse",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "flag": {
+            "$ref": "#/definitions/ReleaseFlagView"
+          }
+        }
+      }
+    },
+    "createReleasePilotResponse": {
+      "description": "CreateReleasePilotResponse",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "pilot": {
+            "$ref": "#/definitions/ReleasePilotView"
+          }
+        }
+      }
+    },
+    "errorResponse": {
+      "description": "ErrorResponse will contains a response about request that had some kind of problem.\nThe details will be included in the body.",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "$ref": "#/definitions/Error"
+          }
+        }
+      }
+    },
+    "getPilotConfigResponse": {
+      "description": "GetPilotConfigResponse returns information about the requester's rollout feature enrollment statuses.",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "release": {
+            "description": "Release holds information related the release management",
+            "type": "object",
+            "properties": {
+              "flags": {
+                "description": "Flags hold the states of the release flags of the client",
+                "type": "object",
+                "additionalProperties": {
+                  "type": "boolean"
+                },
+                "x-go-name": "Flags"
+              }
+            },
+            "x-go-name": "Release"
+          }
+        }
+      }
+    },
+    "getReleaseFlagGlobalStatesResponse": {
+      "description": "GetReleaseFlagGlobalStatesResponse",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "enrollment": {
+            "description": "Enrollment is the release feature flag enrollment status.",
+            "type": "boolean",
+            "x-go-name": "Enrollment"
+          }
+        }
+      }
+    },
+    "listReleaseFlagResponse": {
+      "description": "ListReleaseFlagResponse",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "flags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/ReleaseFlagView"
+            },
+            "x-go-name": "Flags"
+          }
+        }
+      }
+    },
+    "listReleasePilotResponse": {
+      "description": "ListReleasePilotResponse",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "pilots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/ReleasePilotView"
+            },
+            "x-go-name": "Pilots"
+          }
+        }
+      }
+    },
+    "updateReleaseFlagResponse": {
+      "description": "UpdateReleaseFlagResponse",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "flag": {
+            "$ref": "#/definitions/ReleaseFlagView"
+          }
+        }
+      }
+    },
+    "updateReleasePilotResponse": {
+      "description": "UpdateReleasePilotResponse",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "pilot": {
+            "$ref": "#/definitions/ReleasePilotView"
+          }
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "AppKey": {
+      "type": "apiKey",
+      "name": "X-APP-KEY",
+      "in": "header"
+    },
+    "AppToken": {
+      "type": "apiKey",
+      "name": "X-APP-TOKEN",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "AppKey": [
+        "[]"
+      ]
+    }
+  ]
+}

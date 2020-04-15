@@ -32,7 +32,7 @@ func (spec FlagFinderSpec) Benchmark(b *testing.B) {
 func (spec FlagFinderSpec) Test(t *testing.T) {
 	s := testcase.NewSpec(t)
 
-	featureName := ExampleName()
+	featureName := RandomName()
 
 	s.Describe(`FlagFinderSpec`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
