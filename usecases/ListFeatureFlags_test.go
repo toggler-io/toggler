@@ -12,11 +12,9 @@ import (
 )
 
 func TestUseCases_ListFeatureFlags(t *testing.T) {
-
 	s := testcase.NewSpec(t)
-	SetupSpecCommonVariables(s)
-	SetupSpec(s)
 	s.Parallel()
+	SetUp(s)
 
 	subject := func(t *testcase.T) ([]release.Flag, error) {
 		return GetProtectedUsecases(t).ListFeatureFlags(context.TODO())
@@ -40,7 +38,7 @@ func TestUseCases_ListFeatureFlags(t *testing.T) {
 
 	s.When(`there is no flag in the system`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, GetStorage(t).DeleteAll(context.Background(), release.Flag{}))
+			require.Nil(t, ExampleStorage(t).DeleteAll(context.Background(), release.Flag{}))
 		})
 
 		s.Then(`we receive back empty list`, func(t *testcase.T) {

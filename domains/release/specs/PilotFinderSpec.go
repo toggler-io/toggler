@@ -53,7 +53,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 	s.Describe(`pilotFinderSpec`, func(s *testcase.Spec) {
 
 		s.Let(`flagName`, func(t *testcase.T) interface{} {
-			return ExampleName()
+			return RandomName()
 		})
 
 		s.Before(func(t *testcase.T) {
@@ -227,7 +227,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 			}
 
 			s.Let(`PilotExternalID`, func(t *testcase.T) interface{} {
-				return ExampleExternalPilotID()
+				return RandomExternalPilotID()
 			})
 
 			s.When(`there is no pilot records`, func(s *testcase.Spec) {
@@ -243,7 +243,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 			s.When(`the given pilot id has no records`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
 					ctx := spec.ctx()
-					extID := ExampleExternalPilotID()
+					extID := RandomExternalPilotID()
 					require.Nil(t, spec.Subject.Create(ctx, &release.Pilot{FlagID: `1`, ExternalID: extID, Enrolled: true}))
 					require.Nil(t, spec.Subject.Create(ctx, &release.Pilot{FlagID: `2`, ExternalID: extID, Enrolled: true}))
 					require.Nil(t, spec.Subject.Create(ctx, &release.Pilot{FlagID: `3`, ExternalID: extID, Enrolled: false}))

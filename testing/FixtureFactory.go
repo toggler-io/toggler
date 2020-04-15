@@ -25,7 +25,7 @@ type FixtureFactory struct {
 // this ensures that the randoms have better variety between test runs with -count n
 var rnd = rand.New(rand.NewSource(time.Now().Unix()))
 
-func (ff *FixtureFactory) Create(EntityType interface{}) interface{} {
+func (ff FixtureFactory) Create(EntityType interface{}) interface{} {
 	switch reflects.BaseValueOf(EntityType).Interface().(type) {
 	case release.Flag:
 		flag := ff.GenericFixtureFactory.Create(EntityType).(*release.Flag)
@@ -42,6 +42,8 @@ func (ff *FixtureFactory) Create(EntityType interface{}) interface{} {
 
 			flag.Rollout.Strategy.DecisionLogicAPI = u
 		}
+
+		flag.Rollout.Strategy.Percentage = fixtures.Random.IntBetween(0, 101)
 
 		return flag
 

@@ -6,13 +6,14 @@ import (
 	"github.com/toggler-io/toggler/domains/security"
 )
 
-type ProtectedUsecases struct {
+// Deprecated
+type ProtectedUseCases struct {
 	*release.RolloutManager
 	*security.Doorkeeper
 	*security.Issuer
 }
 
-func (uc *UseCases) ProtectedUsecases(ctx context.Context, token string) (*ProtectedUsecases, error) {
+func (uc *UseCases) ProtectedUsecases(ctx context.Context, token string) (*ProtectedUseCases, error) {
 
 	valid, err := uc.protectedUsecases.Doorkeeper.VerifyTextToken(ctx, token)
 

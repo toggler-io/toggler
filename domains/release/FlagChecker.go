@@ -37,7 +37,7 @@ func (checker *FlagChecker) IsFeatureGloballyEnabled(featureFlagName string) (bo
 		return false, nil
 	}
 
-	return ff.Rollout.Strategy.Percentage == 100, nil
+	return ff.Rollout.Strategy.IsGlobal(), nil
 }
 
 func (checker *FlagChecker) makeCustomDomainAPIDecisionCheck(featureFlagName string, externalPilotID string, apiURL *url.URL) (bool, error) {

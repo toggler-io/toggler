@@ -16,7 +16,7 @@ func NewUseCases(s Storage) *UseCases {
 		Doorkeeper:     security.NewDoorkeeper(s),
 		Issuer:         security.NewIssuer(s),
 
-		protectedUsecases: &ProtectedUsecases{
+		protectedUsecases: &ProtectedUseCases{
 			RolloutManager: release.NewRolloutManager(s),
 			Doorkeeper:     security.NewDoorkeeper(s),
 			Issuer:         security.NewIssuer(s),
@@ -25,12 +25,13 @@ func NewUseCases(s Storage) *UseCases {
 }
 
 type UseCases struct {
-	FlagChecker    *release.FlagChecker
-	RolloutManager *release.RolloutManager
-	Doorkeeper     *security.Doorkeeper
-	Issuer         *security.Issuer
+	*release.FlagChecker
+	*release.RolloutManager
+	*security.Doorkeeper
+	*security.Issuer
 
-	protectedUsecases *ProtectedUsecases
+	// Deprecated
+	protectedUsecases *ProtectedUseCases
 }
 
 const ErrInvalidToken frameless.Error = `invalid token error`
