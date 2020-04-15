@@ -80,7 +80,7 @@ func SpecViewsControllerClientConfig(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
 				Query(t).Set(t.I(`feature query string key`).(string), ExampleReleaseFlagName(t))
 				Query(t).Add(t.I(`feature query string key`).(string), `yet-unknown-feature`)
-				Query(t).Set(`id`, GetExternalPilotID(t))
+				Query(t).Set(`external_id`, GetExternalPilotID(t))
 			})
 
 			s.Context(`is "release_flags"`, func(s *testcase.Spec) {

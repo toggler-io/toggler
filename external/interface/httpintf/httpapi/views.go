@@ -87,7 +87,7 @@ func (ctrl ViewsController) GetPilotConfig(w http.ResponseWriter, r *http.Reques
 	if parseErr != nil {
 		parseErr = nil
 		q := r.URL.Query()
-		request.Body.PilotExtID = q.Get(`id`)
+		request.Body.PilotExtID = q.Get(`external_id`)
 		request.Body.ReleaseFlags = append([]string{}, q[`release_flags`]...)
 		request.Body.ReleaseFlags = append(request.Body.ReleaseFlags, q[`release_flags[]`]...)
 	}

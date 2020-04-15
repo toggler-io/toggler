@@ -25,6 +25,8 @@ func NewServeMux(uc *usecases.UseCases) (*http.ServeMux, error) {
 	}
 
 	mux.Handle(`/`, ui)
+
+	// TODO: fix the behavior where "/swagger/ui" redirects to "/ui"
 	gorest.Mount(mux, `/swagger`, swagger.NewHandler())
 
 	return mux, nil
