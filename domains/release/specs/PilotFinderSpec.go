@@ -8,6 +8,7 @@ import (
 
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/testcase"
+	"github.com/google/uuid"
 
 	. "github.com/toggler-io/toggler/testing"
 
@@ -244,9 +245,16 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 				s.Before(func(t *testcase.T) {
 					ctx := spec.ctx()
 					extID := RandomExternalPilotID()
-					require.Nil(t, spec.Subject.Create(ctx, &release.Pilot{FlagID: `1`, ExternalID: extID, Enrolled: true}))
-					require.Nil(t, spec.Subject.Create(ctx, &release.Pilot{FlagID: `2`, ExternalID: extID, Enrolled: true}))
-					require.Nil(t, spec.Subject.Create(ctx, &release.Pilot{FlagID: `3`, ExternalID: extID, Enrolled: false}))
+
+					var newUUID = func() string {
+						uuidV4, err := uuid.NewRandom()
+						require.Nil(t, err)
+						return uuidV4.String()
+					}
+
+					require.Nil(t, spec.Subject.Create(ctx, &release.Pilot{FlagID: newUUID(), ExternalID: extID, Enrolled: true}))
+					require.Nil(t, spec.Subject.Create(ctx, &release.Pilot{FlagID: newUUID(), ExternalID: extID, Enrolled: true}))
+					require.Nil(t, spec.Subject.Create(ctx, &release.Pilot{FlagID: newUUID(), ExternalID: extID, Enrolled: false}))
 				})
 
 				s.Then(`it will return an empty result set`, func(t *testcase.T) {
@@ -261,8 +269,11 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 					var pilots []release.Pilot
 
 					for i := 0; i < rand.Intn(5)+5; i++ {
+						uuidV4, err := uuid.NewRandom()
+						require.Nil(t, err)
+
 						pilot := release.Pilot{
-							FlagID:     strconv.Itoa(i),
+							FlagID:     uuidV4.String(),
 							ExternalID: GetExternalPilotID(t),
 							Enrolled:   rand.Intn(1) == 0,
 						}

@@ -1,6 +1,6 @@
 CREATE TABLE "feature_flags"
 (
-    id                                  SERIAL NOT NULL PRIMARY KEY,
+    id                                  UUID   NOT NULL PRIMARY KEY,
     name                                TEXT   NOT NULL,
     rollout_rand_seed                   BIGINT NOT NULL,
 

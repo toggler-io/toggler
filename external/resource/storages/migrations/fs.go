@@ -213,7 +213,7 @@ var _escData = map[string]*_escFile{
 		name:    "fs.go",
 		local:   "migrations/fs.go",
 		size:    0,
-		modtime: 1586913593,
+		modtime: 1586915480,
 		compressed: `
 H4sIAAAAAAAC/wEAAP//AAAAAAAAAAA=
 `,
@@ -234,14 +234,14 @@ QlGjZM0FCAAA//9Q/JbBRQAAAA==
 		name:    "1561423897_create_feature_flags_table.up.sql",
 		local:   "migrations/postgres/1561423897_create_feature_flags_table.up.sql",
 		size:    560,
-		modtime: 1586913508,
+		modtime: 1586914005,
 		compressed: `
-H4sIAAAAAAAC/4SRwW7qMBBF9/mKK1YgPfZPYhWohawG0yaOBCvLIUNiNdg0dqry91VSWhGJCi9nfI7u
-zKxSFksGGS8ThsmRdOhaUsdGV34STSMAMCUevoylPE4gthIiTxK8pHwTp3s8s/2/QWL1iR5JJNtJ4Ffy
-DbauaVwXVKttqTzRvTBLvuZC3oADOZ/jaD4RauMRHLJNnCRcyJ/eUPe165oSBfVfqURxQa0/jK0QasKZ
-2gPZoCuC9tAwNvyHsUPv5EpqRgl9aHWg6qJusD8T3gVLOhhvnFWNq8xB6bMZdnKdZ7UVmUzj3jO6k+p3
-q4xXnTXvyAV/zRmmfXEWzRZRdD0xF09sh8a5NzXGi8tgwFaMvcgzLtYoQkt09S2irwAAAP//pg8A3zAC
-AAA=
+H4sIAAAAAAAC/4SRQYviMBTH7/0UfzwprPcFT1WDhK1xt6agp5DaZxs2Jk6TDuO3H9pxwIKDOb6X34//
+e2+Vs1QyyHSZMUzOpGPXkjpbXYdJMk0AwFR4+YqCrwGInYQosgx/c75N8yP+sOOvQeL0hV5JJDvIB8kX
+2HprfRdVq12lAtGzMEu+4UI+gAM5n+NsPhAbExA99ts0y7iQ372hHhrf2Qol9V+pQnlDo9+NqxEbwpXa
+E7moa4IO0DAu/oZxQ+/iK7KjhCG2OlJ9Uw/YjwmfghWdTDDeKetrc1L6aoad3OdZ7cRe5mnvGd1J9btV
+JqjOmTcUgv8rGKZ9cZbMFklyPzEXa3aA9f6/GuPlbTBgJ8ZeFHsuNihjS3T3LZLPAAAA//+q3CjWMAIA
+AA==
 `,
 	},
 
@@ -259,13 +259,13 @@ rShJLcpLzInPTFGy5gJrD3F08nFVUILoU7LmAgQAAP//3ZtLD1QAAAA=
 	"/migrations/postgres/1562536633_create_pilots_table.up.sql": {
 		name:    "1562536633_create_pilots_table.up.sql",
 		local:   "migrations/postgres/1562536633_create_pilots_table.up.sql",
-		size:    381,
-		modtime: 1586913508,
+		size:    373,
+		modtime: 1586914005,
 		compressed: `
-H4sIAAAAAAAC/4SQQWvDIBiG7/6Kj55a6D/oyXRSBPlkiYHePsxih8xpZw1s/34kKSPJZV59fN/H91wL
-bgQYXikBu7sPqTx2bM8AAHwPq1PJSyNqyRWgNoCtUseJuzlbhuzoFuw7+X7kJJrxZs257+JytIGewUZc
-zZy84WJOIbi/9kprJTiuuAk8a2xMzceyyZyG6L/oLX12PtriU4QW5WsrYL9RPC5dDuxwYuw5hMQXcYWQ
-0sdwp3kO6n5o855s7Gn5HY2zwQPaRuIFupKd+6f2xH4DAAD//0TGwKl9AQAA
+H4sIAAAAAAAC/4SQwWoDIRCG7z7FkFMCeYOcTCJFkJEmCrkNbtcUqdWt60L79qW7S9kuLfXi5Zv5v/lP
+F8GNAMOPSsCmCzHXfsO2DAAgtPDjWSvPXz9qA2iV2o/U3bs6FE/36J4ptH9Q/r36klykeakRN/MLlUqO
+0X/nHrVWguOCGrGTxqu5cIkGRmMaUnijp/zahORqyAksykcrYLuS2y89dmx3YGwuQOJZ3CDm/DJ0NNVA
+zQet5smllpanaJwMerBXiQ/Q1OL9P7EH9hkAAP//rSBeZHUBAAA=
 `,
 	},
 
@@ -284,12 +284,12 @@ rLkAAQAA//97cxxbPwAAAA==
 		name:    "1562584482_create_tokens_table.up.sql",
 		local:   "migrations/postgres/1562584482_create_tokens_table.up.sql",
 		size:    334,
-		modtime: 1586913508,
+		modtime: 1586914005,
 		compressed: `
-H4sIAAAAAAAC/3yQQUsDMRCF7/kVj55a8KLgqae0DiWwndXdWShewpYNGCob3SSo/166jYI9OJcZmO89
-3sy2IS0E0ZuKsEjh5Ma4UEsFAH5AqY3ZtdQYXQHgWsBdVd3MTHzp72/vzpPQQX74v0z4GN1ksx/+YXyM
-2Q22TxCzp1b0/lGer5ghT33yYZzzGJZrnxna1txKo8/ryzV2btZHm0f/jo7NU0dYXoKv1GqtVHmC4Qc6
-4DWEU36zRXz8KvrkPhNqLqboWsM7HNPk3K/XWn0HAAD//+wxzmJOAQAA
+H4sIAAAAAAAC/3yQQUsDMRCF7/kVj55a8KLgqadtG0pgO6vdCRQvYUsChkqimwT130u30UORzmUezPce
+M7Pey4YluFm1ErMcTy6kmZgLAPAWtbRWm19NHYN0295NTHodHu8fzorlgf9n4mdwoyne3mB8SsVZM2Sw
+2smem90Tv1wxtoxD9jEAK7VVxNc5E7TuqOd9cx5frjFTMz6ZEvwHNKlnLTG/LL4Qi6UQ9QmKNvKAtxhP
+5d1U8/G7+rP7yuiohkL3irY45tG5v6yl+AkAAP//02DvE04BAAA=
 `,
 	},
 
@@ -328,11 +328,11 @@ H4sIAAAAAAAC/3IJ8g9QCHF08nFVUCpJLS6JT80rySzJTC1WsgYEAAD//18Bt9QbAAAA
 	"/migrations/postgres/1564874467_create_test_entities_table.up.sql": {
 		name:    "1564874467_create_test_entities_table.up.sql",
 		local:   "migrations/postgres/1564874467_create_test_entities_table.up.sql",
-		size:    59,
-		modtime: 1586913508,
+		size:    54,
+		modtime: 1586915462,
 		compressed: `
-H4sIAAAAAAAC/3IOcnUMcVUIcXTycVVQKkktLolPzSvJLMlMLVbi0uBSUFBQyExRcPJ0D3YN8nT0UfDz
-D1HwC/Xx4dK0BgQAAP//QyRBQTsAAAA=
+H4sIAAAAAAAC/3IOcnUMcVUIcXTycVVQKkktLolPzSvJLMlMLVbi0uBSUFBQyExRCA31dFHw8w9R8Av1
+8eHStAYEAAD//yHXMLg2AAAA
 `,
 	},
 
@@ -374,12 +374,12 @@ c4H1hTg6+bgq4NFiDQgAAP//1QXxzl8AAAA=
 	"/migrations/postgres/1570774790_create_release_allows_table.up.sql": {
 		name:    "1570774790_create_release_allows_table.up.sql",
 		local:   "migrations/postgres/1570774790_create_release_allows_table.up.sql",
-		size:    255,
-		modtime: 1586913508,
+		size:    245,
+		modtime: 1586914004,
 		compressed: `
-H4sIAAAAAAAC/3yOQQqDMBBF9znFXyr0Bq5iGyQ0HUuMUFchkliE0BYtlN6+qOnWWf558+cdteBGwPBS
-CUwhBjcHO0R3t+PLOu8n62J8fmaWMQAYPdYpZdUILbkC1QbUKoWrlheuO5xFd1jZrcUvrCSzJH9226cH
-kCQMywvGkoukk7hhGB/e7gjZ/ptiv7bVtKePtpFUoX9PISBLd3nBfgEAAP//y7Dajv8AAAA=
+H4sIAAAAAAAC/3yOwQqCQBCG7/sU/1GhN/BkucSSjWG7kKdhZdYQlgoNorcPdC9dnOPMNx/fodWl1bDl
+vtaYQgx+DjxEf+fxxV5kYh/j8zOrTAHAKFjGOVOBGgtydY1La85l2+Gku92CrQL5x9ZT0sKQtiovlEoF
+hip9wzA+hDcyuP+mtSy2hrai4a6GjujfUwjI0l9eqF8AAAD//yK0toP1AAAA
 `,
 	},
 
