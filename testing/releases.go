@@ -29,6 +29,7 @@ const (
 
 func init() {
 	setups = append(setups, func(s *testcase.Spec) {
+		// TODO: replace with GivenWeHaveReleaseFlag
 		s.Let(ExampleReleaseFlagNameLetVar, func(t *testcase.T) interface{} {
 			return RandomName()
 		})
@@ -125,6 +126,14 @@ func GivenWeHaveReleaseFlag(s *testcase.Spec, vn string) {
 		require.Nil(t, ExampleRolloutManager(t).Create(GetContext(t), rf))
 		t.Defer(func() { _ = ExampleRolloutManager(t).DeleteFeatureFlag(GetContext(t), rf.ID) })
 		return rf
+	})
+}
+
+func AndReleaseFlagPercentageIs(s *testcase.Spec, vn string, percentage int) {
+	s.Before(func(t *testcase.T) {
+		rf := GetReleaseFlag(t, vn)
+		rf.Rollout.Strategy.Percentage = percentage
+		require.Nil(t, ExampleRolloutManager(t).UpdateFeatureFlag(GetContext(t), rf))
 	})
 }
 

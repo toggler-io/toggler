@@ -7,13 +7,15 @@ import (
 	"github.com/toggler-io/toggler/usecases"
 )
 
-func AuthMiddleware(next http.Handler, uc *usecases.UseCases) http.Handler {
+type ErrorWriterFunc func(w http.ResponseWriter, error string, code int)
+
+func AuthMiddleware(next http.Handler, uc *usecases.UseCases, errorWriterFunc ErrorWriterFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		token, err := GetAppToken(r)
 
 		if err != nil {
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			errorWriterFunc(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}
 

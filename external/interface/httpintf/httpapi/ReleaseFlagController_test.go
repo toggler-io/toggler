@@ -2,13 +2,13 @@ package httpapi_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 
 	"github.com/adamluzsi/frameless/fixtures"
-	"github.com/adamluzsi/gorest"
 	"github.com/adamluzsi/testcase"
 	. "github.com/adamluzsi/testcase/httpspec"
 	"github.com/stretchr/testify/require"
@@ -19,8 +19,6 @@ import (
 	"github.com/toggler-io/toggler/lib/go/client"
 	swagger "github.com/toggler-io/toggler/lib/go/client/release"
 	"github.com/toggler-io/toggler/lib/go/models"
-	"github.com/toggler-io/toggler/usecases"
-
 	. "github.com/toggler-io/toggler/testing"
 )
 
@@ -116,16 +114,46 @@ func TestReleaseFlagController(t *testing.T) {
 	GivenThisIsAJSONAPI(s)
 
 	LetHandler(s, func(t *testcase.T) http.Handler {
-		return gorest.NewHandler(httpapi.ReleaseFlagController{UseCases: ExampleUseCases(t)})
+		return httpapi.NewReleaseFlagHandler(ExampleUseCases(t))
 	})
 
 	s.Describe(`POST / - create release flag`, SpecReleaseFlagControllerCreate)
 	s.Describe(`GET / - list release flags`, SpecReleaseFlagControllerList)
+
+	s.Context(`given we have a release flag in the system`, func(s *testcase.Spec) {
+		GivenWeHaveReleaseFlag(s, `release-flag`)
+
+		var andFlagIdentifierProvided = func(s *testcase.Spec, context func(s *testcase.Spec)) {
+			s.And(`release flag identifier provided as the external ID`, func(s *testcase.Spec) {
+				s.Let(`id`, func(t *testcase.T) interface{} {
+					return GetReleaseFlag(t, `release-flag`).ID
+				})
+
+				context(s)
+			})
+
+			//s.And(`release flag identifier provided as url normalized release flag name`, func(s *testcase.Spec) {
+			//	// TODO add implementation to "alias id that can be guessed from the flag name"
+			//
+			//	s.Let(`id`, func(t *testcase.T) interface{} {
+			//		return GetReleaseFlag(t, `release-flag`).Name
+			//	})
+			//
+			//	context(s)
+			//})
+		}
+
+		andFlagIdentifierProvided(s, func(s *testcase.Spec) {
+			s.Describe(`GET /{id||alias}/global - get release flag's global state`,
+				SpecReleaseFlagControllerReleaseFlagGlobalStats)
+		})
+	})
 }
 
 func SpecReleaseFlagControllerCreate(s *testcase.Spec) {
 	LetMethodValue(s, http.MethodPost)
 	LetPathValue(s, `/`)
+	GivenHTTPRequestHasAppToken(s)
 
 	var onSuccess = func(t *testcase.T) (resp httpapi.CreateReleaseFlagResponse) {
 		rr := ServeHTTP(t)
@@ -186,7 +214,7 @@ func SpecReleaseFlagControllerCreate(s *testcase.Spec) {
 	})
 
 	s.Test(`swagger`, func(t *testcase.T) {
-		sm, err := httpintf.NewServeMux(usecases.NewUseCases(ExampleStorage(t)))
+		sm, err := httpintf.NewServeMux(ExampleUseCases(t))
 		require.Nil(t, err)
 
 		s := httptest.NewServer(sm)
@@ -194,10 +222,10 @@ func SpecReleaseFlagControllerCreate(s *testcase.Spec) {
 
 		// TODO: ensure validation
 		p := swagger.NewCreateReleaseFlagParams()
-		p.Body.Flag = &models.Flag{
+		p.Body.Flag = &models.ReleaseFlagView{
 			Name: fixtures.Random.String(),
-			Rollout: &models.FlagRollout{
-				Strategy: &models.FlagRolloutStrategy{
+			Rollout: &models.Rollout{
+				Strategy: &models.Strategy{
 					Percentage: int64(fixtures.Random.IntBetween(0, 100)),
 				},
 			},
@@ -210,20 +238,20 @@ func SpecReleaseFlagControllerCreate(s *testcase.Spec) {
 
 		c := client.NewHTTPClientWithConfig(nil, tc)
 
-		resp, err := c.Release.CreateReleaseFlag(p, authInfoWithToken(t))
+		resp, err := c.Release.CreateReleaseFlag(p, protectedAuth(t))
 		if err != nil {
 			t.Fatal(err.Error())
 		}
 
 		require.NotNil(t, resp)
 		require.NotNil(t, resp.Payload)
-
 	})
 }
 
 func SpecReleaseFlagControllerList(s *testcase.Spec) {
 	LetMethodValue(s, http.MethodGet)
 	LetPathValue(s, `/`)
+	GivenHTTPRequestHasAppToken(s)
 
 	var onSuccess = func(t *testcase.T) httpapi.ListReleaseFlagResponse {
 		var resp httpapi.ListReleaseFlagResponse
@@ -261,6 +289,65 @@ func SpecReleaseFlagControllerList(s *testcase.Spec) {
 				require.Len(t, resp.Body.Flags, 2)
 				require.Contains(t, resp.Body.Flags, httpapi.ReleaseFlagView{}.FromReleaseFlag(*t.I(`feature-2`).(*release.Flag)))
 			})
+		})
+	})
+}
+
+func SpecReleaseFlagControllerReleaseFlagGlobalStats(s *testcase.Spec) {
+	LetMethodValue(s, http.MethodGet)
+	LetPath(s, func(t *testcase.T) string {
+		return fmt.Sprintf(`/%s/global`, t.I(`id`))
+	})
+
+	var onSuccess = func(t *testcase.T) httpapi.GetReleaseFlagGlobalStatesResponse {
+		rr := ServeHTTP(t)
+		require.Equal(t, 200, rr.Code, rr.Body.String())
+		var resp httpapi.GetReleaseFlagGlobalStatesResponse
+		require.Nil(t, json.Unmarshal(rr.Body.Bytes(), &resp.Body))
+		return resp
+	}
+
+	s.And(`flag global released`, func(s *testcase.Spec) {
+		AndReleaseFlagPercentageIs(s, `release-flag`, 100)
+
+		s.Then(`the request will be accepted with OK`, func(t *testcase.T) {
+			require.Equal(t, true, onSuccess(t).Body.Enrollment)
+		})
+	})
+
+	s.And(`flag is not fully released yet`, func(s *testcase.Spec) {
+		AndReleaseFlagPercentageIs(s, `release-flag`, fixtures.Random.IntN(100))
+
+		s.Then(`the flag enrollment will be marked as forbidden`, func(t *testcase.T) {
+			require.Equal(t, false, onSuccess(t).Body.Enrollment)
+		})
+	})
+
+	s.Context(`swagger`, func(s *testcase.Spec) {
+		AndReleaseFlagPercentageIs(s, `release-flag`, 100)
+
+		s.Test(`E2E`, func(t *testcase.T) {
+			enr := true
+
+			s := httptest.NewServer(NewServeMux(t))
+			defer s.Close()
+
+			p := swagger.NewGetReleaseFlagGlobalStatesParams()
+			p.ID = GetReleaseFlag(t, `release-flag`).ID
+
+			tc := client.DefaultTransportConfig()
+			u, _ := url.Parse(s.URL)
+			tc.Host = u.Host
+			tc.Schemes = []string{`http`}
+
+			c := client.NewHTTPClientWithConfig(nil, tc)
+
+			resp, err := c.Release.GetReleaseFlagGlobalStates(p, publicAuth(t))
+			t.Log(resp, err)
+			require.Nil(t, err)
+			require.NotNil(t, resp)
+			require.NotNil(t, resp.Payload)
+			require.Equal(t, enr, resp.Payload.Enrollment)
 		})
 	})
 }

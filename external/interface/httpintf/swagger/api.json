@@ -15,6 +15,52 @@
   "basePath": "/api",
   "paths": {
     "/release-flags": {
+      "get": {
+        "security": [
+          {
+            "AppToken": [
+              "[]"
+            ]
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "release",
+          "feature",
+          "flag"
+        ],
+        "summary": "List all the release flag that can be used to manage a feature rollout.",
+        "operationId": "listReleaseFlags",
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/listReleaseFlagResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
       "post": {
         "security": [
           {
@@ -49,7 +95,7 @@
               "type": "object",
               "properties": {
                 "flag": {
-                  "$ref": "#/definitions/Flag"
+                  "$ref": "#/definitions/ReleaseFlagView"
                 }
               }
             }
@@ -68,8 +114,8 @@
         }
       }
     },
-    "/release/is-feature-globally-enabled.json": {
-      "post": {
+    "/release-flags/{id}/global": {
+      "get": {
         "description": "Reply back whether the feature rolled out globally or not.\nThis is especially useful for cases where you don't have pilot id.\nSuch case is batch processing, or dark launch flips.\nBy Default, this will be determined whether the flag exist,\nThen  whether the release id done to everyone or not by percentage.\nThe endpoint can be called with HTTP GET method as well,\nPOST is used officially only to support most highly abstracted http clients.",
         "consumes": [
           "application/json"
@@ -82,23 +128,26 @@
           "https"
         ],
         "tags": [
-          "release-flag",
+          "release",
+          "feature",
+          "flag",
           "pilot"
         ],
-        "summary": "Check Rollout Feature Status for Global use",
-        "operationId": "IsFeatureGloballyEnabled",
+        "summary": "Get Release flag statistics regarding global state by the name of the release flag.",
+        "operationId": "getReleaseFlagGlobalStates",
         "parameters": [
           {
-            "name": "Body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/IsFeatureGloballyEnabledRequestBody"
-            }
+            "type": "string",
+            "x-go-name": "ID",
+            "description": "ID is the release flag id or name from which we need global statistics.",
+            "name": "id",
+            "in": "path",
+            "required": true
           }
         ],
         "responses": {
           "200": {
-            "$ref": "#/responses/enrollmentResponse"
+            "$ref": "#/responses/getReleaseFlagGlobalStatesResponse"
           },
           "400": {
             "$ref": "#/responses/errorResponse"
@@ -177,19 +226,6 @@
     }
   },
   "definitions": {
-    "EnrollmentResponseBody": {
-      "description": "The content will be always given, regardless if the flag exists or not.\nThis helps the developers to use it as a null object, regardless the toggler service state.",
-      "type": "object",
-      "title": "EnrollmentResponse will be returned when feature flag status is requested.",
-      "properties": {
-        "enrollment": {
-          "description": "Rollout feature flag enrollment status.",
-          "type": "boolean",
-          "x-go-name": "Enrollment"
-        }
-      },
-      "x-go-package": "github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
-    },
     "Error": {
       "description": "Error contains the details of the error",
       "type": "object",
@@ -209,8 +245,7 @@
       },
       "x-go-package": "github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
     },
-    "Flag": {
-      "description": "Flag is the basic entity with properties that feature flag holds",
+    "ReleaseFlagView": {
       "type": "object",
       "properties": {
         "id": {
@@ -223,52 +258,32 @@
           "x-go-name": "Name"
         },
         "rollout": {
-          "$ref": "#/definitions/FlagRollout"
-        }
-      },
-      "x-go-package": "github.com/toggler-io/toggler/domains/release"
-    },
-    "FlagRollout": {
-      "type": "object",
-      "properties": {
-        "rand_seed_salt": {
-          "description": "RandSeed allows you to configure the randomness for the percentage based pilot enrollment selection.\nThis value could have been neglected by using the flag name as random seed,\nbut that would reduce the flexibility for edge cases where you want\nto use a similar pilot group as a successful flag rollout before.",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "RandSeed"
-        },
-        "strategy": {
-          "$ref": "#/definitions/FlagRolloutStrategy"
-        }
-      },
-      "x-go-package": "github.com/toggler-io/toggler/domains/release"
-    },
-    "FlagRolloutStrategy": {
-      "type": "object",
-      "properties": {
-        "decision_logic_api": {
-          "$ref": "#/definitions/URL"
-        },
-        "percentage": {
-          "description": "Percentage allows you to define how many of your user base should be enrolled pseudo randomly.",
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "Percentage"
-        }
-      },
-      "x-go-package": "github.com/toggler-io/toggler/domains/release"
-    },
-    "IsFeatureGloballyEnabledRequestBody": {
-      "type": "object",
-      "required": [
-        "feature"
-      ],
-      "properties": {
-        "feature": {
-          "description": "Feature is the Feature Flag name that is needed to be checked for enrollment",
-          "type": "string",
-          "x-go-name": "Feature",
-          "example": "rollout-feature-flag"
+          "type": "object",
+          "properties": {
+            "rand_seed_salt": {
+              "description": "RandSeed allows you to configure the randomness for the percentage based pilot enrollment selection.\nThis value could have been neglected by using the flag name as random seed,\nbut that would reduce the flexibility for edge cases where you want\nto use a similar pilot group as a successful flag rollout before.",
+              "type": "integer",
+              "format": "int64",
+              "x-go-name": "RandSeed"
+            },
+            "strategy": {
+              "description": "Strategy expects to determines the behavior of the rollout workflow.\nthe actual behavior implementation is with the RolloutManager,\nbut the configuration data is located here",
+              "type": "object",
+              "properties": {
+                "decision_logic_api": {
+                  "$ref": "#/definitions/URL"
+                },
+                "percentage": {
+                  "description": "Percentage allows you to define how many of your user base should be enrolled pseudo randomly.",
+                  "type": "integer",
+                  "format": "int64",
+                  "x-go-name": "Percentage"
+                }
+              },
+              "x-go-name": "Strategy"
+            }
+          },
+          "x-go-name": "Rollout"
         }
       },
       "x-go-package": "github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
@@ -316,20 +331,14 @@
   },
   "responses": {
     "createReleaseFlagResponse": {
-      "description": "CreateReleaseFlagResponse returns",
+      "description": "CreateReleaseFlagResponse",
       "schema": {
         "type": "object",
         "properties": {
           "flag": {
-            "$ref": "#/definitions/Flag"
+            "$ref": "#/definitions/ReleaseFlagView"
           }
         }
-      }
-    },
-    "enrollmentResponse": {
-      "description": "EnrollmentResponse returns information about the requester's rollout feature enrollment status.",
-      "schema": {
-        "$ref": "#/definitions/EnrollmentResponseBody"
       }
     },
     "errorResponse": {
@@ -362,6 +371,34 @@
               }
             },
             "x-go-name": "Release"
+          }
+        }
+      }
+    },
+    "getReleaseFlagGlobalStatesResponse": {
+      "description": "GetReleaseFlagGlobalStatesResponse",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "enrollment": {
+            "description": "Enrollment is the release feature flag enrollment status.",
+            "type": "boolean",
+            "x-go-name": "Enrollment"
+          }
+        }
+      }
+    },
+    "listReleaseFlagResponse": {
+      "description": "ListReleaseFlagResponse",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "flags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/ReleaseFlagView"
+            },
+            "x-go-name": "Flags"
           }
         }
       }

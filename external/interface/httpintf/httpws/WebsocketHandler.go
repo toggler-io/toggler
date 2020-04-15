@@ -26,7 +26,7 @@ type WebsocketRequestParameter struct {
 type WebsocketRequestPayload struct {
 	// Operation describe the chosen operation that needs to be executed.
 	// required: true
-	// enum: IsFeatureEnabled,IsFeatureGloballyEnabled
+	// enum: IsFeatureEnabled,GetReleaseFlagGlobalStates
 	// example: IsFeatureEnabled
 	Operation string `json:"operation"`
 	// Data content correspond with the api payloads of the given operations.
@@ -34,7 +34,7 @@ type WebsocketRequestPayload struct {
 	Data interface{} `json:"data"`
 }
 
-type WebsocketResponseBody = httpapi.EnrollmentResponseBody
+type WebsocketResponseBody = EnrollmentResponseBody
 
 // WSLoadBalanceErrResp will be received in case the receiver server cannot take more ws connections.
 // This error must be handled by retrying the call until it succeed.
@@ -50,7 +50,7 @@ type WSLoadBalanceErrResp httpapi.ErrorResponse
 
 	swagger:route GET / ws release flag pilot global server-side websocket Websocket
 
-	Socket API to check Rollout Feature Flag Status
+	Socket API to check Rollout name Flag Status
 
 	This endpoint currently meant to used by servers and not by clients.
 	The  reason behind is that it is much more easy to calculate with server quantity,
@@ -119,24 +119,24 @@ subscription:
 				continue subscription
 			}
 
-			var resp httpapi.EnrollmentResponseBody
+			var resp EnrollmentResponseBody
 			resp.Enrollment = states[releaseFlagName]
 
 			if handle(c.WriteJSON(&resp), http.StatusInternalServerError) {
 				break subscription
 			}
 
-		case `IsFeatureGloballyEnabled`:
+		case `GetReleaseFlagGlobalStates`:
 			data := req.Data.(map[string]interface{})
 			enr, err := ctrl.UseCases.FlagChecker.IsFeatureGloballyEnabled(data[`feature`].(string))
 			if handle(err, http.StatusInternalServerError) {
 				continue subscription
 			}
 
-			var resp httpapi.IsFeatureGloballyEnabledResponseBody
-			resp.Enrollment = enr
+			var resp httpapi.GetReleaseFlagGlobalStatesResponse
+			resp.Body.Enrollment = enr
 
-			if handle(c.WriteJSON(&resp), http.StatusInternalServerError) {
+			if handle(c.WriteJSON(&resp.Body), http.StatusInternalServerError) {
 				break subscription
 			}
 
@@ -150,7 +150,7 @@ subscription:
 }
 
 type IsFeatureEnabledRequestPayload struct {
-	// Feature is the Feature Flag name that is needed to be checked for enrollment
+	// name is the name Flag name that is needed to be checked for enrollment
 	//
 	// required: true
 	// example: rollout-feature-flag

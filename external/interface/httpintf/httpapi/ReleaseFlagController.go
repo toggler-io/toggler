@@ -1,13 +1,32 @@
 package httpapi
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/url"
 
+	"github.com/adamluzsi/gorest"
+
 	"github.com/toggler-io/toggler/domains/release"
+	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
 	"github.com/toggler-io/toggler/usecases"
 )
+
+func NewReleaseFlagHandler(uc *usecases.UseCases) *gorest.Handler {
+	c := ReleaseFlagController{UseCases: uc}
+	h := gorest.NewHandler(struct {
+		gorest.ContextHandler
+		gorest.CreateController
+		gorest.ListController
+	}{
+		ContextHandler:   c,
+		CreateController: gorest.AsCreateController(httputils.AuthMiddleware(http.HandlerFunc(c.Create), uc, ErrorWriterFunc)),
+		ListController:   gorest.AsListController(httputils.AuthMiddleware(http.HandlerFunc(c.List), uc, ErrorWriterFunc)),
+	})
+	h.Handle(`/global`, http.HandlerFunc(c.GetReleaseFlagGlobalStates))
+	return h
+}
 
 type ReleaseFlagController struct {
 	UseCases *usecases.UseCases
@@ -57,6 +76,8 @@ func (v ReleaseFlagView) ToReleaseFlag() release.Flag {
 	return flag
 }
 
+//--------------------------------------------------------------------------------------------------------------------//
+
 // CreateReleaseFlagRequest
 // swagger:parameters createReleaseFlag
 type CreateReleaseFlagRequest struct {
@@ -97,6 +118,7 @@ type CreateReleaseFlagResponse struct {
 		Responses:
 		  200: createReleaseFlagResponse
 		  400: errorResponse
+		  401: errorResponse
 		  500: errorResponse
 
 */
@@ -174,7 +196,7 @@ type ListReleaseFlagResponse struct {
 
 		Responses:
 		  200: listReleaseFlagResponse
-		  400: errorResponse
+		  401: errorResponse
 		  500: errorResponse
 
 */
@@ -191,4 +213,92 @@ func (ctrl ReleaseFlagController) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	serveJSON(w, resp.Body)
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+
+type ReleaseFlagContextKey struct{}
+
+func (ctrl ReleaseFlagController) ContextWithResource(ctx context.Context, resourceID string) (context.Context, bool, error) {
+	s := ctrl.UseCases.FlagChecker.Storage
+	//flag, err := s.FindReleaseFlagByName(ctx, resourceID)
+	//if err != nil {
+	//	return ctx, false, err
+	//}
+	//if flag != nil {
+	//	return context.WithValue(ctx, ReleaseFlagContextKey{}, *flag), true, nil
+	//}
+
+	var f release.Flag
+	found, err := s.FindByID(ctx, &f, resourceID)
+	if err != nil {
+		return ctx, false, err
+	}
+	if !found {
+		return ctx, false, nil
+	}
+	return context.WithValue(ctx, ReleaseFlagContextKey{}, f), true, nil
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+
+// GetReleaseFlagGlobalStatesRequest is the expected payload
+// that holds the feature flag name that needs to be observed from global rollout perspective.
+// swagger:parameters getReleaseFlagGlobalStates
+type GetReleaseFlagGlobalStatesRequest struct {
+	// ID is the release flag id or the alias name.
+	//
+	// in: path
+	// required: true
+	ID string `json:"id"`
+}
+
+// GetReleaseFlagGlobalStatesResponse
+// swagger:response getReleaseFlagGlobalStatesResponse
+type GetReleaseFlagGlobalStatesResponse struct {
+	// in: body
+	Body struct {
+		// Enrollment is the release feature flag enrollment status.
+		Enrollment bool `json:"enrollment"`
+	}
+}
+
+/*
+
+	GetReleaseFlagGlobalStates
+	swagger:route GET /release-flags/{id}/global release feature flag pilot getReleaseFlagGlobalStates
+
+	Get Release flag statistics regarding global state by the name of the release flag.
+
+	Reply back whether the feature rolled out globally or not.
+	This is especially useful for cases where you don't have pilot id.
+	Such case is batch processing, or dark launch flips.
+	By Default, this will be determined whether the flag exist,
+	Then  whether the release id done to everyone or not by percentage.
+	The endpoint can be called with HTTP GET method as well,
+	POST is used officially only to support most highly abstracted http clients.
+
+		Consumes:
+		- application/json
+
+		Produces:
+		- application/json
+
+		Schemes: http, https
+
+		Responses:
+		  200: getReleaseFlagGlobalStatesResponse
+		  400: errorResponse
+		  500: errorResponse
+
+*/
+func (ctrl ReleaseFlagController) GetReleaseFlagGlobalStates(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	flag := r.Context().Value(ReleaseFlagContextKey{}).(release.Flag)
+	enrollment := flag.Rollout.Strategy.IsGlobal()
+
+	var resp GetReleaseFlagGlobalStatesResponse
+	resp.Body.Enrollment = enrollment
+	serveJSON(w, &resp.Body)
 }

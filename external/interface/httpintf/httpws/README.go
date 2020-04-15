@@ -32,3 +32,11 @@
 //
 // swagger:meta
 package httpws
+
+// EnrollmentResponse will be returned when feature flag status is requested.
+// The content will be always given, regardless if the flag exists or not.
+// This helps the developers to use it as a null object, regardless the toggler service state.
+type EnrollmentResponseBody struct {
+	// Enrollment is the rollout feature flag enrollment status.
+	Enrollment bool `json:"enrollment"`
+}
