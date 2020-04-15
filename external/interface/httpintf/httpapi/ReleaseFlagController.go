@@ -27,6 +27,7 @@ func NewReleaseFlagHandler(uc *usecases.UseCases) *gorest.Handler {
 		UpdateController: gorest.AsUpdateController(httputils.AuthMiddleware(http.HandlerFunc(c.Update), uc, ErrorWriterFunc)),
 	})
 	h.Handle(`/global`, http.HandlerFunc(c.GetReleaseFlagGlobalStates))
+	gorest.Mount(h, `/pilots/`, NewReleasePilotHandler(uc))
 	return h
 }
 
