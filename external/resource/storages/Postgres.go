@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/url"
 	"path"
-	"strconv"
 	"strings"
 
 	"github.com/adamluzsi/frameless"
@@ -101,10 +100,8 @@ func (pg *Postgres) Create(ctx context.Context, ptr interface{}) error {
 	}
 }
 
-func (pg *Postgres) FindByID(ctx context.Context, ptr interface{}, ID string) (bool, error) {
-	id, err := strconv.ParseInt(ID, 10, 64)
-
-	if err != nil {
+func (pg *Postgres) FindByID(ctx context.Context, ptr interface{}, id string) (bool, error) {
+	if !isUUIDValid(id) {
 		return false, nil
 	}
 
@@ -151,15 +148,12 @@ func (pg *Postgres) DeleteAll(ctx context.Context, Type interface{}) error {
 	return err
 }
 
-func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, ID string) error {
-	id, err := strconv.ParseInt(ID, 10, 64)
-
-	if err != nil {
+func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, id string) error {
+	if !isUUIDValid(id) {
 		return frameless.ErrNotFound
 	}
 
 	var query string
-
 	switch Type.(type) {
 	case release.IPAllow, *release.IPAllow:
 		query = `DELETE FROM "release_flag_ip_addr_allows" WHERE "id" = $1`
@@ -265,10 +259,8 @@ func (pg *Postgres) FindReleaseFlagByName(ctx context.Context, name string) (*re
 
 }
 
-func (pg *Postgres) FindReleaseFlagPilotByPilotExternalID(ctx context.Context, FeatureFlagID, ExternalPilotID string) (*release.Pilot, error) {
-	flagID, err := strconv.ParseInt(FeatureFlagID, 10, 64)
-
-	if err != nil {
+func (pg *Postgres) FindReleaseFlagPilotByPilotExternalID(ctx context.Context, flagID, ExternalPilotID string) (*release.Pilot, error) {
+	if !isUUIDValid(flagID) {
 		return nil, nil
 	}
 
@@ -280,7 +272,7 @@ func (pg *Postgres) FindReleaseFlagPilotByPilotExternalID(ctx context.Context, F
 
 	var p release.Pilot
 
-	err = m.Map(row, &p)
+	err := m.Map(row, &p)
 
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -302,15 +294,13 @@ func (pg *Postgres) FindPilotsByFeatureFlag(ctx context.Context, ff *release.Fla
 		return iterators.NewEmpty()
 	}
 
-	ffID, err := strconv.ParseInt(ff.ID, 10, 64)
-
-	if err != nil {
-		return iterators.NewEmpty()
+	if !isUUIDValid(ff.ID) {
+		return  iterators.NewEmpty()
 	}
 
 	m := pilotMapper{}
 	query := fmt.Sprintf(`SELECT %s FROM "pilots" WHERE "feature_flag_id" = $1`, m.SelectClause())
-	rows, err := pg.DB.QueryContext(ctx, query, ffID)
+	rows, err := pg.DB.QueryContext(ctx, query, ff.ID)
 
 	if err != nil {
 		return iterators.NewError(err)
@@ -384,12 +374,16 @@ func (pg *Postgres) FindReleaseFlagsByName(ctx context.Context, flagNames ...str
 }
 
 const releaseAllowInsertNewQuery = `
-INSERT INTO "release_flag_ip_addr_allows" ("flag_id", "ip_addr")
-VALUES ($1, $2)
-RETURNING "id";
+INSERT INTO "release_flag_ip_addr_allows" ("id","flag_id", "ip_addr")
+VALUES ($1, $2, $3);
 `
 
 func (pg *Postgres) releaseAllowInsertNew(ctx context.Context, allow *release.IPAllow) error {
+
+	id, err := newV4UUID()
+	if err != nil {
+		return err
+	}
 
 	var ipAddr sql.NullString
 
@@ -402,31 +396,33 @@ func (pg *Postgres) releaseAllowInsertNew(ctx context.Context, allow *release.IP
 		return errors.New(`creating release.IPAllow without FlagID is forbidden`)
 	}
 
-	row := pg.DB.QueryRowContext(ctx, releaseAllowInsertNewQuery,
+	if _, err := pg.DB.ExecContext(ctx, releaseAllowInsertNewQuery,
+		id,
 		allow.FlagID,
 		ipAddr,
-	)
-
-	var id sql.NullInt64
-	if err := row.Scan(&id); err != nil {
+	); err != nil {
 		return err
 	}
 
-	return resources.SetID(allow, strconv.FormatInt(id.Int64, 10))
+	return resources.SetID(allow, id)
 }
 
 const releaseFlagInsertNewQuery = `
 INSERT INTO "release_flags" (
+	id,
 	name,
 	rollout_rand_seed,
 	rollout_strategy_percentage,
 	rollout_strategy_decision_logic_api
 )
-VALUES ($1, $2, $3, $4)
-RETURNING id;
+VALUES ($1, $2, $3, $4, $5);
 `
 
 func (pg *Postgres) releaseFlagInsertNew(ctx context.Context, flag *release.Flag) error {
+	id, err := newV4UUID()
+	if err != nil {
+		return err
+	}
 
 	var DecisionLogicAPI sql.NullString
 
@@ -435,89 +431,94 @@ func (pg *Postgres) releaseFlagInsertNew(ctx context.Context, flag *release.Flag
 		DecisionLogicAPI.String = flag.Rollout.Strategy.DecisionLogicAPI.String()
 	}
 
-	row := pg.DB.QueryRowContext(ctx, releaseFlagInsertNewQuery,
+	if _, err := pg.DB.ExecContext(ctx, releaseFlagInsertNewQuery,
+		id,
 		flag.Name,
 		flag.Rollout.RandSeed,
 		flag.Rollout.Strategy.Percentage,
 		DecisionLogicAPI,
-	)
-
-	var id sql.NullInt64
-	if err := row.Scan(&id); err != nil {
+	); err != nil {
 		return err
 	}
 
-	return resources.SetID(flag, strconv.FormatInt(id.Int64, 10))
+	return resources.SetID(flag, id)
 }
 
 const pilotInsertNewQuery = `
-INSERT INTO "pilots" (feature_flag_id, external_id, enrolled)
-VALUES ($1, $2, $3)
-RETURNING id;
+INSERT INTO "pilots" (id, feature_flag_id, external_id, enrolled)
+VALUES ($1, $2, $3, $4);
 `
 
 func (pg *Postgres) pilotInsertNew(ctx context.Context, pilot *release.Pilot) error {
 
-	flagID, err := strconv.ParseInt(pilot.FlagID, 10, 64)
-
+	id, err := newV4UUID()
 	if err != nil {
-		return fmt.Errorf(`invalid name Flag ID: ` + pilot.FlagID)
-	}
-
-	row := pg.DB.QueryRowContext(ctx, pilotInsertNewQuery,
-		flagID,
-		pilot.ExternalID,
-		pilot.Enrolled,
-	)
-
-	var id sql.NullInt64
-	if err := row.Scan(&id); err != nil {
 		return err
 	}
 
-	return resources.SetID(pilot, strconv.FormatInt(id.Int64, 10))
+	if !isUUIDValid(pilot.FlagID) {
+		return fmt.Errorf(`invalid name Flag ID: ` + pilot.FlagID)
+	}
+
+	if _, err := pg.DB.ExecContext(ctx, pilotInsertNewQuery,
+		id,
+		pilot.FlagID,
+		pilot.ExternalID,
+		pilot.Enrolled,
+	); err != nil {
+		return err
+	}
+
+	return resources.SetID(pilot, id)
+
 }
 
 const testEntityInsertNewQuery = `
 INSERT INTO "test_entities" (id) 
-VALUES (default)
+VALUES ($1)
 RETURNING id;
 `
 
 func (pg *Postgres) testEntityInsertNew(ctx context.Context, te *resources.TestEntity) error {
-	row := pg.DB.QueryRowContext(ctx, testEntityInsertNewQuery)
-
-	var id sql.NullInt64
-	if err := row.Scan(&id); err != nil {
+	id, err := newV4UUID()
+	if err != nil {
 		return err
 	}
 
-	return resources.SetID(te, strconv.FormatInt(id.Int64, 10))
+	if _, err := pg.DB.ExecContext(ctx, testEntityInsertNewQuery, id); err != nil {
+		return err
+	}
+
+	return resources.SetID(te, id)
 }
 
 const tokenInsertNewQuery = `
-INSERT INTO "tokens" (sha512, owner_uid, issued_at, duration)
-VALUES ($1, $2, $3, $4)
-RETURNING id;
+INSERT INTO "tokens" (id, sha512, owner_uid, issued_at, duration)
+VALUES ($1, $2, $3, $4, $5);
 `
 
 func (pg *Postgres) tokenInsertNew(ctx context.Context, token *security.Token) error {
-	row := pg.DB.QueryRowContext(ctx, tokenInsertNewQuery,
+
+	id, err := newV4UUID()
+	if err != nil {
+		return err
+	}
+
+	if _, err := pg.DB.ExecContext(ctx, tokenInsertNewQuery,
+		id,
 		token.SHA512,
 		token.OwnerUID,
 		token.IssuedAt,
 		token.Duration,
-	)
-
-	var id sql.NullInt64
-	if err := row.Scan(&id); err != nil {
+	); err != nil {
 		return err
 	}
 
-	return resources.SetID(token, strconv.FormatInt(id.Int64, 10))
+	return resources.SetID(token, id)
+
 }
 
-func (pg *Postgres) releaseAllowFindByID(ctx context.Context, allow *release.IPAllow, id int64) (bool, error) {
+func (pg *Postgres) releaseAllowFindByID(ctx context.Context, allow *release.IPAllow, id string) (bool, error) {
 	mapper := releaseAllowMapper{}
 	query := fmt.Sprintf(`SELECT %s FROM "release_flag_ip_addr_allows" WHERE "id" = $1`, strings.Join(mapper.Columns(), `, `))
 	row := pg.DB.QueryRowContext(ctx, query, id)
@@ -531,7 +532,7 @@ func (pg *Postgres) releaseAllowFindByID(ctx context.Context, allow *release.IPA
 	return true, nil
 }
 
-func (pg *Postgres) releaseFlagFindByID(ctx context.Context, flag *release.Flag, id int64) (bool, error) {
+func (pg *Postgres) releaseFlagFindByID(ctx context.Context, flag *release.Flag, id string) (bool, error) {
 
 	mapper := releaseFlagMapper{}
 	query := fmt.Sprintf(`%s FROM "release_flags" WHERE "id" = $1`, mapper.SelectClause())
@@ -553,7 +554,7 @@ func (pg *Postgres) releaseFlagFindByID(ctx context.Context, flag *release.Flag,
 
 }
 
-func (pg *Postgres) pilotFindByID(ctx context.Context, pilot *release.Pilot, id int64) (bool, error) {
+func (pg *Postgres) pilotFindByID(ctx context.Context, pilot *release.Pilot, id string) (bool, error) {
 	m := pilotMapper{}
 	query := fmt.Sprintf(`SELECT %s FROM "pilots" WHERE "id" = $1`, m.SelectClause())
 	row := pg.DB.QueryRowContext(ctx, query, id)
@@ -579,7 +580,7 @@ FROM "test_entities"
 WHERE id = $1;
 `
 
-func (pg *Postgres) testEntityFindByID(ctx context.Context, testEntity *resources.TestEntity, id int64) (bool, error) {
+func (pg *Postgres) testEntityFindByID(ctx context.Context, testEntity *resources.TestEntity, id string) (bool, error) {
 	row := pg.DB.QueryRowContext(ctx, testEntityFindByIDQuery, id)
 
 	err := row.Scan(&testEntity.ID)
@@ -603,7 +604,7 @@ WHERE id = $1;
 
 var tokenFindByIDQuery = fmt.Sprintf(tokenFindByIDQueryTemplate, strings.Join(tokenMapper{}.Columns(), `, `))
 
-func (pg *Postgres) tokenFindByID(ctx context.Context, token *security.Token, id int64) (bool, error) {
+func (pg *Postgres) tokenFindByID(ctx context.Context, token *security.Token, id string) (bool, error) {
 
 	row := pg.DB.QueryRowContext(ctx, tokenFindByIDQuery, id)
 	err := tokenMapper{}.Map(row, token)

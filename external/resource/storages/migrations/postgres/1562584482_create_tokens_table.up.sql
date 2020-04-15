@@ -1,6 +1,6 @@
 CREATE TABLE "tokens"
 (
-    id        BIGSERIAL   NOT NULL,
+    id        UUID        NOT NULL,
     sha512    TEXT        NOT NULL,
     owner_uid TEXT        NOT NULL,
     issued_at TIMESTAMPTZ NOT NULL,

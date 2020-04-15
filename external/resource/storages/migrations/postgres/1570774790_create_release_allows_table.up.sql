@@ -1,7 +1,7 @@
 CREATE TABLE release_flag_ip_addr_allows
 (
-    id      BIGSERIAL NOT NULL PRIMARY KEY,
-    flag_id BIGINT    NOT NULL,
+    id      UUID NOT NULL PRIMARY KEY,
+    flag_id UUID NOT NULL,
     ip_addr INET
 );
 
