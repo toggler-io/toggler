@@ -213,7 +213,7 @@ var _escData = map[string]*_escFile{
 		name:    "show.html",
 		local:   "views/doc/show.html",
 		size:    60,
-		modtime: 1565038982,
+		modtime: 1586913508,
 		compressed: `
 H4sIAAAAAAAC/6quTklNy8xLVVDKTczMU6qt5VJQUFCwScksswOzQKC6Wg8mrg+WqK5OzUuprQUEAAD/
 /+o8KgA8AAAA
@@ -224,7 +224,7 @@ H4sIAAAAAAAC/6quTklNy8xLVVDKTczMU6qt5VJQUFCwScksswOzQKC6Wg8mrg+WqK5OzUuprQUEAAD/
 		name:    "create.html",
 		local:   "views/flag/create.html",
 		size:    2159,
-		modtime: 1572749977,
+		modtime: 1586913508,
 		compressed: `
 H4sIAAAAAAAC/8xVT2vbThC951MMc/n9epDk5CwJQkugEEpIybmMtWNpYbW77J/8wfi7l5XkRBV2apdS
 4otnNbPvvXmz0m63gjdSM2BPUuNudwEAUAr5CI0i7ytsjA6sA9ZDZsh2V4tk1jEJkD5rWAd2WG+3kH+j
@@ -243,7 +243,7 @@ BevPjikw3Chqy2JMHuEqi+PXWlmkK3Nxa4+6DyyncLtlLXa7nwEAAP//kRpWMG8IAAA=
 		name:    "index.html",
 		local:   "views/flag/index.html",
 		size:    817,
-		modtime: 1564181141,
+		modtime: 1586913508,
 		compressed: `
 H4sIAAAAAAAC/4SS3YrjMAyF7/sUwrCXiaHXrpeFZWFhGIaZJ1BjNRG4dnHUQsf43YekGTpN/+6CvhOd
 I8k5O9pwIFBb5KBKWQAAGMcHaDz2/Uo1MQgFUXYkI+2WM1h1hA64rxoKQknZ9+h93Av889jCC/didLe0
@@ -258,7 +258,7 @@ YBc5U3ClfAUAAP//oPGN5jEDAAA=
 		name:    "show.html",
 		local:   "views/flag/show.html",
 		size:    5544,
-		modtime: 1584743764,
+		modtime: 1586913508,
 		compressed: `
 H4sIAAAAAAAC/9RYTW+rOBTd51dcefM+JELbdcKoUvqkSNWoSvXWIwffgPWMjWxTpUL895ENtIQmQJLO
 x2MTiK+P7XPP9TGUJcMdlwgko1ySqpoBACwYf4FYUGOWJFbSorQk8i2+Nb3rNQYpUgbcBDFKi5pEZQnz
@@ -285,7 +285,7 @@ UeLvAAAA//8AwZenqBUAAA==
 		name:    "layout.html",
 		local:   "views/layout.html",
 		size:    2294,
-		modtime: 1586913152,
+		modtime: 1586913508,
 		compressed: `
 H4sIAAAAAAAC/7yWUWvrNhTH3/spFN3XKVrZHi4jNoyuZYMWRulbKUOxjp3TypKRjpOFkO8+JDuJkzhQ
 unCfcmQd//8/nejI2mw0lGiB8UZVwLfbG8YYm020K2jdAFtQbfLuWQyZUbbKOFi+ewhK5zcpTmNCMpCT
@@ -306,7 +306,7 @@ U8OjuLsRsOCLwyn5HmSL0/fA43GR5vdvdidffyCmi8xmA1Zvt/8FAAD//1uMB3j2CAAA
 		name:    "login.html",
 		local:   "views/login.html",
 		size:    360,
-		modtime: 1560121981,
+		modtime: 1586913508,
 		compressed: `
 H4sIAAAAAAAC/2SQUY7yMAyE33sKy+80F2h6if+/QGgMWJvYUeKyQlXvvmrLSrC8JfONRx4vS6QLCwHm
 wILr2gEADJHvMKXQmsdJxUgMx53s9KI1/+IyVzptAkKYjFU8uqRXFoRMdtPosWh7HT8imFJsZO/yjljK
@@ -319,7 +319,7 @@ VYBlcAf4U8F9dhjcdonjP7jI97FbFpK4rj8BAAD///JUCoxoAQAA
 		name:    "edit.html",
 		local:   "views/pilot/edit.html",
 		size:    1731,
-		modtime: 1584743764,
+		modtime: 1586913508,
 		compressed: `
 H4sIAAAAAAAC/7RUTW+cPBC+768YWe8pEmu9OVbApUmqXKKo7b2axQNYNTa1h00qi/9eYUgEaXejpq1P
 u/LwfIxnnhjlBXy4/gyy18axJKUZLuQ47mJUVGtLIDrUVozjDgAgV/oIlcEQClE5y2RZlOkm3baXLy6z
@@ -338,7 +338,7 @@ AAA=
 		name:    "find.html",
 		local:   "views/pilot/find.html",
 		size:    460,
-		modtime: 1563994919,
+		modtime: 1586913508,
 		compressed: `
 H4sIAAAAAAAC/2yQz27CMAzG7zyF5SNSG+3ecgJNSDtw2Au4jQFLqROlLn9U9d0nCpsY283JL/l++TKO
 bgnvm09wSUI0txf1sHTTtBhHz3tRBuxIFKdpAQBQeTlBG6jva2yjGqvhaiYz3cfcAbUmUWt8ikTo2I7R
