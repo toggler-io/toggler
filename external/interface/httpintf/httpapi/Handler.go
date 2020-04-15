@@ -41,8 +41,6 @@ func buildReleasesAPI(handlers *Handler) *http.ServeMux {
 
 func buildFlagAPI(handlers *Handler) http.Handler {
 	mux := http.NewServeMux()
-	mux.Handle(`/update.form`, http.HandlerFunc(handlers.UpdateFeatureFlagFORM))
-	mux.Handle(`/update.json`, http.HandlerFunc(handlers.UpdateFeatureFlagJSON))
 	mux.Handle(`/set-enrollment-manually.json`, http.HandlerFunc(handlers.SetPilotEnrollmentForFeature))
 	return httputils.AuthMiddleware(mux, handlers.UseCases, ErrorWriterFunc)
 }

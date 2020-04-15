@@ -19,10 +19,12 @@ func NewReleaseFlagHandler(uc *usecases.UseCases) *gorest.Handler {
 		gorest.ContextHandler
 		gorest.CreateController
 		gorest.ListController
+		gorest.UpdateController
 	}{
 		ContextHandler:   c,
 		CreateController: gorest.AsCreateController(httputils.AuthMiddleware(http.HandlerFunc(c.Create), uc, ErrorWriterFunc)),
 		ListController:   gorest.AsListController(httputils.AuthMiddleware(http.HandlerFunc(c.List), uc, ErrorWriterFunc)),
+		UpdateController: gorest.AsUpdateController(httputils.AuthMiddleware(http.HandlerFunc(c.Update), uc, ErrorWriterFunc)),
 	})
 	h.Handle(`/global`, http.HandlerFunc(c.GetReleaseFlagGlobalStates))
 	return h
@@ -74,6 +76,23 @@ func (v ReleaseFlagView) ToReleaseFlag() release.Flag {
 	flag.Rollout.Strategy.DecisionLogicAPI = v.Rollout.Strategy.DecisionLogicAPI
 	flag.Rollout.Strategy.Percentage = v.Rollout.Strategy.Percentage
 	return flag
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+
+func (ctrl ReleaseFlagController) handleFlagValidationError(w http.ResponseWriter, err error) bool {
+	switch err {
+	case release.ErrNameIsEmpty,
+		release.ErrMissingFlag,
+		release.ErrInvalidAction,
+		release.ErrFlagAlreadyExist,
+		release.ErrInvalidRequestURL,
+		release.ErrInvalidPercentage:
+		return handleError(w, err, http.StatusBadRequest)
+
+	default:
+		return handleError(w, err, http.StatusInternalServerError)
+	}
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -136,21 +155,8 @@ func (ctrl ReleaseFlagController) Create(w http.ResponseWriter, r *http.Request)
 	req.Body.Flag.ID = `` // ignore id if given
 	flag := req.Body.Flag.ToReleaseFlag()
 
-	switch err := ctrl.UseCases.CreateFeatureFlag(r.Context(), &flag); err {
-	case release.ErrNameIsEmpty,
-		release.ErrMissingFlag,
-		release.ErrInvalidAction,
-		release.ErrFlagAlreadyExist,
-		release.ErrInvalidRequestURL,
-		release.ErrInvalidPercentage:
-		if handleError(w, err, http.StatusBadRequest) {
-			return
-		}
-
-	default:
-		if handleError(w, err, http.StatusInternalServerError) {
-			return
-		}
+	if ctrl.handleFlagValidationError(w, ctrl.UseCases.CreateFeatureFlag(r.Context(), &flag)) {
+		return
 	}
 
 	var resp CreateReleaseFlagResponse
@@ -301,4 +307,76 @@ func (ctrl ReleaseFlagController) GetReleaseFlagGlobalStates(w http.ResponseWrit
 	var resp GetReleaseFlagGlobalStatesResponse
 	resp.Body.Enrollment = enrollment
 	serveJSON(w, &resp.Body)
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+
+// UpdateReleaseFlagRequest
+// swagger:parameters updateReleaseFlag
+type UpdateReleaseFlagRequest struct {
+	// ID is the release flag id or the alias name.
+	//
+	// in: path
+	// required: true
+	ID string `json:"id"`
+	// in: body
+	Body struct {
+		Flag ReleaseFlagView `json:"flag"`
+	}
+}
+
+// UpdateReleaseFlagResponse
+// swagger:response updateReleaseFlagResponse
+type UpdateReleaseFlagResponse struct {
+	// in: body
+	Body struct {
+		Flag ReleaseFlagView `json:"flag"`
+	}
+}
+
+/*
+
+	Update
+	swagger:route PUT /release-flags/{id} release feature flag pilot updateReleaseFlag
+
+	Update a release flag.
+
+		Consumes:
+		- application/json
+
+		Produces:
+		- application/json
+
+		Schemes: http, https
+
+		Security:
+		  AppToken: []
+
+		Responses:
+		  200: updateReleaseFlagResponse
+		  400: errorResponse
+		  500: errorResponse
+
+*/
+func (ctrl ReleaseFlagController) Update(w http.ResponseWriter, r *http.Request) {
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	defer r.Body.Close() // ignorable
+
+	var req UpdateReleaseFlagRequest
+
+	if handleError(w, decoder.Decode(&req.Body), http.StatusBadRequest) {
+		return
+	}
+
+	flag := req.Body.Flag.ToReleaseFlag()
+	flag.ID = r.Context().Value(ReleaseFlagContextKey{}).(release.Flag).ID
+
+	if ctrl.handleFlagValidationError(w, ctrl.UseCases.UpdateFeatureFlag(r.Context(), &flag)) {
+		return
+	}
+
+	var resp UpdateReleaseFlagResponse
+	resp.Body.Flag = ReleaseFlagView{}.FromReleaseFlag(flag)
+	serveJSON(w, resp.Body)
 }
