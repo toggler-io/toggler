@@ -21,3 +21,6 @@ bin/toggler
 
 # Swagger
 /lib/go/
+
+# go mod tools
+/.tools
