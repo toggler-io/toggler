@@ -58,7 +58,7 @@ func (i *Issuer) RevokeToken(ctx context.Context, token *Token) error {
 
 const tokenRawLength = 128
 
-// generateToken returns a DecisionLogicAPI-safe, base64 encoded
+// generateToken returns a URL-safe, base64 encoded
 // securely generated random string.
 // It will return an error if the system's secure random
 // number generator fails to function correctly, in which

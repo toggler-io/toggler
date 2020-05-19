@@ -1,7 +1,6 @@
 package httputils
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/toggler-io/toggler/usecases"
@@ -32,23 +31,6 @@ func AuthMiddleware(next http.Handler, uc *usecases.UseCases, errorWriterFunc Er
 			http.Error(w, http.StatusText(code), code)
 			return
 		}
-
-		// Deprecated, remove after no implementation use the protected use-cases object
-		pu, err := uc.ProtectedUsecases(r.Context(), token)
-
-		if err == usecases.ErrInvalidToken {
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			return
-		}
-
-		if err != nil {
-			code := http.StatusInternalServerError
-			http.Error(w, http.StatusText(code), code)
-			return
-		}
-
-		// Deprecated
-		r = r.WithContext(context.WithValue(r.Context(), `ProtectedUseCases`, pu))
 
 		next.ServeHTTP(w, r)
 

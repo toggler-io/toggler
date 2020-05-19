@@ -1,30 +1,32 @@
 {{define "main"}}
-    <div class="content">
-        <h2 class="content-head is-center">Rollout Flag List</h2>
+	<div class="content">
+		<h2 class="content-head is-center">Rollout Flag List</h2>
 
-        <table class="pure-table pure-table-horizontal">
-            <thead>
-            <tr>
-                <th>Name</th>
-                <th>Percentage</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
+		<a class="pure-button pure-button-primary" href="/flag/create" class="pure-menu-link">Create Release Flags</a>
 
-            <tbody>
+		<table class="pure-table pure-table-horizontal">
+			<thead>
+			<tr>
+				<th>Name</th>
+				<th>ID</th>
+				<th>Actions</th>
+			</tr>
+			</thead>
+
+			<tbody>
             {{ range . }}
-                <tr>
-                    <td>{{ .Name }}</td>
-                    <td>{{ .Rollout.Strategy.Percentage }}{{ print "%" }}</td>
-                    <td>
-                        <ul>
-                            <li><a href="/flag?id={{ .ID }}">edit</a></li>
-                        </ul>
-                    </td>
-                </tr>
+				<tr>
+					<td>{{ .Name }}</td>
+					<td>{{ .ID }}</td>
+					<td>
+						<ul>
+							<li><a href="/flag?id={{ .ID }}">edit</a></li>
+						</ul>
+					</td>
+				</tr>
             {{ end }}
-            </tbody>
-        </table>
+			</tbody>
+		</table>
 
-    </div>
+	</div>
 {{end}}

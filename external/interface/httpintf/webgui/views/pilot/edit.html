@@ -9,13 +9,14 @@
 
                     <fieldset>
                         <input type="hidden" name="_method" value="post">
-                        <input type="hidden" name="pilot.extID" value="{{ $.PilotExternalID }}">
-                        <input type="hidden" name="pilot.flagID" value="{{ .ReleaseFlagID }}">
+                        <input type="hidden" name="pilot.ext_id" value="{{ $.PilotExternalID }}">
+                        <input type="hidden" name="pilot.flag_id" value="{{ .ReleaseFlagID }}">
+                        <input type="hidden" name="pilot.env_id" value="{{ $.DeployEnvID }}">
 
 
                         <div class="pure-control-group">
                             <label for="enrollment">{{ .ReleaseFlagName }}</label>
-                            <select id="enrollment" name="pilot.enrollment">
+                            <select id="enrollment" name="pilot.is_participating">
                                 <option value="whitelisted" {{ if eq .PilotState "whitelisted" }}selected{{end}}>
                                     Enrolled
                                 </option>

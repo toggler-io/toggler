@@ -168,8 +168,8 @@ func createFixtures(s usecases.Storage) {
 	uc := usecases.NewUseCases(s)
 	ff := release.Flag{Name: `test`}
 	_ = uc.RolloutManager.CreateFeatureFlag(context.TODO(), &ff)
-	_ = uc.RolloutManager.SetPilotEnrollmentForFeature(context.Background(), ff.ID, `test-public-pilot-id-1`, true)
-	_ = uc.RolloutManager.SetPilotEnrollmentForFeature(context.Background(), ff.ID, `test-public-pilot-id-2`, false)
+	_ = uc.RolloutManager.SetPilotEnrollmentForFeature(context.Background(), ff.ID, "", `test-public-pilot-id-1`, true)
+	_ = uc.RolloutManager.SetPilotEnrollmentForFeature(context.Background(), ff.ID, "", `test-public-pilot-id-2`, false)
 }
 
 func makeHTTPServer(storage usecases.Storage, port int) *http.Server {

@@ -33,7 +33,7 @@ type ReleasePilotController struct {
 	UseCases *usecases.UseCases
 }
 
-var _ release.Pilot
+var _ release.ManualPilot
 
 type ReleasePilotView struct {
 	// ID represent the fact that this object will be persistent in the Subject
@@ -43,25 +43,25 @@ type ReleasePilotView struct {
 	// ExternalID is the unique id that connect links a pilot with the caller services.
 	// The caller service is the service that use the release toggles for example and need A/B testing or Canary launch.
 	ExternalID string `json:"external_id"`
-	// Enrolled states that whether the Pilot for the given feature is enrolled, or blacklisted
+	// IsParticipating states that whether the ManualPilot for the given feature is enrolled, or blacklisted
 	Enrolled bool `json:"enrolled"`
 }
 
-func (ReleasePilotView) FromReleasePilot(pilot release.Pilot) ReleasePilotView {
+func (ReleasePilotView) FromReleasePilot(pilot release.ManualPilot) ReleasePilotView {
 	var v ReleasePilotView
 	v.ID = pilot.ID
 	v.ReleasePilotID = pilot.FlagID
 	v.ExternalID = pilot.ExternalID
-	v.Enrolled = pilot.Enrolled
+	v.Enrolled = pilot.IsParticipating
 	return v
 }
 
-func (v ReleasePilotView) ToReleasePilot() release.Pilot {
-	var pilot release.Pilot
+func (v ReleasePilotView) ToReleasePilot() release.ManualPilot {
+	var pilot release.ManualPilot
 	pilot.ID = v.ID
 	pilot.FlagID = v.ReleasePilotID
 	pilot.ExternalID = v.ExternalID
-	pilot.Enrolled = v.Enrolled
+	pilot.IsParticipating = v.Enrolled
 	return pilot
 }
 
@@ -132,12 +132,12 @@ func (ctrl ReleasePilotController) Create(w http.ResponseWriter, r *http.Request
 	req.Body.Pilot.ID = `` // ignore id if given
 	pilot := req.Body.Pilot.ToReleasePilot()
 
-	if err := ctrl.UseCases.SetPilotEnrollmentForFeature(r.Context(), pilot.FlagID, pilot.ExternalID, pilot.Enrolled);
+	if err := ctrl.UseCases.SetPilotEnrollmentForFeature(r.Context(), pilot.FlagID, pilot.DeploymentEnvironmentID, pilot.ExternalID, pilot.IsParticipating);
 		handleError(w, err, http.StatusInternalServerError) {
 		return
 	}
 
-	p, err := ctrl.UseCases.RolloutManager.FindReleaseFlagPilotByPilotExternalID(r.Context(), pilot.FlagID, pilot.ExternalID)
+	p, err := ctrl.UseCases.RolloutManager.Storage.FindReleaseManualPilotByExternalID(r.Context(), pilot.FlagID, pilot.DeploymentEnvironmentID, pilot.ExternalID)
 	if handleError(w, err, http.StatusInternalServerError) {
 		return
 	}
@@ -199,12 +199,13 @@ type ListReleasePilotResponse struct {
 */
 func (ctrl ReleasePilotController) List(w http.ResponseWriter, r *http.Request) {
 	flag := r.Context().Value(ReleaseFlagContextKey{}).(release.Flag)
-	pilotsIter := ctrl.UseCases.RolloutManager.FindPilotsByFeatureFlag(r.Context(), &flag)
+	//FIXME
+	pilotsIter := ctrl.UseCases.RolloutManager.Storage.FindReleasePilotsByReleaseFlag(r.Context(), flag)
 	defer pilotsIter.Close()
 
 	var resp ListReleasePilotResponse
 	for pilotsIter.Next() {
-		var p release.Pilot
+		var p release.ManualPilot
 
 		if handleError(w, pilotsIter.Decode(&p), http.StatusInternalServerError) {
 			return
@@ -225,7 +226,7 @@ func (ctrl ReleasePilotController) List(w http.ResponseWriter, r *http.Request) 
 type ReleasePilotContextKey struct{}
 
 func (ctrl ReleasePilotController) ContextWithResource(ctx context.Context, pilotID string) (context.Context, bool, error) {
-	var p release.Pilot
+	var p release.ManualPilot
 	found, err := ctrl.UseCases.RolloutManager.Storage.FindByID(ctx, &p, pilotID)
 	if err != nil {
 		return ctx, false, err
@@ -301,15 +302,15 @@ func (ctrl ReleasePilotController) Update(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	req.Body.Pilot.ID = r.Context().Value(ReleasePilotContextKey{}).(release.Pilot).ID
+	req.Body.Pilot.ID = r.Context().Value(ReleasePilotContextKey{}).(release.ManualPilot).ID
 	pilot := req.Body.Pilot.ToReleasePilot()
 
-	if err := ctrl.UseCases.SetPilotEnrollmentForFeature(r.Context(), pilot.FlagID, pilot.ExternalID, pilot.Enrolled);
+	if err := ctrl.UseCases.SetPilotEnrollmentForFeature(r.Context(), pilot.FlagID, pilot.DeploymentEnvironmentID, pilot.ExternalID, pilot.IsParticipating);
 		handleError(w, err, http.StatusInternalServerError) {
 		return
 	}
 
-	p, err := ctrl.UseCases.RolloutManager.FindReleaseFlagPilotByPilotExternalID(r.Context(), pilot.FlagID, pilot.ExternalID)
+	p, err := ctrl.UseCases.Storage.FindReleaseManualPilotByExternalID(r.Context(), pilot.FlagID, pilot.DeploymentEnvironmentID, pilot.ExternalID)
 	if handleError(w, err, http.StatusInternalServerError) {
 		return
 	}

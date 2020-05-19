@@ -8,7 +8,7 @@ For more you can check the swagger documentation
 
 ### operation IsFeatureEnabled
 
-Get rollout feature flag status for a pilot
+Get release flag status for a pilot
 
 #### Example
 
@@ -30,7 +30,7 @@ response
 
 ### operation IsFeatureGloballyEnabled
 
-Get rollout feature flag status for global
+Get release flag status for global
 
 #### Example
 
@@ -49,7 +49,7 @@ response
 
 ## GET /api/client/config.json
 
-This endpoint able to answer multiple feature flag state for a specific pilot.
+This endpoint able to answer multiple release flag state for a specific pilot.
 
 ### Example
 
@@ -78,7 +78,7 @@ response
 
 ## GET /api/release/is-feature-enabled.json
 
-Get rollout feature flag status for a pilot
+Get release flag status for a pilot
 
 ### Example
 
@@ -97,7 +97,7 @@ response
 
 ## GET /api/release/is-feature-globally-enabled.json
 
-Get rollout feature flag status for global
+Get release flag status for global
 
 ### Example
 

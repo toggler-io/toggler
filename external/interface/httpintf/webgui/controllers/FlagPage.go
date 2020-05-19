@@ -11,13 +11,7 @@ import (
 	"github.com/adamluzsi/frameless/iterators"
 
 	"github.com/toggler-io/toggler/domains/release"
-	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
 )
-
-type editPageContent struct {
-	Flag   release.Flag
-	Pilots []release.Pilot
-}
 
 func (ctrl *Controller) FlagPage(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
@@ -69,18 +63,23 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		var pilots []release.Pilot
-
-		if ctrl.handleError(w, r, iterators.Collect(ctrl.UseCases.RolloutManager.Storage.FindPilotsByFeatureFlag(r.Context(), &ff), &pilots)) {
+		var pilots []release.ManualPilot
+		pilotsIter := ctrl.UseCases.Storage.FindReleasePilotsByReleaseFlag(r.Context(), ff)
+		if ctrl.handleError(w, r, iterators.Collect(pilotsIter, &pilots)) {
 			return
 		}
 
-		ctrl.Render(w, `/flag/show.html`, editPageContent{Flag: ff, Pilots: pilots})
+		type editFlagPageContent struct {
+			Flag   release.Flag
+			Pilots []release.ManualPilot
+		}
+
+		ctrl.Render(w, `/flag/show.html`, editFlagPageContent{Flag: ff, Pilots: pilots})
 
 	case http.MethodPost:
 		switch strings.ToUpper(r.FormValue(`_method`)) {
 		case http.MethodPut:
-			ff, err := httputils.ParseFlagFromForm(r)
+			ff, err := ParseFlagForm(r)
 
 			if ctrl.handleError(w, r, err) {
 				return
@@ -103,7 +102,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 			return
 
 		case http.MethodPost:
-			ff, err := httputils.ParseFlagFromForm(r)
+			ff, err := ParseFlagForm(r)
 
 			if ctrl.handleError(w, r, err) {
 				return
@@ -159,13 +158,13 @@ func (ctrl *Controller) flagSetPilotAction(w http.ResponseWriter, r *http.Reques
 	switch r.Method {
 	case http.MethodPost:
 
-		p, err := httputils.ParseFlagPilotFromForm(r)
+		p, err := ParseReleasePilotForm(r)
 
 		if ctrl.handleError(w, r, err) {
 			return
 		}
 
-		if ctrl.handleError(w, r, ctrl.UseCases.RolloutManager.SetPilotEnrollmentForFeature(r.Context(), p.FlagID, p.ExternalID, p.Enrolled)) {
+		if ctrl.handleError(w, r, ctrl.UseCases.RolloutManager.SetPilotEnrollmentForFeature(r.Context(), p.FlagID, "", p.ExternalID, p.IsParticipating)) {
 			return
 		}
 
@@ -185,7 +184,7 @@ func (ctrl *Controller) flagUnsetPilotAction(w http.ResponseWriter, r *http.Requ
 	featureFlagID := r.FormValue(`pilot.flagID`)
 	pilotExternalID := r.FormValue(`pilot.extID`)
 
-	err := ctrl.UseCases.RolloutManager.UnsetPilotEnrollmentForFeature(r.Context(), featureFlagID, pilotExternalID)
+	err := ctrl.UseCases.RolloutManager.UnsetPilotEnrollmentForFeature(r.Context(), featureFlagID, "", pilotExternalID)
 
 	if ctrl.handleError(w, r, err) {
 		return
@@ -205,7 +204,7 @@ func (ctrl *Controller) flagCreateNewAction(w http.ResponseWriter, r *http.Reque
 
 	case http.MethodPost:
 
-		ff, err := httputils.ParseFlagFromForm(r)
+		ff, err := ParseFlagForm(r)
 
 		if err != nil {
 			log.Println(err)
@@ -237,4 +236,14 @@ func (ctrl *Controller) flagCreateNewAction(w http.ResponseWriter, r *http.Reque
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
+}
+
+func ParseFlagForm(r *http.Request) (*release.Flag, error) {
+	if err := r.ParseForm(); err != nil {
+		return nil, err
+	}
+	var flag release.Flag
+	flag.Name = r.Form.Get(`flag.name`)
+	flag.ID = r.Form.Get(`flag.id`)
+	return &flag, nil
 }

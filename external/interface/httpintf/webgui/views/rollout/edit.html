@@ -1,39 +1,27 @@
 {{/* GET /pilot/edit */}}
 {{define "main"}}
-    <div class="content">
-        <h2 class="content-head is-center">Pilot Control Panel: {{ .PilotExternalID }}</h2>
+	<div class="content">
+		<h2 class="content-head is-center">
+			Edit Release Flag Rollout Plan on {{ .DeployEnvironmentName }} for {{ .ReleaseFlagName }}
+		</h2>
 
-        {{ range .FeatureFlags }}
-                <form action="/pilot/flag/set-rollout" method="post"
-                      class="pure-form pure-form-aligned" data-bitwarden-watching="1">
+		<form action="/rollout/update" method="post" class="pure-form pure-form-stacked" data-bitwarden-watching="1">
+			<fieldset>
+				<legend>Rollout Plan</legend>
+				<input type="hidden" name="_method" value="post">
+				<input type="hidden" name="flag_id" value="{{ .ReleaseFlagID }}">
+				<input type="hidden" name="env_id" value="{{ .DeployEnvironmentID }}">
 
-                    <fieldset>
-                        <input type="hidden" name="_method" value="post">
-                        <input type="hidden" name="pilot.ext_id" value="{{ $.PilotExternalID }}">
-                        <input type="hidden" name="pilot.flag_id" value="{{ .ReleaseFlagID }}">
-                        <input type="hidden" name="pilot.env_id" value="{{ $.DeployEnvID }}">
+				<label for="percentage">Percentage:</label>
+				<input type="number" id="percentage" name="percentage"
+				       min="0" max="100" value="{{ .ByPercentage.Percentage }}">
 
+				<label for="seed">Control group randomizer (seed):</label>
+				<input type="number" id="seed" name="seed" value="{{ .ByPercentage.Seed }}">
 
-                        <div class="pure-control-group">
-                            <label for="enrollment">{{ .ReleaseFlagName }}</label>
-                            <select id="enrollment" name="pilot.is_participating">
-                                <option value="whitelisted" {{ if eq .PilotState "whitelisted" }}selected{{end}}>
-                                    Enrolled
-                                </option>
-                                <option value="blacklisted" {{ if eq .PilotState "blacklisted" }}selected{{end}}>
-                                    Force Deactivated
-                                </option>
-                                <option value="undefined" {{ if eq .PilotState "undefined" }}selected{{end}}>
-                                    Not specified
-                                </option>
-                            </select>
+				<button type="submit" class="pure-button pure-button-primary">save</button>
+			</fieldset>
+		</form>
 
-                            <button type="submit" class="pure-button">save</button>
-                        </div>
-
-                    </fieldset>
-                </form>
-        {{ end }}
-
-    </div>
+	</div>
 {{end}}

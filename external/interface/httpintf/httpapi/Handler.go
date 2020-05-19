@@ -21,6 +21,7 @@ func NewHandler(uc *usecases.UseCases) *Handler {
 
 	gorest.Mount(mux.ServeMux, `/v`, NewViewsHandler(uc))
 	gorest.Mount(mux.ServeMux, `/release-flags`, NewReleaseFlagHandler(uc))
+	gorest.Mount(mux.ServeMux, `/deployment-environments`, NewDeploymentEnvironmentHandler(uc))
 
 	mux.HandleFunc(`/healthcheck`, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)

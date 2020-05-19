@@ -29,5 +29,5 @@ At any time, you can add or remove beta users, get feedback, and assess system p
 
 ## Scenario D – “I want to release a new feature to my VIP users first.”
 
-Dark launching via feature flags and toggles will allow you to roll out a new feature to your VIP users before doing a widespread release.
+Dark launching via release flags and toggles will allow you to roll out a new feature to your VIP users before doing a widespread release.
 You can also allow your users to opt-in and out of dark launched features, similar to a self-selected beta.

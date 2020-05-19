@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"net/url"
 
 	"github.com/adamluzsi/gorest"
 
@@ -26,57 +25,12 @@ func NewReleaseFlagHandler(uc *usecases.UseCases) *gorest.Handler {
 		ListController:   gorest.AsListController(httputils.AuthMiddleware(http.HandlerFunc(c.List), uc, ErrorWriterFunc)),
 		UpdateController: gorest.AsUpdateController(httputils.AuthMiddleware(http.HandlerFunc(c.Update), uc, ErrorWriterFunc)),
 	})
-	h.Handle(`/global`, http.HandlerFunc(c.GetReleaseFlagGlobalStates))
 	gorest.Mount(h, `/pilots/`, NewReleasePilotHandler(uc))
 	return h
 }
 
 type ReleaseFlagController struct {
 	UseCases *usecases.UseCases
-}
-
-type ReleaseFlagView struct {
-	// ID represent the fact that this object will be persistent in the Subject
-	ID      string `ext:"ID" json:"id,omitempty"`
-	Name    string `json:"name"`
-	Rollout struct {
-		// RandSeed allows you to configure the randomness for the percentage based pilot enrollment selection.
-		// This value could have been neglected by using the flag name as random seed,
-		// but that would reduce the flexibility for edge cases where you want
-		// to use a similar pilot group as a successful flag rollout before.
-		RandSeed int64 `json:"rand_seed_salt"`
-
-		// Strategy expects to determines the behavior of the rollout workflow.
-		// the actual behavior implementation is with the RolloutManager,
-		// but the configuration data is located here
-		Strategy struct {
-			// Percentage allows you to define how many of your user base should be enrolled pseudo randomly.
-			Percentage int `json:"percentage"`
-			// DecisionLogicAPI allow you to do rollout based on custom domain needs such as target groups,
-			// which decision logic is available trough an API endpoint call
-			DecisionLogicAPI *url.URL `json:"decision_logic_api"`
-		} `json:"strategy"`
-	} `json:"rollout"`
-}
-
-func (ReleaseFlagView) FromReleaseFlag(flag release.Flag) ReleaseFlagView {
-	var v ReleaseFlagView
-	v.ID = flag.ID
-	v.Name = flag.Name
-	v.Rollout.RandSeed = flag.Rollout.RandSeed
-	v.Rollout.Strategy.DecisionLogicAPI = flag.Rollout.Strategy.DecisionLogicAPI
-	v.Rollout.Strategy.Percentage = flag.Rollout.Strategy.Percentage
-	return v
-}
-
-func (v ReleaseFlagView) ToReleaseFlag() release.Flag {
-	var flag release.Flag
-	flag.ID = v.ID
-	flag.Name = v.Name
-	flag.Rollout.RandSeed = v.Rollout.RandSeed
-	flag.Rollout.Strategy.DecisionLogicAPI = v.Rollout.Strategy.DecisionLogicAPI
-	flag.Rollout.Strategy.Percentage = v.Rollout.Strategy.Percentage
-	return flag
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -103,7 +57,7 @@ func (ctrl ReleaseFlagController) handleFlagValidationError(w http.ResponseWrite
 type CreateReleaseFlagRequest struct {
 	// in: body
 	Body struct {
-		Flag ReleaseFlagView `json:"flag"`
+		Flag release.Flag `json:"flag"`
 	}
 }
 
@@ -112,7 +66,7 @@ type CreateReleaseFlagRequest struct {
 type CreateReleaseFlagResponse struct {
 	// in: body
 	Body struct {
-		Flag ReleaseFlagView `json:"flag"`
+		Flag release.Flag `json:"flag"`
 	}
 }
 
@@ -154,14 +108,14 @@ func (ctrl ReleaseFlagController) Create(w http.ResponseWriter, r *http.Request)
 	}
 
 	req.Body.Flag.ID = `` // ignore id if given
-	flag := req.Body.Flag.ToReleaseFlag()
+	flag := req.Body.Flag
 
 	if ctrl.handleFlagValidationError(w, ctrl.UseCases.CreateFeatureFlag(r.Context(), &flag)) {
 		return
 	}
 
 	var resp CreateReleaseFlagResponse
-	resp.Body.Flag = resp.Body.Flag.FromReleaseFlag(flag)
+	resp.Body.Flag = flag
 	serveJSON(w, resp.Body)
 }
 
@@ -179,7 +133,7 @@ type ListReleaseFlagRequest struct {
 type ListReleaseFlagResponse struct {
 	// in: body
 	Body struct {
-		Flags []ReleaseFlagView `json:"flags"`
+		Flags []release.Flag `json:"flags"`
 	}
 }
 
@@ -215,10 +169,7 @@ func (ctrl ReleaseFlagController) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var resp ListReleaseFlagResponse
-	for _, rf := range rfs {
-		resp.Body.Flags = append(resp.Body.Flags, ReleaseFlagView{}.FromReleaseFlag(rf))
-	}
-
+	resp.Body.Flags = rfs
 	serveJSON(w, resp.Body)
 }
 
@@ -227,7 +178,7 @@ func (ctrl ReleaseFlagController) List(w http.ResponseWriter, r *http.Request) {
 type ReleaseFlagContextKey struct{}
 
 func (ctrl ReleaseFlagController) ContextWithResource(ctx context.Context, resourceID string) (context.Context, bool, error) {
-	s := ctrl.UseCases.FlagChecker.Storage
+	s := ctrl.UseCases.Storage
 	//flag, err := s.FindReleaseFlagByName(ctx, resourceID)
 	//if err != nil {
 	//	return ctx, false, err
@@ -249,69 +200,6 @@ func (ctrl ReleaseFlagController) ContextWithResource(ctx context.Context, resou
 
 //--------------------------------------------------------------------------------------------------------------------//
 
-// GetReleaseFlagGlobalStatesRequest is the expected payload
-// that holds the feature flag name that needs to be observed from global rollout perspective.
-// swagger:parameters getReleaseFlagGlobalStates
-type GetReleaseFlagGlobalStatesRequest struct {
-	// FlagID is the release flag id or the alias name.
-	//
-	// in: path
-	// required: true
-	FlagID string `json:"flagID"`
-}
-
-// GetReleaseFlagGlobalStatesResponse
-// swagger:response getReleaseFlagGlobalStatesResponse
-type GetReleaseFlagGlobalStatesResponse struct {
-	// in: body
-	Body struct {
-		// Enrollment is the release feature flag enrollment status.
-		Enrollment bool `json:"enrollment"`
-	}
-}
-
-/*
-
-	GetReleaseFlagGlobalStates
-	swagger:route GET /release-flags/{flagID}/global release feature flag pilot getReleaseFlagGlobalStates
-
-	Get Release flag statistics regarding global state by the name of the release flag.
-
-	Reply back whether the feature rolled out globally or not.
-	This is especially useful for cases where you don't have pilot id.
-	Such case is batch processing, or dark launch flips.
-	By Default, this will be determined whether the flag exist,
-	Then  whether the release id done to everyone or not by percentage.
-	The endpoint can be called with HTTP GET method as well,
-	POST is used officially only to support most highly abstracted http clients.
-
-		Consumes:
-		- application/json
-
-		Produces:
-		- application/json
-
-		Schemes: http, https
-
-		Responses:
-		  200: getReleaseFlagGlobalStatesResponse
-		  400: errorResponse
-		  500: errorResponse
-
-*/
-func (ctrl ReleaseFlagController) GetReleaseFlagGlobalStates(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
-	flag := r.Context().Value(ReleaseFlagContextKey{}).(release.Flag)
-	enrollment := flag.Rollout.Strategy.IsGlobal()
-
-	var resp GetReleaseFlagGlobalStatesResponse
-	resp.Body.Enrollment = enrollment
-	serveJSON(w, &resp.Body)
-}
-
-//--------------------------------------------------------------------------------------------------------------------//
-
 // UpdateReleaseFlagRequest
 // swagger:parameters updateReleaseFlag
 type UpdateReleaseFlagRequest struct {
@@ -322,7 +210,7 @@ type UpdateReleaseFlagRequest struct {
 	FlagID string `json:"flagID"`
 	// in: body
 	Body struct {
-		Flag ReleaseFlagView `json:"flag"`
+		Flag release.Flag `json:"flag"`
 	}
 }
 
@@ -331,7 +219,7 @@ type UpdateReleaseFlagRequest struct {
 type UpdateReleaseFlagResponse struct {
 	// in: body
 	Body struct {
-		Flag ReleaseFlagView `json:"flag"`
+		Flag release.Flag `json:"flag"`
 	}
 }
 
@@ -370,7 +258,7 @@ func (ctrl ReleaseFlagController) Update(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	flag := req.Body.Flag.ToReleaseFlag()
+	flag := req.Body.Flag
 	flag.ID = r.Context().Value(ReleaseFlagContextKey{}).(release.Flag).ID
 
 	if ctrl.handleFlagValidationError(w, ctrl.UseCases.UpdateFeatureFlag(r.Context(), &flag)) {
@@ -378,6 +266,6 @@ func (ctrl ReleaseFlagController) Update(w http.ResponseWriter, r *http.Request)
 	}
 
 	var resp UpdateReleaseFlagResponse
-	resp.Body.Flag = ReleaseFlagView{}.FromReleaseFlag(flag)
+	resp.Body.Flag = flag
 	serveJSON(w, resp.Body)
 }

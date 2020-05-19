@@ -3,13 +3,14 @@ package storages
 import (
 	"context"
 	"database/sql"
-	"errors"
+	"database/sql/driver"
+	"encoding/json"
 	"fmt"
-	"net/url"
 	"path"
 	"strings"
 
 	"github.com/adamluzsi/frameless"
+	"github.com/adamluzsi/frameless/errs"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources"
@@ -20,6 +21,7 @@ import (
 
 	pgmigr "github.com/golang-migrate/migrate/v4/database/postgres"
 
+	"github.com/toggler-io/toggler/domains/deployment"
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/security"
 	"github.com/toggler-io/toggler/external/resource/storages/migrations"
@@ -43,29 +45,39 @@ type Postgres struct {
 	}
 }
 
-func (pg *Postgres) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...release.Flag) release.AllowEntries {
-	m := releaseAllowMapper{}
-	nextPlaceholder := newPrepareQueryPlaceholderAssigner()
+func (pg *Postgres) FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx context.Context, flag release.Flag, env deployment.Environment, rollout *release.Rollout) (bool, error) {
+	var m releaseRolloutMapper
+	tmpl := `SELECT %s FROM release_rollouts WHERE flag_id = $1 AND env_id = $2`
+	query := fmt.Sprintf(tmpl, strings.Join(m.Columns(), `, `))
+	row := pg.DB.QueryRowContext(ctx, query, flag.ID, env.ID)
 
-	var query string
-	var args []interface{}
-
-	var queryWhereFlagInList []string
-	for _, f := range flags {
-		queryWhereFlagInList = append(queryWhereFlagInList, nextPlaceholder())
-		args = append(args, f.ID)
+	err := m.Map(row, rollout)
+	if err == sql.ErrNoRows {
+		return false, nil
 	}
-
-	query = fmt.Sprintf(`SELECT %s FROM "release_flag_ip_addr_allows" WHERE "flag_id" IN (%s)`,
-		strings.Join(m.Columns(), `, `),
-		strings.Join(queryWhereFlagInList, `, `))
-
-	rows, err := pg.DB.QueryContext(ctx, query, args...)
 	if err != nil {
-		return iterators.NewError(err)
+		return false, err
 	}
+	return true, nil
+}
 
-	return iterators.NewSQLRows(rows, m)
+func (pg *Postgres) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrName string, env *deployment.Environment) (bool, error) {
+	var (
+		format string
+		query  string
+		m      deploymentEnvironmentMapper
+	)
+	if isUUIDValid(idOrName) {
+		format = `SELECT %s FROM deployment_environments WHERE id = $1`
+	} else {
+		format = `SELECT %s FROM deployment_environments WHERE name = $1`
+	}
+	query = fmt.Sprintf(format, strings.Join(m.Columns(), `,`))
+	err := m.Map(pg.DB.QueryRowContext(ctx, query, idOrName), env)
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+	return err == nil, err
 }
 
 func (pg *Postgres) Close() error {
@@ -85,11 +97,13 @@ func (pg *Postgres) Create(ctx context.Context, ptr interface{}) error {
 	}
 
 	switch e := ptr.(type) {
-	case *release.IPAllow:
-		return pg.releaseAllowInsertNew(ctx, e)
+	case *deployment.Environment:
+		return pg.deploymentEnvironmentInsertNew(ctx, e)
 	case *release.Flag:
 		return pg.releaseFlagInsertNew(ctx, e)
-	case *release.Pilot:
+	case *release.Rollout:
+		return pg.releaseRolloutInsertNew(ctx, e)
+	case *release.ManualPilot:
 		return pg.pilotInsertNew(ctx, e)
 	case *security.Token:
 		return pg.tokenInsertNew(ctx, e)
@@ -106,21 +120,18 @@ func (pg *Postgres) FindByID(ctx context.Context, ptr interface{}, id string) (b
 	}
 
 	switch e := ptr.(type) {
-	case *release.IPAllow:
-		return pg.releaseAllowFindByID(ctx, e, id)
-
+	case *deployment.Environment:
+		return pg.deploymentEnvironmentFindByID(ctx, e, id)
 	case *release.Flag:
 		return pg.releaseFlagFindByID(ctx, e, id)
-
-	case *release.Pilot:
+	case *release.Rollout:
+		return pg.releaseRolloutFindByID(ctx, e, id)
+	case *release.ManualPilot:
 		return pg.pilotFindByID(ctx, e, id)
-
 	case *security.Token:
 		return pg.tokenFindByID(ctx, e, id)
-
 	case *resources.TestEntity:
 		return pg.testEntityFindByID(ctx, e, id)
-
 	default:
 		return false, frameless.ErrNotImplemented
 	}
@@ -129,12 +140,14 @@ func (pg *Postgres) FindByID(ctx context.Context, ptr interface{}, id string) (b
 func (pg *Postgres) DeleteAll(ctx context.Context, Type interface{}) error {
 	var tableName string
 	switch Type.(type) {
-	case release.IPAllow, *release.IPAllow:
-		tableName = `release_flag_ip_addr_allows`
+	case deployment.Environment, *deployment.Environment:
+		tableName = `deployment_environments`
 	case release.Flag, *release.Flag:
 		tableName = `release_flags`
-	case release.Pilot, *release.Pilot:
-		tableName = `pilots`
+	case release.Rollout, *release.Rollout:
+		tableName = `release_rollouts`
+	case release.ManualPilot, *release.ManualPilot:
+		tableName = `release_pilots`
 	case security.Token, *security.Token:
 		tableName = `tokens`
 	case resources.TestEntity, *resources.TestEntity:
@@ -155,14 +168,17 @@ func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, id string)
 
 	var query string
 	switch Type.(type) {
-	case release.IPAllow, *release.IPAllow:
-		query = `DELETE FROM "release_flag_ip_addr_allows" WHERE "id" = $1`
+	case deployment.Environment, *deployment.Environment:
+		query = `DELETE FROM "deployment_environments" WHERE "id" = $1`
 
 	case release.Flag, *release.Flag:
 		query = `DELETE FROM "release_flags" WHERE "id" = $1`
 
-	case release.Pilot, *release.Pilot:
-		query = `DELETE FROM "pilots" WHERE "id" = $1`
+	case release.Rollout, *release.Rollout:
+		query = `DELETE FROM "release_rollouts" WHERE "id" = $1`
+
+	case release.ManualPilot, *release.ManualPilot:
+		query = `DELETE FROM "release_pilots" WHERE "id" = $1`
 
 	case security.Token, *security.Token:
 		query = `DELETE FROM "tokens" WHERE "id" = $1`
@@ -193,13 +209,16 @@ func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, id string)
 
 func (pg *Postgres) Update(ctx context.Context, ptr interface{}) error {
 	switch e := ptr.(type) {
-	case *release.IPAllow:
-		return pg.releaseAllowUpdate(ctx, e)
+	case *deployment.Environment:
+		return pg.deploymentEnvironmentUpdate(ctx, e)
 
 	case *release.Flag:
 		return pg.releaseFlagUpdate(ctx, e)
 
-	case *release.Pilot:
+	case *release.Rollout:
+		return pg.releaseRolloutUpdate(ctx, e)
+
+	case *release.ManualPilot:
 		return pg.pilotUpdate(ctx, e)
 
 	case *security.Token:
@@ -215,21 +234,18 @@ func (pg *Postgres) Update(ctx context.Context, ptr interface{}) error {
 
 func (pg *Postgres) FindAll(ctx context.Context, Type interface{}) frameless.Iterator {
 	switch Type.(type) {
-	case release.IPAllow, *release.IPAllow:
-		return pg.releaseAllowFindAll(ctx)
-
+	case deployment.Environment, *deployment.Environment:
+		return pg.deploymentEnvironmentFindAll(ctx)
 	case release.Flag, *release.Flag:
 		return pg.releaseFlagFindAll(ctx)
-
-	case release.Pilot, *release.Pilot:
+	case release.Rollout, *release.Rollout:
+		return pg.releaseRolloutFindAll(ctx)
+	case release.ManualPilot, *release.ManualPilot:
 		return pg.pilotFindAll(ctx)
-
 	case security.Token, *security.Token:
 		return pg.tokenFindAll(ctx)
-
 	case resources.TestEntity, *resources.TestEntity:
 		return pg.testEntityFindAll(ctx)
-
 	default:
 		return iterators.NewError(frameless.ErrNotImplemented)
 	}
@@ -259,18 +275,18 @@ func (pg *Postgres) FindReleaseFlagByName(ctx context.Context, name string) (*re
 
 }
 
-func (pg *Postgres) FindReleaseFlagPilotByPilotExternalID(ctx context.Context, flagID, ExternalPilotID string) (*release.Pilot, error) {
+func (pg *Postgres) FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID, pilotExtID string) (*release.ManualPilot, error) {
 	if !isUUIDValid(flagID) {
 		return nil, nil
 	}
 
 	m := pilotMapper{}
-	q := fmt.Sprintf(`SELECT %s FROM "pilots" WHERE "feature_flag_id" = $1 AND "external_id" = $2`,
-		m.SelectClause())
+	q := fmt.Sprintf(`SELECT %s FROM "release_pilots" WHERE "flag_id" = $1 AND "env_id" = $2 AND "external_id" = $3`,
+		strings.Join(m.Columns(), `, `))
 
-	row := pg.DB.QueryRowContext(ctx, q, flagID, ExternalPilotID)
+	row := pg.DB.QueryRowContext(ctx, q, flagID, envID, pilotExtID)
 
-	var p release.Pilot
+	var p release.ManualPilot
 
 	err := m.Map(row, &p)
 
@@ -285,22 +301,22 @@ func (pg *Postgres) FindReleaseFlagPilotByPilotExternalID(ctx context.Context, f
 	return &p, nil
 }
 
-func (pg *Postgres) FindPilotsByFeatureFlag(ctx context.Context, ff *release.Flag) frameless.Iterator {
-	if ff == nil {
+func (pg *Postgres) FindReleasePilotsByReleaseFlag(ctx context.Context, flag release.Flag) release.PilotEntries {
+	if flag.ID == `` {
 		return iterators.NewEmpty()
 	}
 
-	if ff.ID == `` {
+	if flag.ID == `` {
 		return iterators.NewEmpty()
 	}
 
-	if !isUUIDValid(ff.ID) {
-		return  iterators.NewEmpty()
+	if !isUUIDValid(flag.ID) {
+		return iterators.NewEmpty()
 	}
 
 	m := pilotMapper{}
-	query := fmt.Sprintf(`SELECT %s FROM "pilots" WHERE "feature_flag_id" = $1`, m.SelectClause())
-	rows, err := pg.DB.QueryContext(ctx, query, ff.ID)
+	query := fmt.Sprintf(`SELECT %s FROM "release_pilots" WHERE "flag_id" = $1`, strings.Join(m.Columns(), `, `))
+	rows, err := pg.DB.QueryContext(ctx, query, flag.ID)
 
 	if err != nil {
 		return iterators.NewError(err)
@@ -337,9 +353,9 @@ func (pg *Postgres) FindTokenBySHA512Hex(ctx context.Context, token string) (*se
 	return &t, nil
 }
 
-func (pg *Postgres) FindPilotEntriesByExtID(ctx context.Context, pilotExtID string) release.PilotEntries {
+func (pg *Postgres) FindReleasePilotsByExternalID(ctx context.Context, pilotExtID string) release.PilotEntries {
 	m := pilotMapper{}
-	q := fmt.Sprintf(`SELECT %s FROM "pilots" WHERE "external_id" = $1`, m.SelectClause())
+	q := fmt.Sprintf(`SELECT %s FROM "release_pilots" WHERE "external_id" = $1`, strings.Join(m.Columns(), `, `))
 	rows, err := pg.DB.QueryContext(ctx, q, pilotExtID)
 	if err != nil {
 		return iterators.NewError(err)
@@ -348,7 +364,6 @@ func (pg *Postgres) FindPilotEntriesByExtID(ctx context.Context, pilotExtID stri
 }
 
 func (pg *Postgres) FindReleaseFlagsByName(ctx context.Context, flagNames ...string) frameless.Iterator {
-
 	var namesInClause []string
 	var args []interface{}
 
@@ -373,49 +388,9 @@ func (pg *Postgres) FindReleaseFlagsByName(ctx context.Context, flagNames ...str
 	return iterators.NewSQLRows(flags, mapper)
 }
 
-const releaseAllowInsertNewQuery = `
-INSERT INTO "release_flag_ip_addr_allows" ("id","flag_id", "ip_addr")
-VALUES ($1, $2, $3);
-`
-
-func (pg *Postgres) releaseAllowInsertNew(ctx context.Context, allow *release.IPAllow) error {
-
-	id, err := newV4UUID()
-	if err != nil {
-		return err
-	}
-
-	var ipAddr sql.NullString
-
-	if allow.InternetProtocolAddress != `` {
-		ipAddr.Valid = true
-		ipAddr.String = allow.InternetProtocolAddress
-	}
-
-	if allow.FlagID == `` {
-		return errors.New(`creating release.IPAllow without FlagID is forbidden`)
-	}
-
-	if _, err := pg.DB.ExecContext(ctx, releaseAllowInsertNewQuery,
-		id,
-		allow.FlagID,
-		ipAddr,
-	); err != nil {
-		return err
-	}
-
-	return resources.SetID(allow, id)
-}
-
 const releaseFlagInsertNewQuery = `
-INSERT INTO "release_flags" (
-	id,
-	name,
-	rollout_rand_seed,
-	rollout_strategy_percentage,
-	rollout_strategy_decision_logic_api
-)
-VALUES ($1, $2, $3, $4, $5);
+INSERT INTO "release_flags" (id, name)
+VALUES ($1, $2);
 `
 
 func (pg *Postgres) releaseFlagInsertNew(ctx context.Context, flag *release.Flag) error {
@@ -424,19 +399,7 @@ func (pg *Postgres) releaseFlagInsertNew(ctx context.Context, flag *release.Flag
 		return err
 	}
 
-	var DecisionLogicAPI sql.NullString
-
-	if flag.Rollout.Strategy.DecisionLogicAPI != nil {
-		DecisionLogicAPI.Valid = true
-		DecisionLogicAPI.String = flag.Rollout.Strategy.DecisionLogicAPI.String()
-	}
-
-	if _, err := pg.DB.ExecContext(ctx, releaseFlagInsertNewQuery,
-		id,
-		flag.Name,
-		flag.Rollout.RandSeed,
-		flag.Rollout.Strategy.Percentage,
-		DecisionLogicAPI,
+	if _, err := pg.DB.ExecContext(ctx, releaseFlagInsertNewQuery, id, flag.Name,
 	); err != nil {
 		return err
 	}
@@ -444,12 +407,58 @@ func (pg *Postgres) releaseFlagInsertNew(ctx context.Context, flag *release.Flag
 	return resources.SetID(flag, id)
 }
 
-const pilotInsertNewQuery = `
-INSERT INTO "pilots" (id, feature_flag_id, external_id, enrolled)
+const releaseRolloutInsertNewQuery = `
+INSERT INTO "release_rollouts" (id, flag_id, env_id, plan)
 VALUES ($1, $2, $3, $4);
 `
 
-func (pg *Postgres) pilotInsertNew(ctx context.Context, pilot *release.Pilot) error {
+func (pg *Postgres) releaseRolloutInsertNew(ctx context.Context, rollout *release.Rollout) error {
+	id, err := newV4UUID()
+	if err != nil {
+		return err
+	}
+
+	planJSON, err := json.Marshal(release.RolloutDefinitionView{Definition: rollout.Plan})
+	if err != nil {
+		return err
+	}
+
+	if _, err := pg.DB.ExecContext(ctx, releaseRolloutInsertNewQuery,
+		id,
+		rollout.FlagID,
+		rollout.DeploymentEnvironmentID,
+		planJSON,
+	); err != nil {
+		return err
+	}
+
+	return resources.SetID(rollout, id)
+}
+
+const deploymentEnvironmentInsertNewQuery = `
+INSERT INTO "deployment_environments" (id, name)
+VALUES ($1, $2);
+`
+
+func (pg *Postgres) deploymentEnvironmentInsertNew(ctx context.Context, env *deployment.Environment) error {
+	id, err := newV4UUID()
+	if err != nil {
+		return err
+	}
+
+	if _, err := pg.DB.ExecContext(ctx, deploymentEnvironmentInsertNewQuery, id, env.Name); err != nil {
+		return err
+	}
+
+	return resources.SetID(env, id)
+}
+
+const pilotInsertNewQuery = `
+INSERT INTO "release_pilots" (id, flag_id, env_id, external_id, is_participating)
+VALUES ($1, $2, $3, $4, $5);
+`
+
+func (pg *Postgres) pilotInsertNew(ctx context.Context, pilot *release.ManualPilot) error {
 
 	id, err := newV4UUID()
 	if err != nil {
@@ -463,8 +472,9 @@ func (pg *Postgres) pilotInsertNew(ctx context.Context, pilot *release.Pilot) er
 	if _, err := pg.DB.ExecContext(ctx, pilotInsertNewQuery,
 		id,
 		pilot.FlagID,
+		pilot.DeploymentEnvironmentID,
 		pilot.ExternalID,
-		pilot.Enrolled,
+		pilot.IsParticipating,
 	); err != nil {
 		return err
 	}
@@ -518,28 +528,26 @@ func (pg *Postgres) tokenInsertNew(ctx context.Context, token *security.Token) e
 
 }
 
-func (pg *Postgres) releaseAllowFindByID(ctx context.Context, allow *release.IPAllow, id string) (bool, error) {
-	mapper := releaseAllowMapper{}
-	query := fmt.Sprintf(`SELECT %s FROM "release_flag_ip_addr_allows" WHERE "id" = $1`, strings.Join(mapper.Columns(), `, `))
-	row := pg.DB.QueryRowContext(ctx, query, id)
-	err := mapper.Map(row, allow)
+func (pg *Postgres) releaseRolloutFindByID(ctx context.Context, rollout *release.Rollout, id string) (bool, error) {
+	mapper := releaseRolloutMapper{}
+	query := fmt.Sprintf(`SELECT %s FROM "release_rollouts" WHERE "id" = $1`, strings.Join(mapper.Columns(), `, `))
+	err := mapper.Map(pg.DB.QueryRowContext(ctx, query, id), rollout)
+
 	if err == sql.ErrNoRows {
 		return false, nil
 	}
+
 	if err != nil {
 		return false, err
 	}
+
 	return true, nil
 }
 
 func (pg *Postgres) releaseFlagFindByID(ctx context.Context, flag *release.Flag, id string) (bool, error) {
-
 	mapper := releaseFlagMapper{}
-	query := fmt.Sprintf(`%s FROM "release_flags" WHERE "id" = $1`, mapper.SelectClause())
-	row := pg.DB.QueryRowContext(ctx, query, id)
-
-	var ff release.Flag
-	err := mapper.Map(row, &ff)
+	query := fmt.Sprintf(`SELECT %s FROM "release_flags" WHERE "id" = $1`, strings.Join(mapper.Columns(), `, `))
+	err := mapper.Map(pg.DB.QueryRowContext(ctx, query, id), flag)
 
 	if err == sql.ErrNoRows {
 		return false, nil
@@ -549,17 +557,31 @@ func (pg *Postgres) releaseFlagFindByID(ctx context.Context, flag *release.Flag,
 		return false, err
 	}
 
-	*flag = ff
 	return true, nil
-
 }
 
-func (pg *Postgres) pilotFindByID(ctx context.Context, pilot *release.Pilot, id string) (bool, error) {
+func (pg *Postgres) deploymentEnvironmentFindByID(ctx context.Context, env *deployment.Environment, id string) (bool, error) {
+	mapper := deploymentEnvironmentMapper{}
+	query := fmt.Sprintf(`SELECT %s FROM "deployment_environments" WHERE "id" = $1`, strings.Join(mapper.Columns(), `, `))
+	err := mapper.Map(pg.DB.QueryRowContext(ctx, query, id), env)
+
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (pg *Postgres) pilotFindByID(ctx context.Context, pilot *release.ManualPilot, id string) (bool, error) {
 	m := pilotMapper{}
-	query := fmt.Sprintf(`SELECT %s FROM "pilots" WHERE "id" = $1`, m.SelectClause())
+	query := fmt.Sprintf(`SELECT %s FROM "release_pilots" WHERE "id" = $1`, strings.Join(m.Columns(), `, `))
 	row := pg.DB.QueryRowContext(ctx, query, id)
 
-	var p release.Pilot
+	var p release.ManualPilot
 	err := m.Map(row, &p)
 
 	if err == sql.ErrNoRows {
@@ -631,19 +653,32 @@ func (pg *Postgres) releaseFlagFindAll(ctx context.Context) frameless.Iterator {
 	return iterators.NewSQLRows(rows, mapper)
 }
 
-func (pg *Postgres) releaseAllowFindAll(ctx context.Context) frameless.Iterator {
-	mapper := releaseAllowMapper{}
-	query := fmt.Sprintf(`SELECT %s FROM "release_flag_ip_addr_allows"`, strings.Join(mapper.Columns(), `, `))
+func (pg *Postgres) releaseRolloutFindAll(ctx context.Context) frameless.Iterator {
+	mapper := releaseRolloutMapper{}
+	query := fmt.Sprintf(`SELECT %s FROM "release_rollouts"`, strings.Join(mapper.Columns(), `, `))
 	rows, err := pg.DB.QueryContext(ctx, query)
 	if err != nil {
 		return iterators.NewError(err)
 	}
+
+	return iterators.NewSQLRows(rows, mapper)
+}
+
+func (pg *Postgres) deploymentEnvironmentFindAll(ctx context.Context) frameless.Iterator {
+	mapper := deploymentEnvironmentMapper{}
+	query := fmt.Sprintf(`SELECT %s FROM "deployment_environments"`, strings.Join(mapper.Columns(), `,`))
+
+	rows, err := pg.DB.QueryContext(ctx, query)
+	if err != nil {
+		return iterators.NewError(err)
+	}
+
 	return iterators.NewSQLRows(rows, mapper)
 }
 
 func (pg *Postgres) pilotFindAll(ctx context.Context) frameless.Iterator {
 	m := pilotMapper{}
-	q := fmt.Sprintf(`SELECT %s FROM "pilots"`, m.SelectClause())
+	q := fmt.Sprintf(`SELECT %s FROM "release_pilots"`, strings.Join(m.Columns(), `, `))
 	rows, err := pg.DB.QueryContext(ctx, q)
 	if err != nil {
 		return iterators.NewError(err)
@@ -686,64 +721,69 @@ func (pg *Postgres) tokenFindAll(ctx context.Context) frameless.Iterator {
 	return iterators.NewSQLRows(rows, m)
 }
 
-const releaseAllowUpdateQuery = `
-UPDATE "release_flag_ip_addr_allows"
-SET flag_id = $2,
-	ip_addr = $3
+const deploymentEnvironmentUpdateQuery = `
+UPDATE "deployment_environments"
+SET name = $2
 WHERE id = $1;
 `
 
-func (pg *Postgres) releaseAllowUpdate(ctx context.Context, allow *release.IPAllow) error {
-	_, err := pg.DB.ExecContext(ctx, releaseAllowUpdateQuery,
-		allow.ID,
-		allow.FlagID,
-		allow.InternetProtocolAddress,
-	)
+func (pg *Postgres) deploymentEnvironmentUpdate(ctx context.Context, env *deployment.Environment) error {
+	_, err := pg.DB.ExecContext(ctx, deploymentEnvironmentUpdateQuery, env.ID, env.Name)
+
 	return err
 }
 
 const releaseFlagUpdateQuery = `
 UPDATE "release_flags"
-SET name = $1,
-    rollout_rand_seed = $2,
-    rollout_strategy_percentage = $3,
-    rollout_strategy_decision_logic_api = $4
-WHERE id = $5;
+SET name = $2
+WHERE id = $1;
 `
 
 func (pg *Postgres) releaseFlagUpdate(ctx context.Context, flag *release.Flag) error {
-	var DecisionLogicAPI sql.NullString
+	_, err := pg.DB.ExecContext(ctx, releaseFlagUpdateQuery, flag.ID, flag.Name)
 
-	if flag.Rollout.Strategy.DecisionLogicAPI != nil {
-		DecisionLogicAPI.Valid = true
-		DecisionLogicAPI.String = flag.Rollout.Strategy.DecisionLogicAPI.String()
+	return err
+}
+
+const releaseRolloutUpdateQuery = `
+UPDATE "release_rollouts"
+SET flag_id = $2, 
+    env_id = $3, 
+    plan = $4
+WHERE id = $1;
+`
+
+func (pg *Postgres) releaseRolloutUpdate(ctx context.Context, rollout *release.Rollout) error {
+	planJSON, err := json.Marshal(release.RolloutDefinitionView{Definition: rollout.Plan})
+	if err != nil {
+		return err
 	}
 
-	_, err := pg.DB.ExecContext(ctx, releaseFlagUpdateQuery,
-		flag.Name,
-		flag.Rollout.RandSeed,
-		flag.Rollout.Strategy.Percentage,
-		DecisionLogicAPI,
-		flag.ID,
+	_, err = pg.DB.ExecContext(ctx, releaseRolloutUpdateQuery,
+		rollout.ID,
+		rollout.FlagID,
+		rollout.DeploymentEnvironmentID,
+		planJSON,
 	)
 
 	return err
 }
 
 const pilotUpdateQuery = `
-UPDATE "pilots"
-SET feature_flag_id = $1,
-    external_id = $2,
-    enrolled = $3
-WHERE id = $4;
+UPDATE "release_pilots"
+SET flag_id = $2,
+	env_id = $3,
+    external_id = $4,
+    is_participating = $5
+WHERE id = $1;
 `
 
-func (pg *Postgres) pilotUpdate(ctx context.Context, pilot *release.Pilot) error {
-	_, err := pg.DB.ExecContext(ctx, pilotUpdateQuery,
+func (pg *Postgres) pilotUpdate(ctx context.Context, pilot *release.ManualPilot) error {
+	_, err := pg.DB.ExecContext(ctx, pilotUpdateQuery, pilot.ID,
 		pilot.FlagID,
+		pilot.DeploymentEnvironmentID,
 		pilot.ExternalID,
-		pilot.Enrolled,
-		pilot.ID,
+		pilot.IsParticipating,
 	)
 
 	return err
@@ -878,72 +918,110 @@ func (m tokenMapper) Map(s iterators.SQLRowScanner, ptr interface{}) error {
 	return reflects.Link(src, ptr)
 }
 
-type releaseAllowMapper struct{}
+type deploymentEnvironmentMapper struct{}
 
-func (releaseAllowMapper) Columns() []string {
-	return []string{`id`, `flag_id`, `ip_addr`}
+func (m deploymentEnvironmentMapper) Columns() []string {
+	return []string{`id`, `name`}
 }
 
-func (releaseAllowMapper) Map(scanner iterators.SQLRowScanner, ptr interface{}) error {
-	var ipAllow release.IPAllow
-	var ipAddr sql.NullString
-	if err := scanner.Scan(&ipAllow.ID, &ipAllow.FlagID, &ipAddr); err != nil {
+func (m deploymentEnvironmentMapper) Map(s iterators.SQLRowScanner, ptr interface{}) error {
+	var src deployment.Environment
+	if err := s.Scan(
+		&src.ID,
+		&src.Name,
+	); err != nil {
 		return err
 	}
-	if ipAddr.Valid {
-		ipAllow.InternetProtocolAddress = ipAddr.String
+	return reflects.Link(src, ptr)
+}
+
+type releaseRolloutMapper struct{}
+
+func (releaseRolloutMapper) Columns() []string {
+	return []string{`id`, `flag_id`, `env_id`, `plan`}
+}
+
+type releaseRolloutPlanValue struct {
+	release.RolloutDefinition
+}
+
+func (rp releaseRolloutPlanValue) Value() (driver.Value, error) {
+	return json.Marshal(release.RolloutDefinitionView{Definition: rp.RolloutDefinition})
+}
+
+func (rp *releaseRolloutPlanValue) Scan(iSRC interface{}) error {
+	src, ok := iSRC.([]byte)
+	if !ok {
+		const err errs.Error = "Type assertion .([]byte) failed."
+		return err
 	}
-	return reflects.Link(ipAllow, ptr)
+
+	var rpv release.RolloutDefinitionView
+	if err := json.Unmarshal(src, &rpv); err != nil {
+		return err
+	}
+
+	rp.RolloutDefinition = rpv.Definition
+	return nil
+}
+
+func (releaseRolloutMapper) Map(scanner iterators.SQLRowScanner, ptr interface{}) error {
+	var rollout release.Rollout
+
+	var rolloutPlanValue releaseRolloutPlanValue
+
+	if err := scanner.Scan(
+		&rollout.ID,
+		&rollout.FlagID,
+		&rollout.DeploymentEnvironmentID,
+		&rolloutPlanValue,
+	); err != nil {
+		return err
+	}
+
+	rollout.Plan = rolloutPlanValue.RolloutDefinition
+	return reflects.Link(rollout, ptr)
 }
 
 type releaseFlagMapper struct{}
 
 func (releaseFlagMapper) SelectClause() string {
-	return `SELECT id, name, rollout_rand_seed, rollout_strategy_percentage, rollout_strategy_decision_logic_api`
+	return `SELECT id, name`
+}
+
+func (releaseFlagMapper) Columns() []string {
+	return []string{`id`, `name`}
 }
 
 func (releaseFlagMapper) Map(scanner iterators.SQLRowScanner, ptr interface{}) error {
-	var ff release.Flag
-	var DecisionLogicAPI sql.NullString
-
-	err := scanner.Scan(
-		&ff.ID,
-		&ff.Name,
-		&ff.Rollout.RandSeed,
-		&ff.Rollout.Strategy.Percentage,
-		&DecisionLogicAPI,
-	)
-
-	if err != nil {
+	var flag release.Flag
+	if err := scanner.Scan(&flag.ID, &flag.Name); err != nil {
 		return err
 	}
-
-	if DecisionLogicAPI.Valid {
-		u, err := url.ParseRequestURI(DecisionLogicAPI.String)
-		if err != nil {
-			return err
-		}
-		ff.Rollout.Strategy.DecisionLogicAPI = u
-	}
-
-	return reflects.Link(ff, ptr)
+	return reflects.Link(flag, ptr)
 }
 
 type pilotMapper struct{}
 
-func (pilotMapper) SelectClause() string {
-	const query = `id, feature_flag_id, external_id, enrolled`
-	return query
+func (pilotMapper) Columns() []string {
+	return []string{
+		`id`,
+		`flag_id`,
+		`env_id`,
+		`external_id`,
+		`is_participating`,
+	}
 }
 
 func (pilotMapper) Map(s iterators.SQLRowScanner, ptr interface{}) error {
-	var p release.Pilot
+	var p release.ManualPilot
 
 	err := s.Scan(
 		&p.ID,
 		&p.FlagID,
+		&p.DeploymentEnvironmentID,
 		&p.ExternalID,
-		&p.Enrolled,
+		&p.IsParticipating,
 	)
 
 	if err != nil {

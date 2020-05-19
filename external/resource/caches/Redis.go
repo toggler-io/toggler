@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources"
+	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/usecases"
 	"github.com/go-redis/redis"
 	"time"
@@ -17,6 +18,13 @@ func NewRedis(connstr string, storage usecases.Storage) (*Redis, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	gob.Register(release.RolloutDecisionNOT{})
+	gob.Register(release.RolloutDecisionAND{})
+	gob.Register(release.RolloutDecisionOR{})
+	gob.Register(release.RolloutDecisionByAPI{})
+	gob.Register(release.RolloutDecisionByPercentage{})
+
 	return &Redis{Storage: storage, client: redis.NewClient(redisClientOpt)}, nil
 }
 
@@ -115,33 +123,7 @@ func (r *Redis) Update(ctx context.Context, ptr interface{}) error {
 	return r.Storage.Update(ctx, ptr)
 }
 
-//
-//func (*Redis) FindAll(ctx context.Context, Type interface{}) frameless.Iterator {
-//	panic("implement me")
-//}
-//
-//func (*Redis) FindReleaseFlagByName(ctx context.Context, name string) (*rollouts.FeatureFlag, error) {
-//	panic("implement me")
-//}
-//
-//func (*Redis) FindReleaseFlagPilotByPilotExternalID(ctx context.Context, FlagID, ExternalPilotID string) (*rollouts.Pilot, error) {
-//	panic("implement me")
-//}
-//
-//func (*Redis) FindPilotsByFeatureFlag(ctx context.Context, ff *rollouts.FeatureFlag) frameless.Iterator {
-//	panic("implement me")
-//}
-//
-//func (*Redis) FindTokenBySHA512Hex(ctx context.Context, sha512hex string) (*security.Token, error) {
-//	panic("implement me")
-//}
-//
-
 //--------------------------------------------------------------------------------------------------------------------//
-
-func (r *Redis) lookup(ptr interface{}, ID string) (bool, error) {
-	return false, nil
-}
 
 func (r *Redis) marshal(ptr interface{}) ([]byte, error) {
 	buf := bytes.NewBuffer([]byte{})

@@ -1,0 +1,24 @@
+{{define "main"}}
+    <div class="content">
+        <h2 class="content-head is-center">{{ .Name }}</h2>
+        <div class="pure-g">
+            <div class="l-box-lrg pure-u pure-u-1">
+                <form action="/env" method="post" class="pure-form pure-form-aligned" data-bitwarden-watching="1">
+                    <fieldset>
+                        <input name="_method" type="hidden" value="post">
+
+                        <div class="pure-control-group">
+                            <label for="feature">Release Flag Name</label>
+                            <input id="feature" name="env.name"
+                                   type="text"
+                                   placeholder="deployment environment name...">
+                        </div>
+
+                        <button type="submit" class="pure-button pure-button-primary">Create Flag</button>
+
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+{{end}}

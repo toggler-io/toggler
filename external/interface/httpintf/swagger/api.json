@@ -14,6 +14,403 @@
   },
   "basePath": "/api",
   "paths": {
+    "/deployment-environments": {
+      "get": {
+        "security": [
+          {
+            "AppToken": [
+              "[]"
+            ]
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "deployment",
+          "environment"
+        ],
+        "summary": "List all the deployment environment that can be used to manage a feature rollout.",
+        "operationId": "listDeploymentEnvironments",
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/listDeploymentEnvironmentResponse"
+          },
+          "401": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "AppToken": [
+              "[]"
+            ]
+          }
+        ],
+        "description": "This operation allows you to create a new deployment environment.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "deployment",
+          "environment"
+        ],
+        "summary": "Create a deployment environment that can be used for managing a feature rollout.",
+        "operationId": "createDeploymentEnvironment",
+        "parameters": [
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "environment": {
+                  "$ref": "#/definitions/Environment"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/createDeploymentEnvironmentResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "401": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/deployment-environments/{envID}": {
+      "put": {
+        "security": [
+          {
+            "AppToken": [
+              "[]"
+            ]
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "deployment",
+          "environment"
+        ],
+        "summary": "Update a deployment environment.",
+        "operationId": "updateDeploymentEnvironment",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "EnvironmentID",
+            "description": "EnvironmentID is the deployment environment id or the alias name.",
+            "name": "envID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "environment": {
+                  "$ref": "#/definitions/Environment"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/updateDeploymentEnvironmentResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/deployment-environments/{envID}/release-flags/{flagID}/release-rollouts": {
+      "get": {
+        "security": [
+          {
+            "AppToken": [
+              "[]"
+            ]
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "release",
+          "rollout",
+          "flag"
+        ],
+        "summary": "List all the release flag that can be used to manage a feature rollout.",
+        "operationId": "listReleaseRollouts",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "EnvironmentID",
+            "description": "EnvironmentID is the deployment environment ID",
+            "name": "envID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "FlagID",
+            "description": "FlagID is the release flag id",
+            "name": "flagID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/listReleaseRolloutResponse"
+          },
+          "401": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "AppToken": [
+              "[]"
+            ]
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "release",
+          "rollout",
+          "flag"
+        ],
+        "summary": "This operation allows you to create a new release rollout.",
+        "operationId": "createReleaseRollout",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "EnvironmentID",
+            "description": "EnvironmentID is the deployment environment ID",
+            "name": "envID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "FlagID",
+            "description": "FlagID is the release flag id",
+            "name": "flagID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "rollout": {
+                  "type": "object",
+                  "required": [
+                    "plan"
+                  ],
+                  "properties": {
+                    "plan": {
+                      "description": "Plan holds the composited rule set about the pilot participation decision logic.",
+                      "type": "object",
+                      "x-go-name": "Plan",
+                      "example": {
+                        "percentage": {
+                          "percentage": 42,
+                          "seed": 10240
+                        }
+                      }
+                    }
+                  },
+                  "x-go-name": "Rollout"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/createReleaseRolloutResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "401": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
+    "/deployment-environments/{envID}/release-flags/{flagID}/release-rollouts/{rolloutID}": {
+      "put": {
+        "security": [
+          {
+            "AppToken": [
+              "[]"
+            ]
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "release",
+          "rollout",
+          "flag",
+          "pilot"
+        ],
+        "summary": "Update a release flag.",
+        "operationId": "updateReleaseRollout",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "EnvironmentID",
+            "description": "EnvironmentID is the deployment environment ID",
+            "name": "envID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "FlagID",
+            "description": "FlagID is the release flag id",
+            "name": "flagID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "RolloutID",
+            "description": "FlagID is the release flag id or the alias name.",
+            "name": "rolloutID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "rollout": {
+                  "type": "object",
+                  "properties": {
+                    "plan": {
+                      "type": "object",
+                      "x-go-name": "Plan"
+                    }
+                  },
+                  "x-go-name": "Rollout"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/updateReleaseRolloutResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      }
+    },
     "/release-flags": {
       "get": {
         "security": [
@@ -95,7 +492,7 @@
               "type": "object",
               "properties": {
                 "flag": {
-                  "$ref": "#/definitions/ReleaseFlagView"
+                  "$ref": "#/definitions/Flag"
                 }
               }
             }
@@ -160,7 +557,7 @@
               "type": "object",
               "properties": {
                 "flag": {
-                  "$ref": "#/definitions/ReleaseFlagView"
+                  "$ref": "#/definitions/Flag"
                 }
               }
             }
@@ -169,50 +566,6 @@
         "responses": {
           "200": {
             "$ref": "#/responses/updateReleaseFlagResponse"
-          },
-          "400": {
-            "$ref": "#/responses/errorResponse"
-          },
-          "500": {
-            "$ref": "#/responses/errorResponse"
-          }
-        }
-      }
-    },
-    "/release-flags/{flagID}/global": {
-      "get": {
-        "description": "Reply back whether the feature rolled out globally or not.\nThis is especially useful for cases where you don't have pilot id.\nSuch case is batch processing, or dark launch flips.\nBy Default, this will be determined whether the flag exist,\nThen  whether the release id done to everyone or not by percentage.\nThe endpoint can be called with HTTP GET method as well,\nPOST is used officially only to support most highly abstracted http clients.",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "schemes": [
-          "http",
-          "https"
-        ],
-        "tags": [
-          "release",
-          "feature",
-          "flag",
-          "pilot"
-        ],
-        "summary": "Get Release flag statistics regarding global state by the name of the release flag.",
-        "operationId": "getReleaseFlagGlobalStates",
-        "parameters": [
-          {
-            "type": "string",
-            "x-go-name": "FlagID",
-            "description": "FlagID is the release flag id or the alias name.",
-            "name": "flagID",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "$ref": "#/responses/getReleaseFlagGlobalStatesResponse"
           },
           "400": {
             "$ref": "#/responses/errorResponse"
@@ -440,10 +793,17 @@
             "schema": {
               "type": "object",
               "required": [
+                "env",
                 "id",
                 "release_flags"
               ],
               "properties": {
+                "env": {
+                  "description": "DeploymentEnvironmentAlias is the ID or the name of the environment where the request being made",
+                  "type": "string",
+                  "x-go-name": "DeploymentEnvironmentAlias",
+                  "example": "Q\u0026A"
+                },
                 "id": {
                   "description": "PilotExtID is the public uniq id that identify the caller pilot",
                   "type": "string",
@@ -480,6 +840,18 @@
     }
   },
   "definitions": {
+    "Environment": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "string"
+        },
+        "Name": {
+          "type": "string"
+        }
+      },
+      "x-go-package": "github.com/toggler-io/toggler/domains/deployment"
+    },
     "Error": {
       "description": "Error contains the details of the error",
       "type": "object",
@@ -499,48 +871,20 @@
       },
       "x-go-package": "github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
     },
-    "ReleaseFlagView": {
+    "Flag": {
+      "description": "Flag is the basic entity with properties that feature flag holds",
       "type": "object",
       "properties": {
         "id": {
-          "description": "ID represent the fact that this object will be persistent in the Subject",
           "type": "string",
           "x-go-name": "ID"
         },
         "name": {
           "type": "string",
           "x-go-name": "Name"
-        },
-        "rollout": {
-          "type": "object",
-          "properties": {
-            "rand_seed_salt": {
-              "description": "RandSeed allows you to configure the randomness for the percentage based pilot enrollment selection.\nThis value could have been neglected by using the flag name as random seed,\nbut that would reduce the flexibility for edge cases where you want\nto use a similar pilot group as a successful flag rollout before.",
-              "type": "integer",
-              "format": "int64",
-              "x-go-name": "RandSeed"
-            },
-            "strategy": {
-              "description": "Strategy expects to determines the behavior of the rollout workflow.\nthe actual behavior implementation is with the RolloutManager,\nbut the configuration data is located here",
-              "type": "object",
-              "properties": {
-                "decision_logic_api": {
-                  "$ref": "#/definitions/URL"
-                },
-                "percentage": {
-                  "description": "Percentage allows you to define how many of your user base should be enrolled pseudo randomly.",
-                  "type": "integer",
-                  "format": "int64",
-                  "x-go-name": "Percentage"
-                }
-              },
-              "x-go-name": "Strategy"
-            }
-          },
-          "x-go-name": "Rollout"
         }
       },
-      "x-go-package": "github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
+      "x-go-package": "github.com/toggler-io/toggler/domains/release"
     },
     "ReleasePilotView": {
       "type": "object",
@@ -550,7 +894,7 @@
           "type": "string"
         },
         "enrolled": {
-          "description": "Enrolled states that whether the Pilot for the given feature is enrolled, or blacklisted",
+          "description": "IsParticipating states that whether the ManualPilot for the given feature is enrolled, or blacklisted",
           "type": "boolean",
           "x-go-name": "Enrolled"
         },
@@ -567,55 +911,48 @@
       },
       "x-go-package": "github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
     },
-    "URL": {
-      "description": "The general form represented is:\n\n[scheme:][//[userinfo@]host][/]path[?query][#fragment]\n\nURLs that do not start with a slash after the scheme are interpreted as:\n\nscheme:opaque[?query][#fragment]\n\nNote that the Path field is stored in decoded form: /%47%6f%2f becomes /Go/.\nA consequence is that it is impossible to tell which slashes in the Path were\nslashes in the raw URL and which were %2f. This distinction is rarely important,\nbut when it is, the code should use RawPath, an optional field which only gets\nset if the default encoding is different from Path.\n\nURL's String method uses the EscapedPath method to obtain the path. See the\nEscapedPath method for more details.",
+    "Rollout": {
       "type": "object",
-      "title": "A URL represents a parsed URL (technically, a URI reference).",
       "properties": {
-        "ForceQuery": {
-          "type": "boolean"
+        "env_id": {
+          "type": "string",
+          "x-go-name": "EnvironmentID"
         },
-        "Fragment": {
-          "type": "string"
+        "flag_id": {
+          "type": "string",
+          "x-go-name": "FlagID"
         },
-        "Host": {
-          "type": "string"
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
         },
-        "Opaque": {
-          "type": "string"
-        },
-        "Path": {
-          "type": "string"
-        },
-        "RawPath": {
-          "type": "string"
-        },
-        "RawQuery": {
-          "type": "string"
-        },
-        "Scheme": {
-          "type": "string"
-        },
-        "User": {
-          "$ref": "#/definitions/Userinfo"
+        "plan": {
+          "type": "object",
+          "x-go-name": "Plan"
         }
       },
-      "x-go-package": "net/url"
-    },
-    "Userinfo": {
-      "description": "The Userinfo type is an immutable encapsulation of username and\npassword details for a URL. An existing Userinfo value is guaranteed\nto have a username set (potentially empty, as allowed by RFC 2396),\nand optionally a password.",
-      "type": "object",
-      "x-go-package": "net/url"
+      "x-go-package": "github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
     }
   },
   "responses": {
+    "createDeploymentEnvironmentResponse": {
+      "description": "CreateDeploymentEnvironmentResponse",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "environment": {
+            "$ref": "#/definitions/Environment"
+          }
+        }
+      }
+    },
     "createReleaseFlagResponse": {
       "description": "CreateReleaseFlagResponse",
       "schema": {
         "type": "object",
         "properties": {
           "flag": {
-            "$ref": "#/definitions/ReleaseFlagView"
+            "$ref": "#/definitions/Flag"
           }
         }
       }
@@ -627,6 +964,17 @@
         "properties": {
           "pilot": {
             "$ref": "#/definitions/ReleasePilotView"
+          }
+        }
+      }
+    },
+    "createReleaseRolloutResponse": {
+      "description": "CreateReleaseRolloutResponse",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "rollout": {
+            "$ref": "#/definitions/Rollout"
           }
         }
       }
@@ -665,15 +1013,17 @@
         }
       }
     },
-    "getReleaseFlagGlobalStatesResponse": {
-      "description": "GetReleaseFlagGlobalStatesResponse",
+    "listDeploymentEnvironmentResponse": {
+      "description": "ListDeploymentEnvironmentResponse",
       "schema": {
         "type": "object",
         "properties": {
-          "enrollment": {
-            "description": "Enrollment is the release feature flag enrollment status.",
-            "type": "boolean",
-            "x-go-name": "Enrollment"
+          "environments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Environment"
+            },
+            "x-go-name": "Environments"
           }
         }
       }
@@ -686,7 +1036,7 @@
           "flags": {
             "type": "array",
             "items": {
-              "$ref": "#/definitions/ReleaseFlagView"
+              "$ref": "#/definitions/Flag"
             },
             "x-go-name": "Flags"
           }
@@ -708,13 +1058,39 @@
         }
       }
     },
+    "listReleaseRolloutResponse": {
+      "description": "ListReleaseRolloutResponse",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "rollouts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Rollout"
+            },
+            "x-go-name": "Rollouts"
+          }
+        }
+      }
+    },
+    "updateDeploymentEnvironmentResponse": {
+      "description": "UpdateDeploymentEnvironmentResponse",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "environment": {
+            "$ref": "#/definitions/Environment"
+          }
+        }
+      }
+    },
     "updateReleaseFlagResponse": {
       "description": "UpdateReleaseFlagResponse",
       "schema": {
         "type": "object",
         "properties": {
           "flag": {
-            "$ref": "#/definitions/ReleaseFlagView"
+            "$ref": "#/definitions/Flag"
           }
         }
       }
@@ -726,6 +1102,24 @@
         "properties": {
           "pilot": {
             "$ref": "#/definitions/ReleasePilotView"
+          }
+        }
+      }
+    },
+    "updateReleaseRolloutResponse": {
+      "description": "UpdateReleaseRolloutResponse",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "rollout": {
+            "type": "object",
+            "properties": {
+              "plan": {
+                "type": "object",
+                "x-go-name": "Plan"
+              }
+            },
+            "x-go-name": "Rollout"
           }
         }
       }

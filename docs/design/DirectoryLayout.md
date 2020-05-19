@@ -72,8 +72,8 @@ from the external resources the service use such as storage,
 that needs to be fulfilled in order to work well together with this service domain implementations.
 [You can read more about the reason here](https://en.wikipedia.org/wiki/Design_by_contract).
 
-#### rollouts
-rollouts collects domain logic that is purely related towards the process of defining feature flags,
+#### release
+release collects domain logic that is purely related towards the process of defining release flags,
 enrol manually pilots, define the enrollment percentage for the rest of the user-base and checking flag status.
 
 #### security

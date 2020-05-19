@@ -50,7 +50,7 @@ type WSLoadBalanceErrResp httpapi.ErrorResponse
 
 	swagger:route GET / ws release flag pilot global server-side websocket Websocket
 
-	Socket API to check Rollout name Flag Status
+	Socket API to check release flag Status
 
 	This endpoint currently meant to used by servers and not by clients.
 	The  reason behind is that it is much more easy to calculate with server quantity,
@@ -110,35 +110,21 @@ subscription:
 
 		switch req.Operation {
 		case `IsFeatureEnabled`:
-			data := req.Data.(map[string]interface{})
-
-			releaseFlagName := data[`feature`].(string)
-			states, err := ctrl.UseCases.FlagChecker.GetReleaseFlagPilotEnrollmentStates(r.Context(), data[`id`].(string), releaseFlagName)
-
-			if handle(err, http.StatusInternalServerError) {
-				continue subscription
-			}
-
-			var resp EnrollmentResponseBody
-			resp.Enrollment = states[releaseFlagName]
-
-			if handle(c.WriteJSON(&resp), http.StatusInternalServerError) {
-				break subscription
-			}
-
-		case `GetReleaseFlagGlobalStates`:
-			data := req.Data.(map[string]interface{})
-			enr, err := ctrl.UseCases.FlagChecker.IsFeatureGloballyEnabled(data[`feature`].(string))
-			if handle(err, http.StatusInternalServerError) {
-				continue subscription
-			}
-
-			var resp httpapi.GetReleaseFlagGlobalStatesResponse
-			resp.Body.Enrollment = enr
-
-			if handle(c.WriteJSON(&resp.Body), http.StatusInternalServerError) {
-				break subscription
-			}
+			//data := req.Data.(map[string]interface{})
+			//
+			//releaseFlagName := data[`feature`].(string)
+			//states, err := ctrl.UseCases.GetAllReleaseFlagStatesOfThePilot(r.Context(), releaseFlagName, data[`id`].(string))
+			//
+			//if handle(err, http.StatusInternalServerError) {
+			//	continue subscription
+			//}
+			//
+			//var resp EnrollmentResponseBody
+			//resp.Enrollment = states[releaseFlagName]
+			//
+			//if handle(c.WriteJSON(&resp), http.StatusInternalServerError) {
+			//	break subscription
+			//}
 
 		default:
 			if handle(errors.New(http.StatusText(http.StatusNotFound)), http.StatusNotFound) {

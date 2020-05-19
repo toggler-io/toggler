@@ -1,11 +1,9 @@
 package testing
 
 import (
-	"context"
-	"math/rand"
-	"net/url"
-	"time"
+	"fmt"
 
+	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 
@@ -13,63 +11,62 @@ import (
 )
 
 const (
-	UniqueUserIDLetVar = `UniqUserID`
+	ExampleReleaseManualPilotEnrollmentLetVar = `ExampleReleaseManualPilotEnrollment`
 
+	ExampleReleaseRolloutLetVar  = `ReleaseRollout`
 	ExampleReleaseFlagLetVar     = `ReleaseFlag`
 	ExampleReleaseFlagNameLetVar = `ReleaseFlagName`
 
 	ExamplePilotExternalIDLetVar = `PilotExternalID`
-	ExamplePilotLetVar           = `Pilot`
+	ExamplePilotLetVar           = `ManualPilot`
 	ExamplePilotEnrollmentLetVar = `PilotEnrollment`
-
-	ExampleRolloutPercentageLetVar = `RolloutPercentage`
-	ExampleRolloutSeedSaltLetVar   = `RolloutSeedSalt`
-	ExampleRolloutApiURLLetVar     = `RolloutApiURL`
 )
 
 func init() {
 	setups = append(setups, func(s *testcase.Spec) {
-		// TODO: replace with GivenWeHaveReleaseFlag
-		s.Let(ExampleReleaseFlagNameLetVar, func(t *testcase.T) interface{} {
-			return RandomName()
+		s.Let(ExampleReleaseManualPilotEnrollmentLetVar, func(t *testcase.T) interface{} {
+			mpe := Create(release.ManualPilot{}).(*release.ManualPilot)
+			mpe.FlagID = ExampleReleaseFlag(t).ID
+			mpe.DeploymentEnvironmentID = ExampleDeploymentEnvironment(t).ID
+			mpe.ExternalID = ExampleExternalPilotID(t)
+			require.Nil(t, ExampleStorage(t).Create(GetContext(t), mpe))
+			t.Defer(ExampleStorage(t).DeleteByID, GetContext(t), release.ManualPilot{}, mpe.ID)
+			return mpe
 		})
 
 		s.Let(ExamplePilotExternalIDLetVar, func(t *testcase.T) interface{} {
 			return RandomExternalPilotID()
 		})
 
-		s.Let(UniqueUserIDLetVar, func(t *testcase.T) interface{} {
-			return RandomUniqUserID()
-		})
-
 		s.Let(ExamplePilotEnrollmentLetVar, func(t *testcase.T) interface{} {
-			return rand.Intn(2) == 0
+			return fixtures.Random.Bool()
 		})
 
 		s.Let(ExamplePilotLetVar, func(t *testcase.T) interface{} {
-			return &release.Pilot{
-				FlagID:     t.I(ExampleReleaseFlagLetVar).(*release.Flag).ID,
-				ExternalID: t.I(ExamplePilotExternalIDLetVar).(string),
-				Enrolled:   t.I(ExamplePilotEnrollmentLetVar).(bool),
+			// domains/release/specs/FlagFinderSpec.go:53:1: DEPRECATED, clean it up
+			return &release.ManualPilot{
+				FlagID:                  ExampleReleaseFlag(t).ID,
+				DeploymentEnvironmentID: ExampleDeploymentEnvironment(t).ID,
+				ExternalID:              t.I(ExamplePilotExternalIDLetVar).(string),
+				IsParticipating:         t.I(ExamplePilotEnrollmentLetVar).(bool),
 			}
 		})
 
-		s.Let(ExampleRolloutSeedSaltLetVar, func(t *testcase.T) interface{} { return time.Now().Unix() })
-		s.Let(ExampleRolloutPercentageLetVar, func(t *testcase.T) interface{} { return int(0) })
-		s.Let(ExampleRolloutApiURLLetVar, func(t *testcase.T) interface{} { return nil })
+		GivenWeHaveReleaseFlag(s, ExampleReleaseFlagLetVar)
 
-		s.Let(ExampleReleaseFlagLetVar, func(t *testcase.T) interface{} {
-			ff := &release.Flag{Name: t.I(ExampleReleaseFlagNameLetVar).(string)}
-			ff.Rollout.RandSeed = t.I(`RolloutSeedSalt`).(int64)
-			ff.Rollout.Strategy.Percentage = t.I(ExampleRolloutPercentageLetVar).(int)
-			ff.Rollout.Strategy.DecisionLogicAPI = GetRolloutApiURL(t)
-			return ff
-		})
+		GivenWeHaveReleaseRollout(s,
+			ExampleReleaseRolloutLetVar,
+			ExampleReleaseFlagLetVar,
+			ExampleDeploymentEnvironmentLetVar,
+		)
 	})
 }
 
-// TODO
-func GetExternalPilotID(t *testcase.T) string {
+func ExampleReleaseManualPilotEnrollment(t *testcase.T) *release.ManualPilot {
+	return t.I(ExampleReleaseManualPilotEnrollmentLetVar).(*release.ManualPilot)
+}
+
+func ExampleExternalPilotID(t *testcase.T) string {
 	return t.I(ExamplePilotExternalIDLetVar).(string)
 }
 
@@ -77,36 +74,14 @@ func ExampleReleaseFlagName(t *testcase.T) string {
 	return t.I(ExampleReleaseFlagNameLetVar).(string)
 }
 
-func GetPilot(t *testcase.T, vn string) *release.Pilot {
-	return t.I(vn).(*release.Pilot)
+func GetReleasePilot(t *testcase.T, vn string) *release.ManualPilot {
+	return t.I(vn).(*release.ManualPilot)
 }
 
-func ExamplePilot(t *testcase.T) *release.Pilot {
-	return GetPilot(t, ExamplePilotLetVar)
-}
-
-func GetPilotEnrollment(t *testcase.T) bool {
-	return t.I(ExamplePilotEnrollmentLetVar).(bool)
-}
-
-func GetRolloutPercentage(t *testcase.T) int {
-	return t.I(ExampleRolloutPercentageLetVar).(int)
-}
-
-func GetRolloutSeedSalt(t *testcase.T) int64 {
-	return t.I(ExampleRolloutSeedSaltLetVar).(int64)
-}
-
-func GetRolloutApiURL(t *testcase.T) *url.URL {
-	rurl := t.I(ExampleRolloutApiURLLetVar)
-
-	if rurl == nil {
-		return nil
-	}
-
-	u, err := url.Parse(rurl.(string))
-	require.Nil(t, err)
-	return u
+// DEPRECATED
+func ExamplePilot(t *testcase.T) *release.ManualPilot {
+	// replace with ExampleReleaseManualPilotEnrollmentLetVar
+	return GetReleasePilot(t, ExamplePilotLetVar)
 }
 
 func FindStoredExampleReleaseFlagByName(t *testcase.T) *release.Flag {
@@ -120,37 +95,76 @@ func FindStoredReleaseFlagByName(t *testcase.T, name string) *release.Flag {
 	return f
 }
 
+func ExampleReleaseRollout(t *testcase.T) *release.Rollout {
+	return GetReleaseRollout(t, ExampleReleaseRolloutLetVar)
+}
+
+func getReleaseRolloutPlanLetVar(vn string) string {
+	return fmt.Sprintf(`%s.plan`, vn)
+}
+
+func GetReleaseRolloutPlan(t *testcase.T, rolloutLVN string) release.RolloutDefinition {
+	return t.I(getReleaseRolloutPlanLetVar(rolloutLVN)).(release.RolloutDefinition)
+}
+
+func GetReleaseRollout(t *testcase.T, vn string) *release.Rollout {
+	return t.I(vn).(*release.Rollout)
+}
+
+func GivenWeHaveReleaseRollout(s *testcase.Spec, vn, flagLVN, envLVN string) {
+	s.Let(getReleaseRolloutPlanLetVar(vn), func(t *testcase.T) interface{} {
+		return *Create(release.RolloutDecisionByPercentage{}).(*release.RolloutDecisionByPercentage)
+	})
+
+	s.Let(vn, func(t *testcase.T) interface{} {
+		rf := GetReleaseFlag(t, flagLVN)
+		de := GetDeploymentEnvironment(t, envLVN)
+
+		rollout := FixtureFactory{}.Create(release.Rollout{}).(*release.Rollout)
+		rollout.FlagID = rf.ID
+		rollout.DeploymentEnvironmentID = de.ID
+		rollout.Plan = GetReleaseRolloutPlan(t, vn)
+		require.Nil(t, rollout.Plan.Validate())
+
+		// TODO: replace when rollout manager has function for this
+		require.Nil(t, ExampleRolloutManager(t).Storage.Create(GetContext(t), rollout))
+		t.Defer(ExampleRolloutManager(t).Storage.DeleteByID, GetContext(t), *rollout, rollout.ID)
+		t.Logf(`%#v`, rollout)
+		return rollout
+	})
+}
+
 func GivenWeHaveReleaseFlag(s *testcase.Spec, vn string) {
 	s.Let(vn, func(t *testcase.T) interface{} {
 		rf := FixtureFactory{}.Create(release.Flag{}).(*release.Flag)
-		require.Nil(t, ExampleRolloutManager(t).Create(GetContext(t), rf))
-		t.Defer(func() { _ = ExampleRolloutManager(t).DeleteFeatureFlag(GetContext(t), rf.ID) })
+		require.Nil(t, ExampleRolloutManager(t).Storage.Create(GetContext(t), rf))
+		t.Defer(ExampleRolloutManager(t).DeleteFeatureFlag, GetContext(t), rf.ID)
+		t.Defer(ExampleStorage(t).DeleteByID, GetContext(t), release.Flag{}, rf.ID)
+		t.Logf(`%#v`, rf)
 		return rf
 	})
 }
 
-func AndReleaseFlagPercentageIs(s *testcase.Spec, vn string, percentage int) {
+func AndReleaseFlagRolloutPercentageIs(s *testcase.Spec, rolloutLVN string, percentage int) {
 	s.Before(func(t *testcase.T) {
-		rf := GetReleaseFlag(t, vn)
-		rf.Rollout.Strategy.Percentage = percentage
-		require.Nil(t, ExampleRolloutManager(t).UpdateFeatureFlag(GetContext(t), rf))
+		rollout := GetReleaseRollout(t, ExampleReleaseRolloutLetVar)
+		byPercentage, ok := rollout.Plan.(release.RolloutDecisionByPercentage)
+		require.True(t, ok, `unexpected release rollout plan definition for AndReleaseFlagRolloutPercentageIs helper`)
+		byPercentage.Percentage = percentage
+		t.Logf(`and the release rollout percentage is set to %d`, percentage)
+		//
+		// please note that this will eager load the rollout value in the testing framework
+		// as it makes no sense to have a percentage set to something that doesn't even exists.
+		//
+		// And in case if we already initialized such context where rollout entry exists,
+		// we need to update its rollout plan as well.
+		t.Let(getReleaseRolloutPlanLetVar(rolloutLVN), byPercentage)
+		rollout.Plan = GetReleaseRolloutPlan(t, ExampleReleaseRolloutLetVar)
 	})
 }
 
-func EnsureFlag(t *testcase.T, name string, prc int) {
-	rm := release.NewRolloutManager(ExampleStorage(t))
-	require.Nil(t, rm.CreateFeatureFlag(GetContext(t), &release.Flag{
-		Name: name,
-		Rollout: release.FlagRollout{
-			Strategy: release.FlagRolloutStrategy{
-				Percentage: prc,
-			},
-		},
-	}))
-}
-
-func GetReleaseFlag(t *testcase.T, varName string) *release.Flag {
-	ff := t.I(varName)
+func GetReleaseFlag(t *testcase.T, lvn string) *release.Flag {
+	ff := t.I(lvn)
 	if ff == nil {
 		return nil
 	}
@@ -161,26 +175,52 @@ func ExampleReleaseFlag(t *testcase.T) *release.Flag {
 	return GetReleaseFlag(t, ExampleReleaseFlagLetVar)
 }
 
-func ExampleUniqueUserID(t *testcase.T) string {
-	return t.I(UniqueUserIDLetVar).(string)
-}
-
 func ExampleRolloutManager(t *testcase.T) *release.RolloutManager {
 	return release.NewRolloutManager(ExampleStorage(t))
 }
 
 func SpecPilotEnrolmentIs(t *testcase.T, enrollment bool) {
 	if ExampleReleaseFlag(t).ID == `` {
-		require.Nil(t, ExampleStorage(t).Create(context.TODO(), ExampleReleaseFlag(t)))
+		require.Nil(t, ExampleStorage(t).Create(GetContext(t), ExampleReleaseFlag(t)))
 	}
 
 	rm := release.NewRolloutManager(ExampleStorage(t))
-	require.Nil(t, rm.SetPilotEnrollmentForFeature(context.TODO(), ExampleReleaseFlag(t).ID, GetExternalPilotID(t), enrollment, ))
+	require.Nil(t, rm.SetPilotEnrollmentForFeature(GetContext(t),
+		ExampleReleaseFlag(t).ID,
+		ExampleDeploymentEnvironment(t).ID,
+		ExampleExternalPilotID(t),
+		enrollment))
 }
 
 func NoReleaseFlagPresentInTheStorage(s *testcase.Spec) {
 	s.Before(func(t *testcase.T) {
 		// TODO: replace with flag manager list+delete
 		require.Nil(t, ExampleStorage(t).DeleteAll(GetContext(t), release.Flag{}))
+	})
+}
+
+func NoReleaseRolloutPresentInTheStorage(s *testcase.Spec) {
+	s.Before(func(t *testcase.T) {
+		// TODO: replace with rollout manager list+delete
+		require.Nil(t, ExampleStorage(t).DeleteAll(GetContext(t), release.Rollout{}))
+	})
+}
+
+func AndExamplePilotManualParticipatingIsSetTo(s *testcase.Spec, isParticipating bool) {
+	s.Before(func(t *testcase.T) {
+		require.Nil(t, ExampleRolloutManager(t).SetPilotEnrollmentForFeature(
+			GetContext(t),
+			ExampleReleaseFlag(t).ID,
+			ExampleDeploymentEnvironment(t).ID,
+			ExampleExternalPilotID(t),
+			isParticipating,
+		))
+
+		t.Defer(ExampleRolloutManager(t).UnsetPilotEnrollmentForFeature,
+			GetContext(t),
+			ExampleReleaseFlag(t).ID,
+			ExampleDeploymentEnvironment(t).ID,
+			ExampleExternalPilotID(t),
+		)
 	})
 }

@@ -2,27 +2,91 @@ package release
 
 import (
 	"context"
-	"time"
 
 	"github.com/adamluzsi/frameless"
-
 	"github.com/adamluzsi/frameless/iterators"
+
+	"github.com/toggler-io/toggler/domains/deployment"
 )
 
 func NewRolloutManager(s Storage) *RolloutManager {
-	return &RolloutManager{
-		Storage:           s,
-		RandSeedGenerator: func() int64 { return time.Now().Unix() },
-	}
+	return &RolloutManager{Storage: s}
 }
 
 // RolloutManager provides you with feature flag configurability.
 // The manager use storage in a write heavy behavior.
 //
 // SRP: release manager
-type RolloutManager struct {
-	Storage
-	RandSeedGenerator func() int64
+type RolloutManager struct{ Storage Storage }
+
+const CtxPilotIpAddr = `pilot-ip-addr`
+
+// GetAllReleaseFlagStatesOfThePilot check the flag states for every requested release flag.
+// If a flag doesn't exist, then it will provide a turned off state to it.
+// This helps with development where the flag name already agreed and used in the clients
+// but the entity not yet been created in the system.
+// Also this help if a flag is not cleaned up from the clients, the worst thing will be a disabled feature,
+// instead of a breaking client.
+// This also makes it harder to figure out `private` release flags
+func (manager *RolloutManager) GetAllReleaseFlagStatesOfThePilot(ctx context.Context, pilotExternalID string, env deployment.Environment, flagNames ...string) (map[string]bool, error) {
+	states := make(map[string]bool)
+
+	for _, flagName := range flagNames {
+		states[flagName] = false
+	}
+
+	flagIndexByID := make(map[string]*Flag)
+
+	var pilotsIndex = make(map[string]*ManualPilot)
+	pilotsByExternalID := manager.Storage.FindReleasePilotsByExternalID(ctx, pilotExternalID)
+	pilotsByExternalIDFilteredByEnv := iterators.Filter(pilotsByExternalID, func(p ManualPilot) bool {
+		return p.DeploymentEnvironmentID == env.ID
+	})
+	if err := iterators.ForEach(pilotsByExternalIDFilteredByEnv, func(p ManualPilot) error {
+		pilotsIndex[p.FlagID] = &p
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	if err := iterators.ForEach(manager.Storage.FindReleaseFlagsByName(ctx, flagNames...), func(f Flag) error {
+		flagIndexByID[f.ID] = &f
+
+		if p, ok := pilotsIndex[f.ID]; ok {
+			states[f.Name] = p.IsParticipating
+			return nil
+		}
+
+		enrollment, err := manager.checkEnrollment(ctx, env, f, pilotExternalID, pilotsIndex)
+		if err != nil {
+			return err
+		}
+
+		states[f.Name] = enrollment
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return states, nil
+}
+
+func (manager *RolloutManager) checkEnrollment(ctx context.Context, env deployment.Environment, flag Flag, pilotExternalID string, manualPilotEnrollmentIndex map[string]*ManualPilot) (bool, error) {
+	if p, ok := manualPilotEnrollmentIndex[flag.ID]; ok {
+		return p.IsParticipating, nil
+	}
+
+	var rollout Rollout
+	found, err := manager.Storage.FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx, flag, env, &rollout)
+	if err != nil {
+		return false, err
+	}
+	if !found {
+		return false, nil
+	}
+
+	return rollout.Plan.IsParticipating(ctx, pilotExternalID)
 }
 
 func (manager *RolloutManager) CreateFeatureFlag(ctx context.Context, flag *Flag) error {
@@ -30,18 +94,13 @@ func (manager *RolloutManager) CreateFeatureFlag(ctx context.Context, flag *Flag
 		return ErrMissingFlag
 	}
 
-	if err := flag.Verify(); err != nil {
+	if err := flag.Validate(); err != nil {
 		return err
 	}
 
 	if flag.ID != `` {
 		return ErrInvalidAction
 	}
-
-	if flag.Rollout.RandSeed == 0 {
-		flag.Rollout.RandSeed = manager.RandSeedGenerator()
-	}
-
 	ff, err := manager.Storage.FindReleaseFlagByName(ctx, flag.Name)
 
 	if err != nil {
@@ -52,6 +111,7 @@ func (manager *RolloutManager) CreateFeatureFlag(ctx context.Context, flag *Flag
 		//TODO: this should be handled in transaction!
 		// as mvp solution, it is acceptable for now,
 		// but spec must be moved to the storage specs as `name is uniq across entries`
+		// or transaction through context with serialization level must be used for this action
 		return ErrFlagAlreadyExist
 	}
 
@@ -63,25 +123,8 @@ func (manager *RolloutManager) UpdateFeatureFlag(ctx context.Context, flag *Flag
 		return ErrMissingFlag
 	}
 
-	if err := flag.Verify(); err != nil {
+	if err := flag.Validate(); err != nil {
 		return err
-	}
-
-	if flag.ID == `` {
-		ff, err := manager.Storage.FindReleaseFlagByName(ctx, flag.Name)
-		if err != nil {
-			return err
-		}
-
-		if ff != nil {
-			flag.ID = ff.ID
-
-			flag.Rollout.RandSeed = ff.Rollout.RandSeed
-		}
-	}
-
-	if flag.Rollout.RandSeed == 0 {
-		flag.Rollout.RandSeed = manager.RandSeedGenerator()
 	}
 
 	return manager.Storage.Update(ctx, flag)
@@ -95,7 +138,7 @@ func (manager *RolloutManager) ListFeatureFlags(ctx context.Context) ([]Flag, er
 	return ffs, err
 }
 
-func (manager *RolloutManager) UnsetPilotEnrollmentForFeature(ctx context.Context, flagID, externalPilotID string) error {
+func (manager *RolloutManager) UnsetPilotEnrollmentForFeature(ctx context.Context, flagID string, envID string, pilotExternalID string) error {
 
 	var ff Flag
 
@@ -109,7 +152,7 @@ func (manager *RolloutManager) UnsetPilotEnrollmentForFeature(ctx context.Contex
 		return frameless.ErrNotFound
 	}
 
-	pilot, err := manager.Storage.FindReleaseFlagPilotByPilotExternalID(ctx, ff.ID, externalPilotID)
+	pilot, err := manager.Storage.FindReleaseManualPilotByExternalID(ctx, ff.ID, envID, pilotExternalID)
 
 	if err != nil {
 		return err
@@ -120,10 +163,10 @@ func (manager *RolloutManager) UnsetPilotEnrollmentForFeature(ctx context.Contex
 	}
 
 	return manager.Storage.DeleteByID(ctx, pilot, pilot.ID)
-	
+
 }
 
-func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context, flagID, externalPilotID string, isEnrolled bool) error {
+func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context, flagID string, envID string, externalPilotID string, isParticipating bool) error {
 
 	var ff Flag
 
@@ -137,18 +180,23 @@ func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context,
 		return frameless.ErrNotFound
 	}
 
-	pilot, err := manager.Storage.FindReleaseFlagPilotByPilotExternalID(ctx, ff.ID, externalPilotID)
+	pilot, err := manager.Storage.FindReleaseManualPilotByExternalID(ctx, ff.ID, envID, externalPilotID)
 
 	if err != nil {
 		return err
 	}
 
 	if pilot != nil {
-		pilot.Enrolled = isEnrolled
+		pilot.IsParticipating = isParticipating
 		return manager.Storage.Update(ctx, pilot)
 	}
 
-	return manager.Create(ctx, &Pilot{FlagID: ff.ID, ExternalID: externalPilotID, Enrolled: isEnrolled})
+	return manager.Storage.Create(ctx, &ManualPilot{
+		FlagID:                  ff.ID,
+		DeploymentEnvironmentID: envID,
+		ExternalID:              externalPilotID,
+		IsParticipating:         isParticipating,
+	})
 
 }
 
@@ -166,53 +214,15 @@ func (manager *RolloutManager) DeleteFeatureFlag(ctx context.Context, id string)
 	if err != nil {
 		return err
 	}
-
 	if !found {
 		return frameless.ErrNotFound
 	}
 
-	pilots := manager.Storage.FindPilotsByFeatureFlag(ctx, &ff)
-	defer pilots.Close()
-
-	for pilots.Next() {
-		var pilot Pilot
-
-		if err := pilots.Decode(&pilot); err != nil {
-			return err
-		}
-
-		if err := manager.Storage.DeleteByID(ctx, pilot, pilot.ID); err != nil {
-			return err
-		}
-	}
-
-	if err := pilots.Err(); err != nil {
+	if err := iterators.ForEach(manager.Storage.FindReleasePilotsByReleaseFlag(ctx, ff), func(pilot ManualPilot) error {
+		return manager.Storage.DeleteByID(ctx, pilot, pilot.ID)
+	}); err != nil {
 		return err
 	}
 
 	return manager.Storage.DeleteByID(ctx, Flag{}, id)
-}
-
-func (manager *RolloutManager) AllowIPAddrForFlag(ctx context.Context, flagID, ipAddr string) error {
-
-	return nil
-}
-
-func (manager *RolloutManager) RemoveIPAddrRecord(ctx context.Context, flagIpAddrAllowID string) error {
-	return nil
-}
-
-//----------------------------------------------------------------------------------------------------------------------
-
-func (manager *RolloutManager) newDefaultFeatureFlag(featureFlagName string) *Flag {
-	return &Flag{
-		Name: featureFlagName,
-		Rollout: FlagRollout{
-			RandSeed: manager.RandSeedGenerator(),
-			Strategy: FlagRolloutStrategy{
-				Percentage:       0,
-				DecisionLogicAPI: nil,
-			},
-		},
-	}
 }

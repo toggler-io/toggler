@@ -3,8 +3,10 @@ package httpapi
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
+	"github.com/toggler-io/toggler/domains/deployment"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
 	"github.com/toggler-io/toggler/usecases"
 )
@@ -25,6 +27,11 @@ type ViewsController struct {
 type GetPilotConfigRequest struct {
 	// in: body
 	Body struct {
+		// DeploymentEnvironmentAlias is the ID or the name of the environment where the request being made
+		//
+		// required: true
+		// example: Q&A
+		DeploymentEnvironmentAlias string `json:"env"`
 		// PilotExtID is the public uniq id that identify the caller pilot
 		//
 		// required: true
@@ -90,11 +97,23 @@ func (ctrl ViewsController) GetPilotConfig(w http.ResponseWriter, r *http.Reques
 		request.Body.PilotExtID = q.Get(`external_id`)
 		request.Body.ReleaseFlags = append([]string{}, q[`release_flags`]...)
 		request.Body.ReleaseFlags = append(request.Body.ReleaseFlags, q[`release_flags[]`]...)
+		request.Body.DeploymentEnvironmentAlias = q.Get(`env`)
 	}
 
 	ctx := context.WithValue(r.Context(), `pilot-ip-addr`, httputils.GetClientIP(r))
 
-	states, err := ctrl.UseCases.FlagChecker.GetReleaseFlagPilotEnrollmentStates(ctx, request.Body.PilotExtID, request.Body.ReleaseFlags...)
+	var env deployment.Environment
+	found, err := ctrl.UseCases.Storage.FindDeploymentEnvironmentByAlias(ctx, request.Body.DeploymentEnvironmentAlias, &env)
+	if handleError(w, err, http.StatusInternalServerError) {
+		return
+	}
+
+	if !found {
+		handleError(w, fmt.Errorf(`not-found`), http.StatusNotFound)
+		return
+	}
+
+	states, err := ctrl.UseCases.RolloutManager.GetAllReleaseFlagStatesOfThePilot(ctx, request.Body.PilotExtID, env, request.Body.ReleaseFlags...)
 
 	if handleError(w, err, http.StatusInternalServerError) {
 		return

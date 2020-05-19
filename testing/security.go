@@ -10,6 +10,7 @@ import (
 const (
 	TokenLetVar     = `testing token`
 	tokenTextLetVar = `testing token as text`
+	UniqueUserIDLetVar = `UniqUserID`
 )
 
 func init() {
@@ -18,6 +19,10 @@ func init() {
 			textToken, objectToken := CreateToken(t, ExampleUniqueUserID(t))
 			t.Let(tokenTextLetVar, textToken)
 			return objectToken
+		})
+
+		s.Let(UniqueUserIDLetVar, func(t *testcase.T) interface{} {
+			return RandomUniqUserID()
 		})
 	})
 }
@@ -35,4 +40,9 @@ func CreateToken(t *testcase.T, tokenOwner string) (string, *security.Token) {
 	textToken, token, err := ExampleUseCases(t).Issuer.CreateNewToken(GetContext(t), tokenOwner, nil, nil)
 	require.Nil(t, err)
 	return textToken, token
+}
+
+
+func ExampleUniqueUserID(t *testcase.T) string {
+	return t.I(UniqueUserIDLetVar).(string)
 }

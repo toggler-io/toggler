@@ -47,6 +47,10 @@ github.com/adamluzsi/frameless v0.4.1 h1:GCFeRBylIDYH55l9Fuc2m28jdzMTDaZyurebrDJ
 github.com/adamluzsi/frameless v0.4.1/go.mod h1:QhBwMkqqG6dfy0wcfGnbySMY56Gj/aHox3XgWYBNHjk=
 github.com/adamluzsi/frameless v0.5.0 h1:L0rqKYoOa8bceMUqshABDXExJzTCc9MneSuguXjfkaw=
 github.com/adamluzsi/frameless v0.5.0/go.mod h1:CaEWz/j6xanVkvHZA5VHw1aDIw5Q31B2WaMKfwUDk40=
+github.com/adamluzsi/frameless v0.5.1 h1:bKuW75mjQc/CDykf8FICHs59290N2y5YWQ2z5fLZhZ8=
+github.com/adamluzsi/frameless v0.5.1/go.mod h1:NWb1S8ONlOSFfqGuPW9+Mi3Vhg6aPNiOa0CxjVAFXAs=
+github.com/adamluzsi/frameless v0.5.2 h1:WPaF1T2tikxZ6JgqiC5bJW+KO2HYJoXGwSa4lVNu1Ms=
+github.com/adamluzsi/frameless v0.5.2/go.mod h1:R1uIbSC2ll5xfag+tiFC7aewrZQQqqVI4jXKwLqXQLQ=
 github.com/adamluzsi/gorest v0.6.1 h1:2RmMia4K1rFEFtGe9BpWzYFaw9LGdg1rWBC/RguI9jw=
 github.com/adamluzsi/gorest v0.6.1/go.mod h1:e2O+v2lfDTZxQdUzGcoImp8NmloMlx5J6Mw8jD2HY0I=
 github.com/adamluzsi/testcase v0.0.0-20200311225700-8d8777f2f819/go.mod h1:5fkkVjnuSXgj9BFcfki1zXwmECPRRHbg8ihPetnCU9o=
@@ -54,6 +58,12 @@ github.com/adamluzsi/testcase v0.5.1 h1:55YMybrPoBC/P9YMe3aAp9ixACLnNWQqRgY9Rw/f
 github.com/adamluzsi/testcase v0.5.1/go.mod h1:5fkkVjnuSXgj9BFcfki1zXwmECPRRHbg8ihPetnCU9o=
 github.com/adamluzsi/testcase v0.5.2 h1:eyA0PX/WFRMwiryhxA4Xi4lp+yqwvxnTo53eYjnDZnE=
 github.com/adamluzsi/testcase v0.5.2/go.mod h1:UcjofrGetdMAtBVlT+6NkZZNn1mM7XwsPS3RAkomuNk=
+github.com/adamluzsi/testcase v0.6.1 h1:poBdkX35L6MVor3eaRvmjlgRePb12vxCmMgSQlmQe84=
+github.com/adamluzsi/testcase v0.6.1/go.mod h1:ljdN/iI7K2TVwSHq82NBfTG76JelqKM4oh8shWFLs3w=
+github.com/adamluzsi/testcase v0.7.0 h1:I5PIgmMjhT87Jah2Cea5OzR7HwxxrA6Mz1nzSf2AYKU=
+github.com/adamluzsi/testcase v0.7.0/go.mod h1:uY2dC5vNCM/N67kxtgjhtwCQezOqgh0eKpRU+3LE9Rg=
+github.com/adamluzsi/testcase v0.7.1 h1:pWKPL2n0pUyiuQ6nRKZRtPtzgHZa3hSYKDM3A8YEXxI=
+github.com/adamluzsi/testcase v0.7.1/go.mod h1:uY2dC5vNCM/N67kxtgjhtwCQezOqgh0eKpRU+3LE9Rg=
 github.com/agnivade/levenshtein v1.0.1/go.mod h1:CURSv5d9Uaml+FovSIICkLbAUZ9S4RqaHDIsdSBg7lM=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=

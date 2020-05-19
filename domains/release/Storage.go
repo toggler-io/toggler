@@ -5,6 +5,8 @@ import (
 
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/resources"
+
+	"github.com/toggler-io/toggler/domains/deployment"
 )
 
 type Storage interface {
@@ -14,12 +16,14 @@ type Storage interface {
 	resources.Deleter
 	FlagFinder
 	PilotFinder
-	AllowFinder
+	RolloutFinder
 }
 
-type AllowEntries = frameless.Iterator
-type PilotEntries = frameless.Iterator
-type FlagEntries = frameless.Iterator
+type (
+	PilotEntries   = frameless.Iterator
+	FlagEntries    = frameless.Iterator
+	RolloutEntries = frameless.Iterator
+)
 
 type FlagFinder interface {
 	FindReleaseFlagByName(ctx context.Context, name string) (*Flag, error)
@@ -27,11 +31,15 @@ type FlagFinder interface {
 }
 
 type PilotFinder interface {
-	FindReleaseFlagPilotByPilotExternalID(ctx context.Context, flagID, pilotExtID string) (*Pilot, error)
-	FindPilotsByFeatureFlag(ctx context.Context, ff *Flag) PilotEntries
-	FindPilotEntriesByExtID(ctx context.Context, pilotExtID string) PilotEntries
+	FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID, pilotExtID string) (*ManualPilot, error)
+	// deployment.Environment independent queries
+	FindReleasePilotsByReleaseFlag(ctx context.Context, flag Flag) PilotEntries
+	FindReleasePilotsByExternalID(ctx context.Context, externalID string) PilotEntries
 }
 
-type AllowFinder interface {
-	FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...Flag) AllowEntries
+type RolloutFinder interface {
+	FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(context.Context, Flag, deployment.Environment, *Rollout) (bool, error)
+
+	// TODO:
+	//FindReleaseRolloutsByDeploymentEnvironment(context.Context, deployment.Environment, *Rollout) (bool, error)
 }

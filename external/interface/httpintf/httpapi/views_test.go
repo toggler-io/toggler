@@ -59,7 +59,7 @@ func SpecViewsControllerClientConfig(s *testcase.Spec) {
 
 			s.Then(`the request will be accepted with OK`, func(t *testcase.T) {
 				response := onSuccess(t)
-				stateIs(t, ExampleReleaseFlagName(t), true, response.Body.Release.Flags)
+				stateIs(t, ExampleReleaseFlag(t).Name, true, response.Body.Release.Flags)
 				stateIs(t, `yet-unknown-feature`, false, response.Body.Release.Flags)
 			})
 		})
@@ -69,7 +69,7 @@ func SpecViewsControllerClientConfig(s *testcase.Spec) {
 
 			s.Then(`the request will include values about toggles being flipped off`, func(t *testcase.T) {
 				response := onSuccess(t)
-				stateIs(t, ExampleReleaseFlagName(t), false, response.Body.Release.Flags)
+				stateIs(t, ExampleReleaseFlag(t).Name, false, response.Body.Release.Flags)
 				stateIs(t, `yet-unknown-feature`, false, response.Body.Release.Flags)
 			})
 		})
@@ -78,9 +78,10 @@ func SpecViewsControllerClientConfig(s *testcase.Spec) {
 	s.When(`params sent trough`, func(s *testcase.Spec) {
 		s.Context(`query string`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				Query(t).Set(t.I(`feature query string key`).(string), ExampleReleaseFlagName(t))
+				Query(t).Set(`env`, ExampleDeploymentEnvironment(t).ID)
+				Query(t).Set(t.I(`feature query string key`).(string), ExampleReleaseFlag(t).Name)
 				Query(t).Add(t.I(`feature query string key`).(string), `yet-unknown-feature`)
-				Query(t).Set(`external_id`, GetExternalPilotID(t))
+				Query(t).Set(`external_id`, ExampleExternalPilotID(t))
 			})
 
 			s.Context(`is "release_flags"`, func(s *testcase.Spec) {
@@ -102,8 +103,9 @@ func SpecViewsControllerClientConfig(s *testcase.Spec) {
 				payload := bytes.NewBuffer([]byte{})
 				jsonenc := json.NewEncoder(payload)
 				var confReq httpapi.GetPilotConfigRequest
-				confReq.Body.PilotExtID = GetExternalPilotID(t)
-				confReq.Body.ReleaseFlags = []string{ExampleReleaseFlagName(t), "yet-unknown-feature"}
+				confReq.Body.PilotExtID = ExampleExternalPilotID(t)
+				confReq.Body.DeploymentEnvironmentAlias = ExampleDeploymentEnvironment(t).ID
+				confReq.Body.ReleaseFlags = []string{ExampleReleaseFlag(t).Name, "yet-unknown-feature"}
 				require.Nil(t, jsonenc.Encode(confReq.Body))
 				return payload
 			})
@@ -113,9 +115,6 @@ func SpecViewsControllerClientConfig(s *testcase.Spec) {
 	})
 
 	s.Test(`swagger integration`, func(t *testcase.T) {
-		require.Nil(t, ExampleStorage(t).Create(GetContext(t), ExampleReleaseFlag(t)))
-		require.Nil(t, ExampleStorage(t).Create(GetContext(t), ExamplePilot(t)))
-
 		sm, err := httpintf.NewServeMux(ExampleUseCases(t))
 		require.Nil(t, err)
 
@@ -123,8 +122,9 @@ func SpecViewsControllerClientConfig(s *testcase.Spec) {
 		defer s.Close()
 
 		p := pilot.NewGetPilotConfigParams()
-		p.Body.PilotExtID = &ExamplePilot(t).ExternalID
-		p.Body.ReleaseFlags = []string{ExampleReleaseFlagName(t)}
+		p.Body.PilotExtID = &ExampleReleaseManualPilotEnrollment(t).ExternalID
+		p.Body.ReleaseFlags = []string{ExampleReleaseFlag(t).Name}
+		p.Body.DeploymentEnvironmentAlias = &ExampleDeploymentEnvironment(t).ID
 
 		tc := client.DefaultTransportConfig()
 		u, _ := url.Parse(s.URL)
@@ -140,6 +140,6 @@ func SpecViewsControllerClientConfig(s *testcase.Spec) {
 
 		require.NotNil(t, resp)
 		require.NotNil(t, resp.Payload)
-		require.Equal(t, GetPilotEnrollment(t), resp.Payload.Release.Flags[ExampleReleaseFlagName(t)])
+		require.Equal(t, ExampleReleaseManualPilotEnrollment(t).IsParticipating, resp.Payload.Release.Flags[ExampleReleaseFlag(t).Name])
 	})
 }

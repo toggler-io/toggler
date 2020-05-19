@@ -4,6 +4,7 @@ import (
 	"github.com/adamluzsi/testcase"
 
 	"github.com/toggler-io/toggler/external/resource/storages"
+	"github.com/toggler-io/toggler/usecases"
 )
 
 const ExampleStorageLetVar = `TestStorage`
@@ -16,10 +17,10 @@ func init() {
 	})
 }
 
-func GetStorage(t *testcase.T, varName string) *storages.InMemory {
-	return t.I(varName).(*storages.InMemory)
+func GetStorage(t *testcase.T, varName string) usecases.Storage {
+	return t.I(varName).(usecases.Storage)
 }
 
-func ExampleStorage(t *testcase.T) *storages.InMemory {
+func ExampleStorage(t *testcase.T) usecases.Storage {
 	return GetStorage(t, ExampleStorageLetVar)
 }

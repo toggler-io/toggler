@@ -7,8 +7,10 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/adamluzsi/frameless/iterators"
 	"github.com/pkg/errors"
 
+	"github.com/toggler-io/toggler/domains/deployment"
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
 )
@@ -29,27 +31,24 @@ func (ctrl *Controller) PilotPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type pilotEditPageContent struct {
-	PilotExternalID string
-	FeatureFlags    []pilotEditPageContentFeatureFlag
-}
-
-type pilotEditPageContentFeatureFlag struct {
-	ReleaseFlagName string
-	ReleaseFlagID   string
-	PilotState      string
-}
-
 func (ctrl *Controller) pilotFindPage(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		ctrl.Render(w, `/pilot/find.html`, nil)
+		type Content struct {
+			Environments []deployment.Environment
+		}
+		var content Content
+		iterators.Collect(ctrl.UseCases.Storage.FindAll(r.Context(), deployment.Environment{}), &content.Environments)
+		ctrl.Render(w, `/pilot/find.html`, content)
 
 	case http.MethodPost:
-		pilotExtID := r.FormValue(`pilot.extID`)
+		extID := r.FormValue(`pilot.ext_id`)
+		envID := r.FormValue(`pilot.env_id`)
+
 		u, _ := url.Parse(`/pilot/edit`)
 		q := u.Query()
-		q.Set(`ext-id`, pilotExtID)
+		q.Set(`ext-id`, extID)
+		q.Set(`env-id`, envID)
 		u.RawQuery = q.Encode()
 		http.Redirect(w, r, u.String(), http.StatusFound)
 
@@ -64,14 +63,18 @@ func (ctrl *Controller) pilotEditPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pilotExtID := r.URL.Query().Get(`ext-id`)
+	query := r.URL.Query()
+	pilotExtID := query.Get(`ext-id`)
+	envID := query.Get(`env-id`)
 
-	pilots := ctrl.UseCases.RolloutManager.FindPilotEntriesByExtID(r.Context(), pilotExtID)
+	pilots := ctrl.UseCases.Storage.FindReleasePilotsByExternalID(r.Context(), pilotExtID)
+	defer pilots.Close()
+	pilots = iterators.Filter(pilots, func(p release.ManualPilot) bool { return p.DeploymentEnvironmentID == envID })
 
-	pilotsIndex := make(map[string]release.Pilot) // FlagID => Pilot
+	pilotsIndex := make(map[string]release.ManualPilot) // FlagID => ManualPilot
 
 	for pilots.Next() {
-		var p release.Pilot
+		var p release.ManualPilot
 
 		if httputils.HandleError(w, pilots.Decode(&p), http.StatusInternalServerError) {
 			return
@@ -86,45 +89,57 @@ func (ctrl *Controller) pilotEditPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var data pilotEditPageContent
+	type ContentFeatureFlag struct {
+		ReleaseFlagName     string
+		ReleaseFlagID       string
+		DeployEnvironmentID string
+		PilotState          string
+	}
 
-	data.PilotExternalID = pilotExtID
+	type Content struct {
+		DeployEnvID     string
+		PilotExternalID string
+		FeatureFlags    []ContentFeatureFlag
+	}
+	var content Content
+	content.PilotExternalID = pilotExtID
+	content.DeployEnvID = envID
 
 	for _, ff := range ffs {
-		var editFF pilotEditPageContentFeatureFlag
+		var editFF ContentFeatureFlag
 		editFF.ReleaseFlagID = ff.ID
 		editFF.ReleaseFlagName = ff.Name
 
 		p, ok := pilotsIndex[ff.ID]
+
 		if !ok {
 			editFF.PilotState = `undefined`
-		} else if p.Enrolled {
+		} else if p.IsParticipating {
 			editFF.PilotState = `whitelisted`
 		} else {
 			editFF.PilotState = `blacklisted`
 		}
 
-		data.FeatureFlags = append(data.FeatureFlags, editFF)
+		content.FeatureFlags = append(content.FeatureFlags, editFF)
 	}
 
-	ctrl.Render(w, `/pilot/edit.html`, data)
+	ctrl.Render(w, `/pilot/edit.html`, content)
 }
 
 func (ctrl *Controller) pilotFlagSetRollout(w http.ResponseWriter, r *http.Request) {
 
-	var pilot release.Pilot
-	pilot.FlagID = r.FormValue(`pilot.flagID`)
-	pilot.ExternalID = r.FormValue(`pilot.extID`)
+	var pilot release.ManualPilot
+	pilot.FlagID = r.FormValue(`pilot.flag_id`)
+	pilot.DeploymentEnvironmentID = r.FormValue(`pilot.env_id`)
+	pilot.ExternalID = r.FormValue(`pilot.ext_id`)
+	newEnrollmentStatus := r.FormValue(`pilot.is_participating`)
 
-	newEnrollmentStatus := strings.ToLower(r.FormValue(`pilot.enrollment`))
-	log.Println(pilot.ExternalID, newEnrollmentStatus)
+	log.Println(`flag:`, pilot.FlagID,
+		`env:`, pilot.DeploymentEnvironmentID,
+		`ext:`, pilot.ExternalID,
+		`is_participating`, newEnrollmentStatus)
 
-	err := ctrl.setPilotManualEnrollmentForFlag(
-		r.Context(),
-		newEnrollmentStatus,
-		pilot.FlagID,
-		pilot.ExternalID,
-	)
+	err := ctrl.setPilotManualEnrollmentForFlag(r.Context(), newEnrollmentStatus, pilot.FlagID, pilot.DeploymentEnvironmentID, pilot.ExternalID)
 
 	if httputils.HandleError(w, err, http.StatusInternalServerError) {
 		log.Println(err.Error())
@@ -133,25 +148,49 @@ func (ctrl *Controller) pilotFlagSetRollout(w http.ResponseWriter, r *http.Reque
 	u, _ := url.Parse(`/pilot/edit`)
 	q := u.Query()
 	q.Set(`ext-id`, pilot.ExternalID)
+	q.Set(`env-id`, pilot.DeploymentEnvironmentID)
 	u.RawQuery = q.Encode()
 	http.Redirect(w, r, u.String(), http.StatusFound)
 
 }
 
-func (ctrl *Controller) setPilotManualEnrollmentForFlag(ctx context.Context, newEnrollmentStatus string, flagID, pilotExtID string) error {
+func (ctrl *Controller) setPilotManualEnrollmentForFlag(ctx context.Context, newEnrollmentStatus, flagID, envID, extID string) error {
 	var rm = ctrl.UseCases.RolloutManager
-	switch newEnrollmentStatus {
+	switch strings.ToLower(newEnrollmentStatus) {
 	case `whitelisted`:
-		return rm.SetPilotEnrollmentForFeature(ctx, flagID, pilotExtID, true)
+		return rm.SetPilotEnrollmentForFeature(ctx, flagID, envID, extID, true)
 
 	case `blacklisted`:
-		return rm.SetPilotEnrollmentForFeature(ctx, flagID, pilotExtID, false)
+		return rm.SetPilotEnrollmentForFeature(ctx, flagID, envID, extID, false)
 
 	case `undefined`:
-		return rm.UnsetPilotEnrollmentForFeature(ctx, flagID, pilotExtID)
+		return rm.UnsetPilotEnrollmentForFeature(ctx, flagID, envID, extID)
 
 	default:
 		return errors.New(http.StatusText(http.StatusBadRequest))
 
 	}
+}
+
+func ParseReleasePilotForm(r *http.Request) (*release.ManualPilot, error) {
+	if err := r.ParseForm(); err != nil {
+		return nil, err
+	}
+
+	var pilot release.ManualPilot
+	pilot.ID = r.FormValue(`pilot.id`)
+	pilot.FlagID = r.FormValue(`pilot.flag_id`)
+	pilot.DeploymentEnvironmentID = r.FormValue(`pilot.env_id`)
+	pilot.ExternalID = r.FormValue(`pilot.ext_id`)
+
+	switch strings.ToLower(r.FormValue(`pilot.is_participating`)) {
+	case `true`, `on`:
+		pilot.IsParticipating = true
+	case `false`, `off`, ``:
+		pilot.IsParticipating = false
+	default:
+		return nil, errors.New(`unrecognised value for "pilot.is_participating" value`)
+	}
+
+	return &pilot, nil
 }

@@ -37,7 +37,7 @@ func (spec CacheSpec) Test(t *testing.T) {
 
 		s.Context(`calls results are cached for`, func(s *testcase.Spec) {
 			spec.expectResultCachingFor(s, release.Flag{})
-			spec.expectResultCachingFor(s, release.Pilot{})
+			spec.expectResultCachingFor(s, release.ManualPilot{})
 			spec.expectResultCachingFor(s, security.Token{})
 		})
 	})

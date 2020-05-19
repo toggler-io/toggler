@@ -32,4 +32,5 @@ require (
 	github.com/unrolled/logger v0.0.0-20190327162521-be1a2406c7c9
 	go.mongodb.org/mongo-driver v1.3.2 // indirect
 	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e // indirect
+	golang.org/x/tools v0.0.0-20200422022333-3d57cf2e726e // indirect
 )

@@ -1,0 +1,20 @@
+{{/* GET /pilot/find */}}
+{{define "main"}}
+	<div class="content">
+		<h2 class="content-head is-center">
+			Please select an deployment environment where you wish to configure rollout plans
+		</h2>
+
+		<form action="/rollout/index" method="post" class="pure-form pure-form-aligned" data-bitwarden-watching="1">
+			<fieldset>
+				<select type="text" name="env-id">
+                    {{ range .Environments }}
+						<option value="{{ .ID }}">{{ .Name }}</option>
+                    {{ end }}
+				</select>
+
+				<button type="submit" class="pure-button pure-button-primary">Load release flag rollouts</button>
+			</fieldset>
+		</form>
+	</div>
+{{end}}

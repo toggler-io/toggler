@@ -16,16 +16,16 @@ and give feedback they personal feedback about it.
 ## Rollout By Percentage
 
 This option is to enroll users based or percentage.
-This happens when a feature flag status is being asked from the service.
+This happens when a release flag status is being asked from the service.
 If the currently calling User is win a Pseudo random lottery,
 then the user is enrolled to become a pilot of the new feature.
 The Pseudo random lottery allow the system to have deterministic
 and reproducible rollout enrollment result for each pilot ID,
 while ensuring that the user pool size can be infinitely big
-without having any resource hit on the feature flag service.
+without having any resource hit on the release flag service.
 
 Also this grant random like percentage based feature release distribution.
-The randomness can be controlled by modifying the feature flag rollout random seed.
+The randomness can be controlled by modifying the release flag rollout random seed.
 While you can manually enroll or blacklist users for piloting a feature,
 that approach need to persist this information.
 This on the other hand only rely on the fact that the external id for the user is uniq on system level.
@@ -53,7 +53,7 @@ for various reasons for the business.
 For this it is a common practice to use target groups or "experiments".
 This service avoid to collect any sensitive information about the pilots,
 therefore the only and best system to know about this information is yours.
-To work together easily, you can provide an HTTP API url for the feature flag,
+To work together easily, you can provide an HTTP API url for the release flag,
 to use that as a domain decision logic for the feature release process.
 
 The API will receive information about:

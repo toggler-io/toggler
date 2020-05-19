@@ -8,8 +8,8 @@ s:Storage
 
 u:f.start use the feature 
 f:feature enrollment status=t. is feature enabled for the given user id ?
-t:flag received=c.get feature flag
-c:check feature flag
+t:flag received=c.get release flag
+c:check release flag
 
 [c:if flag value not cached]
 	c:s.get flag
@@ -22,7 +22,7 @@ c:s.get piloting status
 [c:if piloting status was manually set]
  	t:use piloting status
 --[else]
-	t:calculate pilot enrollment based on psudo random dice roll using the feature flag pseudo random
+	t:calculate pilot enrollment based on psudo random dice roll using the release flag pseudo random
 [/c]
 
 [c:if pilot enrolled]

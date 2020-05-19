@@ -8,6 +8,7 @@ import (
 	context "context"
 	frameless "github.com/adamluzsi/frameless"
 	gomock "github.com/golang/mock/gomock"
+	deployment "github.com/toggler-io/toggler/domains/deployment"
 	release "github.com/toggler-io/toggler/domains/release"
 	security "github.com/toggler-io/toggler/domains/security"
 	reflect "reflect"
@@ -155,66 +156,62 @@ func (mr *MockStorageMockRecorder) FindReleaseFlagsByName(ctx interface{}, names
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindReleaseFlagsByName", reflect.TypeOf((*MockStorage)(nil).FindReleaseFlagsByName), varargs...)
 }
 
-// FindReleaseFlagPilotByPilotExternalID mocks base method
-func (m *MockStorage) FindReleaseFlagPilotByPilotExternalID(ctx context.Context, flagID, pilotExtID string) (*release.Pilot, error) {
+// FindReleaseManualPilotByExternalID mocks base method
+func (m *MockStorage) FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID, pilotExtID string) (*release.ManualPilot, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindReleaseFlagPilotByPilotExternalID", ctx, flagID, pilotExtID)
-	ret0, _ := ret[0].(*release.Pilot)
+	ret := m.ctrl.Call(m, "FindReleaseManualPilotByExternalID", ctx, flagID, envID, pilotExtID)
+	ret0, _ := ret[0].(*release.ManualPilot)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FindReleaseFlagPilotByPilotExternalID indicates an expected call of FindReleaseFlagPilotByPilotExternalID
-func (mr *MockStorageMockRecorder) FindReleaseFlagPilotByPilotExternalID(ctx, flagID, pilotExtID interface{}) *gomock.Call {
+// FindReleaseManualPilotByExternalID indicates an expected call of FindReleaseManualPilotByExternalID
+func (mr *MockStorageMockRecorder) FindReleaseManualPilotByExternalID(ctx, flagID, envID, pilotExtID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindReleaseFlagPilotByPilotExternalID", reflect.TypeOf((*MockStorage)(nil).FindReleaseFlagPilotByPilotExternalID), ctx, flagID, pilotExtID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindReleaseManualPilotByExternalID", reflect.TypeOf((*MockStorage)(nil).FindReleaseManualPilotByExternalID), ctx, flagID, envID, pilotExtID)
 }
 
-// FindPilotsByFeatureFlag mocks base method
-func (m *MockStorage) FindPilotsByFeatureFlag(ctx context.Context, ff *release.Flag) release.PilotEntries {
+// FindReleasePilotsByReleaseFlag mocks base method
+func (m *MockStorage) FindReleasePilotsByReleaseFlag(ctx context.Context, flag release.Flag) release.PilotEntries {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindPilotsByFeatureFlag", ctx, ff)
+	ret := m.ctrl.Call(m, "FindReleasePilotsByReleaseFlag", ctx, flag)
 	ret0, _ := ret[0].(release.PilotEntries)
 	return ret0
 }
 
-// FindPilotsByFeatureFlag indicates an expected call of FindPilotsByFeatureFlag
-func (mr *MockStorageMockRecorder) FindPilotsByFeatureFlag(ctx, ff interface{}) *gomock.Call {
+// FindReleasePilotsByReleaseFlag indicates an expected call of FindReleasePilotsByReleaseFlag
+func (mr *MockStorageMockRecorder) FindReleasePilotsByReleaseFlag(ctx, flag interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindPilotsByFeatureFlag", reflect.TypeOf((*MockStorage)(nil).FindPilotsByFeatureFlag), ctx, ff)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindReleasePilotsByReleaseFlag", reflect.TypeOf((*MockStorage)(nil).FindReleasePilotsByReleaseFlag), ctx, flag)
 }
 
-// FindPilotEntriesByExtID mocks base method
-func (m *MockStorage) FindPilotEntriesByExtID(ctx context.Context, pilotExtID string) release.PilotEntries {
+// FindReleasePilotsByExternalID mocks base method
+func (m *MockStorage) FindReleasePilotsByExternalID(ctx context.Context, externalID string) release.PilotEntries {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindPilotEntriesByExtID", ctx, pilotExtID)
+	ret := m.ctrl.Call(m, "FindReleasePilotsByExternalID", ctx, externalID)
 	ret0, _ := ret[0].(release.PilotEntries)
 	return ret0
 }
 
-// FindPilotEntriesByExtID indicates an expected call of FindPilotEntriesByExtID
-func (mr *MockStorageMockRecorder) FindPilotEntriesByExtID(ctx, pilotExtID interface{}) *gomock.Call {
+// FindReleasePilotsByExternalID indicates an expected call of FindReleasePilotsByExternalID
+func (mr *MockStorageMockRecorder) FindReleasePilotsByExternalID(ctx, externalID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindPilotEntriesByExtID", reflect.TypeOf((*MockStorage)(nil).FindPilotEntriesByExtID), ctx, pilotExtID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindReleasePilotsByExternalID", reflect.TypeOf((*MockStorage)(nil).FindReleasePilotsByExternalID), ctx, externalID)
 }
 
-// FindReleaseAllowsByReleaseFlags mocks base method
-func (m *MockStorage) FindReleaseAllowsByReleaseFlags(ctx context.Context, flags ...release.Flag) release.AllowEntries {
+// FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment mocks base method
+func (m *MockStorage) FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(arg0 context.Context, arg1 release.Flag, arg2 deployment.Environment, arg3 *release.Rollout) (bool, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx}
-	for _, a := range flags {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "FindReleaseAllowsByReleaseFlags", varargs...)
-	ret0, _ := ret[0].(release.AllowEntries)
-	return ret0
+	ret := m.ctrl.Call(m, "FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// FindReleaseAllowsByReleaseFlags indicates an expected call of FindReleaseAllowsByReleaseFlags
-func (mr *MockStorageMockRecorder) FindReleaseAllowsByReleaseFlags(ctx interface{}, flags ...interface{}) *gomock.Call {
+// FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment indicates an expected call of FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment
+func (mr *MockStorageMockRecorder) FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx}, flags...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindReleaseAllowsByReleaseFlags", reflect.TypeOf((*MockStorage)(nil).FindReleaseAllowsByReleaseFlags), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment", reflect.TypeOf((*MockStorage)(nil).FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment), arg0, arg1, arg2, arg3)
 }
 
 // FindTokenBySHA512Hex mocks base method
@@ -230,6 +227,21 @@ func (m *MockStorage) FindTokenBySHA512Hex(ctx context.Context, sha512hex string
 func (mr *MockStorageMockRecorder) FindTokenBySHA512Hex(ctx, sha512hex interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindTokenBySHA512Hex", reflect.TypeOf((*MockStorage)(nil).FindTokenBySHA512Hex), ctx, sha512hex)
+}
+
+// FindDeploymentEnvironmentByAlias mocks base method
+func (m *MockStorage) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrName string, env *deployment.Environment) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindDeploymentEnvironmentByAlias", ctx, idOrName, env)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindDeploymentEnvironmentByAlias indicates an expected call of FindDeploymentEnvironmentByAlias
+func (mr *MockStorageMockRecorder) FindDeploymentEnvironmentByAlias(ctx, idOrName, env interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindDeploymentEnvironmentByAlias", reflect.TypeOf((*MockStorage)(nil).FindDeploymentEnvironmentByAlias), ctx, idOrName, env)
 }
 
 // Close mocks base method

@@ -8,9 +8,10 @@ import (
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/testcase"
+	"github.com/stretchr/testify/require"
+
 	"github.com/toggler-io/toggler/domains/release"
 	. "github.com/toggler-io/toggler/testing"
-	"github.com/stretchr/testify/require"
 )
 
 type FlagFinderSpec struct {
@@ -35,12 +36,11 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 	featureName := RandomName()
 
 	s.Describe(`FlagFinderSpec`, func(s *testcase.Spec) {
-		s.Before(func(t *testcase.T) {
+		s.Around(func(t *testcase.T) func() {
 			require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.Flag{}))
-		})
-
-		s.After(func(t *testcase.T) {
-			require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.Flag{}))
+			return func() {
+				require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.Flag{}))
+			}
 		})
 
 		s.Describe(`FindReleaseFlagByName`, func(s *testcase.Spec) {
@@ -50,21 +50,20 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 				return ff
 			}
 
-			s.When(`we don't have feature flag yet`, func(s *testcase.Spec) {
-				s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.Flag{})) })
-
-				s.Then(`we receive back nil pointer`, func(t *testcase.T) {
-					require.Nil(t, subject(t))
-				})
+			s.Before(func(t *testcase.T) {
+				require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.Flag{}))
 			})
 
-			s.When(`we have a feature flag already set`, func(s *testcase.Spec) {
-				s.Let(`ff`, func(t *testcase.T) interface{} {
-					return &release.Flag{Name: featureName}
-				})
+			s.Then(`we receive back nil pointer`, func(t *testcase.T) {
+				require.Nil(t, subject(t))
+			})
 
-				s.Before(func(t *testcase.T) {
-					require.Nil(t, spec.Subject.Create(spec.ctx(), t.I(`ff`).(*release.Flag)))
+			s.When(`we have a release flag already set`, func(s *testcase.Spec) {
+				s.Let(`ff`, func(t *testcase.T) interface{} {
+					flag := &release.Flag{Name: featureName}
+					require.Nil(t, spec.Subject.Create(spec.ctx(), flag))
+					t.Defer(spec.Subject.DeleteByID, spec.ctx(), *flag, flag.ID)
+					return flag
 				})
 
 				s.Then(`searching for it returns the flag entity`, func(t *testcase.T) {
@@ -77,7 +76,7 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 		})
 
 		s.Describe(`FindReleaseFlagsByName`, func(s *testcase.Spec) {
-			subject := func(t *testcase.T) frameless.Iterator {
+			var subject = func(t *testcase.T) frameless.Iterator {
 				flagEntriesIter := spec.Subject.FindReleaseFlagsByName(spec.ctx(), t.I(`flag names`).([]string)...)
 				t.Defer(flagEntriesIter.Close)
 				return flagEntriesIter
@@ -85,9 +84,11 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 
 			s.Before(func(t *testcase.T) {
 				ctx := spec.ctx()
-				require.Nil(t, spec.Subject.Create(ctx, &release.Flag{Name: `A`}))
-				require.Nil(t, spec.Subject.Create(ctx, &release.Flag{Name: `B`}))
-				require.Nil(t, spec.Subject.Create(ctx, &release.Flag{Name: `C`}))
+				for _, name := range []string{`A`, `B`, `C`} {
+					var flag = release.Flag{Name: name}
+					require.Nil(t, spec.Subject.Create(ctx, &flag))
+					t.Defer(spec.Subject.DeleteByID, ctx, flag, flag.ID)
+				}
 			})
 
 			mustContainName := func(t *testcase.T, ffs []release.Flag, name string) {
@@ -97,7 +98,7 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 					}
 				}
 
-				t.Fatalf(`featoure flag name could not be found: %s`, name)
+				t.Fatalf(`flag name could not be found: %s`, name)
 			}
 
 			s.When(`we request flags that can be found`, func(s *testcase.Spec) {
@@ -123,11 +124,13 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 					return []string{`A`, `B`, `D`}
 				})
 
-				s.Then(`it will return all of them`, func(t *testcase.T) {
+				s.Then(`it will return existing flags`, func(t *testcase.T) {
 					flagsIter := subject(t)
 
 					var flags []release.Flag
 					require.Nil(t, iterators.Collect(flagsIter, &flags))
+
+					t.Logf(`%#v`, flags)
 
 					require.Equal(t, 2, len(flags))
 					mustContainName(t, flags, `A`)
@@ -148,7 +151,6 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 					require.Equal(t, 0, count)
 				})
 			})
-
 		})
 	})
 }
