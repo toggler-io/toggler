@@ -3,6 +3,7 @@ module github.com/toggler-io/toggler
 go 1.14
 
 require (
+	cloud.google.com/go v0.53.0
 	github.com/Pallinder/go-randomdata v1.2.0
 	github.com/adamluzsi/frameless v0.4.0
 	github.com/adamluzsi/gorest v0.6.1
