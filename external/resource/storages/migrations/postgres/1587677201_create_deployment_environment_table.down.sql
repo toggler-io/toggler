@@ -1,0 +1,2 @@
+DROP INDEX find_deployment_environment_by_name;
+DROP TABLE deployment_environments;
