@@ -41,6 +41,7 @@ func TestReleaseRolloutController(t *testing.T) {
 
 	s.Describe(`POST / - create release rollout`, SpecReleaseRolloutControllerCreate)
 	s.Describe(`GET / - list release rollout`, SpecReleaseRolloutControllerList)
+	s.Describe(`DELETE / - delete release rollout`, SpecReleaseRolloutControllerDelete)
 
 	s.Context(`given we have a release rollout in the system`, func(s *testcase.Spec) {
 		GivenWeHaveReleaseRollout(s, `rollout`, ExampleReleaseFlagLetVar, ExampleDeploymentEnvironmentLetVar)
@@ -54,6 +55,14 @@ func TestReleaseRolloutController(t *testing.T) {
 				SpecReleaseRolloutControllerUpdate)
 		})
 	})
+}
+
+func SpecReleaseRolloutControllerDelete(s *testcase.Spec) {
+	LetMethodValue(s, http.MethodDelete)
+	LetPathValue(s, `/`)
+	GivenHTTPRequestHasAppToken(s)
+
+
 }
 
 func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {

@@ -344,6 +344,12 @@ func (ctrl ReleaseRolloutController) Update(w http.ResponseWriter, r *http.Reque
 	serveJSON(w, resp.Body)
 }
 
+//--------------------------------------------------------------------------------------------------------------------//
+
+
+
+//--------------------------------------------------------------------------------------------------------------------//
+
 type Rollout struct {
 	ID            string      `json:"id"`
 	FlagID        string      `json:"flag_id"`
