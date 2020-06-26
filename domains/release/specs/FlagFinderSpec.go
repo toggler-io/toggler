@@ -6,6 +6,7 @@ import (
 
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
+	"github.com/adamluzsi/frameless/resources"
 	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
@@ -17,8 +18,9 @@ import (
 type FlagFinderSpec struct {
 	Subject interface {
 		release.FlagFinder
-
-		specs.MinimumRequirements
+		resources.Creator
+		resources.Finder
+		resources.Deleter
 	}
 
 	specs.FixtureFactory

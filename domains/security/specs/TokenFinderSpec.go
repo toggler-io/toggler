@@ -5,17 +5,21 @@ import (
 	"time"
 
 	"github.com/adamluzsi/frameless/fixtures"
+	"github.com/adamluzsi/frameless/resources"
 	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/testcase"
+	"github.com/stretchr/testify/require"
+
 	"github.com/toggler-io/toggler/domains/security"
 	. "github.com/toggler-io/toggler/testing"
-	"github.com/stretchr/testify/require"
 )
 
 type TokenFinderSpec struct {
 	Subject interface {
 		security.TokenFinder
-		specs.MinimumRequirements
+		resources.Creator
+		resources.Deleter
+		resources.Finder
 	}
 
 	specs.FixtureFactory

@@ -5,7 +5,7 @@ import (
 
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
-	"github.com/adamluzsi/frameless/resources/storages/memorystorage"
+	"github.com/adamluzsi/frameless/resources/memorystorage"
 
 	"github.com/toggler-io/toggler/domains/deployment"
 	"github.com/toggler-io/toggler/domains/release"
@@ -21,7 +21,7 @@ type InMemory struct{ *memorystorage.Memory }
 func (s *InMemory) FindReleasePilotsByExternalID(ctx context.Context, pilotExtID string) release.PilotEntries {
 	var pilots []release.ManualPilot
 
-	for _, e := range s.TableFor(release.ManualPilot{}) {
+	for _, e := range s.TableFor(ctx, release.ManualPilot{}) {
 		p := e.(*release.ManualPilot)
 
 		if p.ExternalID == pilotExtID {
@@ -41,7 +41,7 @@ func (s *InMemory) FindReleaseFlagsByName(ctx context.Context, names ...string) 
 		nameIndex[name] = struct{}{}
 	}
 
-	for _, e := range s.TableFor(release.Flag{}) {
+	for _, e := range s.TableFor(ctx, release.Flag{}) {
 		flag := e.(*release.Flag)
 
 		if _, ok := nameIndex[flag.Name]; ok {
@@ -53,7 +53,7 @@ func (s *InMemory) FindReleaseFlagsByName(ctx context.Context, names ...string) 
 }
 
 func (s *InMemory) FindReleasePilotsByReleaseFlag(ctx context.Context, flag release.Flag) release.PilotEntries {
-	table := s.TableFor(release.ManualPilot{})
+	table := s.TableFor(ctx, release.ManualPilot{})
 
 	var pilots []release.ManualPilot
 
@@ -69,7 +69,7 @@ func (s *InMemory) FindReleasePilotsByReleaseFlag(ctx context.Context, flag rele
 }
 
 func (s *InMemory) FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID, pilotExtID string) (*release.ManualPilot, error) {
-	table := s.TableFor(release.ManualPilot{})
+	table := s.TableFor(ctx, release.ManualPilot{})
 
 	for _, v := range table {
 		pilot := v.(*release.ManualPilot)
@@ -84,7 +84,7 @@ func (s *InMemory) FindReleaseManualPilotByExternalID(ctx context.Context, flagI
 }
 
 func (s *InMemory) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrName string, env *deployment.Environment) (bool, error) {
-	for _, v := range s.TableFor(deployment.Environment{}) {
+	for _, v := range s.TableFor(ctx, deployment.Environment{}) {
 		record := v.(*deployment.Environment)
 
 		if record.ID == idOrName || record.Name == idOrName {
@@ -96,7 +96,7 @@ func (s *InMemory) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrNam
 }
 
 func (s *InMemory) FindReleaseFlagByName(ctx context.Context, name string) (*release.Flag, error) {
-	for _, v := range s.TableFor(release.Flag{}) {
+	for _, v := range s.TableFor(ctx, release.Flag{}) {
 		flagRecord := v.(*release.Flag)
 
 		if flagRecord.Name == name {
@@ -108,7 +108,7 @@ func (s *InMemory) FindReleaseFlagByName(ctx context.Context, name string) (*rel
 }
 
 func (s *InMemory) FindTokenBySHA512Hex(ctx context.Context, t string) (*security.Token, error) {
-	table := s.TableFor(security.Token{})
+	table := s.TableFor(ctx, security.Token{})
 
 	for _, token := range table {
 		token := token.(*security.Token)
@@ -123,7 +123,7 @@ func (s *InMemory) FindTokenBySHA512Hex(ctx context.Context, t string) (*securit
 }
 
 func (s *InMemory) FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx context.Context, flag release.Flag, env deployment.Environment, ptr *release.Rollout) (bool, error) {
-	for _, rollout := range s.TableFor(*ptr) {
+	for _, rollout := range s.TableFor(ctx, *ptr) {
 		rollout := rollout.(*release.Rollout)
 
 		if rollout.FlagID == flag.ID && rollout.DeploymentEnvironmentID == env.ID {
