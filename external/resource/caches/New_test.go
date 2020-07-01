@@ -18,7 +18,11 @@ func TestNew(t *testing.T) {
 
 	s.Describe(`New`, func(s *testcase.Spec) {
 		subject := func(t *testcase.T) (usecases.Storage, error) {
-			return caches.New(t.I(`connstr`).(string), ExampleStorage(t))
+			cache, err := caches.New(t.I(`connstr`).(string), ExampleStorage(t))
+			if err == nil {
+				t.Defer(cache.Close)
+			}
+			return cache, err
 		}
 
 		onSuccess := func(t *testcase.T) usecases.Storage {

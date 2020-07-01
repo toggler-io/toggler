@@ -7,11 +7,11 @@ import (
 	"github.com/toggler-io/toggler/domains/deployment"
 )
 
-const ExampleDeploymentEnvironmentLetVar = `testing example deployment environment`
+const LetVarExampleDeploymentEnvironment = `example deployment environment`
 
 func init() {
 	setups = append(setups, func(s *testcase.Spec) {
-		GivenWeHaveDeploymentEnvironment(s, ExampleDeploymentEnvironmentLetVar)
+		GivenWeHaveDeploymentEnvironment(s, LetVarExampleDeploymentEnvironment)
 	})
 }
 
@@ -20,7 +20,7 @@ func GetDeploymentEnvironment(t *testcase.T, vn string) *deployment.Environment 
 }
 
 func ExampleDeploymentEnvironment(t *testcase.T) *deployment.Environment {
-	return GetDeploymentEnvironment(t, ExampleDeploymentEnvironmentLetVar)
+	return GetDeploymentEnvironment(t, LetVarExampleDeploymentEnvironment)
 }
 
 func GivenWeHaveDeploymentEnvironment(s *testcase.Spec, vn string) {

@@ -10,7 +10,7 @@ import (
 
 func NewHandler() http.Handler {
 	mux := http.NewServeMux()
-	mux.Handle(`/api.json`, httputils.CORS(http.HandlerFunc(HandleSwaggerConfigJSON)))
+	mux.Handle(`/swagger.json`, httputils.CORS(http.HandlerFunc(HandleSwaggerConfigJSON)))
 	gorest.Mount(mux, `/ui`, HandleSwaggerUI())
 	return mux
 }

@@ -1,16 +1,16 @@
 package storages_test
 
 import (
-	"context"
 	"database/sql"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/testcase"
 
 	"github.com/toggler-io/toggler/external/resource/storages"
-	testing2 "github.com/toggler-io/toggler/testing"
+	. "github.com/toggler-io/toggler/testing"
 
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/require"
@@ -33,7 +33,7 @@ func BenchmarkPostgres(b *testing.B) {
 
 	specs.StorageSpec{
 		Subject:        storage,
-		FixtureFactory: testing2.NewFixtureFactory(),
+		FixtureFactory: NewFixtureFactory(),
 	}.Benchmark(b)
 }
 
@@ -50,11 +50,18 @@ func TestPostgres(t *testing.T) {
 
 	specs.StorageSpec{
 		Subject:        storage,
-		FixtureFactory: testing2.NewFixtureFactory(),
+		FixtureFactory: NewFixtureFactory(),
 	}.Test(t)
 }
 
 func MustOpenDB(tb testing.TB) *sql.DB {
+	// I don't know exactly how but somehow `DELETE` queries from different connections made in the past
+	// might affect the results in this connection,
+	// resulting that some of the data goes missing during tests.
+	// To reproduce this, please execute full project testing suite with E2E mode, while removing this sleep.
+	//
+	// TODO: TECH-DEBT
+	time.Sleep(time.Second)
 	databaseConnectionString := getDatabaseConnectionString(tb)
 	db, err := sql.Open("postgres", databaseConnectionString)
 	require.Nil(tb, err)
@@ -129,7 +136,7 @@ func TestPostgres_Close(t *testing.T) {
 
 		s.Then(`the *sql.Tx had received Commit`, func(t *testcase.T) {
 			var te resources.TestEntity
-			ctx := context.Background()
+			ctx := GetContext(t)
 
 			pgSqlDB := &storages.Postgres{DB: t.I(`*sql.DB`).(*sql.DB)}
 			require.Nil(t, pgSqlDB.DeleteAll(ctx, te))

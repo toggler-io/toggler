@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources"
@@ -37,7 +38,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 	s := testcase.NewSpec(t)
 	SetUp(s)
 
-	s.Let(ExampleStorageLetVar, func(t *testcase.T) interface{} {
+	s.Let(LetVarExampleStorage, func(t *testcase.T) interface{} {
 		return spec.Subject
 	})
 
@@ -82,7 +83,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 			}
 
 			s.When(`flag was never persisted before`, func(s *testcase.Spec) {
-				s.Let(ExampleReleaseFlagLetVar, func(t *testcase.T) interface{} {
+				s.Let(LetVarExampleReleaseFlag, func(t *testcase.T) interface{} {
 					return Create(release.Flag{})
 				})
 
@@ -158,7 +159,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 			}
 
 			s.When(`flag is not persisted`, func(s *testcase.Spec) {
-				s.Let(ExampleReleaseFlagLetVar, func(t *testcase.T) interface{} {
+				s.Let(LetVarExampleReleaseFlag, func(t *testcase.T) interface{} {
 					return Create(release.Flag{})
 				})
 
@@ -204,7 +205,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 			}
 
 			s.Let(`PilotExternalID`, func(t *testcase.T) interface{} {
-				return RandomExternalPilotID()
+				return fixtures.Random.String()
 			})
 
 			s.When(`there is no pilot records`, func(s *testcase.Spec) {
@@ -220,7 +221,7 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 			s.When(`the given pilot id has no records`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
 					ctx := spec.ctx()
-					extID := RandomExternalPilotID()
+					extID := fixtures.Random.String()
 
 					var newUUID = func() string {
 						uuidV4, err := uuid.NewRandom()

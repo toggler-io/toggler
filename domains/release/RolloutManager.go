@@ -2,6 +2,7 @@ package release
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
@@ -49,24 +50,25 @@ func (manager *RolloutManager) GetAllReleaseFlagStatesOfThePilot(ctx context.Con
 		return nil, err
 	}
 
-	if err := iterators.ForEach(manager.Storage.FindReleaseFlagsByName(ctx, flagNames...), func(f Flag) error {
+	var flags []Flag
+	if err := iterators.Collect(manager.Storage.FindReleaseFlagsByName(ctx, flagNames...), &flags); err != nil {
+		return nil, err
+	}
+
+	for _, f := range flags {
 		flagIndexByID[f.ID] = &f
 
 		if p, ok := pilotsIndex[f.ID]; ok {
 			states[f.Name] = p.IsParticipating
-			return nil
+			continue
 		}
 
 		enrollment, err := manager.checkEnrollment(ctx, env, f, pilotExternalID, pilotsIndex)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		states[f.Name] = enrollment
-
-		return nil
-	}); err != nil {
-		return nil, err
 	}
 
 	return states, nil
@@ -203,9 +205,22 @@ func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context,
 //TODO: make operation atomic between flags and pilots
 // TODO delete ip addr allows as well
 // TODO: rename
-func (manager *RolloutManager) DeleteFeatureFlag(ctx context.Context, id string) error {
+func (manager *RolloutManager) DeleteFeatureFlag(ctx context.Context, id string) (returnErr error) {
+	ctx, err := manager.Storage.BeginTx(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if returnErr != nil {
+			manager.Storage.RollbackTx(ctx)
+			return
+		}
+
+		returnErr = manager.Storage.CommitTx(ctx)
+	}()
+
 	if id == `` {
-		return frameless.ErrIDRequired
+		return fmt.Errorf(`entity id is empty`)
 	}
 
 	var ff Flag
@@ -218,10 +233,15 @@ func (manager *RolloutManager) DeleteFeatureFlag(ctx context.Context, id string)
 		return frameless.ErrNotFound
 	}
 
-	if err := iterators.ForEach(manager.Storage.FindReleasePilotsByReleaseFlag(ctx, ff), func(pilot ManualPilot) error {
-		return manager.Storage.DeleteByID(ctx, pilot, pilot.ID)
-	}); err != nil {
+	var pilots []ManualPilot
+	if err := iterators.Collect(manager.Storage.FindReleasePilotsByReleaseFlag(ctx, ff), &pilots); err != nil {
 		return err
+	}
+
+	for _, pilot := range pilots {
+		if err := manager.Storage.DeleteByID(ctx, pilot, pilot.ID); err != nil {
+			return err
+		}
 	}
 
 	return manager.Storage.DeleteByID(ctx, Flag{}, id)

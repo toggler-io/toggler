@@ -2,9 +2,7 @@ package testing
 
 import (
 	"fmt"
-	"math/rand"
 	"net/url"
-	"time"
 
 	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/frameless/reflects"
@@ -21,9 +19,6 @@ func NewFixtureFactory() *FixtureFactory {
 type FixtureFactory struct {
 	fixtures.FixtureFactory
 }
-
-// this ensures that the randoms have better variety between test runs with -count n
-var rnd = rand.New(rand.NewSource(time.Now().Unix()))
 
 func (ff FixtureFactory) Create(EntityType interface{}) interface{} {
 	switch reflects.BaseValueOf(EntityType).Interface().(type) {

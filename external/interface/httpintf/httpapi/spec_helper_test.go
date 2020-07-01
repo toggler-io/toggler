@@ -1,21 +1,21 @@
 package httpapi_test
 
 import (
-	"context"
 	"encoding/json"
 	"net/http/httptest"
 
 	"github.com/adamluzsi/testcase"
-	"github.com/toggler-io/toggler/domains/security"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 	"github.com/stretchr/testify/require"
+
+	"github.com/toggler-io/toggler/domains/security"
 
 	. "github.com/toggler-io/toggler/testing"
 )
 
 func CreateSecurityTokenString(t *testcase.T) string {
-	textToken, token, err := security.NewIssuer(ExampleStorage(t)).CreateNewToken(context.TODO(), ExampleUniqueUserID(t), nil, nil)
+	textToken, token, err := security.NewIssuer(ExampleStorage(t)).CreateNewToken(GetContext(t), ExampleUniqueUserID(t), nil, nil)
 	require.Nil(t, err)
 	require.NotNil(t, token)
 	require.NotEmpty(t, token.SHA512)

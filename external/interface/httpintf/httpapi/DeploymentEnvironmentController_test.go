@@ -1,6 +1,7 @@
 package httpapi_test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -16,9 +17,9 @@ import (
 	"github.com/toggler-io/toggler/domains/deployment"
 	"github.com/toggler-io/toggler/external/interface/httpintf"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
-	"github.com/toggler-io/toggler/lib/go/client"
-	swagger "github.com/toggler-io/toggler/lib/go/client/deployment"
-	"github.com/toggler-io/toggler/lib/go/models"
+	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client"
+	swagger "github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client/deployment"
+	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/models"
 	. "github.com/toggler-io/toggler/testing"
 )
 
@@ -27,6 +28,10 @@ func TestDeploymentEnvironmentController(t *testing.T) {
 	s.Parallel()
 	SetUp(s)
 	GivenThisIsAJSONAPI(s)
+
+	LetContext(s, func(t *testcase.T) context.Context {
+		return GetContext(t)
+	})
 
 	LetHandler(s, func(t *testcase.T) http.Handler {
 		return httpapi.NewDeploymentEnvironmentHandler(ExampleUseCases(t))
@@ -76,6 +81,10 @@ func SpecDeploymentEnvironmentControllerCreate(s *testcase.Spec) {
 		require.Nil(t, json.Unmarshal(rr.Body.Bytes(), &resp.Body))
 		return resp
 	}
+
+	s.After(func(t *testcase.T) {
+		require.Nil(t, ExampleStorage(t).DeleteAll(GetContext(t), deployment.Environment{}))
+	})
 
 	s.Let(`deployment-environment`, func(t *testcase.T) interface{} {
 		return FixtureFactory{}.Create(deployment.Environment{}).(*deployment.Environment)
@@ -128,33 +137,35 @@ func SpecDeploymentEnvironmentControllerCreate(s *testcase.Spec) {
 		})
 	})
 
-	s.Test(`swagger`, func(t *testcase.T) {
-		sm, err := httpintf.NewServeMux(ExampleUseCases(t))
-		require.Nil(t, err)
+	s.Context(`E2E`, func(s *testcase.Spec) {
+		s.Tag(TagBlackBox)
 
-		s := httptest.NewServer(sm)
-		defer s.Close()
+		s.Test(`swagger`, func(t *testcase.T) {
+			sm, err := httpintf.NewServeMux(ExampleUseCases(t))
+			require.Nil(t, err)
 
-		// TODO: ensure validation
-		p := swagger.NewCreateDeploymentEnvironmentParams()
-		p.Body.Environment = &models.Environment{
-			Name: fixtures.Random.String(),
-		}
+			s := httptest.NewServer(sm)
+			defer s.Close()
 
-		tc := client.DefaultTransportConfig()
-		u, _ := url.Parse(s.URL)
-		tc.Host = u.Host
-		tc.Schemes = []string{`http`}
+			// TODO: ensure validation
+			p := swagger.NewCreateDeploymentEnvironmentParams()
+			p.Body.Environment = &models.Environment{
+				Name: fixtures.Random.String(),
+			}
 
-		c := client.NewHTTPClientWithConfig(nil, tc)
+			tc := client.DefaultTransportConfig()
+			u, _ := url.Parse(s.URL)
+			tc.Host = u.Host
+			tc.Schemes = []string{`http`}
 
-		resp, err := c.Deployment.CreateDeploymentEnvironment(p, protectedAuth(t))
-		if err != nil {
-			t.Fatal(err.Error())
-		}
+			c := client.NewHTTPClientWithConfig(nil, tc)
 
-		require.NotNil(t, resp)
-		require.NotNil(t, resp.Payload)
+			resp, err := c.Deployment.CreateDeploymentEnvironment(p, protectedAuth(t))
+			require.Nil(t, err)
+
+			require.NotNil(t, resp)
+			require.NotNil(t, resp.Payload)
+		})
 	})
 }
 
@@ -258,33 +269,37 @@ func SpecDeploymentEnvironmentControllerUpdate(s *testcase.Spec) {
 		})
 	})
 
-	s.Test(`swagger`, func(t *testcase.T) {
-		sm, err := httpintf.NewServeMux(ExampleUseCases(t))
-		require.Nil(t, err)
+	s.Context(`E2E`, func(s *testcase.Spec) {
+		s.Tag(TagBlackBox)
 
-		s := httptest.NewServer(sm)
-		defer s.Close()
+		s.Test(`swagger`, func(t *testcase.T) {
+			sm, err := httpintf.NewServeMux(ExampleUseCases(t))
+			require.Nil(t, err)
 
-		id := GetDeploymentEnvironment(t, `deployment-environment`).ID
+			s := httptest.NewServer(sm)
+			defer s.Close()
 
-		// TODO: ensure validation
-		p := swagger.NewUpdateDeploymentEnvironmentParams()
-		p.EnvironmentID = id
-		p.Body.Environment = &models.Environment{
-			ID:   id,
-			Name: fixtures.Random.String(),
-		}
+			id := GetDeploymentEnvironment(t, `deployment-environment`).ID
 
-		tc := client.DefaultTransportConfig()
-		u, _ := url.Parse(s.URL)
-		tc.Host = u.Host
-		tc.Schemes = []string{`http`}
+			// TODO: ensure validation
+			p := swagger.NewUpdateDeploymentEnvironmentParams()
+			p.EnvironmentID = id
+			p.Body.Environment = &models.Environment{
+				ID:   id,
+				Name: fixtures.Random.String(),
+			}
 
-		c := client.NewHTTPClientWithConfig(nil, tc)
+			tc := client.DefaultTransportConfig()
+			u, _ := url.Parse(s.URL)
+			tc.Host = u.Host
+			tc.Schemes = []string{`http`}
 
-		resp, err := c.Deployment.UpdateDeploymentEnvironment(p, protectedAuth(t))
-		require.Nil(t, err)
-		require.NotNil(t, resp)
-		require.NotNil(t, resp.Payload)
+			c := client.NewHTTPClientWithConfig(nil, tc)
+
+			resp, err := c.Deployment.UpdateDeploymentEnvironment(p, protectedAuth(t))
+			require.Nil(t, err)
+			require.NotNil(t, resp)
+			require.NotNil(t, resp.Payload)
+		})
 	})
 }

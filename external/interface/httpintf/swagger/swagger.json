@@ -843,11 +843,13 @@
     "Environment": {
       "type": "object",
       "properties": {
-        "ID": {
-          "type": "string"
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
         },
-        "Name": {
-          "type": "string"
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
         }
       },
       "x-go-package": "github.com/toggler-io/toggler/domains/deployment"

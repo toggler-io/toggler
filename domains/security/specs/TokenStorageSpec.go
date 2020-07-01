@@ -11,8 +11,42 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/toggler-io/toggler/domains/security"
-	. "github.com/toggler-io/toggler/testing"
 )
+
+type TokenStorageSpec struct {
+	Subject security.Storage
+	specs.FixtureFactory
+}
+
+func (spec TokenStorageSpec) Test(t *testing.T) {
+	t.Run(`Token`, func(t *testing.T) {
+		specs.CommonSpec{
+			Subject:        spec.Subject,
+			EntityType:     security.Token{},
+			FixtureFactory: spec.FixtureFactory,
+		}.Test(t)
+
+		TokenFinderSpec{
+			Subject:        spec.Subject,
+			FixtureFactory: spec.FixtureFactory,
+		}.Test(t)
+	})
+}
+
+func (spec TokenStorageSpec) Benchmark(b *testing.B) {
+	b.Run(`security`, func(b *testing.B) {
+		specs.CommonSpec{
+			Subject:        spec.Subject,
+			EntityType:     security.Token{},
+			FixtureFactory: spec.FixtureFactory,
+		}.Benchmark(b)
+
+		TokenFinderSpec{
+			Subject:        spec.Subject,
+			FixtureFactory: spec.FixtureFactory,
+		}.Benchmark(b)
+	})
+}
 
 type TokenFinderSpec struct {
 	Subject interface {
@@ -28,7 +62,7 @@ type TokenFinderSpec struct {
 func (spec TokenFinderSpec) Test(t *testing.T) {
 	s := testcase.NewSpec(t)
 
-	s.Let(`uid`, func(t *testcase.T) interface{} { return RandomUniqUserID() })
+	s.Let(`uid`, func(t *testcase.T) interface{} { return fixtures.Random.String() })
 	s.Let(`token object`, func(t *testcase.T) interface{} {
 		return &security.Token{
 			OwnerUID: t.I(`uid`).(string),

@@ -32,7 +32,7 @@ func (spec RolloutStorageSpec) Test(t *testing.T) {
 	s := testcase.NewSpec(t)
 	SetUp(s)
 
-	s.Let(ExampleStorageLetVar, func(t *testcase.T) interface{} {
+	s.Let(LetVarExampleStorage, func(t *testcase.T) interface{} {
 		return spec.Subject
 	})
 
@@ -43,6 +43,18 @@ func (spec RolloutStorageSpec) Test(t *testing.T) {
 	})
 
 	s.Context(`RolloutStorageSpec`, func(s *testcase.Spec) {
+		s.Test(`OnePhaseCommitProtocol`, func(t *testcase.T) {
+			specs.OnePhaseCommitProtocolSpec{
+				EntityType: release.Rollout{},
+				Subject:    spec.Subject,
+				FixtureFactory: RolloutStorageSpecFixtureFactory{
+					FixtureFactory: spec.FixtureFactory,
+					flag:           ExampleReleaseFlag(t),
+					env:            ExampleDeploymentEnvironment(t),
+				},
+			}.Test(t.T)
+		})
+
 		s.Test(`CommonSpec#Rollout`, func(t *testcase.T) {
 			specs.CommonSpec{
 				EntityType: release.Rollout{},
@@ -55,17 +67,6 @@ func (spec RolloutStorageSpec) Test(t *testing.T) {
 			}.Test(t.T)
 		})
 
-		s.Test(`OnePhaseCommitProtocol`, func(t *testcase.T) {
-			specs.OnePhaseCommitProtocolSpec{
-				EntityType: release.Rollout{},
-				Subject:    spec.Subject,
-				FixtureFactory: RolloutStorageSpecFixtureFactory{
-					FixtureFactory: spec.FixtureFactory,
-					flag:           ExampleReleaseFlag(t),
-					env:            ExampleDeploymentEnvironment(t),
-				},
-			}.Test(t.T)
-		})
 
 		s.Describe(`#FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment`, func(s *testcase.Spec) {
 			var subject = func(t *testcase.T, rollout *release.Rollout) (bool, error) {
@@ -82,8 +83,8 @@ func (spec RolloutStorageSpec) Test(t *testing.T) {
 			s.When(`rollout was stored before`, func(s *testcase.Spec) {
 				GivenWeHaveReleaseRollout(s,
 					rolloutLetVar,
-					ExampleReleaseFlagLetVar,
-					ExampleDeploymentEnvironmentLetVar,
+					LetVarExampleReleaseFlag,
+					LetVarExampleDeploymentEnvironment,
 				)
 				s.Before(func(t *testcase.T) { GetReleaseRollout(t, rolloutLetVar) }) // eager load
 

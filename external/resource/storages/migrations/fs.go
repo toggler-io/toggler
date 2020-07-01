@@ -213,7 +213,7 @@ var _escData = map[string]*_escFile{
 		name:    "fs.go",
 		local:   "migrations/fs.go",
 		size:    0,
-		modtime: 1593642106,
+		modtime: 1594749708,
 		compressed: `
 H4sIAAAAAAAC/wEAAP//AAAAAAAAAAA=
 `,
@@ -223,7 +223,7 @@ H4sIAAAAAAAC/wEAAP//AAAAAAAAAAA=
 		name:    "1561423897_create_feature_flags_table.down.sql",
 		local:   "migrations/postgres/1561423897_create_feature_flags_table.down.sql",
 		size:    69,
-		modtime: 1586913508,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/3IJ8g9Q8PRzcY1QUMrJz8+OT0tNLCktSo1Py0lML45PqozPS8xNVbLmAisMcXTycVVQ
 QlGjZM0FCAAA//9Q/JbBRQAAAA==
@@ -234,7 +234,7 @@ QlGjZM0FCAAA//9Q/JbBRQAAAA==
 		name:    "1561423897_create_feature_flags_table.up.sql",
 		local:   "migrations/postgres/1561423897_create_feature_flags_table.up.sql",
 		size:    560,
-		modtime: 1586914005,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/4SRQYviMBTH7/0UfzwprPcFT1WDhK1xt6agp5DaZxs2Jk6TDuO3H9pxwIKDOb6X34//
 e2+Vs1QyyHSZMUzOpGPXkjpbXYdJMk0AwFR4+YqCrwGInYQosgx/c75N8yP+sOOvQeL0hV5JJDvIB8kX
@@ -249,7 +249,7 @@ AA==
 		name:    "1562536633_create_pilots_table.down.sql",
 		local:   "migrations/postgres/1562536633_create_pilots_table.down.sql",
 		size:    84,
-		modtime: 1586913508,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/3IJ8g9Q8PRzcY1QUMrJz88uLYgvyMzJLymOT6qMT0tNLCktSo1Py0lMj89MiU/MS4lP
 rShJLcpLzInPTFGy5gJrD3F08nFVUILoU7LmAgQAAP//3ZtLD1QAAAA=
@@ -260,7 +260,7 @@ rShJLcpLzInPTFGy5gJrD3F08nFVUILoU7LmAgQAAP//3ZtLD1QAAAA=
 		name:    "1562536633_create_pilots_table.up.sql",
 		local:   "migrations/postgres/1562536633_create_pilots_table.up.sql",
 		size:    373,
-		modtime: 1587732116,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/4SQwWoDIRCG7z7FkFMCeYOcTCJFkJEmCrkNbtcUqdWt60L79qW7S9kuLfXi5Zv5v/lP
 F8GNAMOPSsCmCzHXfsO2DAAgtPDjWSvPXz9qA2iV2o/U3bs6FE/36J4ptH9Q/r36klykeakRN/MLlUqO
@@ -273,7 +273,7 @@ zQet5smllpanaJwMerBXiQ/Q1OL9P7EH9hkAAP//rSBeZHUBAAA=
 		name:    "1562584482_create_tokens_table.down.sql",
 		local:   "migrations/postgres/1562584482_create_tokens_table.down.sql",
 		size:    63,
-		modtime: 1586913508,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/3IJ8g9Q8PRzcY1QUMrJz88uLYgvyc9OzSuOT6qEsOJLUitKlKy5wCpDHJ18XBWUIEqU
 rLkAAQAA//97cxxbPwAAAA==
@@ -284,7 +284,7 @@ rLkAAQAA//97cxxbPwAAAA==
 		name:    "1562584482_create_tokens_table.up.sql",
 		local:   "migrations/postgres/1562584482_create_tokens_table.up.sql",
 		size:    334,
-		modtime: 1586914005,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/3yQQUsDMRCF7/kVj55a8KLgqadtG0pgO6vdCRQvYUsChkqimwT130u30UORzmUezPce
 M7Pey4YluFm1ErMcTy6kmZgLAPAWtbRWm19NHYN0295NTHodHu8fzorlgf9n4mdwoyne3mB8SsVZM2Sw
@@ -297,7 +297,7 @@ M7Pey4YluFm1ErMcTy6kmZgLAPAWtbRWm19NHYN0295NTHodHu8fzorlgf9n4mdwoyne3mB8SsVZM2Sw
 		name:    "1563313726_create_index_lookup_pilots_by_ext_id.down.sql",
 		local:   "migrations/postgres/1563313726_create_index_lookup_pilots_by_ext_id.down.sql",
 		size:    37,
-		modtime: 1586913508,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/3IJ8g9Q8PRzcY1QUMrJz88uLYgvyMzJLymOT6qMT60oic9MUbIGBAAA//8cIMYUJQAA
 AA==
@@ -308,7 +308,7 @@ AA==
 		name:    "1563313726_create_index_lookup_pilots_by_ext_id.up.sql",
 		local:   "migrations/postgres/1563313726_create_index_lookup_pilots_by_ext_id.up.sql",
 		size:    79,
-		modtime: 1586913508,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/3IOcnUMcVXw9HNxjVBQysnPzy4tiC/IzMkvKY5PqoxPrSiJz0xRUvD3U1CCiCophAZ7
 +rkrJJUUpaYqaCilVpSkFuUl5oCUaVoDAgAA//9FwpxlTwAAAA==
@@ -319,7 +319,7 @@ H4sIAAAAAAAC/3IOcnUMcVXw9HNxjVBQysnPzy4tiC/IzMkvKY5PqoxPrSiJz0xRUvD3U1CCiCophAZ7
 		name:    "1564874467_create_test_entities_table.down.sql",
 		local:   "migrations/postgres/1564874467_create_test_entities_table.down.sql",
 		size:    27,
-		modtime: 1586913508,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/3IJ8g9QCHF08nFVUCpJLS6JT80rySzJTC1WsgYEAAD//18Bt9QbAAAA
 `,
@@ -329,7 +329,7 @@ H4sIAAAAAAAC/3IJ8g9QCHF08nFVUCpJLS6JT80rySzJTC1WsgYEAAD//18Bt9QbAAAA
 		name:    "1564874467_create_test_entities_table.up.sql",
 		local:   "migrations/postgres/1564874467_create_test_entities_table.up.sql",
 		size:    54,
-		modtime: 1586915462,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/3IOcnUMcVUIcXTycVVQKkktLolPzSvJLMlMLVbi0uBSUFBQyExRCA31dFHw8w9R8Av1
 8eHStAYEAAD//yHXMLg2AAAA
@@ -340,7 +340,7 @@ H4sIAAAAAAAC/3IOcnUMcVUIcXTycVVQKkktLolPzSvJLMlMLVbi0uBSUFBQyExRCA31dFHw8w9R8Av1
 		name:    "1568143862_alter_table_release_flags.down.sql",
 		local:   "migrations/postgres/1568143862_alter_table_release_flags.down.sql",
 		size:    188,
-		modtime: 1586913508,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/2TOsQrCMBRG4T1P8XNfI1NqLxJoEglB3UKEWwejhUYH395BKZbuh4/T8d56rVQfwwFH
 yyfQKOX5miWPtVwbaaXMkDjC+p7PoDpNtzxLldK+Sb6886PchRQARPbGMVL4lStsSRc0mW5g0L/XNtBm
@@ -352,7 +352,7 @@ aBecs0l/AgAA///JK7KBvAAAAA==
 		name:    "1568143862_alter_table_release_flags.up.sql",
 		local:   "migrations/postgres/1568143862_alter_table_release_flags.up.sql",
 		size:    223,
-		modtime: 1586913508,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/2zMuwrCMBSH8T1P8Sejr9AprUcJ5ALpQd1ChNTBaKHRwbcXUYq3/ft+La21a4RQhilA
 uyXtIMs4HuOQ0+U65TiUdKhxf4vndMpSAEAgpyyB/SudcsmpPtO5nFFWrSHID+/HeSfq4+0CKSZsNG2/
@@ -364,7 +364,7 @@ X6gePRnqGAusgrf/dm+t5uYeAAD//6bKr1vfAAAA
 		name:    "1570774790_create_release_allows_table.down.sql",
 		local:   "migrations/postgres/1570774790_create_release_allows_table.down.sql",
 		size:    95,
-		modtime: 1586913508,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/3IJ8g9Q8PRzcY1QSMvMS4kvSs1JTSxOjU/LSUyPzyyIT0xJKYpPzMnJLy+OT6qECqdY
 c4H1hTg6+bgq4NFiDQgAAP//1QXxzl8AAAA=
@@ -375,7 +375,7 @@ c4H1hTg6+bgq4NFiDQgAAP//1QXxzl8AAAA=
 		name:    "1570774790_create_release_allows_table.up.sql",
 		local:   "migrations/postgres/1570774790_create_release_allows_table.up.sql",
 		size:    245,
-		modtime: 1586914004,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/3yOwQqCQBCG7/sU/1GhN/BkucSSjWG7kKdhZdYQlgoNorcPdC9dnOPMNx/fodWl1bDl
 vtaYQgx+DjxEf+fxxV5kYh/j8zOrTAHAKFjGOVOBGgtydY1La85l2+Gku92CrQL5x9ZT0sKQtiovlEoF
@@ -387,7 +387,7 @@ hip9wzA+hDcyuP+mtSy2hrai4a6GjujfUwjI0l9eqF8AAAD//yK0toP1AAAA
 		name:    "1587677201_create_deployment_environment_table.down.sql",
 		local:   "migrations/postgres/1587677201_create_deployment_environment_table.down.sql",
 		size:    84,
-		modtime: 1589853880,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/3IJ8g9Q8PRzcY1QSMvMS4lPSS3Iya/MTc0riU/NK8ssys8Ds5Mq4/MSc1OtucDqQxyd
 fFwVsCsttuYCBAAA////dG5tVAAAAA==
@@ -398,7 +398,7 @@ fFwVsCsttuYCBAAA////dG5tVAAAAA==
 		name:    "1587677201_create_deployment_environment_table.up.sql",
 		local:   "migrations/postgres/1587677201_create_deployment_environment_table.up.sql",
 		size:    209,
-		modtime: 1589853880,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/3SOwQqCQBCG7/sU/1GhN/BkOcSSjWU7oKclcQIh1zAJfPtQgi51m8M33/fvSkodwaXb
 nNDq4z7MvYbJa3h14xCW+2kiAwBdC0DEZuDCgSXPcSrtMS1rHKjerEy49gpHlfsywvYsZOLEmE/MckYV
@@ -410,7 +410,7 @@ bl1o/e+ib2a/mFZlwf92QS6W92imURXR8hAn5h0AAP//FFdthtEAAAA=
 		name:    "1587677300_create_rollouts_table.down.sql",
 		local:   "migrations/postgres/1587677300_create_rollouts_table.down.sql",
 		size:    104,
-		modtime: 1589853880,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/3IJ8g9Q8PRzcY1QSMvMS4kvSs1JTSxOjS/Kz8nJLy2JT6qEC6XlJKbHJ+alxKekFuTk
 V+am5pXEp+aVZRbl54HY1lxgs0IcnXxcFdCMKbYGBAAA//9LzeZsaAAAAA==
@@ -421,7 +421,7 @@ V+am5pXEp+aVZRbl54HY1lxgs0IcnXxcFdCMKbYGBAAA//9LzeZsaAAAAA==
 		name:    "1587677300_create_rollouts_table.up.sql",
 		local:   "migrations/postgres/1587677300_create_rollouts_table.up.sql",
 		size:    287,
-		modtime: 1589853880,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/2yPzWqFMBCF93mKWSr4Bq5sDSWtjUUN1FWIZCyBNJHoFXz7i7ki3J/ZzDDfgXPOe0OL
 jkJXvFUUAlpUM8rgrfWXZSYJAQAwGuIIwUrgdQdcVBX8NOy7aHr4on0WZaNVf9Loe9kNoVt38gpNVrl9
@@ -434,7 +434,7 @@ ObkGAAD//w8Ri78fAQAA
 		name:    "1587677487_migrate_deployment_environment.down.sql",
 		local:   "migrations/postgres/1587677487_migrate_deployment_environment.down.sql",
 		size:    173,
-		modtime: 1589853880,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/0zMsWqEMBwH4D1P8eO/OAW0VaNIB1tTOsRagqWjpCZCwItyesK9/XHT3fZNH+ewbjKX
 eYd167xcTy7scOHw5yXczWrVS42+flcStPp52TdiANDo7gcfnfptv0EuHIO3VDHWSCV7yT5114Ie5/B0
@@ -446,7 +446,7 @@ bsT+vqSWIG8Jb4iEmJLyVWQ8FmnG0+S/4Ma+pLzMyjguRpPnZowqdgsAAP//rToYga0AAAA=
 		name:    "1587677487_migrate_deployment_environment.up.sql",
 		local:   "migrations/postgres/1587677487_migrate_deployment_environment.up.sql",
 		size:    457,
-		modtime: 1589853880,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/4yQUWvyMBSG7/MrXnJTBSP6fWoV2UVmjqwQ29Ek2+6kMxEKWst0wv79sDo3diHLVcJ7
 8j4PRwj4sC7eNwf4UG92H9tQHRCqY/m2q053lqSGcosktRn498zyx8yeo8VLzzvgVbENvM2epHZk0Iri
@@ -460,7 +460,7 @@ HUOaZvb6PJddVE5/62t07qi7ZxvcwXdL36Tt6WcAAAD//3QkkLTJAQAA
 		name:    "1587677731_refact.down.sql",
 		local:   "migrations/postgres/1587677731_refact.down.sql",
 		size:    694,
-		modtime: 1589853880,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/5yRQU87IRDF73yKCaf/3/RgjLee6C41m2xZ3bLqjeDudEOCsAJN9Nsb2mqipml1ODHM
 +83Lg9WStyDZouZAA1rUEdVkrE+REgCAsm1uoWjEWrasEhLo7lFtnXlRvX9+Mk4n4x2d7aZZWZ4zDJ2o
@@ -475,7 +475,7 @@ OXkPAAD//2jiR8K2AgAA
 		name:    "1587677731_refact.up.sql",
 		local:   "migrations/postgres/1587677731_refact.up.sql",
 		size:    584,
-		modtime: 1589853880,
+		modtime: 1593645606,
 		compressed: `
 H4sIAAAAAAAC/5yQTU7DMBCF9znFyCuQeoOuQutFpTSBkMByNCTTaCRjB9tBcHuUn6IWgRThlUfvzc/7
 0qzSJVTpXaZB9WJcDCoBACh1nh41VAUoz4YpMC7yNkmuun7Il927IquPOagTUxw848lQh9Kqaey5WDNv

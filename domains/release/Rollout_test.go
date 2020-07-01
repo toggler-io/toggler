@@ -253,7 +253,7 @@ func TestRolloutDecisionByIPAddress(t *testing.T) {
 	//subject := func(t *testcase.T) error {
 	//	rm := t.I(`RolloutManager`).(*release.RolloutManager)
 	//	return rm.AllowIPAddrForFlag(
-	//		context.Background(),
+	//		GetContext(t),
 	//		getReleaseFlag(t).ID,
 	//		t.I(`ip-addr`).(string),
 	//	)
@@ -289,7 +289,7 @@ func TestRolloutDecisionByIPAddress(t *testing.T) {
 	//s.Describe(`relation with GetAllReleaseFlagStatesOfThePilot`, func(s *testcase.Spec) {
 	//	releaseFlagState := func(t *testcase.T) bool {
 	//		fc := release.NewFlagChecker(ExampleStorage(t))
-	//		ctx := context.WithValue(context.Background(), release.CtxPilotIpAddr, t.I(`ip-addr`).(string))
+	//		ctx := context.WithValue(GetContext(t), release.CtxPilotIpAddr, t.I(`ip-addr`).(string))
 	//		states, err := fc.GetAllReleaseFlagStatesOfThePilot(ctx, ExampleReleaseFlagName(t), *ExampleDeploymentEnvironment(t), ExampleExternalPilotID(t))
 	//		require.Nil(t, err)
 	//		return states[getReleaseFlag(t).Name]

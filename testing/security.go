@@ -1,6 +1,7 @@
 package testing
 
 import (
+	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 
@@ -8,41 +9,47 @@ import (
 )
 
 const (
-	TokenLetVar     = `testing token`
-	tokenTextLetVar = `testing token as text`
-	UniqueUserIDLetVar = `UniqUserID`
+	LetVarExampleToken = `example token`
+	LetVarTokenText    = `example token as text`
+	LetVarUniqueUserID = `UniqUserID`
 )
 
 func init() {
 	setups = append(setups, func(s *testcase.Spec) {
-		s.Let(TokenLetVar, func(t *testcase.T) interface{} {
+		s.Let(LetVarExampleToken, func(t *testcase.T) interface{} {
 			textToken, objectToken := CreateToken(t, ExampleUniqueUserID(t))
-			t.Let(tokenTextLetVar, textToken)
+			t.Let(LetVarTokenText, textToken)
 			return objectToken
 		})
 
-		s.Let(UniqueUserIDLetVar, func(t *testcase.T) interface{} {
-			return RandomUniqUserID()
+		s.Let(LetVarUniqueUserID, func(t *testcase.T) interface{} {
+			return fixtures.Random.String()
 		})
 	})
 }
 
 func ExampleTextToken(t *testcase.T) string {
 	ExampleToken(t)
-	return t.I(tokenTextLetVar).(string)
+	return t.I(LetVarTokenText).(string)
 }
 
 func ExampleToken(t *testcase.T) *security.Token {
-	return t.I(TokenLetVar).(*security.Token)
+	return t.I(LetVarExampleToken).(*security.Token)
 }
 
 func CreateToken(t *testcase.T, tokenOwner string) (string, *security.Token) {
 	textToken, token, err := ExampleUseCases(t).Issuer.CreateNewToken(GetContext(t), tokenOwner, nil, nil)
 	require.Nil(t, err)
+	t.Defer(ExampleStorage(t).DeleteByID, GetContext(t), *token, token.ID)
+
+	found, err := ExampleStorage(t).FindByID(GetContext(t), &security.Token{}, token.ID)
+	require.Nil(t, err)
+	require.True(t, found)
+
+	t.Logf(`%#v - %s`, token, textToken)
 	return textToken, token
 }
 
-
 func ExampleUniqueUserID(t *testcase.T) string {
-	return t.I(UniqueUserIDLetVar).(string)
+	return t.I(LetVarUniqueUserID).(string)
 }

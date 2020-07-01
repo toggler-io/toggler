@@ -1,13 +1,13 @@
 package security_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/adamluzsi/testcase"
+	"github.com/stretchr/testify/require"
+
 	"github.com/toggler-io/toggler/domains/security"
 	. "github.com/toggler-io/toggler/testing"
-	"github.com/stretchr/testify/require"
 )
 
 func TestDoorkeeper(t *testing.T) {
@@ -21,7 +21,7 @@ func TestDoorkeeper(t *testing.T) {
 
 	s.Let(`token`, func(t *testcase.T) interface{} {
 		issuer := security.NewIssuer(ExampleStorage(t))
-		textToken, token, err := issuer.CreateNewToken(context.TODO(), ExampleUniqueUserID(t), nil, nil)
+		textToken, token, err := issuer.CreateNewToken(GetContext(t), ExampleUniqueUserID(t), nil, nil)
 		t.Let(`text token`, textToken)
 		require.Nil(t, err)
 		return token
@@ -42,7 +42,7 @@ func SpecDoorkeeperVerifyTextToken(s *testcase.Spec) {
 
 	s.Describe(`VerifyTextToken`, func(s *testcase.Spec) {
 		subject := func(t *testcase.T) (bool, error) {
-			return doorkeeper(t).VerifyTextToken(context.TODO(), getTextToken(t))
+			return doorkeeper(t).VerifyTextToken(GetContext(t), getTextToken(t))
 		}
 
 		onSuccess := func(t *testcase.T) bool {
@@ -53,7 +53,7 @@ func SpecDoorkeeperVerifyTextToken(s *testcase.Spec) {
 
 		s.When(`token is a known resource`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				persisted, err := ExampleStorage(t).FindByID(context.Background(), &security.Token{}, getToken(t).ID)
+				persisted, err := ExampleStorage(t).FindByID(GetContext(t), &security.Token{}, getToken(t).ID)
 				require.Nil(t, err)
 				require.True(t, persisted)
 			})
@@ -65,7 +65,7 @@ func SpecDoorkeeperVerifyTextToken(s *testcase.Spec) {
 
 		s.When(`token is unknown`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, ExampleStorage(t).DeleteByID(context.Background(), security.Token{}, getToken(t).ID))
+				require.Nil(t, ExampleStorage(t).DeleteByID(GetContext(t), security.Token{}, getToken(t).ID))
 			})
 
 			s.Then(`it will reject it`, func(t *testcase.T) {
