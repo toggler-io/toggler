@@ -23,6 +23,7 @@ type RolloutStorageSpec struct {
 		resources.Finder
 		resources.Deleter
 		resources.Updater
+		resources.OnePhaseCommitProtocol
 	}
 	specs.FixtureFactory
 }
@@ -51,6 +52,18 @@ func (spec RolloutStorageSpec) Test(t *testing.T) {
 					env:            ExampleDeploymentEnvironment(t),
 				},
 				Subject: spec.Subject,
+			}.Test(t.T)
+		})
+
+		s.Test(`OnePhaseCommitProtocol`, func(t *testcase.T) {
+			specs.OnePhaseCommitProtocolSpec{
+				EntityType: release.Rollout{},
+				Subject:    spec.Subject,
+				FixtureFactory: RolloutStorageSpecFixtureFactory{
+					FixtureFactory: spec.FixtureFactory,
+					flag:           ExampleReleaseFlag(t),
+					env:            ExampleDeploymentEnvironment(t),
+				},
 			}.Test(t.T)
 		})
 

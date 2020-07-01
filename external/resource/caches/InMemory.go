@@ -205,6 +205,10 @@ func (c *InMemory) Create(ctx context.Context, value interface{}) error {
 func (c *InMemory) FindByID(ctx context.Context, ptr interface{}, id string) (_found bool, _err error) {
 	defer c.withLock()()
 
+	if shouldSkipCache(ctx) {
+		return c.Storage.FindByID(ctx, ptr, id)
+	}
+
 	type ValueOfFindByID struct {
 		value interface{}
 		found bool
@@ -234,6 +238,10 @@ func (c *InMemory) FindByID(ctx context.Context, ptr interface{}, id string) (_f
 
 func (c *InMemory) FindAll(ctx context.Context, T interface{}) frameless.Iterator {
 	defer c.withLock()()
+
+	if shouldSkipCache(ctx) {
+		return c.Storage.FindAll(ctx, T)
+	}
 
 	const namespace = `FindAll`
 	v, err := c.get(namespace, c.namespaceKey(T), func(s setter) error {
@@ -273,6 +281,11 @@ func (c *InMemory) DeleteAll(ctx context.Context, T interface{}) error {
 
 func (c *InMemory) FindReleaseFlagByName(ctx context.Context, name string) (*release.Flag, error) {
 	defer c.withLock()()
+
+	if shouldSkipCache(ctx) {
+		return c.Storage.FindReleaseFlagByName(ctx, name)
+	}
+
 	const namespace = `FindReleaseFlagByName`
 
 	v, err := c.get(namespace, name, func(s setter) error {
@@ -288,6 +301,11 @@ func (c *InMemory) FindReleaseFlagByName(ctx context.Context, name string) (*rel
 
 func (c *InMemory) FindReleaseFlagsByName(ctx context.Context, names ...string) release.FlagEntries {
 	defer c.withLock()()
+
+	if shouldSkipCache(ctx) {
+		return c.Storage.FindReleaseFlagsByName(ctx, names...)
+	}
+
 	const namespace = `FindReleaseFlagsByName`
 
 	sort.Strings(names)
@@ -311,6 +329,11 @@ func (c *InMemory) FindReleaseFlagsByName(ctx context.Context, names ...string) 
 
 func (c *InMemory) FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID, pilotExtID string) (*release.ManualPilot, error) {
 	defer c.withLock()()
+
+	if shouldSkipCache(ctx) {
+		return c.Storage.FindReleaseManualPilotByExternalID(ctx, flagID, envID, pilotExtID)
+	}
+
 	const namespace = `FindReleaseManualPilotByExternalID`
 	var key = fmt.Sprintf(`%s|%s|%s`, flagID, envID, pilotExtID)
 	v, err := c.get(namespace, key, func(s setter) error {
@@ -326,6 +349,11 @@ func (c *InMemory) FindReleaseManualPilotByExternalID(ctx context.Context, flagI
 
 func (c *InMemory) FindReleasePilotsByReleaseFlag(ctx context.Context, flag release.Flag) release.PilotEntries {
 	defer c.withLock()()
+
+	if shouldSkipCache(ctx) {
+		return c.Storage.FindReleasePilotsByReleaseFlag(ctx, flag)
+	}
+
 	const namespace = `FindReleasePilotsByReleaseFlag`
 
 	if flag.ID == `` {
@@ -355,6 +383,10 @@ func (c *InMemory) FindReleasePilotsByReleaseFlag(ctx context.Context, flag rele
 func (c *InMemory) FindReleasePilotsByExternalID(ctx context.Context, pilotExtID string) release.PilotEntries {
 	defer c.withLock()()
 
+	if shouldSkipCache(ctx) {
+		return c.Storage.FindReleasePilotsByExternalID(ctx, pilotExtID)
+	}
+
 	const namespace = `FindReleasePilotsByExternalID`
 
 	v, err := c.get(namespace, pilotExtID, func(s setter) error {
@@ -375,6 +407,10 @@ func (c *InMemory) FindReleasePilotsByExternalID(ctx context.Context, pilotExtID
 func (c *InMemory) FindTokenBySHA512Hex(ctx context.Context, sha512hex string) (*security.Token, error) {
 	defer c.withLock()()
 
+	if shouldSkipCache(ctx) {
+		return c.Storage.FindTokenBySHA512Hex(ctx, sha512hex)
+	}
+
 	const namespace = `FindTokenBySHA512Hex`
 	v, err := c.get(namespace, sha512hex, func(s setter) error {
 		t, err := c.Storage.FindTokenBySHA512Hex(ctx, sha512hex)
@@ -389,6 +425,10 @@ func (c *InMemory) FindTokenBySHA512Hex(ctx context.Context, sha512hex string) (
 
 func (c *InMemory) FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx context.Context, flag release.Flag, environment deployment.Environment, rollout *release.Rollout) (bool, error) {
 	defer c.withLock()()
+
+	if shouldSkipCache(ctx) {
+		return c.Storage.FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx, flag, environment, rollout)
+	}
 
 	type FindReleaseRolloutByReleaseFlagAndDeploymentEnvironmentValue struct {
 		value release.Rollout
@@ -423,6 +463,10 @@ func (c *InMemory) FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx c
 func (c *InMemory) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrName string, env *deployment.Environment) (bool, error) {
 	defer c.withLock()()
 
+	if shouldSkipCache(ctx) {
+		return c.Storage.FindDeploymentEnvironmentByAlias(ctx, idOrName, env)
+	}
+
 	type FindDeploymentEnvironmentByAliasValue struct {
 		value deployment.Environment
 		found bool
@@ -451,4 +495,28 @@ func (c *InMemory) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrNam
 	}
 
 	return true, reflects.Link(value.value, env)
+}
+
+func (c *InMemory) BeginTx(ctx context.Context) (context.Context, error) {
+	return c.Storage.BeginTx(contextWithNoCache(ctx))
+}
+
+func (c *InMemory) CommitTx(ctx context.Context) error {
+	if err := c.Storage.CommitTx(ctx); err != nil {
+		return err
+	}
+
+	noCacheDone(ctx)
+	c.dropCache()
+	return nil
+}
+
+func (c *InMemory) RollbackTx(ctx context.Context) error {
+	if err := c.Storage.RollbackTx(ctx); err != nil {
+		return err
+	}
+
+	noCacheDone(ctx)
+	c.dropCache()
+	return nil
 }

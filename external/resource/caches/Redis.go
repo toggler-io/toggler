@@ -48,6 +48,10 @@ func (r *Redis) Close() error {
 }
 
 func (r *Redis) FindByID(ctx context.Context, ptr interface{}, ID string) (bool, error) {
+	if shouldSkipCache(ctx) {
+		return r.Storage.FindByID(ctx, ptr, ID)
+	}
+
 	key := fmt.Sprintf(`%s#%s`, reflects.FullyQualifiedName(ptr), ID)
 	reply := r.client.Get(key)
 
@@ -58,7 +62,7 @@ func (r *Redis) FindByID(ctx context.Context, ptr interface{}, ID string) (bool,
 	}
 
 	if err == redis.Nil {
-		found, err := r.Storage.FindByID(ctx, ptr, ID);
+		found, err := r.Storage.FindByID(ctx, ptr, ID)
 		if err != nil {
 			return false, err
 		}
@@ -149,6 +153,48 @@ func (r *Redis) invalidateKey(key string) error {
 	reply := r.client.Del(key)
 	if err := reply.Err(); err != nil && err != redis.Nil {
 		return err
+	}
+	return nil
+}
+
+func (r *Redis) BeginTx(ctx context.Context) (context.Context, error) {
+	return r.Storage.BeginTx(contextWithNoCache(ctx))
+}
+
+func (r *Redis) CommitTx(ctx context.Context) error {
+	if err := r.Storage.CommitTx(ctx); err != nil {
+		return err
+	}
+
+	noCacheDone(ctx)
+	return r.invalidateAll()
+}
+
+func (r *Redis) RollbackTx(ctx context.Context) error {
+	if err := r.Storage.RollbackTx(ctx); err != nil {
+		return err
+	}
+
+	noCacheDone(ctx)
+	return r.invalidateAll()
+}
+
+func (r *Redis) invalidateAll() error {
+	keysRes := r.client.Keys(`*`)
+
+	if err := keysRes.Err(); err != nil && err != redis.Nil {
+		return err
+	}
+
+	keys, err := keysRes.Result()
+	if err != nil && err != redis.Nil {
+		return err
+	}
+
+	for _, key := range keys {
+		if err := r.invalidateKey(key); err != nil {
+			return err
+		}
 	}
 	return nil
 }

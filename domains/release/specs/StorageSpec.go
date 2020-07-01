@@ -30,6 +30,12 @@ func (spec StorageSpec) Test(t *testing.T) {
 				Subject:        spec.Subject,
 			}.Test(t)
 
+			specs.OnePhaseCommitProtocolSpec{
+				EntityType:     release.Flag{},
+				FixtureFactory: spec.FixtureFactory,
+				Subject:        spec.Subject,
+			}.Test(t)
+
 			FlagFinderSpec{
 				Subject:        spec.Subject,
 				FixtureFactory: spec.FixtureFactory,

@@ -122,6 +122,49 @@ func (mr *MockStorageMockRecorder) DeleteAll(ctx, T interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAll", reflect.TypeOf((*MockStorage)(nil).DeleteAll), ctx, T)
 }
 
+// BeginTx mocks base method
+func (m *MockStorage) BeginTx(arg0 context.Context) (context.Context, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BeginTx", arg0)
+	ret0, _ := ret[0].(context.Context)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BeginTx indicates an expected call of BeginTx
+func (mr *MockStorageMockRecorder) BeginTx(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BeginTx", reflect.TypeOf((*MockStorage)(nil).BeginTx), arg0)
+}
+
+// CommitTx mocks base method
+func (m *MockStorage) CommitTx(arg0 context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CommitTx", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CommitTx indicates an expected call of CommitTx
+func (mr *MockStorageMockRecorder) CommitTx(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CommitTx", reflect.TypeOf((*MockStorage)(nil).CommitTx), arg0)
+}
+
+// RollbackTx mocks base method
+func (m *MockStorage) RollbackTx(arg0 context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RollbackTx", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RollbackTx indicates an expected call of RollbackTx
+func (mr *MockStorageMockRecorder) RollbackTx(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RollbackTx", reflect.TypeOf((*MockStorage)(nil).RollbackTx), arg0)
+}
+
 // FindReleaseFlagByName mocks base method
 func (m *MockStorage) FindReleaseFlagByName(ctx context.Context, name string) (*release.Flag, error) {
 	m.ctrl.T.Helper()

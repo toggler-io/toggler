@@ -28,6 +28,7 @@ type pilotFinderSpec struct {
 		resources.Updater
 		resources.Finder
 		resources.Deleter
+		resources.OnePhaseCommitProtocol
 	}
 	FixtureFactory specs.FixtureFactory
 }
@@ -44,6 +45,12 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 		specs.CommonSpec{
 			EntityType:     release.ManualPilot{},
 			FixtureFactory: spec.ff(t),
+			Subject:        spec.Subject,
+		}.Test(t.T)
+
+		specs.OnePhaseCommitProtocolSpec{
+			EntityType:     release.Flag{},
+			FixtureFactory: spec.FixtureFactory,
 			Subject:        spec.Subject,
 		}.Test(t.T)
 	})

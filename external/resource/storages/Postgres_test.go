@@ -80,11 +80,7 @@ func TestPostgres_Close(t *testing.T) {
 	s := testcase.NewSpec(t)
 
 	pg := func(t *testcase.T) *storages.Postgres {
-		return &storages.Postgres{DB: t.I(`DB`).(interface{
-			ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
-			QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
-			QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
-		})}
+		return &storages.Postgres{DB: t.I(`DB`).(*sql.DB)}
 	}
 
 	subject := func(t *testcase.T) error {
@@ -110,6 +106,10 @@ func TestPostgres_Close(t *testing.T) {
 	})
 
 	s.When(`db is a *sql.Tx`, func(s *testcase.Spec) {
+		s.Before(func(t *testcase.T) {
+			t.Skip(`WIP: not supported feature at the moment, please use resources.OnePhaseCommitProtocol actions to manage transactions with Postgres storage`)
+		})
+
 		s.Let(`DB`, func(t *testcase.T) interface{} {
 			tx, err := t.I(`*sql.DB`).(*sql.DB).Begin()
 			require.Nil(t, err)

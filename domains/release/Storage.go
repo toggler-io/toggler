@@ -14,6 +14,7 @@ type Storage interface {
 	resources.Finder
 	resources.Updater
 	resources.Deleter
+	resources.OnePhaseCommitProtocol
 	FlagFinder
 	PilotFinder
 	RolloutFinder

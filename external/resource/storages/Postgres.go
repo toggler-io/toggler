@@ -38,18 +38,59 @@ func NewPostgres(db *sql.DB) (*Postgres, error) {
 }
 
 type Postgres struct {
-	DB interface {
-		ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
-		QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
-		QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
+	DB *sql.DB
+}
+
+type PostgresTxCtxKey struct{}
+
+func (pg *Postgres) BeginTx(ctx context.Context) (context.Context, error) {
+	if ctx.Value(PostgresTxCtxKey{}) != nil {
+		return nil, fmt.Errorf(`context has already a postgres tx`)
 	}
+
+	tx, err := pg.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return context.WithValue(ctx, PostgresTxCtxKey{}, tx), nil
+}
+
+func (pg *Postgres) CommitTx(ctx context.Context) error {
+	tx, ok := ctx.Value(PostgresTxCtxKey{}).(*sql.Tx)
+	if !ok {
+		return fmt.Errorf(`no postgres tx in the given context`)
+	}
+
+	return tx.Commit()
+}
+
+func (pg *Postgres) RollbackTx(ctx context.Context) error {
+	tx, ok := ctx.Value(PostgresTxCtxKey{}).(*sql.Tx)
+	if !ok {
+		return fmt.Errorf(`no postgres tx in the given context`)
+	}
+
+	return tx.Rollback()
+}
+
+func (pg *Postgres) getDB(ctx context.Context) interface {
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
+	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
+} {
+	if tx, ok := ctx.Value(PostgresTxCtxKey{}).(*sql.Tx); ok {
+		return tx
+	}
+
+	return pg.DB
 }
 
 func (pg *Postgres) FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx context.Context, flag release.Flag, env deployment.Environment, rollout *release.Rollout) (bool, error) {
 	var m releaseRolloutMapper
 	tmpl := `SELECT %s FROM release_rollouts WHERE flag_id = $1 AND env_id = $2`
 	query := fmt.Sprintf(tmpl, strings.Join(m.Columns(), `, `))
-	row := pg.DB.QueryRowContext(ctx, query, flag.ID, env.ID)
+	row := pg.getDB(ctx).QueryRowContext(ctx, query, flag.ID, env.ID)
 
 	err := m.Map(row, rollout)
 	if err == sql.ErrNoRows {
@@ -73,7 +114,7 @@ func (pg *Postgres) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrNa
 		format = `SELECT %s FROM deployment_environments WHERE name = $1`
 	}
 	query = fmt.Sprintf(format, strings.Join(m.Columns(), `,`))
-	err := m.Map(pg.DB.QueryRowContext(ctx, query, idOrName), env)
+	err := m.Map(pg.getDB(ctx).QueryRowContext(ctx, query, idOrName), env)
 	if err == sql.ErrNoRows {
 		return false, nil
 	}
@@ -81,14 +122,7 @@ func (pg *Postgres) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrNa
 }
 
 func (pg *Postgres) Close() error {
-	switch db := pg.DB.(type) {
-	case interface{ Close() error }:
-		return db.Close()
-	case interface{ Commit() error }:
-		return db.Commit()
-	default:
-		return frameless.ErrNotImplemented
-	}
+	return pg.DB.Close()
 }
 
 func (pg *Postgres) Create(ctx context.Context, ptr interface{}) error {
@@ -157,7 +191,7 @@ func (pg *Postgres) DeleteAll(ctx context.Context, Type interface{}) error {
 	}
 
 	query := fmt.Sprintf(`DELETE FROM "%s"`, tableName)
-	_, err := pg.DB.ExecContext(ctx, query)
+	_, err := pg.getDB(ctx).ExecContext(ctx, query)
 	return err
 }
 
@@ -190,7 +224,7 @@ func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, id string)
 		return frameless.ErrNotImplemented
 	}
 
-	result, err := pg.DB.ExecContext(ctx, query, id)
+	result, err := pg.getDB(ctx).ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}
@@ -224,9 +258,6 @@ func (pg *Postgres) Update(ctx context.Context, ptr interface{}) error {
 	case *security.Token:
 		return pg.tokenUpdate(ctx, e)
 
-	case *resources.TestEntity:
-		return pg.testEntityUpdate(ctx, e)
-
 	default:
 		return frameless.ErrNotImplemented
 	}
@@ -257,7 +288,7 @@ func (pg *Postgres) FindReleaseFlagByName(ctx context.Context, name string) (*re
 	query := fmt.Sprintf(`%s FROM "release_flags" WHERE "name" = $1`,
 		mapper.SelectClause())
 
-	row := pg.DB.QueryRowContext(ctx, query, name)
+	row := pg.getDB(ctx).QueryRowContext(ctx, query, name)
 
 	var ff release.Flag
 
@@ -284,7 +315,7 @@ func (pg *Postgres) FindReleaseManualPilotByExternalID(ctx context.Context, flag
 	q := fmt.Sprintf(`SELECT %s FROM "release_pilots" WHERE "flag_id" = $1 AND "env_id" = $2 AND "external_id" = $3`,
 		strings.Join(m.Columns(), `, `))
 
-	row := pg.DB.QueryRowContext(ctx, q, flagID, envID, pilotExtID)
+	row := pg.getDB(ctx).QueryRowContext(ctx, q, flagID, envID, pilotExtID)
 
 	var p release.ManualPilot
 
@@ -316,7 +347,7 @@ func (pg *Postgres) FindReleasePilotsByReleaseFlag(ctx context.Context, flag rel
 
 	m := pilotMapper{}
 	query := fmt.Sprintf(`SELECT %s FROM "release_pilots" WHERE "flag_id" = $1`, strings.Join(m.Columns(), `, `))
-	rows, err := pg.DB.QueryContext(ctx, query, flag.ID)
+	rows, err := pg.getDB(ctx).QueryContext(ctx, query, flag.ID)
 
 	if err != nil {
 		return iterators.NewError(err)
@@ -336,7 +367,7 @@ var tokenFindByTokenStringQuery = fmt.Sprintf(tokenFindByTokenStringTemplate, st
 func (pg *Postgres) FindTokenBySHA512Hex(ctx context.Context, token string) (*security.Token, error) {
 	m := tokenMapper{}
 
-	row := pg.DB.QueryRowContext(ctx, tokenFindByTokenStringQuery, token)
+	row := pg.getDB(ctx).QueryRowContext(ctx, tokenFindByTokenStringQuery, token)
 
 	var t security.Token
 
@@ -356,7 +387,7 @@ func (pg *Postgres) FindTokenBySHA512Hex(ctx context.Context, token string) (*se
 func (pg *Postgres) FindReleasePilotsByExternalID(ctx context.Context, pilotExtID string) release.PilotEntries {
 	m := pilotMapper{}
 	q := fmt.Sprintf(`SELECT %s FROM "release_pilots" WHERE "external_id" = $1`, strings.Join(m.Columns(), `, `))
-	rows, err := pg.DB.QueryContext(ctx, q, pilotExtID)
+	rows, err := pg.getDB(ctx).QueryContext(ctx, q, pilotExtID)
 	if err != nil {
 		return iterators.NewError(err)
 	}
@@ -379,7 +410,7 @@ func (pg *Postgres) FindReleaseFlagsByName(ctx context.Context, flagNames ...str
 		mapper.SelectClause(),
 		strings.Join(namesInClause, `,`))
 
-	flags, err := pg.DB.QueryContext(ctx, query, args...)
+	flags, err := pg.getDB(ctx).QueryContext(ctx, query, args...)
 
 	if err != nil {
 		return iterators.NewError(err)
@@ -399,7 +430,7 @@ func (pg *Postgres) releaseFlagInsertNew(ctx context.Context, flag *release.Flag
 		return err
 	}
 
-	if _, err := pg.DB.ExecContext(ctx, releaseFlagInsertNewQuery, id, flag.Name,
+	if _, err := pg.getDB(ctx).ExecContext(ctx, releaseFlagInsertNewQuery, id, flag.Name,
 	); err != nil {
 		return err
 	}
@@ -419,11 +450,12 @@ func (pg *Postgres) releaseRolloutInsertNew(ctx context.Context, rollout *releas
 	}
 
 	planJSON, err := json.Marshal(release.RolloutDefinitionView{Definition: rollout.Plan})
+
 	if err != nil {
 		return err
 	}
 
-	if _, err := pg.DB.ExecContext(ctx, releaseRolloutInsertNewQuery,
+	if _, err := pg.getDB(ctx).ExecContext(ctx, releaseRolloutInsertNewQuery,
 		id,
 		rollout.FlagID,
 		rollout.DeploymentEnvironmentID,
@@ -446,7 +478,7 @@ func (pg *Postgres) deploymentEnvironmentInsertNew(ctx context.Context, env *dep
 		return err
 	}
 
-	if _, err := pg.DB.ExecContext(ctx, deploymentEnvironmentInsertNewQuery, id, env.Name); err != nil {
+	if _, err := pg.getDB(ctx).ExecContext(ctx, deploymentEnvironmentInsertNewQuery, id, env.Name); err != nil {
 		return err
 	}
 
@@ -469,7 +501,7 @@ func (pg *Postgres) pilotInsertNew(ctx context.Context, pilot *release.ManualPil
 		return fmt.Errorf(`invalid name Flag ID: ` + pilot.FlagID)
 	}
 
-	if _, err := pg.DB.ExecContext(ctx, pilotInsertNewQuery,
+	if _, err := pg.getDB(ctx).ExecContext(ctx, pilotInsertNewQuery,
 		id,
 		pilot.FlagID,
 		pilot.DeploymentEnvironmentID,
@@ -495,7 +527,7 @@ func (pg *Postgres) testEntityInsertNew(ctx context.Context, te *resources.TestE
 		return err
 	}
 
-	if _, err := pg.DB.ExecContext(ctx, testEntityInsertNewQuery, id); err != nil {
+	if _, err := pg.getDB(ctx).ExecContext(ctx, testEntityInsertNewQuery, id); err != nil {
 		return err
 	}
 
@@ -514,7 +546,7 @@ func (pg *Postgres) tokenInsertNew(ctx context.Context, token *security.Token) e
 		return err
 	}
 
-	if _, err := pg.DB.ExecContext(ctx, tokenInsertNewQuery,
+	if _, err := pg.getDB(ctx).ExecContext(ctx, tokenInsertNewQuery,
 		id,
 		token.SHA512,
 		token.OwnerUID,
@@ -531,7 +563,7 @@ func (pg *Postgres) tokenInsertNew(ctx context.Context, token *security.Token) e
 func (pg *Postgres) releaseRolloutFindByID(ctx context.Context, rollout *release.Rollout, id string) (bool, error) {
 	mapper := releaseRolloutMapper{}
 	query := fmt.Sprintf(`SELECT %s FROM "release_rollouts" WHERE "id" = $1`, strings.Join(mapper.Columns(), `, `))
-	err := mapper.Map(pg.DB.QueryRowContext(ctx, query, id), rollout)
+	err := mapper.Map(pg.getDB(ctx).QueryRowContext(ctx, query, id), rollout)
 
 	if err == sql.ErrNoRows {
 		return false, nil
@@ -547,7 +579,7 @@ func (pg *Postgres) releaseRolloutFindByID(ctx context.Context, rollout *release
 func (pg *Postgres) releaseFlagFindByID(ctx context.Context, flag *release.Flag, id string) (bool, error) {
 	mapper := releaseFlagMapper{}
 	query := fmt.Sprintf(`SELECT %s FROM "release_flags" WHERE "id" = $1`, strings.Join(mapper.Columns(), `, `))
-	err := mapper.Map(pg.DB.QueryRowContext(ctx, query, id), flag)
+	err := mapper.Map(pg.getDB(ctx).QueryRowContext(ctx, query, id), flag)
 
 	if err == sql.ErrNoRows {
 		return false, nil
@@ -563,7 +595,7 @@ func (pg *Postgres) releaseFlagFindByID(ctx context.Context, flag *release.Flag,
 func (pg *Postgres) deploymentEnvironmentFindByID(ctx context.Context, env *deployment.Environment, id string) (bool, error) {
 	mapper := deploymentEnvironmentMapper{}
 	query := fmt.Sprintf(`SELECT %s FROM "deployment_environments" WHERE "id" = $1`, strings.Join(mapper.Columns(), `, `))
-	err := mapper.Map(pg.DB.QueryRowContext(ctx, query, id), env)
+	err := mapper.Map(pg.getDB(ctx).QueryRowContext(ctx, query, id), env)
 
 	if err == sql.ErrNoRows {
 		return false, nil
@@ -579,7 +611,7 @@ func (pg *Postgres) deploymentEnvironmentFindByID(ctx context.Context, env *depl
 func (pg *Postgres) pilotFindByID(ctx context.Context, pilot *release.ManualPilot, id string) (bool, error) {
 	m := pilotMapper{}
 	query := fmt.Sprintf(`SELECT %s FROM "release_pilots" WHERE "id" = $1`, strings.Join(m.Columns(), `, `))
-	row := pg.DB.QueryRowContext(ctx, query, id)
+	row := pg.getDB(ctx).QueryRowContext(ctx, query, id)
 
 	var p release.ManualPilot
 	err := m.Map(row, &p)
@@ -603,7 +635,7 @@ WHERE id = $1;
 `
 
 func (pg *Postgres) testEntityFindByID(ctx context.Context, testEntity *resources.TestEntity, id string) (bool, error) {
-	row := pg.DB.QueryRowContext(ctx, testEntityFindByIDQuery, id)
+	row := pg.getDB(ctx).QueryRowContext(ctx, testEntityFindByIDQuery, id)
 
 	err := row.Scan(&testEntity.ID)
 
@@ -628,7 +660,7 @@ var tokenFindByIDQuery = fmt.Sprintf(tokenFindByIDQueryTemplate, strings.Join(to
 
 func (pg *Postgres) tokenFindByID(ctx context.Context, token *security.Token, id string) (bool, error) {
 
-	row := pg.DB.QueryRowContext(ctx, tokenFindByIDQuery, id)
+	row := pg.getDB(ctx).QueryRowContext(ctx, tokenFindByIDQuery, id)
 	err := tokenMapper{}.Map(row, token)
 
 	if err == sql.ErrNoRows {
@@ -645,7 +677,7 @@ func (pg *Postgres) tokenFindByID(ctx context.Context, token *security.Token, id
 func (pg *Postgres) releaseFlagFindAll(ctx context.Context) frameless.Iterator {
 	mapper := releaseFlagMapper{}
 	query := fmt.Sprintf(`%s FROM "release_flags"`, mapper.SelectClause())
-	rows, err := pg.DB.QueryContext(ctx, query)
+	rows, err := pg.getDB(ctx).QueryContext(ctx, query)
 	if err != nil {
 		return iterators.NewError(err)
 	}
@@ -656,7 +688,7 @@ func (pg *Postgres) releaseFlagFindAll(ctx context.Context) frameless.Iterator {
 func (pg *Postgres) releaseRolloutFindAll(ctx context.Context) frameless.Iterator {
 	mapper := releaseRolloutMapper{}
 	query := fmt.Sprintf(`SELECT %s FROM "release_rollouts"`, strings.Join(mapper.Columns(), `, `))
-	rows, err := pg.DB.QueryContext(ctx, query)
+	rows, err := pg.getDB(ctx).QueryContext(ctx, query)
 	if err != nil {
 		return iterators.NewError(err)
 	}
@@ -668,7 +700,7 @@ func (pg *Postgres) deploymentEnvironmentFindAll(ctx context.Context) frameless.
 	mapper := deploymentEnvironmentMapper{}
 	query := fmt.Sprintf(`SELECT %s FROM "deployment_environments"`, strings.Join(mapper.Columns(), `,`))
 
-	rows, err := pg.DB.QueryContext(ctx, query)
+	rows, err := pg.getDB(ctx).QueryContext(ctx, query)
 	if err != nil {
 		return iterators.NewError(err)
 	}
@@ -679,7 +711,7 @@ func (pg *Postgres) deploymentEnvironmentFindAll(ctx context.Context) frameless.
 func (pg *Postgres) pilotFindAll(ctx context.Context) frameless.Iterator {
 	m := pilotMapper{}
 	q := fmt.Sprintf(`SELECT %s FROM "release_pilots"`, strings.Join(m.Columns(), `, `))
-	rows, err := pg.DB.QueryContext(ctx, q)
+	rows, err := pg.getDB(ctx).QueryContext(ctx, q)
 	if err != nil {
 		return iterators.NewError(err)
 	}
@@ -694,7 +726,7 @@ func (pg *Postgres) testEntityFindAll(ctx context.Context) frameless.Iterator {
 		return s.Scan(&te.ID)
 	})
 
-	rows, err := pg.DB.QueryContext(ctx, `SELECT id FROM "test_entities"`)
+	rows, err := pg.getDB(ctx).QueryContext(ctx, `SELECT id FROM "test_entities"`)
 
 	if err != nil {
 		return iterators.NewError(err)
@@ -712,7 +744,7 @@ FROM "tokens"
 func (pg *Postgres) tokenFindAll(ctx context.Context) frameless.Iterator {
 	m := tokenMapper{}
 
-	rows, err := pg.DB.QueryContext(ctx, fmt.Sprintf(tokenFindAllQuery, strings.Join(m.Columns(), `, `)))
+	rows, err := pg.getDB(ctx).QueryContext(ctx, fmt.Sprintf(tokenFindAllQuery, strings.Join(m.Columns(), `, `)))
 
 	if err != nil {
 		return iterators.NewError(err)
@@ -728,7 +760,7 @@ WHERE id = $1;
 `
 
 func (pg *Postgres) deploymentEnvironmentUpdate(ctx context.Context, env *deployment.Environment) error {
-	_, err := pg.DB.ExecContext(ctx, deploymentEnvironmentUpdateQuery, env.ID, env.Name)
+	_, err := pg.getDB(ctx).ExecContext(ctx, deploymentEnvironmentUpdateQuery, env.ID, env.Name)
 
 	return err
 }
@@ -740,7 +772,7 @@ WHERE id = $1;
 `
 
 func (pg *Postgres) releaseFlagUpdate(ctx context.Context, flag *release.Flag) error {
-	_, err := pg.DB.ExecContext(ctx, releaseFlagUpdateQuery, flag.ID, flag.Name)
+	_, err := pg.getDB(ctx).ExecContext(ctx, releaseFlagUpdateQuery, flag.ID, flag.Name)
 
 	return err
 }
@@ -759,7 +791,7 @@ func (pg *Postgres) releaseRolloutUpdate(ctx context.Context, rollout *release.R
 		return err
 	}
 
-	_, err = pg.DB.ExecContext(ctx, releaseRolloutUpdateQuery,
+	_, err = pg.getDB(ctx).ExecContext(ctx, releaseRolloutUpdateQuery,
 		rollout.ID,
 		rollout.FlagID,
 		rollout.DeploymentEnvironmentID,
@@ -779,7 +811,7 @@ WHERE id = $1;
 `
 
 func (pg *Postgres) pilotUpdate(ctx context.Context, pilot *release.ManualPilot) error {
-	_, err := pg.DB.ExecContext(ctx, pilotUpdateQuery, pilot.ID,
+	_, err := pg.getDB(ctx).ExecContext(ctx, pilotUpdateQuery, pilot.ID,
 		pilot.FlagID,
 		pilot.DeploymentEnvironmentID,
 		pilot.ExternalID,
@@ -799,7 +831,7 @@ WHERE id = $5;
 `
 
 func (pg *Postgres) tokenUpdate(ctx context.Context, t *security.Token) error {
-	_, err := pg.DB.ExecContext(ctx, tokenUpdateQuery,
+	_, err := pg.getDB(ctx).ExecContext(ctx, tokenUpdateQuery,
 		t.SHA512,
 		t.OwnerUID,
 		t.IssuedAt,
@@ -808,18 +840,6 @@ func (pg *Postgres) tokenUpdate(ctx context.Context, t *security.Token) error {
 	)
 
 	return err
-}
-
-func (pg *Postgres) testEntityUpdate(ctx context.Context, t *resources.TestEntity) error {
-	return nil
-}
-
-func newPrepareQueryPlaceholderAssigner() func() string {
-	var index int
-	return func() string {
-		index++
-		return fmt.Sprintf(`$%d`, index)
-	}
 }
 
 /* -------------------------- MIGRATION -------------------------- */

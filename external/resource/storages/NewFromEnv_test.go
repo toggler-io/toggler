@@ -1,7 +1,6 @@
 package storages_test
 
 import (
-	"database/sql"
 	"net/url"
 	"os"
 	"path"
@@ -94,7 +93,7 @@ func TestNewFromEnv(t *testing.T) {
 				require.NotNil(t, s)
 				pg, ok := s.(*storages.Postgres)
 				require.True(t, ok)
-				require.Nil(t, pg.DB.(*sql.DB).Ping())
+				require.Nil(t, pg.DB.Ping())
 			}
 
 			s.And(`RDS_ENGINE_OPTS also set`, func(s *testcase.Spec) {
