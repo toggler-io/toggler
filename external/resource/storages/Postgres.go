@@ -43,9 +43,15 @@ type Postgres struct {
 
 type PostgresTxCtxKey struct{}
 
+type PostgresTx struct {
+	depth int
+	*sql.Tx
+}
+
 func (pg *Postgres) BeginTx(ctx context.Context) (context.Context, error) {
-	if ctx.Value(PostgresTxCtxKey{}) != nil {
-		return nil, fmt.Errorf(`context has already a postgres tx`)
+	if tx, ok := pg.lookupTx(ctx); ok && tx.Tx != nil {
+		tx.depth++
+		return ctx, nil
 	}
 
 	tx, err := pg.DB.BeginTx(ctx, nil)
@@ -53,25 +59,51 @@ func (pg *Postgres) BeginTx(ctx context.Context) (context.Context, error) {
 		return nil, err
 	}
 
-	return context.WithValue(ctx, PostgresTxCtxKey{}, tx), nil
+	return context.WithValue(ctx, PostgresTxCtxKey{}, &PostgresTx{Tx: tx}), nil
 }
 
 func (pg *Postgres) CommitTx(ctx context.Context) error {
-	tx, ok := ctx.Value(PostgresTxCtxKey{}).(*sql.Tx)
+	tx, ok := pg.lookupTx(ctx)
 	if !ok {
 		return fmt.Errorf(`no postgres tx in the given context`)
 	}
 
-	return tx.Commit()
+	if tx.Tx == nil {
+		return sql.ErrTxDone
+	}
+
+	if tx.depth > 0 {
+		tx.depth--
+		return nil
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	tx.Tx = nil
+	return nil
 }
 
 func (pg *Postgres) RollbackTx(ctx context.Context) error {
-	tx, ok := ctx.Value(PostgresTxCtxKey{}).(*sql.Tx)
+	tx, ok := pg.lookupTx(ctx)
 	if !ok {
 		return fmt.Errorf(`no postgres tx in the given context`)
 	}
 
-	return tx.Rollback()
+	if tx.Tx == nil {
+		return sql.ErrTxDone
+	}
+
+	if err := tx.Rollback(); err != nil {
+		return err
+	}
+	tx.Tx = nil
+	return nil
+}
+
+func (pg *Postgres) lookupTx(ctx context.Context) (*PostgresTx, bool) {
+	tx, ok := ctx.Value(PostgresTxCtxKey{}).(*PostgresTx)
+	return tx, ok
 }
 
 func (pg *Postgres) getDB(ctx context.Context) interface {
@@ -79,8 +111,8 @@ func (pg *Postgres) getDB(ctx context.Context) interface {
 	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
 	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
 } {
-	if tx, ok := ctx.Value(PostgresTxCtxKey{}).(*sql.Tx); ok {
-		return tx
+	if tx, ok := pg.lookupTx(ctx); ok && tx.Tx != nil {
+		return tx.Tx
 	}
 
 	return pg.DB
@@ -566,6 +598,24 @@ func (pg *Postgres) releaseRolloutFindByID(ctx context.Context, rollout *release
 	err := mapper.Map(pg.getDB(ctx).QueryRowContext(ctx, query, id), rollout)
 
 	if err == sql.ErrNoRows {
+
+		fmt.Println()
+		query = fmt.Sprintf(`SELECT %s FROM "release_rollouts"`, strings.Join(mapper.Columns(), `, `))
+		rows, err := pg.getDB(ctx).QueryContext(ctx, query)
+		if err != nil {
+			panic(err)
+		}
+		defer rows.Close()
+
+		fmt.Println(`expected id:`, id)
+		for rows.Next() {
+			var ro release.Rollout
+			if err := mapper.Map(rows, &ro); err != nil {
+				panic(err)
+			}
+			fmt.Println(fmt.Sprintf(`%#v`, ro))
+		}
+
 		return false, nil
 	}
 

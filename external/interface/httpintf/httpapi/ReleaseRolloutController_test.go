@@ -16,9 +16,9 @@ import (
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/external/interface/httpintf"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
-	"github.com/toggler-io/toggler/lib/go/client"
-	swagger "github.com/toggler-io/toggler/lib/go/client/release"
-	"github.com/toggler-io/toggler/lib/go/models"
+	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client"
+	swagger "github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client/release"
+	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/models"
 	. "github.com/toggler-io/toggler/testing"
 )
 
@@ -44,7 +44,7 @@ func TestReleaseRolloutController(t *testing.T) {
 	s.Describe(`DELETE / - delete release rollout`, SpecReleaseRolloutControllerDelete)
 
 	s.Context(`given we have a release rollout in the system`, func(s *testcase.Spec) {
-		GivenWeHaveReleaseRollout(s, `rollout`, ExampleReleaseFlagLetVar, ExampleDeploymentEnvironmentLetVar)
+		GivenWeHaveReleaseRollout(s, `rollout`, LetVarExampleReleaseFlag, LetVarExampleDeploymentEnvironment)
 
 		s.And(`release rollout identifier provided as the external ID`, func(s *testcase.Spec) {
 			s.Let(`id`, func(t *testcase.T) interface{} {
@@ -62,7 +62,7 @@ func SpecReleaseRolloutControllerDelete(s *testcase.Spec) {
 	LetPathValue(s, `/`)
 	GivenHTTPRequestHasAppToken(s)
 
-
+	s.Test(`TODO: add the ability to delete rollout`, func(t *testcase.T) { t.Skip() })
 }
 
 func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
@@ -76,6 +76,11 @@ func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
 		require.Nil(t, json.Unmarshal(rr.Body.Bytes(), &resp.Body))
 		return resp
 	}
+
+	s.After(func(t *testcase.T) {
+		require.Nil(t, ExampleStorage(t).DeleteAll(GetContext(t), release.Rollout{}))
+		require.Nil(t, ExampleStorage(t).DeleteAll(GetContext(t), release.Flag{}))
+	})
 
 	s.Let(`rollout`, func(t *testcase.T) interface{} {
 		r := FixtureFactory{}.Create(release.Rollout{}).(*release.Rollout)
@@ -131,35 +136,36 @@ func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
 		})
 	})
 
-	s.Test(`swagger`, func(t *testcase.T) {
-		Debug = true
-		sm, err := httpintf.NewServeMux(ExampleUseCases(t))
-		require.Nil(t, err)
+	s.Context(`E2E`, func(s *testcase.Spec) {
+		s.Tag(TagBlackBox)
 
-		s := httptest.NewServer(sm)
-		defer s.Close()
+		s.Test(`swagger`, func(t *testcase.T) {
+			Debug = true
+			sm, err := httpintf.NewServeMux(ExampleUseCases(t))
+			require.Nil(t, err)
 
-		tc := client.DefaultTransportConfig()
-		u, _ := url.Parse(s.URL)
-		tc.Host = u.Host
-		tc.Schemes = []string{`http`}
+			s := httptest.NewServer(sm)
+			defer s.Close()
 
-		c := client.NewHTTPClientWithConfig(nil, tc)
+			tc := client.DefaultTransportConfig()
+			u, _ := url.Parse(s.URL)
+			tc.Host = u.Host
+			tc.Schemes = []string{`http`}
 
-		p := swagger.NewCreateReleaseRolloutParams()
-		p.FlagID = ExampleReleaseFlag(t).ID
-		p.EnvironmentID = ExampleDeploymentEnvironment(t).ID
-		p.Body.Rollout = &models.Rollout{
-			Plan: release.RolloutDefinitionView{Definition: release.NewRolloutDecisionByPercentage()},
-		}
+			c := client.NewHTTPClientWithConfig(nil, tc)
 
-		resp, err := c.Release.CreateReleaseRollout(p, protectedAuth(t))
-		if err != nil {
-			t.Fatal(err.Error())
-		}
+			p := swagger.NewCreateReleaseRolloutParams()
+			p.FlagID = ExampleReleaseFlag(t).ID
+			p.EnvironmentID = ExampleDeploymentEnvironment(t).ID
+			p.Body.Rollout = &models.Rollout{
+				Plan: release.RolloutDefinitionView{Definition: release.NewRolloutDecisionByPercentage()},
+			}
 
-		require.NotNil(t, resp)
-		require.NotNil(t, resp.Payload)
+			resp, err := c.Release.CreateReleaseRollout(p, protectedAuth(t))
+			require.Nil(t, err)
+			require.NotNil(t, resp)
+			require.NotNil(t, resp.Payload)
+		})
 	})
 }
 
@@ -185,7 +191,7 @@ func SpecReleaseRolloutControllerList(s *testcase.Spec) {
 	})
 
 	s.And(`release rollout is present in the system`, func(s *testcase.Spec) {
-		GivenWeHaveReleaseRollout(s, `rollout-1`, ExampleReleaseFlagLetVar, ExampleDeploymentEnvironmentLetVar)
+		GivenWeHaveReleaseRollout(s, `rollout-1`, LetVarExampleReleaseFlag, LetVarExampleDeploymentEnvironment)
 		s.Before(func(t *testcase.T) { GetReleaseRollout(t, `rollout-1`) }) // eager load
 
 		s.Then(`rollout received back`, func(t *testcase.T) {
@@ -203,7 +209,7 @@ func SpecReleaseRolloutControllerList(s *testcase.Spec) {
 		})
 
 		s.And(`even multiple rollout in the system`, func(s *testcase.Spec) {
-			GivenWeHaveReleaseRollout(s, `feature-2`, ExampleReleaseFlagLetVar, ExampleDeploymentEnvironmentLetVar)
+			GivenWeHaveReleaseRollout(s, `feature-2`, LetVarExampleReleaseFlag, LetVarExampleDeploymentEnvironment)
 			s.Before(func(t *testcase.T) { GetReleaseRollout(t, `feature-2`) }) // eager load
 
 			s.Then(`the rollouts will be received back`, func(t *testcase.T) {
@@ -286,34 +292,38 @@ func SpecReleaseRolloutControllerUpdate(s *testcase.Spec) {
 		})
 	})
 
-	s.Test(`swagger`, func(t *testcase.T) {
-		sm, err := httpintf.NewServeMux(ExampleUseCases(t))
-		require.Nil(t, err)
+	s.Context(`E2E`, func(s *testcase.Spec) {
+		s.Tag(TagBlackBox)
 
-		s := httptest.NewServer(sm)
-		defer s.Close()
+		s.Test(`swagger`, func(t *testcase.T) {
+			sm, err := httpintf.NewServeMux(ExampleUseCases(t))
+			require.Nil(t, err)
 
-		id := GetReleaseRollout(t, `rollout`).ID
+			s := httptest.NewServer(sm)
+			defer s.Close()
 
-		tc := client.DefaultTransportConfig()
-		u, _ := url.Parse(s.URL)
-		tc.Host = u.Host
-		tc.Schemes = []string{`http`}
+			id := GetReleaseRollout(t, `rollout`).ID
 
-		c := client.NewHTTPClientWithConfig(nil, tc)
+			tc := client.DefaultTransportConfig()
+			u, _ := url.Parse(s.URL)
+			tc.Host = u.Host
+			tc.Schemes = []string{`http`}
 
-		p := swagger.NewUpdateReleaseRolloutParams()
-		p.RolloutID = id
-		p.FlagID = ExampleReleaseFlag(t).ID
-		p.EnvironmentID = ExampleDeploymentEnvironment(t).ID
-		p.Body.Rollout = &models.Rollout{
-			Plan: release.RolloutDefinitionView{Definition: release.NewRolloutDecisionByPercentage()},
-		}
+			c := client.NewHTTPClientWithConfig(nil, tc)
 
-		resp, err := c.Release.UpdateReleaseRollout(p, protectedAuth(t))
-		require.Nil(t, err)
-		require.NotNil(t, resp)
-		require.NotNil(t, resp.Payload)
+			p := swagger.NewUpdateReleaseRolloutParams()
+			p.RolloutID = id
+			p.FlagID = ExampleReleaseFlag(t).ID
+			p.EnvironmentID = ExampleDeploymentEnvironment(t).ID
+			p.Body.Rollout = &models.Rollout{
+				Plan: release.RolloutDefinitionView{Definition: release.NewRolloutDecisionByPercentage()},
+			}
+
+			resp, err := c.Release.UpdateReleaseRollout(p, protectedAuth(t))
+			require.Nil(t, err)
+			require.NotNil(t, resp)
+			require.NotNil(t, resp.Payload)
+		})
 	})
 }
 

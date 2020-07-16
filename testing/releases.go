@@ -11,20 +11,18 @@ import (
 )
 
 const (
-	ExampleReleaseManualPilotEnrollmentLetVar = `ExampleReleaseManualPilotEnrollment`
+	LetVarExampleReleaseManualPilotEnrollment = `ExampleReleaseManualPilotEnrollment`
 
-	ExampleReleaseRolloutLetVar  = `ReleaseRollout`
-	ExampleReleaseFlagLetVar     = `ReleaseFlag`
-	ExampleReleaseFlagNameLetVar = `ReleaseFlagName`
-
-	ExamplePilotExternalIDLetVar = `PilotExternalID`
-	ExamplePilotLetVar           = `ManualPilot`
-	ExamplePilotEnrollmentLetVar = `PilotEnrollment`
+	LetVarExampleReleaseRollout  = `example release rollout`
+	LetVarExampleReleaseFlag     = `example release flag`
+	LetVarExamplePilotExternalID = `PilotExternalID`
+	LetVarExamplePilot           = `ManualPilot`
+	LetVarExamplePilotEnrollment = `PilotEnrollment`
 )
 
 func init() {
 	setups = append(setups, func(s *testcase.Spec) {
-		s.Let(ExampleReleaseManualPilotEnrollmentLetVar, func(t *testcase.T) interface{} {
+		s.Let(LetVarExampleReleaseManualPilotEnrollment, func(t *testcase.T) interface{} {
 			mpe := Create(release.ManualPilot{}).(*release.ManualPilot)
 			mpe.FlagID = ExampleReleaseFlag(t).ID
 			mpe.DeploymentEnvironmentID = ExampleDeploymentEnvironment(t).ID
@@ -34,58 +32,40 @@ func init() {
 			return mpe
 		})
 
-		s.Let(ExamplePilotExternalIDLetVar, func(t *testcase.T) interface{} {
-			return RandomExternalPilotID()
+		s.Let(LetVarExamplePilotExternalID, func(t *testcase.T) interface{} {
+			return fixtures.Random.StringN(100)
 		})
 
-		s.Let(ExamplePilotEnrollmentLetVar, func(t *testcase.T) interface{} {
+		s.Let(LetVarExamplePilotEnrollment, func(t *testcase.T) interface{} {
 			return fixtures.Random.Bool()
 		})
 
-		s.Let(ExamplePilotLetVar, func(t *testcase.T) interface{} {
+		s.Let(LetVarExamplePilot, func(t *testcase.T) interface{} {
 			// domains/release/specs/FlagFinderSpec.go:53:1: DEPRECATED, clean it up
 			return &release.ManualPilot{
 				FlagID:                  ExampleReleaseFlag(t).ID,
 				DeploymentEnvironmentID: ExampleDeploymentEnvironment(t).ID,
-				ExternalID:              t.I(ExamplePilotExternalIDLetVar).(string),
-				IsParticipating:         t.I(ExamplePilotEnrollmentLetVar).(bool),
+				ExternalID:              t.I(LetVarExamplePilotExternalID).(string),
+				IsParticipating:         t.I(LetVarExamplePilotEnrollment).(bool),
 			}
 		})
 
-		GivenWeHaveReleaseFlag(s, ExampleReleaseFlagLetVar)
+		GivenWeHaveReleaseFlag(s, LetVarExampleReleaseFlag)
 
 		GivenWeHaveReleaseRollout(s,
-			ExampleReleaseRolloutLetVar,
-			ExampleReleaseFlagLetVar,
-			ExampleDeploymentEnvironmentLetVar,
+			LetVarExampleReleaseRollout,
+			LetVarExampleReleaseFlag,
+			LetVarExampleDeploymentEnvironment,
 		)
 	})
 }
 
 func ExampleReleaseManualPilotEnrollment(t *testcase.T) *release.ManualPilot {
-	return t.I(ExampleReleaseManualPilotEnrollmentLetVar).(*release.ManualPilot)
+	return t.I(LetVarExampleReleaseManualPilotEnrollment).(*release.ManualPilot)
 }
 
 func ExampleExternalPilotID(t *testcase.T) string {
-	return t.I(ExamplePilotExternalIDLetVar).(string)
-}
-
-func ExampleReleaseFlagName(t *testcase.T) string {
-	return t.I(ExampleReleaseFlagNameLetVar).(string)
-}
-
-func GetReleasePilot(t *testcase.T, vn string) *release.ManualPilot {
-	return t.I(vn).(*release.ManualPilot)
-}
-
-// DEPRECATED
-func ExamplePilot(t *testcase.T) *release.ManualPilot {
-	// replace with ExampleReleaseManualPilotEnrollmentLetVar
-	return GetReleasePilot(t, ExamplePilotLetVar)
-}
-
-func FindStoredExampleReleaseFlagByName(t *testcase.T) *release.Flag {
-	return FindStoredReleaseFlagByName(t, ExampleReleaseFlagName(t))
+	return t.I(LetVarExamplePilotExternalID).(string)
 }
 
 func FindStoredReleaseFlagByName(t *testcase.T, name string) *release.Flag {
@@ -96,7 +76,7 @@ func FindStoredReleaseFlagByName(t *testcase.T, name string) *release.Flag {
 }
 
 func ExampleReleaseRollout(t *testcase.T) *release.Rollout {
-	return GetReleaseRollout(t, ExampleReleaseRolloutLetVar)
+	return GetReleaseRollout(t, LetVarExampleReleaseRollout)
 }
 
 func getReleaseRolloutPlanLetVar(vn string) string {
@@ -137,6 +117,7 @@ func GivenWeHaveReleaseRollout(s *testcase.Spec, vn, flagLVN, envLVN string) {
 func GivenWeHaveReleaseFlag(s *testcase.Spec, vn string) {
 	s.Let(vn, func(t *testcase.T) interface{} {
 		rf := FixtureFactory{}.Create(release.Flag{}).(*release.Flag)
+		rf.Name = fmt.Sprintf(`%s - %s`, vn, rf.Name)
 		require.Nil(t, ExampleRolloutManager(t).Storage.Create(GetContext(t), rf))
 		t.Defer(ExampleRolloutManager(t).DeleteFeatureFlag, GetContext(t), rf.ID)
 		t.Defer(ExampleStorage(t).DeleteByID, GetContext(t), release.Flag{}, rf.ID)
@@ -147,7 +128,7 @@ func GivenWeHaveReleaseFlag(s *testcase.Spec, vn string) {
 
 func AndReleaseFlagRolloutPercentageIs(s *testcase.Spec, rolloutLVN string, percentage int) {
 	s.Before(func(t *testcase.T) {
-		rollout := GetReleaseRollout(t, ExampleReleaseRolloutLetVar)
+		rollout := GetReleaseRollout(t, LetVarExampleReleaseRollout)
 		byPercentage, ok := rollout.Plan.(release.RolloutDecisionByPercentage)
 		require.True(t, ok, `unexpected release rollout plan definition for AndReleaseFlagRolloutPercentageIs helper`)
 		byPercentage.Percentage = percentage
@@ -159,7 +140,8 @@ func AndReleaseFlagRolloutPercentageIs(s *testcase.Spec, rolloutLVN string, perc
 		// And in case if we already initialized such context where rollout entry exists,
 		// we need to update its rollout plan as well.
 		t.Let(getReleaseRolloutPlanLetVar(rolloutLVN), byPercentage)
-		rollout.Plan = GetReleaseRolloutPlan(t, ExampleReleaseRolloutLetVar)
+		rollout.Plan = GetReleaseRolloutPlan(t, LetVarExampleReleaseRollout)
+		require.Nil(t, ExampleStorage(t).Update(GetContext(t), rollout))
 	})
 }
 
@@ -172,7 +154,7 @@ func GetReleaseFlag(t *testcase.T, lvn string) *release.Flag {
 }
 
 func ExampleReleaseFlag(t *testcase.T) *release.Flag {
-	return GetReleaseFlag(t, ExampleReleaseFlagLetVar)
+	return GetReleaseFlag(t, LetVarExampleReleaseFlag)
 }
 
 func ExampleRolloutManager(t *testcase.T) *release.RolloutManager {

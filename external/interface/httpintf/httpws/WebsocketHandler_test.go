@@ -1,7 +1,6 @@
 package httpws_test
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -69,14 +68,9 @@ func TestWebsocket(t *testing.T) {
 
 		s.Let(`data`, func(t *testcase.T) interface{} {
 			return httpws.IsFeatureEnabledRequestPayload{
-				Feature: ExampleReleaseFlagName(t),
+				Feature: ExampleReleaseFlag(t).Name,
 				PilotID: ExampleExternalPilotID(t),
 			}
-		})
-
-		s.Before(func(t *testcase.T) {
-			require.Nil(t, ExampleStorage(t).Create(context.Background(), ExampleReleaseFlag(t)))
-			require.Nil(t, ExampleStorage(t).Create(context.Background(), ExamplePilot(t)))
 		})
 
 		s.Then(`it will reply with the enrollment`, func(t *testcase.T) {

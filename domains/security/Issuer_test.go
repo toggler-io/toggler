@@ -1,14 +1,15 @@
 package security_test
 
 import (
-	"context"
 	"strconv"
 	"testing"
 	"time"
 
+	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/testcase"
-	"github.com/toggler-io/toggler/domains/security"
 	"github.com/stretchr/testify/require"
+
+	"github.com/toggler-io/toggler/domains/security"
 
 	. "github.com/toggler-io/toggler/testing"
 )
@@ -27,17 +28,18 @@ func TestIssuer(t *testing.T) {
 }
 
 func SpecIssuerRevokeToken(s *testcase.Spec) {
-	subject := func(t *testcase.T) error {
+	var subject = func(t *testcase.T) error {
 		token, _ := t.I(`token`).(*security.Token)
 		issuer := t.I(`issuer`).(*security.Issuer)
-		return issuer.RevokeToken(context.TODO(), token)
+		return issuer.RevokeToken(GetContext(t), token)
 	}
 
 	s.When(`token exists`, func(s *testcase.Spec) {
 		s.Let(`token`, func(t *testcase.T) interface{} {
 			issuer := t.I(`issuer`).(*security.Issuer)
-			_, token, err := issuer.CreateNewToken(context.TODO(), ExampleUniqueUserID(t), nil, nil)
+			_, token, err := issuer.CreateNewToken(GetContext(t), ExampleUniqueUserID(t), nil, nil)
 			require.Nil(t, err)
+			t.Defer(ExampleStorage(t).DeleteByID, GetContext(t), security.Token{}, token.ID)
 			return token
 		})
 
@@ -50,7 +52,7 @@ func SpecIssuerRevokeToken(s *testcase.Spec) {
 			token := t.I(`token`).(*security.Token)
 
 			dk := security.NewDoorkeeper(ExampleStorage(t))
-			valid, err := dk.VerifyTextToken(context.TODO(), token.SHA512)
+			valid, err := dk.VerifyTextToken(GetContext(t), token.SHA512)
 			require.Nil(t, err)
 			require.False(t, valid)
 		})
@@ -58,17 +60,18 @@ func SpecIssuerRevokeToken(s *testcase.Spec) {
 }
 
 func SpecIssuerCreateNewToken(s *testcase.Spec) {
-	subject := func(t *testcase.T) (string, *security.Token, error) {
+	var subject = func(t *testcase.T) (string, *security.Token, error) {
 		issuer := t.I(`issuer`).(*security.Issuer)
 		userUID := t.I(`userUID`).(string)
 		issueAt, _ := t.I(`issueAt`).(*time.Time)
 		duration, _ := t.I(`duration`).(*time.Duration)
-		return issuer.CreateNewToken(context.TODO(), userUID, issueAt, duration)
+		return issuer.CreateNewToken(GetContext(t), userUID, issueAt, duration)
 	}
 	onSuccess := func(t *testcase.T) *security.Token {
 		textToken, token, err := subject(t)
 		require.Nil(t, err)
 		require.NotNil(t, token)
+		t.Defer(ExampleStorage(t).DeleteByID, GetContext(t), *token, token.ID)
 		hashed, err := security.ToSHA512Hex(textToken)
 		require.Nil(t, err)
 		require.Equal(t, hashed, token.SHA512)
@@ -82,9 +85,17 @@ func SpecIssuerCreateNewToken(s *testcase.Spec) {
 		return err
 	}
 	givenWeHaveValidParameters := func(s *testcase.Spec) {
-		s.Let(`userUID`, func(t *testcase.T) interface{} { return RandomUniqUserID() })
-		s.Let(`issueAt`, func(t *testcase.T) interface{} { ia := time.Now().UTC(); return &ia })
-		s.Let(`duration`, func(t *testcase.T) interface{} { d := 42 * time.Hour; return &d })
+		s.Let(`userUID`, func(t *testcase.T) interface{} {
+			return fixtures.Random.String()
+		})
+		s.Let(`issueAt`, func(t *testcase.T) interface{} {
+			ia := fixtures.Random.Time()
+			return &ia
+		})
+		s.Let(`duration`, func(t *testcase.T) interface{} {
+			d := time.Duration(fixtures.Random.IntN(42)) * time.Hour
+			return &d
+		})
 	}
 	s.When(`all parameter acceptable`, func(s *testcase.Spec) {
 		givenWeHaveValidParameters(s)
@@ -105,7 +116,7 @@ func SpecIssuerCreateNewToken(s *testcase.Spec) {
 			t1 := onSuccess(t)
 			t2 := security.Token{}
 
-			found, err := ExampleStorage(t).FindByID(context.Background(), &t2, t1.ID)
+			found, err := ExampleStorage(t).FindByID(GetContext(t), &t2, t1.ID)
 			require.Nil(t, err)
 			require.True(t, found)
 			require.Equal(t, t1, &t2)
@@ -118,7 +129,7 @@ func SpecIssuerCreateNewToken(s *testcase.Spec) {
 
 			var last string
 			for i := 0; i < 1024; i++ {
-				_, token, err := issuer.CreateNewToken(context.TODO(), strconv.Itoa(i), issueAt, duration)
+				_, token, err := issuer.CreateNewToken(GetContext(t), strconv.Itoa(i), issueAt, duration)
 				require.Nil(t, err)
 				require.NotNil(t, token)
 

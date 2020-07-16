@@ -1,6 +1,7 @@
 package httpapi_test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -16,9 +17,9 @@ import (
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/external/interface/httpintf"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
-	"github.com/toggler-io/toggler/lib/go/client"
-	swagger "github.com/toggler-io/toggler/lib/go/client/release"
-	"github.com/toggler-io/toggler/lib/go/models"
+	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client"
+	swagger "github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client/release"
+	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/models"
 	. "github.com/toggler-io/toggler/testing"
 )
 
@@ -27,6 +28,10 @@ func TestReleaseFlagController(t *testing.T) {
 	s.Parallel()
 	SetUp(s)
 	GivenThisIsAJSONAPI(s)
+
+	LetContext(s, func(t *testcase.T) context.Context {
+		return GetContext(t)
+	})
 
 	LetHandler(s, func(t *testcase.T) http.Handler {
 		return httpapi.NewReleaseFlagHandler(ExampleUseCases(t))
@@ -77,6 +82,10 @@ func SpecReleaseFlagControllerCreate(s *testcase.Spec) {
 		return resp
 	}
 
+	s.After(func(t *testcase.T) {
+		require.Nil(t, ExampleStorage(t).DeleteAll(GetContext(t), release.Flag{}))
+	})
+
 	s.Let(`release-flag`, func(t *testcase.T) interface{} {
 		return FixtureFactory{}.Create(release.Flag{}).(*release.Flag)
 	})
@@ -120,33 +129,37 @@ func SpecReleaseFlagControllerCreate(s *testcase.Spec) {
 		})
 	})
 
-	s.Test(`swagger`, func(t *testcase.T) {
-		sm, err := httpintf.NewServeMux(ExampleUseCases(t))
-		require.Nil(t, err)
+	s.Context(`E2E`, func(s *testcase.Spec) {
+		s.Tag(TagBlackBox)
 
-		s := httptest.NewServer(sm)
-		defer s.Close()
+		s.Test(`swagger`, func(t *testcase.T) {
+			sm, err := httpintf.NewServeMux(ExampleUseCases(t))
+			require.Nil(t, err)
 
-		// TODO: ensure validation
-		p := swagger.NewCreateReleaseFlagParams()
-		p.Body.Flag = &models.Flag{
-			Name: fixtures.Random.String(),
-		}
+			s := httptest.NewServer(sm)
+			defer s.Close()
 
-		tc := client.DefaultTransportConfig()
-		u, _ := url.Parse(s.URL)
-		tc.Host = u.Host
-		tc.Schemes = []string{`http`}
+			// TODO: ensure validation
+			p := swagger.NewCreateReleaseFlagParams()
+			p.Body.Flag = &models.Flag{
+				Name: fixtures.Random.String(),
+			}
 
-		c := client.NewHTTPClientWithConfig(nil, tc)
+			tc := client.DefaultTransportConfig()
+			u, _ := url.Parse(s.URL)
+			tc.Host = u.Host
+			tc.Schemes = []string{`http`}
 
-		resp, err := c.Release.CreateReleaseFlag(p, protectedAuth(t))
-		if err != nil {
-			t.Fatal(err.Error())
-		}
+			c := client.NewHTTPClientWithConfig(nil, tc)
 
-		require.NotNil(t, resp)
-		require.NotNil(t, resp.Payload)
+			resp, err := c.Release.CreateReleaseFlag(p, protectedAuth(t))
+			if err != nil {
+				t.Fatal(err.Error())
+			}
+
+			require.NotNil(t, resp)
+			require.NotNil(t, resp.Payload)
+		})
 	})
 }
 
@@ -246,33 +259,37 @@ func SpecReleaseFlagControllerUpdate(s *testcase.Spec) {
 		})
 	})
 
-	s.Test(`swagger`, func(t *testcase.T) {
-		sm, err := httpintf.NewServeMux(ExampleUseCases(t))
-		require.Nil(t, err)
+	s.Context(`E2E`, func(s *testcase.Spec) {
+		s.Tag(TagBlackBox)
 
-		s := httptest.NewServer(sm)
-		defer s.Close()
+		s.Test(`swagger`, func(t *testcase.T) {
+			sm, err := httpintf.NewServeMux(ExampleUseCases(t))
+			require.Nil(t, err)
 
-		id := GetReleaseFlag(t, `release-flag`).ID
+			s := httptest.NewServer(sm)
+			defer s.Close()
 
-		// TODO: ensure validation
-		p := swagger.NewUpdateReleaseFlagParams()
-		p.FlagID = id
-		p.Body.Flag = &models.Flag{
-			ID:   id,
-			Name: fixtures.Random.String(),
-		}
+			id := GetReleaseFlag(t, `release-flag`).ID
 
-		tc := client.DefaultTransportConfig()
-		u, _ := url.Parse(s.URL)
-		tc.Host = u.Host
-		tc.Schemes = []string{`http`}
+			// TODO: ensure validation
+			p := swagger.NewUpdateReleaseFlagParams()
+			p.FlagID = id
+			p.Body.Flag = &models.Flag{
+				ID:   id,
+				Name: fixtures.Random.String(),
+			}
 
-		c := client.NewHTTPClientWithConfig(nil, tc)
+			tc := client.DefaultTransportConfig()
+			u, _ := url.Parse(s.URL)
+			tc.Host = u.Host
+			tc.Schemes = []string{`http`}
 
-		resp, err := c.Release.UpdateReleaseFlag(p, protectedAuth(t))
-		require.Nil(t, err)
-		require.NotNil(t, resp)
-		require.NotNil(t, resp.Payload)
+			c := client.NewHTTPClientWithConfig(nil, tc)
+
+			resp, err := c.Release.UpdateReleaseFlag(p, protectedAuth(t))
+			require.Nil(t, err)
+			require.NotNil(t, resp)
+			require.NotNil(t, resp.Payload)
+		})
 	})
 }

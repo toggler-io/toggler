@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/adamluzsi/frameless"
+	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/resources"
 	"github.com/adamluzsi/frameless/resources/specs"
@@ -12,7 +13,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/toggler-io/toggler/domains/release"
-	. "github.com/toggler-io/toggler/testing"
 )
 
 type FlagFinderSpec struct {
@@ -35,7 +35,7 @@ func (spec FlagFinderSpec) Benchmark(b *testing.B) {
 func (spec FlagFinderSpec) Test(t *testing.T) {
 	s := testcase.NewSpec(t)
 
-	featureName := RandomName()
+	featureName := fixtures.Random.String()
 
 	s.Describe(`FlagFinderSpec`, func(s *testcase.Spec) {
 		s.Around(func(t *testcase.T) func() {

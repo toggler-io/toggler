@@ -1,12 +1,12 @@
 package controllers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
 
-	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
 
 	"github.com/toggler-io/toggler/domains/deployment"
@@ -119,7 +119,7 @@ func (ctrl *Controller) envAction(w http.ResponseWriter, r *http.Request) {
 
 			envID := r.Form.Get(`env.id`)
 
-			if envID == `` && ctrl.handleError(w, r, frameless.ErrIDRequired) {
+			if envID == `` && ctrl.handleError(w, r, fmt.Errorf(`environment id is missing`)) {
 				return
 			}
 

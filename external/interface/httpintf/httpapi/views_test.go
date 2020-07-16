@@ -2,6 +2,7 @@ package httpapi_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -15,8 +16,8 @@ import (
 
 	"github.com/toggler-io/toggler/external/interface/httpintf"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
-	"github.com/toggler-io/toggler/lib/go/client"
-	"github.com/toggler-io/toggler/lib/go/client/pilot"
+	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client"
+	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client/pilot"
 	. "github.com/toggler-io/toggler/testing"
 )
 
@@ -28,6 +29,7 @@ func TestViewsController(t *testing.T) {
 	SetUp(s)
 	GivenThisIsAJSONAPI(s)
 
+	LetContext(s, func(t *testcase.T) context.Context { return GetContext(t) })
 	LetHandler(s, func(t *testcase.T) http.Handler { return NewHandler(t) })
 
 	s.Describe(`GET /v/config - GetPilotConfig`, SpecViewsControllerClientConfig)
@@ -114,32 +116,33 @@ func SpecViewsControllerClientConfig(s *testcase.Spec) {
 		})
 	})
 
-	s.Test(`swagger integration`, func(t *testcase.T) {
-		sm, err := httpintf.NewServeMux(ExampleUseCases(t))
-		require.Nil(t, err)
+	s.Context(`E2E`, func(s *testcase.Spec) {
+		s.Tag(TagBlackBox)
 
-		s := httptest.NewServer(sm)
-		defer s.Close()
+		s.Test(`swagger`, func(t *testcase.T) {
+			sm, err := httpintf.NewServeMux(ExampleUseCases(t))
+			require.Nil(t, err)
 
-		p := pilot.NewGetPilotConfigParams()
-		p.Body.PilotExtID = &ExampleReleaseManualPilotEnrollment(t).ExternalID
-		p.Body.ReleaseFlags = []string{ExampleReleaseFlag(t).Name}
-		p.Body.DeploymentEnvironmentAlias = &ExampleDeploymentEnvironment(t).ID
+			s := httptest.NewServer(sm)
+			defer s.Close()
 
-		tc := client.DefaultTransportConfig()
-		u, _ := url.Parse(s.URL)
-		tc.Host = u.Host
-		tc.Schemes = []string{`http`}
+			p := pilot.NewGetPilotConfigParams()
+			p.Body.PilotExtID = &ExampleReleaseManualPilotEnrollment(t).ExternalID
+			p.Body.ReleaseFlags = []string{ExampleReleaseFlag(t).Name}
+			p.Body.DeploymentEnvironmentAlias = &ExampleDeploymentEnvironment(t).ID
 
-		c := client.NewHTTPClientWithConfig(nil, tc)
+			tc := client.DefaultTransportConfig()
+			u, _ := url.Parse(s.URL)
+			tc.Host = u.Host
+			tc.Schemes = []string{`http`}
 
-		resp, err := c.Pilot.GetPilotConfig(p, publicAuth(t))
-		if err != nil {
-			t.Fatal(err.Error())
-		}
+			c := client.NewHTTPClientWithConfig(nil, tc)
 
-		require.NotNil(t, resp)
-		require.NotNil(t, resp.Payload)
-		require.Equal(t, ExampleReleaseManualPilotEnrollment(t).IsParticipating, resp.Payload.Release.Flags[ExampleReleaseFlag(t).Name])
+			resp, err := c.Pilot.GetPilotConfig(p, publicAuth(t))
+			require.Nil(t, err)
+			require.NotNil(t, resp)
+			require.NotNil(t, resp.Payload)
+			require.Equal(t, ExampleReleaseManualPilotEnrollment(t).IsParticipating, resp.Payload.Release.Flags[ExampleReleaseFlag(t).Name])
+		})
 	})
 }

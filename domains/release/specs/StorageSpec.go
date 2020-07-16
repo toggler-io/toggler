@@ -24,13 +24,13 @@ func (spec StorageSpec) Test(t *testing.T) {
 		}.Test(t)
 
 		t.Run(`Flag`, func(t *testing.T) {
-			specs.CommonSpec{
+			specs.OnePhaseCommitProtocolSpec{
 				EntityType:     release.Flag{},
 				FixtureFactory: spec.FixtureFactory,
 				Subject:        spec.Subject,
 			}.Test(t)
 
-			specs.OnePhaseCommitProtocolSpec{
+			specs.CommonSpec{
 				EntityType:     release.Flag{},
 				FixtureFactory: spec.FixtureFactory,
 				Subject:        spec.Subject,
@@ -72,7 +72,7 @@ func (spec StorageSpec) Test(t *testing.T) {
 			s := testcase.NewSpec(t)
 			SetUp(s)
 
-			s.Let(ExampleStorageLetVar, func(t *testcase.T) interface{} {
+			s.Let(LetVarExampleStorage, func(t *testcase.T) interface{} {
 				return spec.Subject
 			})
 

@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/toggler-io/toggler/domains/deployment"
 	"github.com/toggler-io/toggler/external/resource/caches"
 	"github.com/toggler-io/toggler/external/resource/storages"
 
@@ -167,9 +168,12 @@ func fixturesCMD(args []string, s usecases.Storage) {
 func createFixtures(s usecases.Storage) {
 	uc := usecases.NewUseCases(s)
 	ff := release.Flag{Name: `test`}
-	_ = uc.RolloutManager.CreateFeatureFlag(context.TODO(), &ff)
-	_ = uc.RolloutManager.SetPilotEnrollmentForFeature(context.Background(), ff.ID, "", `test-public-pilot-id-1`, true)
-	_ = uc.RolloutManager.SetPilotEnrollmentForFeature(context.Background(), ff.ID, "", `test-public-pilot-id-2`, false)
+	ctx := context.Background()
+	devEnv := deployment.Environment{Name: "development"}
+	_ = uc.Storage.Create(ctx, &devEnv)
+	_ = uc.RolloutManager.CreateFeatureFlag(ctx, &ff)
+	_ = uc.RolloutManager.SetPilotEnrollmentForFeature(context.Background(), ff.ID, devEnv.ID, `test-public-pilot-id-1`, true)
+	_ = uc.RolloutManager.SetPilotEnrollmentForFeature(context.Background(), ff.ID, devEnv.ID, `test-public-pilot-id-2`, false)
 }
 
 func makeHTTPServer(storage usecases.Storage, port int) *http.Server {
@@ -213,7 +217,7 @@ func createToken(s usecases.Storage, ownerUID string) {
 
 	issuer := security.Issuer{Storage: s}
 
-	tStr, _, err := issuer.CreateNewToken(context.TODO(), ownerUID, nil, nil)
+	tStr, _, err := issuer.CreateNewToken(context.Background(), ownerUID, nil, nil)
 
 	if err != nil {
 		panic(err)

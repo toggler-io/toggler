@@ -14,7 +14,7 @@ import (
 func HandleSwaggerConfigJSON(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set(`Content-Type`, `application/json`)
 	w.WriteHeader(200)
-	_, _ = w.Write(specfs.FSMustByte(false, `/api.json`))
+	_, _ = w.Write(specfs.FSMustByte(false, `/swagger.json`))
 }
 
 func HandleSwaggerUI() http.Handler {
@@ -23,7 +23,7 @@ func HandleSwaggerUI() http.Handler {
 
 	createURL := func(r *http.Request, scheme string) string {
 		// NICE_TO_HAVE: remove dependency on "/swagger" base path
-		return fmt.Sprintf(`%s://%s/swagger/api.json`, scheme, r.Host)
+		return fmt.Sprintf(`%s://%s/swagger/swagger.json`, scheme, r.Host)
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

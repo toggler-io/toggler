@@ -1,13 +1,12 @@
 package controllers
 
 import (
-	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
 
-	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
 
 	"github.com/toggler-io/toggler/domains/release"
@@ -131,7 +130,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 
 			flagID := r.Form.Get(`flag.id`)
 
-			if flagID == `` && ctrl.handleError(w, r, frameless.ErrIDRequired) {
+			if flagID == `` && ctrl.handleError(w, r, fmt.Errorf(`release flag id is missing`)) {
 				return
 			}
 
@@ -224,7 +223,7 @@ func (ctrl *Controller) flagCreateNewAction(w http.ResponseWriter, r *http.Reque
 			return
 		}
 
-		err = ctrl.UseCases.RolloutManager.CreateFeatureFlag(context.TODO(), ff)
+		err = ctrl.UseCases.RolloutManager.CreateFeatureFlag(r.Context(), ff)
 
 		if err != nil {
 			log.Println(err)

@@ -20,7 +20,10 @@ bin/toggler
 !.elasticbeanstalk/*.global.yml
 
 # Swagger
-/lib/go/
+lib/
 
 # go mod tools
 /.tools
+
+# esc
+fs.go
