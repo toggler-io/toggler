@@ -39,6 +39,7 @@ func SpecIssuerRevokeToken(s *testcase.Spec) {
 			issuer := t.I(`issuer`).(*security.Issuer)
 			_, token, err := issuer.CreateNewToken(GetContext(t), ExampleUniqueUserID(t), nil, nil)
 			require.Nil(t, err)
+
 			t.Defer(ExampleStorage(t).DeleteByID, GetContext(t), security.Token{}, token.ID)
 			return token
 		})

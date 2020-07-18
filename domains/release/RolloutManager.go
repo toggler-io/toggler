@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
 
 	"github.com/toggler-io/toggler/domains/deployment"
@@ -19,8 +18,6 @@ func NewRolloutManager(s Storage) *RolloutManager {
 //
 // SRP: release manager
 type RolloutManager struct{ Storage Storage }
-
-const CtxPilotIpAddr = `pilot-ip-addr`
 
 // GetAllReleaseFlagStatesOfThePilot check the flag states for every requested release flag.
 // If a flag doesn't exist, then it will provide a turned off state to it.
@@ -151,7 +148,7 @@ func (manager *RolloutManager) UnsetPilotEnrollmentForFeature(ctx context.Contex
 	}
 
 	if !found {
-		return frameless.ErrNotFound
+		return fmt.Errorf(`ErrNotFound`)
 	}
 
 	pilot, err := manager.Storage.FindReleaseManualPilotByExternalID(ctx, ff.ID, envID, pilotExternalID)
@@ -164,7 +161,7 @@ func (manager *RolloutManager) UnsetPilotEnrollmentForFeature(ctx context.Contex
 		return nil
 	}
 
-	return manager.Storage.DeleteByID(ctx, pilot, pilot.ID)
+	return manager.Storage.DeleteByID(ctx, ManualPilot{}, pilot.ID)
 
 }
 
@@ -179,7 +176,7 @@ func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context,
 	}
 
 	if !found {
-		return frameless.ErrNotFound
+		return fmt.Errorf(`ErrNotFound`)
 	}
 
 	pilot, err := manager.Storage.FindReleaseManualPilotByExternalID(ctx, ff.ID, envID, externalPilotID)
@@ -230,7 +227,7 @@ func (manager *RolloutManager) DeleteFeatureFlag(ctx context.Context, id string)
 		return err
 	}
 	if !found {
-		return frameless.ErrNotFound
+		return fmt.Errorf(`ErrNotFound`)
 	}
 
 	var pilots []ManualPilot

@@ -2,9 +2,8 @@ package storages
 
 import (
 	"database/sql"
+	"fmt"
 	"net/url"
-
-	"github.com/adamluzsi/frameless"
 
 	"github.com/toggler-io/toggler/usecases"
 )
@@ -33,6 +32,6 @@ func New(connstr string) (usecases.Storage, error) {
 		return NewInMemory(), nil
 
 	default:
-		return nil, frameless.ErrNotImplemented
+		return nil, fmt.Errorf(`ErrNotImplemented`)
 	}
 }

@@ -50,7 +50,15 @@ func init() {
 			})
 		} else {
 			s.Let(LetVarExampleStorage, func(t *testcase.T) interface{} {
-				return storages.NewInMemory()
+				s := storages.NewDevStorage()
+				t.Defer(s.Close)
+				t.Defer(func() {
+					if t.T != nil && t.T.Failed() {
+						s.History().LogWith(t) // print out storage event history
+					}
+				})
+
+				return s
 			})
 		}
 	})

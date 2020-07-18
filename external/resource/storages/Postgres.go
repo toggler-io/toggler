@@ -176,7 +176,7 @@ func (pg *Postgres) Create(ctx context.Context, ptr interface{}) error {
 	case *resources.TestEntity:
 		return pg.testEntityInsertNew(ctx, e)
 	default:
-		return frameless.ErrNotImplemented
+		return fmt.Errorf(`ErrNotImplemented`)
 	}
 }
 
@@ -199,7 +199,7 @@ func (pg *Postgres) FindByID(ctx context.Context, ptr interface{}, id string) (b
 	case *resources.TestEntity:
 		return pg.testEntityFindByID(ctx, e, id)
 	default:
-		return false, frameless.ErrNotImplemented
+		return false, fmt.Errorf(`ErrNotImplemented`)
 	}
 }
 
@@ -219,7 +219,7 @@ func (pg *Postgres) DeleteAll(ctx context.Context, Type interface{}) error {
 	case resources.TestEntity, *resources.TestEntity:
 		tableName = `test_entities`
 	default:
-		return frameless.ErrNotImplemented
+		return fmt.Errorf(`ErrNotImplemented`)
 	}
 
 	query := fmt.Sprintf(`DELETE FROM "%s"`, tableName)
@@ -229,7 +229,7 @@ func (pg *Postgres) DeleteAll(ctx context.Context, Type interface{}) error {
 
 func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, id string) error {
 	if !isUUIDValid(id) {
-		return frameless.ErrNotFound
+		return fmt.Errorf(`ErrNotFound`)
 	}
 
 	var query string
@@ -253,7 +253,7 @@ func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, id string)
 		query = `DELETE FROM "test_entities" WHERE "id" = $1`
 
 	default:
-		return frameless.ErrNotImplemented
+		return fmt.Errorf(`ErrNotImplemented`)
 	}
 
 	result, err := pg.getDB(ctx).ExecContext(ctx, query, id)
@@ -267,7 +267,7 @@ func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, id string)
 	}
 
 	if count == 0 {
-		return frameless.ErrNotFound
+		return fmt.Errorf(`ErrNotFound`)
 	}
 
 	return nil
@@ -291,7 +291,7 @@ func (pg *Postgres) Update(ctx context.Context, ptr interface{}) error {
 		return pg.tokenUpdate(ctx, e)
 
 	default:
-		return frameless.ErrNotImplemented
+		return fmt.Errorf(`ErrNotImplemented`)
 	}
 }
 
@@ -310,7 +310,7 @@ func (pg *Postgres) FindAll(ctx context.Context, Type interface{}) frameless.Ite
 	case resources.TestEntity, *resources.TestEntity:
 		return pg.testEntityFindAll(ctx)
 	default:
-		return iterators.NewError(frameless.ErrNotImplemented)
+		return iterators.NewError(fmt.Errorf(`ErrNotImplemented`))
 	}
 }
 

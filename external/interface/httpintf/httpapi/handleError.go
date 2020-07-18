@@ -5,8 +5,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/adamluzsi/frameless"
-
 	"github.com/toggler-io/toggler/usecases"
 )
 
@@ -57,7 +55,7 @@ func handleError(w http.ResponseWriter, err error, errCode int) bool {
 		return true
 	}
 
-	if err == frameless.ErrNotFound {
+	if err != nil && err.Error() == `ErrNotFound` { // TODO: fix code smell
 		ErrorWriterFunc(w, `not found`, http.StatusBadRequest)
 		return true
 	}

@@ -53,7 +53,7 @@ func (i *Issuer) CreateNewToken(ctx context.Context, ownerUID string, issueAt *t
 }
 
 func (i *Issuer) RevokeToken(ctx context.Context, token *Token) error {
-	return i.Storage.DeleteByID(ctx, token, token.ID)
+	return i.Storage.DeleteByID(ctx, Token{}, token.ID)
 }
 
 const tokenRawLength = 128
