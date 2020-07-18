@@ -292,7 +292,7 @@ func SpecSetPilotEnrollmentForFeature(s *testcase.Spec) {
 	s.When(`pilot already exists`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) { ExampleReleaseManualPilotEnrollment(t) })
 
-		s.And(`and pilot is has the opposite enrollment status`, func(s *testcase.Spec) {
+		s.And(`pilot is has the opposite enrollment status`, func(s *testcase.Spec) {
 			s.LetValue(`new enrollment`, true)
 			AndExamplePilotManualParticipatingIsSetTo(s, false)
 

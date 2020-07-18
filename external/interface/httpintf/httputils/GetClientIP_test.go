@@ -76,7 +76,7 @@ func TestGetClientIP(t *testing.T) {
 			})
 		})
 
-		s.And(`and it is using the HOST:PORT syntax`, func(s *testcase.Spec) {
+		s.And(`it is using the HOST:PORT syntax`, func(s *testcase.Spec) {
 			s.Let(`remote addr`, func(t *testcase.T) interface{} {
 				return fmt.Sprintf(`%s:%d`, expectedRemoteAddress, 1000+rand.Intn(8000))
 			})

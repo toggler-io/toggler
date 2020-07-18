@@ -1,8 +1,3 @@
-# in order to use this compose file, you need to create a github personal access token,
-# and export it in your local environment, so docker-compose can access private tutti-ch repos.
-# The token only need to have read access to private repositories, and nothing else.
-# Never include your personal token in version control.
-#
 version: '3'
 
 services:

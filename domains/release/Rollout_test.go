@@ -59,7 +59,7 @@ func TestRolloutDecisionByPercentage(t *testing.T) {
 		}
 
 		var andRandGeneratorEncounterAnError = func(s *testcase.Spec) {
-			s.And(`and rand generator encounter an error`, func(s *testcase.Spec) {
+			s.And(`rand generator encounter an error`, func(s *testcase.Spec) {
 				const expectedError errs.Error = `boom`
 				s.LetValue(`pseudo rand error`, expectedError)
 
