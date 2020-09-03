@@ -111,16 +111,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			u, err := url.Parse(`/flag`)
-
-			if ctrl.handleError(w, r, err) {
-				return
-			}
-
-			q := u.Query()
-			q.Add(`id`, ff.ID)
-			u.RawQuery = q.Encode()
-			http.Redirect(w, r, u.String(), http.StatusFound)
+			http.Redirect(w, r, `/flag/index`, http.StatusFound)
 			return
 
 		case http.MethodDelete:

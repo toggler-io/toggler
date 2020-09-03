@@ -69,9 +69,20 @@ func (ctrl *Controller) rolloutIndexPage(w http.ResponseWriter, r *http.Request)
 	}
 
 	envID := r.FormValue(`env-id`)
-
 	if envID == `` {
 		envID = r.URL.Query().Get(`env-id`)
+	}
+
+	var env deployment.Environment
+	found, err := ctrl.UseCases.Storage.FindByID(r.Context(), &env, envID)
+	if httputils.HandleError(w, err, http.StatusNotFound) {
+		log.Println(`ERROR`, err.Error())
+		return
+	}
+	if !found {
+		log.Println(`WARNING`, `environment id not found: `, envID)
+		http.Redirect(w, r, `/`, http.StatusFound)
+		return
 	}
 
 	ffs, err := ctrl.UseCases.RolloutManager.ListFeatureFlags(r.Context())
@@ -81,8 +92,9 @@ func (ctrl *Controller) rolloutIndexPage(w http.ResponseWriter, r *http.Request)
 	}
 
 	type ContentFeatureFlag struct {
-		ReleaseFlagName string
-		ReleaseFlagID   string
+		ReleaseFlagName   string
+		ReleaseFlagID     string
+		ReleasePercentage int
 	}
 
 	type Content struct {
@@ -96,6 +108,22 @@ func (ctrl *Controller) rolloutIndexPage(w http.ResponseWriter, r *http.Request)
 		var editFF ContentFeatureFlag
 		editFF.ReleaseFlagID = ff.ID
 		editFF.ReleaseFlagName = ff.Name
+
+		var rollout release.Rollout
+		var byPercentage = release.NewRolloutDecisionByPercentage()
+		if found, err := ctrl.Storage.FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(r.Context(), ff, env, &rollout);
+			ctrl.handleError(w, r, err) {
+			return
+		} else if found {
+			if bp, ok := rollout.Plan.(release.RolloutDecisionByPercentage); ok {
+				byPercentage = bp
+			} else {
+				log.Println(`ERROR`, `webgui is unable to handle the management of a complex rollout plan`)
+				http.Redirect(w, r, `/`, http.StatusFound)
+				return
+			}
+		}
+		editFF.ReleasePercentage = byPercentage.Percentage
 
 		content.FeatureFlags = append(content.FeatureFlags, editFF)
 	}

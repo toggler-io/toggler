@@ -100,16 +100,7 @@ func (ctrl *Controller) envAction(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			u, err := url.Parse(`/env`)
-
-			if ctrl.handleError(w, r, err) {
-				return
-			}
-
-			q := u.Query()
-			q.Add(`id`, env.ID)
-			u.RawQuery = q.Encode()
-			http.Redirect(w, r, u.String(), http.StatusFound)
+			http.Redirect(w, r, `/env/index`, http.StatusFound)
 			return
 
 		case http.MethodDelete:

@@ -3,14 +3,14 @@
 		<h2 class="content-head is-center">{{ .Flag.Name }}</h2>
 		<div class="pure-g">
 			<div class="l-box-lrg pure-u pure-u-1">
-				<form action="/flag" method="post" class="pure-form pure-form-aligned">
-					<fieldset>
-						<input name="_method" type="hidden" value="put">
-						<input name="flag.name" type="hidden" value="{{ .Flag.Name }}">
-						<input name="flag.id" type="hidden" value="{{ .Flag.ID }}">
-						<button type="submit" class="pure-button pure-button-primary">Save Flag Preferences</button>
-					</fieldset>
-				</form>
+{{/*				<form action="/flag" method="post" class="pure-form pure-form-aligned">*/}}
+{{/*					<fieldset>*/}}
+{{/*						<input name="_method" type="hidden" value="put">*/}}
+{{/*						<input name="flag.name" type="hidden" value="{{ .Flag.Name }}">*/}}
+{{/*						<input name="flag.id" type="hidden" value="{{ .Flag.ID }}">*/}}
+{{/*						<button type="submit" class="pure-button pure-button-primary">Update</button>*/}}
+{{/*					</fieldset>*/}}
+{{/*				</form>*/}}
 				<form action="/flag" method="post" class="pure-form pure-form-aligned">
 					<fieldset>
 						<input name="_method" type="hidden" value="delete">

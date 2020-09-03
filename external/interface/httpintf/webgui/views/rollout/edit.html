@@ -23,5 +23,41 @@
 			</fieldset>
 		</form>
 
+		<style scoped="">
+			.button-enable {
+				color: white;
+				border-radius: 4px;
+				background: rgb(28, 184, 65);
+			}
+
+			.button-disable {
+				color: white;
+				border-radius: 4px;
+				background: rgb(223, 117, 20);
+			}
+		</style>
+
+		<form action="/rollout/update" method="post" class="pure-form pure-form-stacked" data-bitwarden-watching="1">
+			<fieldset>
+				<input type="hidden" name="_method" value="post">
+				<input type="hidden" name="flag_id" value="{{ .ReleaseFlagID }}">
+				<input type="hidden" name="env_id" value="{{ .DeployEnvironmentID }}">
+				<input type="hidden" id="seed" name="seed" value="{{ .ByPercentage.Seed }}">
+				<input type="hidden" id="percentage" name="percentage" value="100">
+				<button type="submit" class="pure-button button-enable">Enable Globally</button>
+			</fieldset>
+		</form>
+
+		<form action="/rollout/update" method="post" class="pure-form pure-form-stacked" data-bitwarden-watching="1">
+			<fieldset>
+				<input type="hidden" name="_method" value="post">
+				<input type="hidden" name="flag_id" value="{{ .ReleaseFlagID }}">
+				<input type="hidden" name="env_id" value="{{ .DeployEnvironmentID }}">
+				<input type="hidden" id="seed" name="seed" value="{{ .ByPercentage.Seed }}">
+				<input type="hidden" id="percentage" name="percentage" value="0">
+				<button type="submit" class="pure-button button-disable">Disable Globally</button>
+			</fieldset>
+		</form>
+
 	</div>
 {{end}}

@@ -3,14 +3,14 @@
 		<h2 class="content-head is-center">{{ .Env.Name }}</h2>
 		<div class="pure-g">
 			<div class="l-box-lrg pure-u pure-u-1">
-				<form action="/env" method="post" class="pure-form pure-form-aligned">
-					<fieldset>
-						<input name="_method" type="hidden" value="put">
-						<input name="env.name" type="hidden" value="{{ .Env.Name }}">
-						<input name="env.id" type="hidden" value="{{ .Env.ID }}">
-						<button type="submit" class="pure-button pure-button-primary">Save</button>
-					</fieldset>
-				</form>
+{{/*				<form action="/env" method="post" class="pure-form pure-form-aligned">*/}}
+{{/*					<fieldset>*/}}
+{{/*						<input name="_method" type="hidden" value="put">*/}}
+{{/*						<input name="env.name" type="hidden" value="{{ .Env.Name }}">*/}}
+{{/*						<input name="env.id" type="hidden" value="{{ .Env.ID }}">*/}}
+{{/*						<button type="submit" class="pure-button pure-button-primary">Update</button>*/}}
+{{/*					</fieldset>*/}}
+{{/*				</form>*/}}
 				<form action="/env" method="post" class="pure-form pure-form-aligned">
 					<fieldset>
 						<input name="_method" type="hidden" value="delete">
