@@ -22,15 +22,13 @@ import (
 )
 
 func TestViewsController(t *testing.T) {
-	Debug = true
 	s := testcase.NewSpec(t)
 	s.Parallel()
 
 	SetUp(s)
-	GivenThisIsAJSONAPI(s)
 
+	HandlerSpec(s, func(t *testcase.T) http.Handler { return NewHandler(t) })
 	LetContext(s, func(t *testcase.T) context.Context { return GetContext(t) })
-	LetHandler(s, func(t *testcase.T) http.Handler { return NewHandler(t) })
 
 	s.Describe(`GET /v/config - GetPilotConfig`, SpecViewsControllerClientConfig)
 }

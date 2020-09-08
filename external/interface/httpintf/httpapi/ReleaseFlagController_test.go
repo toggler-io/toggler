@@ -27,14 +27,15 @@ func TestReleaseFlagController(t *testing.T) {
 	s := testcase.NewSpec(t)
 	s.Parallel()
 	SetUp(s)
-	GivenThisIsAJSONAPI(s)
+
+	HandlerSpec(s, func(t *testcase.T) http.Handler {
+		return httpapi.NewReleaseFlagHandler(ExampleUseCases(t))
+	})
+
+	ContentTypeIsJSON(s)
 
 	LetContext(s, func(t *testcase.T) context.Context {
 		return GetContext(t)
-	})
-
-	LetHandler(s, func(t *testcase.T) http.Handler {
-		return httpapi.NewReleaseFlagHandler(ExampleUseCases(t))
 	})
 
 	s.Describe(`POST / - create release flag`, SpecReleaseFlagControllerCreate)

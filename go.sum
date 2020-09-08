@@ -77,6 +77,8 @@ github.com/adamluzsi/testcase v0.10.6 h1:e1gVoS3u7/6doPknW2waEt2QIVBbOX9d7S0fC8u
 github.com/adamluzsi/testcase v0.10.6/go.mod h1:a8ls5Y7muW9gisaQOKm24AUuBks3U8Q+W5Iy3sl1tiE=
 github.com/adamluzsi/testcase v0.11.1 h1:GvfBlhoAg4Wi2q07slHfWTiLWvUDXiYfWBmtAFPhXvU=
 github.com/adamluzsi/testcase v0.11.1/go.mod h1:vAtv/d1cd/9gPHCuRMGOwU+ezMygMQifZUNxwiUL7SM=
+github.com/adamluzsi/testcase v0.13.0 h1:FSFxFifIklt99Vj1s6b5zXZDBuUPnAffBrPfAI/pX+A=
+github.com/adamluzsi/testcase v0.13.0/go.mod h1:vAtv/d1cd/9gPHCuRMGOwU+ezMygMQifZUNxwiUL7SM=
 github.com/agnivade/levenshtein v1.0.1/go.mod h1:CURSv5d9Uaml+FovSIICkLbAUZ9S4RqaHDIsdSBg7lM=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=

@@ -26,11 +26,12 @@ func TestReleaseRolloutController(t *testing.T) {
 	s := testcase.NewSpec(t)
 	s.Parallel()
 	SetUp(s)
-	GivenThisIsAJSONAPI(s)
 
-	LetHandler(s, func(t *testcase.T) http.Handler {
+	HandlerSpec(s, func(t *testcase.T) http.Handler {
 		return httpapi.NewReleaseRolloutHandler(ExampleUseCases(t))
 	})
+
+	ContentTypeIsJSON(s)
 
 	LetContext(s, func(t *testcase.T) context.Context {
 		ctx := GetContext(t)
@@ -140,7 +141,6 @@ func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
 		s.Tag(TagBlackBox)
 
 		s.Test(`swagger`, func(t *testcase.T) {
-			Debug = true
 			sm, err := httpintf.NewServeMux(ExampleUseCases(t))
 			require.Nil(t, err)
 
@@ -262,7 +262,7 @@ func SpecReleaseRolloutControllerUpdate(s *testcase.Spec) {
 
 	var onSuccess = func(t *testcase.T) httpapi.UpdateReleaseRolloutResponse {
 		rr := ServeHTTP(t)
-		require.Equal(t, http.StatusOK, rr.Code)
+		require.Equal(t, http.StatusOK, rr.Code, rr.Body.String())
 		var resp httpapi.UpdateReleaseRolloutResponse
 		require.Nil(t, json.Unmarshal(rr.Body.Bytes(), &resp.Body))
 		return resp
