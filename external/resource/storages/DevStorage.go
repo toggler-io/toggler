@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/adamluzsi/frameless/dev"
 	"github.com/adamluzsi/frameless/iterators"
+	"github.com/adamluzsi/frameless/testing"
 
 	"github.com/toggler-io/toggler/domains/deployment"
 	"github.com/toggler-io/toggler/domains/release"
@@ -13,11 +13,11 @@ import (
 )
 
 func NewDevStorage() *DevStorage {
-	return &DevStorage{Storage: dev.NewStorage()}
+	return &DevStorage{Storage: testing.NewStorage()}
 }
 
 type DevStorage struct {
-	*dev.Storage
+	*testing.Storage
 
 	closed bool
 }
