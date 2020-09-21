@@ -598,8 +598,6 @@ func (pg *Postgres) releaseRolloutFindByID(ctx context.Context, rollout *release
 	err := mapper.Map(pg.getDB(ctx).QueryRowContext(ctx, query, id), rollout)
 
 	if err == sql.ErrNoRows {
-
-		fmt.Println()
 		query = fmt.Sprintf(`SELECT %s FROM "release_rollouts"`, strings.Join(mapper.Columns(), `, `))
 		rows, err := pg.getDB(ctx).QueryContext(ctx, query)
 		if err != nil {
@@ -607,7 +605,6 @@ func (pg *Postgres) releaseRolloutFindByID(ctx context.Context, rollout *release
 		}
 		defer rows.Close()
 
-		fmt.Println(`expected id:`, id)
 		for rows.Next() {
 			var ro release.Rollout
 			if err := mapper.Map(rows, &ro); err != nil {

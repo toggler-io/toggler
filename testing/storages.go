@@ -50,7 +50,7 @@ func init() {
 			})
 		} else {
 			s.Let(LetVarExampleStorage, func(t *testcase.T) interface{} {
-				s := storages.NewDevStorage()
+				s := storages.NewTestingStorage()
 				t.Defer(s.Close)
 				t.Defer(func() {
 					if t.T != nil && t.T.Failed() {

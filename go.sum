@@ -59,6 +59,12 @@ github.com/adamluzsi/frameless v0.8.0 h1:AgnMnAYyrvp5v2wL0Ztj4d/C4RrIKCLM+qi7Uql
 github.com/adamluzsi/frameless v0.8.0/go.mod h1:b20q2z9/KpZWVQo/xUTl0BSjjb5cNBmB9askHSzXcMI=
 github.com/adamluzsi/frameless v0.9.0 h1:DCt9H16EqSZfGQafTiLb6KMOTck+IMzECgmJFEI45sE=
 github.com/adamluzsi/frameless v0.9.0/go.mod h1:FUXFVgwe0YRlPVXOPcNmyc5pRicQXQuLV/MStwaBQj8=
+github.com/adamluzsi/frameless v0.10.0 h1:aBXTKh9hWbgBJoFGaeONtdfxESPietsf074WJ5Dlky4=
+github.com/adamluzsi/frameless v0.10.0/go.mod h1:ap/ZFl9bcSzd27umX2y0d/YRJfmmAjJPZqGB1j4dKCY=
+github.com/adamluzsi/frameless v0.11.0 h1:oOpW30PuBTct2OzE3HmVW+I4sXx6umng8HFZ2/XSlvY=
+github.com/adamluzsi/frameless v0.11.0/go.mod h1:S/TdKGe7TnYLUl7czQXINMv5huGt0YWULcYPhJhc3mE=
+github.com/adamluzsi/frameless v0.11.1 h1:j2NQ4G0PoDjk63nSg9fGZhbO/nqkLZJDjtqdDVoHuSI=
+github.com/adamluzsi/frameless v0.11.1/go.mod h1:S/TdKGe7TnYLUl7czQXINMv5huGt0YWULcYPhJhc3mE=
 github.com/adamluzsi/gorest v0.6.1 h1:2RmMia4K1rFEFtGe9BpWzYFaw9LGdg1rWBC/RguI9jw=
 github.com/adamluzsi/gorest v0.6.1/go.mod h1:e2O+v2lfDTZxQdUzGcoImp8NmloMlx5J6Mw8jD2HY0I=
 github.com/adamluzsi/testcase v0.5.1 h1:55YMybrPoBC/P9YMe3aAp9ixACLnNWQqRgY9Rw/fcGU=
@@ -804,6 +810,10 @@ golang.org/x/tools v0.0.0-20200918232735-d647fc253266 h1:k7tVuG0g1JwmD3Jh8oAl1vQ
 golang.org/x/tools v0.0.0-20200918232735-d647fc253266/go.mod h1:z6u4i615ZeAfBE4XtMziQW1fSVJXACjjbWkB/mvPzlU=
 golang.org/x/tools v0.0.0-20200921202010-4aa5c68dc7ae h1:/fSbpGNiGEqY0evnZH4T1rg4fSsObOqEkbifylF5dK8=
 golang.org/x/tools v0.0.0-20200921202010-4aa5c68dc7ae/go.mod h1:z6u4i615ZeAfBE4XtMziQW1fSVJXACjjbWkB/mvPzlU=
+golang.org/x/tools v0.0.0-20200921204550-a20a5e7f0ec0 h1:ojM3Et+VBSO+LIF8q65owP/Wqd4HMCBT8xIxK2N4dTE=
+golang.org/x/tools v0.0.0-20200921204550-a20a5e7f0ec0/go.mod h1:z6u4i615ZeAfBE4XtMziQW1fSVJXACjjbWkB/mvPzlU=
+golang.org/x/tools v0.0.0-20200921210052-fa0125251cc4 h1:v8Jgq9X6Es9K9otVr9jxENEJigepKMZgA9OmrIZDtFA=
+golang.org/x/tools v0.0.0-20200921210052-fa0125251cc4/go.mod h1:z6u4i615ZeAfBE4XtMziQW1fSVJXACjjbWkB/mvPzlU=
 golang.org/x/xerrors v0.0.0-20190410155217-1f06c39b4373/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20190513163551-3ee3066db522/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=

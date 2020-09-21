@@ -2,32 +2,55 @@ package storages
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
+	"github.com/adamluzsi/frameless/resources/storages"
 
 	"github.com/toggler-io/toggler/domains/deployment"
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/security"
-	"github.com/toggler-io/toggler/external/resource/storages/memorystorage"
 )
 
-func NewInMemory() *InMemory {
-	return &InMemory{Memory: memorystorage.NewMemory()}
+func NewTestingStorage() *InMemory {
+	return &InMemory{Memory: storages.NewMemory()}
 }
 
-type InMemory struct{ *memorystorage.Memory }
+func NewInMemory() *InMemory {
+	s := storages.NewMemory()
+	s.DisableEventLogging()
+	return &InMemory{Memory: s}
+}
+
+type InMemory struct {
+	*storages.Memory
+
+	closed bool
+}
+
+func (s *InMemory) Close() error {
+	if s.closed {
+		return fmt.Errorf(`dev storage already closed`)
+	}
+	s.closed = true
+	return nil
+}
 
 func (s *InMemory) FindReleasePilotsByExternalID(ctx context.Context, pilotExtID string) release.PilotEntries {
 	var pilots []release.ManualPilot
 
-	for _, e := range s.TableFor(ctx, release.ManualPilot{}) {
-		p := e.(*release.ManualPilot)
+	_ = s.Memory.InTx(ctx, func(tx *storages.MemoryTransaction) error {
+		for _, e := range tx.ViewFor(release.ManualPilot{}) {
+			p := e.(release.ManualPilot)
 
-		if p.ExternalID == pilotExtID {
-			pilots = append(pilots, *p)
+			if p.ExternalID == pilotExtID {
+				pilots = append(pilots, p)
+			}
 		}
-	}
+
+		return nil
+	})
 
 	return iterators.NewSlice(pilots)
 }
@@ -41,95 +64,133 @@ func (s *InMemory) FindReleaseFlagsByName(ctx context.Context, names ...string) 
 		nameIndex[name] = struct{}{}
 	}
 
-	for _, e := range s.TableFor(ctx, release.Flag{}) {
-		flag := e.(*release.Flag)
+	_ = s.InTx(ctx, func(tx *storages.MemoryTransaction) error {
+		for _, e := range tx.ViewFor(release.Flag{}) {
+			flag := e.(release.Flag)
 
-		if _, ok := nameIndex[flag.Name]; ok {
-			flags = append(flags, *flag)
+			if _, ok := nameIndex[flag.Name]; ok {
+				flags = append(flags, flag)
+			}
 		}
-	}
+
+		return nil
+	})
 
 	return iterators.NewSlice(flags)
 }
 
 func (s *InMemory) FindReleasePilotsByReleaseFlag(ctx context.Context, flag release.Flag) release.PilotEntries {
-	table := s.TableFor(ctx, release.ManualPilot{})
-
 	var pilots []release.ManualPilot
 
-	for _, v := range table {
-		pilot := v.(*release.ManualPilot)
+	_ = s.InTx(ctx, func(tx *storages.MemoryTransaction) error {
+		for _, v := range tx.ViewFor(release.ManualPilot{}) {
+			pilot := v.(release.ManualPilot)
 
-		if pilot.FlagID == flag.ID {
-			pilots = append(pilots, *pilot)
+			if pilot.FlagID == flag.ID {
+				pilots = append(pilots, pilot)
+			}
 		}
-	}
+
+		return nil
+	})
 
 	return iterators.NewSlice(pilots)
 }
 
 func (s *InMemory) FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID, pilotExtID string) (*release.ManualPilot, error) {
-	table := s.TableFor(ctx, release.ManualPilot{})
+	var p *release.ManualPilot
 
-	for _, v := range table {
-		pilot := v.(*release.ManualPilot)
+	_ = s.Memory.InTx(ctx, func(tx *storages.MemoryTransaction) error {
+		for _, v := range tx.ViewFor(release.ManualPilot{}) {
+			pilot := v.(release.ManualPilot)
 
-		if pilot.FlagID == flagID && pilot.DeploymentEnvironmentID == envID && pilot.ExternalID == pilotExtID {
-			p := *pilot
-			return &p, nil
+			if pilot.FlagID == flagID && pilot.DeploymentEnvironmentID == envID && pilot.ExternalID == pilotExtID {
+				p = &pilot
+				return nil
+			}
 		}
-	}
 
-	return nil, nil
+		return nil
+	})
+
+	return p, nil
 }
 
 func (s *InMemory) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrName string, env *deployment.Environment) (bool, error) {
-	for _, v := range s.TableFor(ctx, deployment.Environment{}) {
-		record := v.(*deployment.Environment)
+	var found bool
 
-		if record.ID == idOrName || record.Name == idOrName {
-			*env = *record
-			return true, nil
+	_ = s.Memory.InTx(ctx, func(tx *storages.MemoryTransaction) error {
+		for _, v := range tx.ViewFor(deployment.Environment{}) {
+			record := v.(deployment.Environment)
+
+			if record.ID == idOrName || record.Name == idOrName {
+				*env = record
+				found = true
+				return nil
+			}
 		}
-	}
-	return false, nil
+
+		return nil
+	})
+
+	return found, nil
 }
 
 func (s *InMemory) FindReleaseFlagByName(ctx context.Context, name string) (*release.Flag, error) {
-	for _, v := range s.TableFor(ctx, release.Flag{}) {
-		flagRecord := v.(*release.Flag)
+	var flag *release.Flag
 
-		if flagRecord.Name == name {
-			f := *flagRecord
-			return &f, nil
+	_ = s.Memory.InTx(ctx, func(tx *storages.MemoryTransaction) error {
+		for _, v := range tx.ViewFor(release.Flag{}) {
+			flagRecord := v.(release.Flag)
+
+			if flagRecord.Name == name {
+				f := flagRecord
+				flag = &f
+				return nil
+			}
 		}
-	}
-	return nil, nil
+
+		return nil
+	})
+
+	return flag, nil
 }
 
-func (s *InMemory) FindTokenBySHA512Hex(ctx context.Context, t string) (*security.Token, error) {
-	table := s.TableFor(ctx, security.Token{})
+func (s *InMemory) FindTokenBySHA512Hex(ctx context.Context, tokenAsText string) (*security.Token, error) {
+	var token *security.Token
 
-	for _, token := range table {
-		token := token.(*security.Token)
+	_ = s.Memory.InTx(ctx, func(tx *storages.MemoryTransaction) error {
+		for _, tkn := range tx.ViewFor(security.Token{}) {
+			tkn := tkn.(security.Token)
 
-		if token.SHA512 == t {
-			t := *token
-			return &t, nil
+			if tkn.SHA512 == tokenAsText {
+				t := tkn
+				token = &t
+				return nil
+			}
 		}
-	}
 
-	return nil, nil
+		return nil
+	})
+	return token, nil
 }
 
 func (s *InMemory) FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx context.Context, flag release.Flag, env deployment.Environment, ptr *release.Rollout) (bool, error) {
-	for _, rollout := range s.TableFor(ctx, *ptr) {
-		rollout := rollout.(*release.Rollout)
+	var found bool
 
-		if rollout.FlagID == flag.ID && rollout.DeploymentEnvironmentID == env.ID {
-			*ptr = *rollout
-			return true, nil
+	_ = s.Memory.InTx(ctx, func(tx *storages.MemoryTransaction) error {
+		for _, rollout := range tx.ViewFor(release.Rollout{}) {
+			rollout := rollout.(release.Rollout)
+
+			if rollout.FlagID == flag.ID && rollout.DeploymentEnvironmentID == env.ID {
+				*ptr = rollout
+				found = true
+				return nil
+			}
 		}
-	}
-	return false, nil
+
+		return nil
+	})
+
+	return found, nil
 }
