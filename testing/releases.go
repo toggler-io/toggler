@@ -41,7 +41,7 @@ func init() {
 		})
 
 		s.Let(LetVarExamplePilot, func(t *testcase.T) interface{} {
-			// domains/release/specs/FlagFinderSpec.go:53:1: DEPRECATED, clean it up
+			// domains/release/specs/FlagFinder.go:53:1: DEPRECATED, clean it up
 			return &release.ManualPilot{
 				FlagID:                  ExampleReleaseFlag(t).ID,
 				DeploymentEnvironmentID: ExampleDeploymentEnvironment(t).ID,

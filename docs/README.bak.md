@@ -85,7 +85,7 @@ If you need to add a new storage implementation,
 because you need to use that,
 feel free to create a Issue or a PR.
 If you decide to implement your own integration with a storage,
-the expected behavior requirements/tests/coverage can be located under the `usecases/specs.StorageSpec` object.
+the expected behavior requirements/tests/coverage can be located under the `usecases/specs.Storage` object.
 For examples, you can check the already existing storage implementations as well.
 
 ## [Rollout Features](/docs/release/README.md)

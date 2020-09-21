@@ -14,7 +14,7 @@ import (
 func TestNullCache(t *testing.T) {
 	s := storages.NewInMemory()
 	c := caches.NewNullCache(s)
-	specs.StorageSpec{Subject: c, FixtureFactory: testing2.NewFixtureFactory()}.Test(t)
+	specs.Storage{Subject: c, FixtureFactory: testing2.NewFixtureFactory()}.Test(t)
 }
 
 func TestNullCacheImpCacheInterface(t *testing.T) {

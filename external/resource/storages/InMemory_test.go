@@ -18,14 +18,14 @@ var (
 )
 
 func TestInMemory(t *testing.T) {
-	specs.StorageSpec{
+	specs.Storage{
 		Subject:        storages.NewInMemory(),
 		FixtureFactory: NewFixtureFactory(),
 	}.Test(t)
 }
 
 func BenchmarkInMemory(b *testing.B) {
-	specs.StorageSpec{
+	specs.Storage{
 		Subject:        storages.NewInMemory(),
 		FixtureFactory: NewFixtureFactory(),
 	}.Benchmark(b)

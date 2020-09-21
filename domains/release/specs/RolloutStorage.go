@@ -16,7 +16,7 @@ import (
 	. "github.com/toggler-io/toggler/testing"
 )
 
-type RolloutStorageSpec struct {
+type RolloutStorage struct {
 	Subject interface {
 		release.RolloutFinder
 		resources.Creator
@@ -28,7 +28,7 @@ type RolloutStorageSpec struct {
 	specs.FixtureFactory
 }
 
-func (spec RolloutStorageSpec) Test(t *testing.T) {
+func (spec RolloutStorage) Test(t *testing.T) {
 	s := testcase.NewSpec(t)
 	SetUp(s)
 
@@ -42,9 +42,9 @@ func (spec RolloutStorageSpec) Test(t *testing.T) {
 		require.Nil(t, spec.Subject.DeleteAll(GetContext(t), release.Rollout{}))
 	})
 
-	s.Context(`RolloutStorageSpec`, func(s *testcase.Spec) {
+	s.Context(`RolloutStorage`, func(s *testcase.Spec) {
 		s.Test(`OnePhaseCommitProtocol`, func(t *testcase.T) {
-			specs.OnePhaseCommitProtocolSpec{
+			specs.OnePhaseCommitProtocol{
 				EntityType: release.Rollout{},
 				Subject:    spec.Subject,
 				FixtureFactory: RolloutStorageSpecFixtureFactory{
@@ -56,7 +56,7 @@ func (spec RolloutStorageSpec) Test(t *testing.T) {
 		})
 
 		s.Test(`CommonSpec#Rollout`, func(t *testcase.T) {
-			specs.CommonSpec{
+			specs.CRUD{
 				EntityType: release.Rollout{},
 				FixtureFactory: RolloutStorageSpecFixtureFactory{
 					FixtureFactory: spec.FixtureFactory,
@@ -113,7 +113,7 @@ func (spec RolloutStorageSpec) Test(t *testing.T) {
 	})
 }
 
-func (spec RolloutStorageSpec) Benchmark(b *testing.B) {
+func (spec RolloutStorage) Benchmark(b *testing.B) {
 	b.Skip()
 }
 

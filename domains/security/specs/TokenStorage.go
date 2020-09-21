@@ -13,14 +13,14 @@ import (
 	"github.com/toggler-io/toggler/domains/security"
 )
 
-type TokenStorageSpec struct {
+type TokenStorage struct {
 	Subject security.Storage
 	specs.FixtureFactory
 }
 
-func (spec TokenStorageSpec) Test(t *testing.T) {
+func (spec TokenStorage) Test(t *testing.T) {
 	t.Run(`Token`, func(t *testing.T) {
-		specs.CommonSpec{
+		specs.CRUD{
 			Subject:        spec.Subject,
 			EntityType:     security.Token{},
 			FixtureFactory: spec.FixtureFactory,
@@ -33,9 +33,9 @@ func (spec TokenStorageSpec) Test(t *testing.T) {
 	})
 }
 
-func (spec TokenStorageSpec) Benchmark(b *testing.B) {
+func (spec TokenStorage) Benchmark(b *testing.B) {
 	b.Run(`security`, func(b *testing.B) {
-		specs.CommonSpec{
+		specs.CRUD{
 			Subject:        spec.Subject,
 			EntityType:     security.Token{},
 			FixtureFactory: spec.FixtureFactory,

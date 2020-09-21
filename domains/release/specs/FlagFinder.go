@@ -15,7 +15,7 @@ import (
 	"github.com/toggler-io/toggler/domains/release"
 )
 
-type FlagFinderSpec struct {
+type FlagFinder struct {
 	Subject interface {
 		release.FlagFinder
 		resources.Creator
@@ -26,18 +26,18 @@ type FlagFinderSpec struct {
 	specs.FixtureFactory
 }
 
-func (spec FlagFinderSpec) Benchmark(b *testing.B) {
-	b.Run(`FlagFinderSpec`, func(b *testing.B) {
+func (spec FlagFinder) Benchmark(b *testing.B) {
+	b.Run(`FlagFinder`, func(b *testing.B) {
 		b.Skip(`TODO`)
 	})
 }
 
-func (spec FlagFinderSpec) Test(t *testing.T) {
+func (spec FlagFinder) Test(t *testing.T) {
 	s := testcase.NewSpec(t)
 
 	featureName := fixtures.Random.String()
 
-	s.Describe(`FlagFinderSpec`, func(s *testcase.Spec) {
+	s.Describe(`FlagFinder`, func(s *testcase.Spec) {
 		s.Around(func(t *testcase.T) func() {
 			require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.Flag{}))
 			return func() {
@@ -157,6 +157,6 @@ func (spec FlagFinderSpec) Test(t *testing.T) {
 	})
 }
 
-func (spec FlagFinderSpec) ctx() context.Context {
+func (spec FlagFinder) ctx() context.Context {
 	return spec.FixtureFactory.Context()
 }

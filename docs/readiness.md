@@ -33,7 +33,7 @@ If you need to add a new storage implementation,
 because you need to use that,
 feel free to create an Issue or a PR.
 
-Suppose your company can't use the storage/cache implementations the project currently has. In that case, you should be able to implement your adapter easily with the help of resource specifications in `usecases/specs.StorageSpec`.
+Suppose your company can't use the storage/cache implementations the project currently has. In that case, you should be able to implement your adapter easily with the help of resource specifications in `usecases/specs.Storage`.
 
 For examples, you can check the already existing storage implementations as well.
 

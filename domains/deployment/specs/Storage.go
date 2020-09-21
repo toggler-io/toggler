@@ -8,35 +8,35 @@ import (
 	"github.com/toggler-io/toggler/domains/deployment"
 )
 
-type StorageSpec struct {
+type Storage struct {
 	Subject deployment.Storage
 	specs.FixtureFactory
 }
 
-func (spec StorageSpec) Test(t *testing.T) {
+func (spec Storage) Test(t *testing.T) {
 	t.Run(`deployment`, func(t *testing.T) {
-		specs.CommonSpec{
+		specs.CRUD{
 			Subject:        spec.Subject,
 			EntityType:     deployment.Environment{},
 			FixtureFactory: spec.FixtureFactory,
 		}.Test(t)
 
-		EnvironmentFinderStorageSpec{
+		EnvironmentFinderStorage{
 			Subject:        spec.Subject,
 			FixtureFactory: spec.FixtureFactory,
 		}.Test(t)
 	})
 }
 
-func (spec StorageSpec) Benchmark(b *testing.B) {
+func (spec Storage) Benchmark(b *testing.B) {
 	b.Run(`deployment`, func(b *testing.B) {
-		specs.CommonSpec{
+		specs.CRUD{
 			Subject:        spec.Subject,
 			EntityType:     deployment.Environment{},
 			FixtureFactory: spec.FixtureFactory,
 		}.Benchmark(b)
 
-		EnvironmentFinderStorageSpec{
+		EnvironmentFinderStorage{
 			Subject:        spec.Subject,
 			FixtureFactory: spec.FixtureFactory,
 		}.Benchmark(b)

@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/toggler-io/toggler/external/resource/caches"
-	"github.com/toggler-io/toggler/external/resource/caches/cachespecs"
+	"github.com/toggler-io/toggler/external/resource/caches/specs"
 	. "github.com/toggler-io/toggler/testing"
 	"github.com/toggler-io/toggler/usecases"
 )
@@ -22,7 +22,7 @@ func TestRedis(t *testing.T) {
 		return cache
 	}
 
-	cachespecs.CacheSpec{
+	specs.Cache{
 		Factory:        factory,
 		FixtureFactory: NewFixtureFactory(),
 	}.Test(t)

@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type pilotFinderSpec struct {
+type pilotFinder struct {
 	Subject interface {
 		release.PilotFinder
 		resources.Creator
@@ -34,7 +34,7 @@ type pilotFinderSpec struct {
 	FixtureFactory specs.FixtureFactory
 }
 
-func (spec pilotFinderSpec) Test(t *testing.T) {
+func (spec pilotFinder) Test(t *testing.T) {
 	s := testcase.NewSpec(t)
 	SetUp(s)
 
@@ -43,20 +43,20 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 	})
 
 	s.Test(`ManualPilot`, func(t *testcase.T) {
-		specs.CommonSpec{
+		specs.CRUD{
 			EntityType:     release.ManualPilot{},
 			FixtureFactory: spec.ff(t),
 			Subject:        spec.Subject,
 		}.Test(t.T)
 
-		specs.OnePhaseCommitProtocolSpec{
+		specs.OnePhaseCommitProtocol{
 			EntityType:     release.Flag{},
 			FixtureFactory: spec.FixtureFactory,
 			Subject:        spec.Subject,
 		}.Test(t.T)
 	})
 
-	s.Describe(`pilotFinderSpec`, func(s *testcase.Spec) {
+	s.Describe(`pilotFinder`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
 			require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.ManualPilot{}))
 		})
@@ -275,17 +275,17 @@ func (spec pilotFinderSpec) Test(t *testing.T) {
 	})
 }
 
-func (spec pilotFinderSpec) Benchmark(b *testing.B) {
-	b.Run(`pilotFinderSpec`, func(b *testing.B) {
+func (spec pilotFinder) Benchmark(b *testing.B) {
+	b.Run(`pilotFinder`, func(b *testing.B) {
 		b.Skip(`TODO`)
 	})
 }
 
-func (spec pilotFinderSpec) ctx() context.Context {
+func (spec pilotFinder) ctx() context.Context {
 	return spec.FixtureFactory.Context()
 }
 
-func (spec pilotFinderSpec) ff(t *testcase.T) specs.FixtureFactory {
+func (spec pilotFinder) ff(t *testcase.T) specs.FixtureFactory {
 	return &FixtureFactoryForPilots{
 		FixtureFactory:             spec.FixtureFactory,
 		GetFlagID:                  func() string { return ExampleReleaseFlag(t).ID },

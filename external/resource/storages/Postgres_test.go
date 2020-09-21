@@ -31,7 +31,7 @@ func BenchmarkPostgres(b *testing.B) {
 	storage, err := storages.NewPostgres(db)
 	require.Nil(b, err)
 
-	specs.StorageSpec{
+	specs.Storage{
 		Subject:        storage,
 		FixtureFactory: NewFixtureFactory(),
 	}.Benchmark(b)
@@ -48,7 +48,7 @@ func TestPostgres(t *testing.T) {
 	storage, err := storages.NewPostgres(db)
 	require.Nil(t, err)
 
-	specs.StorageSpec{
+	specs.Storage{
 		Subject:        storage,
 		FixtureFactory: NewFixtureFactory(),
 	}.Test(t)

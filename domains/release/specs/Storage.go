@@ -11,32 +11,32 @@ import (
 	. "github.com/toggler-io/toggler/testing"
 )
 
-type StorageSpec struct {
+type Storage struct {
 	Subject release.Storage
 	specs.FixtureFactory
 }
 
-func (spec StorageSpec) Test(t *testing.T) {
+func (spec Storage) Test(t *testing.T) {
 	t.Run(`releases`, func(t *testing.T) {
-		RolloutStorageSpec{
+		RolloutStorage{
 			Subject:        spec.Subject,
 			FixtureFactory: spec.FixtureFactory,
 		}.Test(t)
 
 		t.Run(`Flag`, func(t *testing.T) {
-			specs.OnePhaseCommitProtocolSpec{
+			specs.OnePhaseCommitProtocol{
 				EntityType:     release.Flag{},
 				FixtureFactory: spec.FixtureFactory,
 				Subject:        spec.Subject,
 			}.Test(t)
 
-			specs.CommonSpec{
+			specs.CRUD{
 				EntityType:     release.Flag{},
 				FixtureFactory: spec.FixtureFactory,
 				Subject:        spec.Subject,
 			}.Test(t)
 
-			FlagFinderSpec{
+			FlagFinder{
 				Subject:        spec.Subject,
 				FixtureFactory: spec.FixtureFactory,
 			}.Test(t)
@@ -80,7 +80,7 @@ func (spec StorageSpec) Test(t *testing.T) {
 				require.Nil(t, spec.Subject.DeleteAll(spec.Context(), release.Flag{}))
 			})
 
-			pilotFinderSpec{
+			pilotFinder{
 				FixtureFactory: spec.FixtureFactory,
 				Subject:        spec.Subject,
 			}.Test(t)
@@ -88,7 +88,7 @@ func (spec StorageSpec) Test(t *testing.T) {
 	})
 }
 
-func (spec StorageSpec) Benchmark(b *testing.B) {
+func (spec Storage) Benchmark(b *testing.B) {
 	b.Run(`releases`, func(b *testing.B) {
 		b.Skip()
 	})

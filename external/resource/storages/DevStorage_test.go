@@ -18,14 +18,14 @@ var (
 )
 
 func TestDevStorage(t *testing.T) {
-	specs.StorageSpec{
+	specs.Storage{
 		Subject:        storages.NewDevStorage(),
 		FixtureFactory: NewFixtureFactory(),
 	}.Test(t)
 }
 
 func BenchmarkDevStorage(b *testing.B) {
-	specs.StorageSpec{
+	specs.Storage{
 		Subject:        storages.NewDevStorage(),
 		FixtureFactory: NewFixtureFactory(),
 	}.Benchmark(b)

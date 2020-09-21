@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/Pallinder/go-randomdata v1.2.0
-	github.com/adamluzsi/frameless v0.8.0
+	github.com/adamluzsi/frameless v0.9.0
 	github.com/adamluzsi/gorest v0.6.1
 	github.com/adamluzsi/testcase v0.13.0
 	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535 // indirect
@@ -31,5 +31,6 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/unrolled/logger v0.0.0-20190327162521-be1a2406c7c9
 	go.mongodb.org/mongo-driver v1.3.3 // indirect
+	golang.org/x/tools v0.0.0-20200921202010-4aa5c68dc7ae // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 )

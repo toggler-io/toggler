@@ -83,7 +83,7 @@ func TestConsul(t *testing.T) {
 	r, err := consul.New(getTestConsulConnstr(t))
 	require.Nil(t, err)
 	
-	specs.StorageSpec{
+	specs.Storage{
 		Subject:        r,
 		FixtureFactory: testing2.NewFixtureFactory(),
 	}.Test(t)

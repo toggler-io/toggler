@@ -10,14 +10,14 @@ import (
 	"github.com/toggler-io/toggler/domains/deployment"
 )
 
-type EnvironmentFinderStorageSpec struct {
+type EnvironmentFinderStorage struct {
 	Subject deployment.Storage
 	specs.FixtureFactory
 }
 
-func (spec EnvironmentFinderStorageSpec) Test(t *testing.T) {
+func (spec EnvironmentFinderStorage) Test(t *testing.T) {
 	s := testcase.NewSpec(t)
-	s.Context(`EnvironmentFinderStorageSpec`, func(s *testcase.Spec) {
+	s.Context(`EnvironmentFinderStorage`, func(s *testcase.Spec) {
 		s.Describe(`FindDeploymentEnvironmentByAlias`, func(s *testcase.Spec) {
 			var subject = func(t *testcase.T) (bool, error) {
 				return spec.Subject.FindDeploymentEnvironmentByAlias(
@@ -83,8 +83,8 @@ func (spec EnvironmentFinderStorageSpec) Test(t *testing.T) {
 	})
 }
 
-func (spec EnvironmentFinderStorageSpec) Benchmark(b *testing.B) {
-	b.Run(`EnvironmentFinderStorageSpec`, func(b *testing.B) {
+func (spec EnvironmentFinderStorage) Benchmark(b *testing.B) {
+	b.Run(`EnvironmentFinderStorage`, func(b *testing.B) {
 		b.Skip()
 	})
 }

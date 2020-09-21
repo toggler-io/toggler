@@ -1,5 +1,5 @@
 //go:generate mockgen -package cachespecs -source ../../../../usecases/Storage.go -destination MockStorage.go
-package cachespecs
+package specs
 
 import (
 	"context"
@@ -22,17 +22,17 @@ import (
 	"github.com/toggler-io/toggler/usecases/specs"
 )
 
-type CacheSpec struct {
+type Cache struct {
 	Factory func(usecases.Storage) caches.Interface
 	frmls.FixtureFactory
 }
 
-func (spec CacheSpec) Test(t *testing.T) {
-	testcase.NewSpec(t).Context(`CacheSpec`, func(s *testcase.Spec) {
+func (spec Cache) Test(t *testing.T) {
+	testcase.NewSpec(t).Context(`Cache`, func(s *testcase.Spec) {
 		spec.setup(s)
 
 		s.Test(`cache mimics the storage behavior by proxying between storage and the caller`, func(t *testcase.T) {
-			specs.StorageSpec{Subject: spec.cache(t), FixtureFactory: spec.FixtureFactory}.Test(t.T)
+			specs.Storage{Subject: spec.cache(t), FixtureFactory: spec.FixtureFactory}.Test(t.T)
 		})
 
 		s.Context(`calls results are cached for`, func(s *testcase.Spec) {
@@ -43,7 +43,7 @@ func (spec CacheSpec) Test(t *testing.T) {
 	})
 }
 
-func (spec CacheSpec) setup(s *testcase.Spec) {
+func (spec Cache) setup(s *testcase.Spec) {
 	s.Let(`cache`, func(t *testcase.T) interface{} {
 		return spec.Factory(spec.storage(t))
 	})
@@ -53,15 +53,15 @@ func (spec CacheSpec) setup(s *testcase.Spec) {
 	})
 }
 
-func (spec CacheSpec) cache(t *testcase.T) caches.Interface {
+func (spec Cache) cache(t *testcase.T) caches.Interface {
 	return t.I(`cache`).(caches.Interface)
 }
 
-func (spec CacheSpec) storage(t *testcase.T) usecases.Storage {
+func (spec Cache) storage(t *testcase.T) usecases.Storage {
 	return t.I(`storage`).(usecases.Storage)
 }
 
-func (spec CacheSpec) mockStorage(s *testcase.Spec, setupMockBehavior func(*testcase.T, *MockStorage)) {
+func (spec Cache) mockStorage(s *testcase.Spec, setupMockBehavior func(*testcase.T, *MockStorage)) {
 	s.Let(`storage`, func(t *testcase.T) interface{} {
 		mock := NewMockStorage(t.I(`storage-ctrl`).(*gomock.Controller))
 		setupMockBehavior(t, mock)
@@ -77,7 +77,7 @@ func (spec CacheSpec) mockStorage(s *testcase.Spec, setupMockBehavior func(*test
 	})
 }
 
-func (spec CacheSpec) expectResultCachingFor(s *testcase.Spec, T interface{}) {
+func (spec Cache) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 	s.Context(reflects.SymbolicName(T), func(s *testcase.Spec) {
 		s.Let(`value`, func(t *testcase.T) interface{} {
 			return spec.FixtureFactory.Create(T)
@@ -204,10 +204,10 @@ func (spec CacheSpec) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 	})
 }
 
-func (spec CacheSpec) Benchmark(b *testing.B) {
+func (spec Cache) Benchmark(b *testing.B) {
 	b.Skip(`TODO`)
 }
 
-func (spec CacheSpec) new(T interface{}) interface{} {
+func (spec Cache) new(T interface{}) interface{} {
 	return reflect.New(reflect.TypeOf(T)).Interface()
 }

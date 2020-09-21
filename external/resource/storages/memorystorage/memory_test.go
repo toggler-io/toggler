@@ -15,20 +15,20 @@ func ExampleMemory() *memorystorage.Memory {
 
 func TestMemory(t *testing.T) {
 	subject := ExampleMemory()
-	specs.CreatorSpec{EntityType: exampleEntity{}, Subject: subject, FixtureFactory: fixtures.FixtureFactory{}}.Test(t)
-	specs.FinderSpec{EntityType: exampleEntity{}, Subject: subject, FixtureFactory: fixtures.FixtureFactory{}}.Test(t)
-	specs.UpdaterSpec{EntityType: exampleEntity{}, Subject: subject, FixtureFactory: fixtures.FixtureFactory{}}.Test(t)
-	specs.DeleterSpec{EntityType: exampleEntity{}, Subject: subject, FixtureFactory: fixtures.FixtureFactory{}}.Test(t)
-	specs.OnePhaseCommitProtocolSpec{EntityType: exampleEntity{}, Subject: subject, FixtureFactory: fixtures.FixtureFactory{}}.Test(t)
+	specs.Creator{EntityType: exampleEntity{}, Subject: subject, FixtureFactory: fixtures.FixtureFactory{}}.Test(t)
+	specs.Finder{EntityType: exampleEntity{}, Subject: subject, FixtureFactory: fixtures.FixtureFactory{}}.Test(t)
+	specs.Updater{EntityType: exampleEntity{}, Subject: subject, FixtureFactory: fixtures.FixtureFactory{}}.Test(t)
+	specs.Deleter{EntityType: exampleEntity{}, Subject: subject, FixtureFactory: fixtures.FixtureFactory{}}.Test(t)
+	specs.OnePhaseCommitProtocol{EntityType: exampleEntity{}, Subject: subject, FixtureFactory: fixtures.FixtureFactory{}}.Test(t)
 }
 
 func BenchmarkMemory(b *testing.B) {
 	subject := ExampleMemory()
-	specs.CreatorSpec{EntityType: exampleEntity{}, Subject: subject, FixtureFactory: fixtures.FixtureFactory{}}.Benchmark(b)
-	specs.FinderSpec{EntityType: exampleEntity{}, Subject: subject, FixtureFactory: fixtures.FixtureFactory{}}.Benchmark(b)
-	specs.UpdaterSpec{EntityType: exampleEntity{}, Subject: subject, FixtureFactory: fixtures.FixtureFactory{}}.Benchmark(b)
-	specs.DeleterSpec{EntityType: exampleEntity{}, Subject: subject, FixtureFactory: fixtures.FixtureFactory{}}.Benchmark(b)
-	specs.OnePhaseCommitProtocolSpec{EntityType: exampleEntity{}, Subject: subject, FixtureFactory: fixtures.FixtureFactory{}}.Benchmark(b)
+	specs.Creator{EntityType: exampleEntity{}, Subject: subject, FixtureFactory: fixtures.FixtureFactory{}}.Benchmark(b)
+	specs.Finder{EntityType: exampleEntity{}, Subject: subject, FixtureFactory: fixtures.FixtureFactory{}}.Benchmark(b)
+	specs.Updater{EntityType: exampleEntity{}, Subject: subject, FixtureFactory: fixtures.FixtureFactory{}}.Benchmark(b)
+	specs.Deleter{EntityType: exampleEntity{}, Subject: subject, FixtureFactory: fixtures.FixtureFactory{}}.Benchmark(b)
+	specs.OnePhaseCommitProtocol{EntityType: exampleEntity{}, Subject: subject, FixtureFactory: fixtures.FixtureFactory{}}.Benchmark(b)
 }
 
 type exampleEntity struct {

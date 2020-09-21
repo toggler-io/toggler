@@ -2,7 +2,7 @@
 // Source: ../../../../usecases/Storage.go
 
 // Package cachespecs is a generated GoMock package.
-package cachespecs
+package specs
 
 import (
 	context "context"

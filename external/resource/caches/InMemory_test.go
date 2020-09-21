@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/toggler-io/toggler/external/resource/caches"
-	"github.com/toggler-io/toggler/external/resource/caches/cachespecs"
+	cachespecs "github.com/toggler-io/toggler/external/resource/caches/specs"
 	"github.com/toggler-io/toggler/external/resource/storages"
 	. "github.com/toggler-io/toggler/testing"
 	"github.com/toggler-io/toggler/usecases"
@@ -12,15 +12,15 @@ import (
 )
 
 func TestInMemory_StorageSpec(t *testing.T) {
-	specs.StorageSpec{
+	specs.Storage{
 		Subject:        caches.NewInMemory(storages.NewInMemory()),
 		FixtureFactory: NewFixtureFactory(),
 	}.Test(t)
 }
 
 func TestInMemory_CacheSpec(t *testing.T) {
-	cachespecs.CacheSpec{
-		Factory:        func(s usecases.Storage) caches.Interface {
+	cachespecs.Cache{
+		Factory: func(s usecases.Storage) caches.Interface {
 			return caches.NewInMemory(s)
 		},
 		FixtureFactory: NewFixtureFactory(),
@@ -28,8 +28,8 @@ func TestInMemory_CacheSpec(t *testing.T) {
 }
 
 func BenchmarkInMemory_CacheSpec(b *testing.B) {
-	cachespecs.CacheSpec{
-		Factory:        func(s usecases.Storage) caches.Interface {
+	cachespecs.Cache{
+		Factory: func(s usecases.Storage) caches.Interface {
 			return caches.NewInMemory(s)
 		},
 		FixtureFactory: NewFixtureFactory(),
