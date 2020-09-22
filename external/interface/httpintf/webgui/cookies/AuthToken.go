@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/toggler-io/toggler/usecases"
+	"github.com/toggler-io/toggler/domains/toggler"
 )
 
 const authTokenCookieName = `auth-token`
@@ -37,7 +37,7 @@ func SetAuthToken(w http.ResponseWriter, token []byte) {
 
 type AuthTokenContextKey struct{}
 
-func WithAuthTokenMiddleware(next http.Handler, uc *usecases.UseCases, signInURL string, exceptions []string) http.Handler {
+func WithAuthTokenMiddleware(next http.Handler, uc *toggler.UseCases, signInURL string, exceptions []string) http.Handler {
 	mux := http.NewServeMux()
 
 	// register exceptions

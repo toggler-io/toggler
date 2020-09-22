@@ -9,11 +9,11 @@ import (
 	"github.com/adamluzsi/gorest"
 
 	"github.com/toggler-io/toggler/domains/release"
+	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
-	"github.com/toggler-io/toggler/usecases"
 )
 
-func NewReleasePilotHandler(uc *usecases.UseCases) *gorest.Handler {
+func NewReleasePilotHandler(uc *toggler.UseCases) *gorest.Handler {
 	c := ReleasePilotController{UseCases: uc}
 	h := gorest.NewHandler(struct {
 		gorest.ContextHandler
@@ -30,7 +30,7 @@ func NewReleasePilotHandler(uc *usecases.UseCases) *gorest.Handler {
 }
 
 type ReleasePilotController struct {
-	UseCases *usecases.UseCases
+	UseCases *toggler.UseCases
 }
 
 var _ release.ManualPilot

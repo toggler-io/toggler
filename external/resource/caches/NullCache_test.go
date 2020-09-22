@@ -5,10 +5,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/toggler-io/toggler/domains/toggler/specs"
 	"github.com/toggler-io/toggler/external/resource/caches"
 	"github.com/toggler-io/toggler/external/resource/storages"
 	testing2 "github.com/toggler-io/toggler/testing"
-	"github.com/toggler-io/toggler/usecases/specs"
 )
 
 func TestNullCache(t *testing.T) {

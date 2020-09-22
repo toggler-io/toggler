@@ -10,11 +10,11 @@ import (
 
 	"github.com/toggler-io/toggler/domains/deployment"
 	"github.com/toggler-io/toggler/domains/release"
+	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
-	"github.com/toggler-io/toggler/usecases"
 )
 
-func NewReleaseRolloutHandler(uc *usecases.UseCases) *gorest.Handler {
+func NewReleaseRolloutHandler(uc *toggler.UseCases) *gorest.Handler {
 	c := ReleaseRolloutController{UseCases: uc}
 	h := gorest.NewHandler(struct {
 		gorest.ContextHandler
@@ -32,7 +32,7 @@ func NewReleaseRolloutHandler(uc *usecases.UseCases) *gorest.Handler {
 }
 
 type ReleaseRolloutController struct {
-	UseCases *usecases.UseCases
+	UseCases *toggler.UseCases
 }
 
 //--------------------------------------------------------------------------------------------------------------------//

@@ -10,10 +10,10 @@ import (
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 
+	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/interface/httpintf"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
 	. "github.com/toggler-io/toggler/testing"
-	"github.com/toggler-io/toggler/usecases"
 )
 
 func NewServeMux(t *testcase.T) *http.ServeMux {
@@ -23,7 +23,7 @@ func NewServeMux(t *testcase.T) *http.ServeMux {
 }
 
 func NewHandler(t *testcase.T) *httpapi.Handler {
-	return httpapi.NewHandler(usecases.NewUseCases(ExampleStorage(t)))
+	return httpapi.NewHandler(toggler.NewUseCases(ExampleStorage(t)))
 }
 
 func TestServeMuxRoutingPOC(t *testing.T) {

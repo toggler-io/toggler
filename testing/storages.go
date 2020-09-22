@@ -9,8 +9,8 @@ import (
 	"github.com/toggler-io/toggler/domains/deployment"
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/security"
+	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/resource/storages"
-	"github.com/toggler-io/toggler/usecases"
 )
 
 const LetVarExampleStorage = `TestStorage`
@@ -64,10 +64,10 @@ func init() {
 	})
 }
 
-func GetStorage(t *testcase.T, varName string) usecases.Storage {
-	return t.I(varName).(usecases.Storage)
+func GetStorage(t *testcase.T, varName string) toggler.Storage {
+	return t.I(varName).(toggler.Storage)
 }
 
-func ExampleStorage(t *testcase.T) usecases.Storage {
+func ExampleStorage(t *testcase.T) toggler.Storage {
 	return GetStorage(t, LetVarExampleStorage)
 }

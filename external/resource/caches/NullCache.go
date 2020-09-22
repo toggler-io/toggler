@@ -1,15 +1,16 @@
 package caches
 
 import (
-	"github.com/toggler-io/toggler/usecases"
 	"time"
+
+	"github.com/toggler-io/toggler/domains/toggler"
 )
 
-func NewNullCache(s usecases.Storage) *NullCache {
+func NewNullCache(s toggler.Storage) *NullCache {
 	return &NullCache{Storage: s}
 }
 
-type NullCache struct{ usecases.Storage }
+type NullCache struct{ toggler.Storage }
 
 func (*NullCache) SetTimeToLiveForValuesToCache(duration time.Duration) error {
 	return nil

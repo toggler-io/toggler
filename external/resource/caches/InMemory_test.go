@@ -3,12 +3,12 @@ package caches_test
 import (
 	"testing"
 
+	"github.com/toggler-io/toggler/domains/toggler"
+	"github.com/toggler-io/toggler/domains/toggler/specs"
 	"github.com/toggler-io/toggler/external/resource/caches"
 	cachespecs "github.com/toggler-io/toggler/external/resource/caches/specs"
 	"github.com/toggler-io/toggler/external/resource/storages"
 	. "github.com/toggler-io/toggler/testing"
-	"github.com/toggler-io/toggler/usecases"
-	"github.com/toggler-io/toggler/usecases/specs"
 )
 
 func TestInMemory_StorageSpec(t *testing.T) {
@@ -20,7 +20,7 @@ func TestInMemory_StorageSpec(t *testing.T) {
 
 func TestInMemory_CacheSpec(t *testing.T) {
 	cachespecs.Cache{
-		Factory: func(s usecases.Storage) caches.Interface {
+		Factory: func(s toggler.Storage) caches.Interface {
 			return caches.NewInMemory(s)
 		},
 		FixtureFactory: NewFixtureFactory(),
@@ -29,7 +29,7 @@ func TestInMemory_CacheSpec(t *testing.T) {
 
 func BenchmarkInMemory_CacheSpec(b *testing.B) {
 	cachespecs.Cache{
-		Factory: func(s usecases.Storage) caches.Interface {
+		Factory: func(s toggler.Storage) caches.Interface {
 			return caches.NewInMemory(s)
 		},
 		FixtureFactory: NewFixtureFactory(),

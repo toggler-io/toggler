@@ -5,15 +5,17 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
+	"time"
+
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources"
-	"github.com/toggler-io/toggler/domains/release"
-	"github.com/toggler-io/toggler/usecases"
 	"github.com/go-redis/redis"
-	"time"
+
+	"github.com/toggler-io/toggler/domains/release"
+	"github.com/toggler-io/toggler/domains/toggler"
 )
 
-func NewRedis(connstr string, storage usecases.Storage) (*Redis, error) {
+func NewRedis(connstr string, storage toggler.Storage) (*Redis, error) {
 	redisClientOpt, err := redis.ParseURL(connstr)
 	if err != nil {
 		return nil, err
@@ -30,7 +32,7 @@ func NewRedis(connstr string, storage usecases.Storage) (*Redis, error) {
 
 // TODO provide caching for every Storage contract (function)
 type Redis struct {
-	usecases.Storage
+	toggler.Storage
 	client *redis.Client
 	ttl    time.Duration
 }

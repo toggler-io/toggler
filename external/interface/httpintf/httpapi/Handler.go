@@ -9,10 +9,10 @@ import (
 	"github.com/adamluzsi/gorest"
 	"github.com/gorilla/websocket"
 
-	"github.com/toggler-io/toggler/usecases"
+	"github.com/toggler-io/toggler/domains/toggler"
 )
 
-func NewHandler(uc *usecases.UseCases) *Handler {
+func NewHandler(uc *toggler.UseCases) *Handler {
 	mux := &Handler{
 		UseCases: uc,
 		ServeMux: http.NewServeMux(),
@@ -32,7 +32,7 @@ func NewHandler(uc *usecases.UseCases) *Handler {
 
 type Handler struct {
 	*http.ServeMux
-	*usecases.UseCases
+	*toggler.UseCases
 	*websocket.Upgrader
 }
 

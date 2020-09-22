@@ -3,8 +3,8 @@ package httputils
 import (
 	"net/http"
 
+	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/interface/httpintf/webgui/cookies"
-	"github.com/toggler-io/toggler/usecases"
 )
 
 func GetAppToken(r *http.Request) (string, error) {
@@ -30,7 +30,7 @@ func GetAppToken(r *http.Request) (string, error) {
 }
 
 func HandleError(w http.ResponseWriter, err error, errCode int) (errorWasHandled bool) {
-	if err == usecases.ErrInvalidToken {
+	if err == toggler.ErrInvalidToken {
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return true
 	}

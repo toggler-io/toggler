@@ -14,21 +14,22 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
+	"github.com/toggler-io/toggler/domains/deployment"
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/security"
+	"github.com/toggler-io/toggler/domains/toggler"
+	"github.com/toggler-io/toggler/domains/toggler/specs"
 	"github.com/toggler-io/toggler/external/resource/caches"
 	"github.com/toggler-io/toggler/external/resource/storages"
-	"github.com/toggler-io/toggler/usecases"
-	"github.com/toggler-io/toggler/usecases/specs"
 )
 
 type Cache struct {
-	Factory func(usecases.Storage) caches.Interface
+	Factory func(toggler.Storage) caches.Interface
 	frmls.FixtureFactory
 }
 
 func (spec Cache) Test(t *testing.T) {
-	testcase.NewSpec(t).Context(`Cache`, func(s *testcase.Spec) {
+	testcase.NewSpec(t).Describe(`Cache`, func(s *testcase.Spec) {
 		spec.setup(s)
 
 		s.Test(`cache mimics the storage behavior by proxying between storage and the caller`, func(t *testcase.T) {
@@ -36,9 +37,15 @@ func (spec Cache) Test(t *testing.T) {
 		})
 
 		s.Context(`calls results are cached for`, func(s *testcase.Spec) {
+			spec.expectResultCachingFor(s, deployment.Environment{})
 			spec.expectResultCachingFor(s, release.Flag{})
+			spec.expectResultCachingFor(s, release.Rollout{})
 			spec.expectResultCachingFor(s, release.ManualPilot{})
 			spec.expectResultCachingFor(s, security.Token{})
+		})
+
+		s.Describe(`cache invalidation`, func(s *testcase.Spec) {
+			
 		})
 	})
 }
@@ -57,8 +64,8 @@ func (spec Cache) cache(t *testcase.T) caches.Interface {
 	return t.I(`cache`).(caches.Interface)
 }
 
-func (spec Cache) storage(t *testcase.T) usecases.Storage {
-	return t.I(`storage`).(usecases.Storage)
+func (spec Cache) storage(t *testcase.T) toggler.Storage {
+	return t.I(`storage`).(toggler.Storage)
 }
 
 func (spec Cache) mockStorage(s *testcase.Spec, setupMockBehavior func(*testcase.T, *MockStorage)) {

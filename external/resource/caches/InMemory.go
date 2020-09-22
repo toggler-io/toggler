@@ -16,10 +16,10 @@ import (
 	"github.com/toggler-io/toggler/domains/deployment"
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/security"
-	"github.com/toggler-io/toggler/usecases"
+	"github.com/toggler-io/toggler/domains/toggler"
 )
 
-func NewInMemory(s usecases.Storage) *InMemory {
+func NewInMemory(s toggler.Storage) *InMemory {
 	c := &InMemory{Storage: s, ttl: 5 * time.Minute}
 	c.Start()
 	return c
@@ -28,7 +28,7 @@ func NewInMemory(s usecases.Storage) *InMemory {
 //TODO: possible improvement to protect with mux around actions instead of set and lookup, so on concurrent access there will be only 1 find
 //TODO: implement cache invalidation with delete/update event streams in the next iterations
 type InMemory struct {
-	Storage usecases.Storage
+	Storage toggler.Storage
 	cache   map[string]map[string]*inMemoryCachedItem
 	ttl     time.Duration
 

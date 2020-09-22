@@ -8,11 +8,11 @@ import (
 	"github.com/adamluzsi/gorest"
 
 	"github.com/toggler-io/toggler/domains/release"
+	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
-	"github.com/toggler-io/toggler/usecases"
 )
 
-func NewReleaseFlagHandler(uc *usecases.UseCases) *gorest.Handler {
+func NewReleaseFlagHandler(uc *toggler.UseCases) *gorest.Handler {
 	c := ReleaseFlagController{UseCases: uc}
 	h := gorest.NewHandler(struct {
 		gorest.ContextHandler
@@ -30,7 +30,7 @@ func NewReleaseFlagHandler(uc *usecases.UseCases) *gorest.Handler {
 }
 
 type ReleaseFlagController struct {
-	UseCases *usecases.UseCases
+	UseCases *toggler.UseCases
 }
 
 //--------------------------------------------------------------------------------------------------------------------//

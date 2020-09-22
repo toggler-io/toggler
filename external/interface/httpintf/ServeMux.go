@@ -8,12 +8,12 @@ import (
 	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
 	"github.com/toggler-io/toggler/external/interface/httpintf/swagger"
 
+	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
 	"github.com/toggler-io/toggler/external/interface/httpintf/webgui"
-	"github.com/toggler-io/toggler/usecases"
 )
 
-func NewServeMux(uc *usecases.UseCases) (*http.ServeMux, error) {
+func NewServeMux(uc *toggler.UseCases) (*http.ServeMux, error) {
 	mux := http.NewServeMux()
 
 	mux.Handle(`/api/`, httputils.CORS(http.StripPrefix(`/api`, httpapi.NewHandler(uc))))

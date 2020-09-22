@@ -3,12 +3,12 @@ package webgui
 import (
 	"net/http"
 
+	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/interface/httpintf/webgui/assets"
 	"github.com/toggler-io/toggler/external/interface/httpintf/webgui/controllers"
-	"github.com/toggler-io/toggler/usecases"
 )
 
-func NewServeMux(uc *usecases.UseCases) (*ServeMux, error) {
+func NewServeMux(uc *toggler.UseCases) (*ServeMux, error) {
 	ctrl, err := controllers.NewController(uc)
 	if err != nil {
 		return nil, err
@@ -32,7 +32,7 @@ func NewServeMux(uc *usecases.UseCases) (*ServeMux, error) {
 
 type ServeMux struct {
 	*http.ServeMux
-	*usecases.UseCases
+	*toggler.UseCases
 }
 
 func assetsFS() http.Handler {

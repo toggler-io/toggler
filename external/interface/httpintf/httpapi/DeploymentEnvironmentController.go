@@ -9,11 +9,11 @@ import (
 	"github.com/adamluzsi/gorest"
 
 	"github.com/toggler-io/toggler/domains/deployment"
+	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
-	"github.com/toggler-io/toggler/usecases"
 )
 
-func NewDeploymentEnvironmentHandler(uc *usecases.UseCases) *gorest.Handler {
+func NewDeploymentEnvironmentHandler(uc *toggler.UseCases) *gorest.Handler {
 	c := DeploymentEnvironmentController{UseCases: uc}
 	h := gorest.NewHandler(struct {
 		gorest.ContextHandler
@@ -35,7 +35,7 @@ func NewDeploymentEnvironmentHandler(uc *usecases.UseCases) *gorest.Handler {
 }
 
 type DeploymentEnvironmentController struct {
-	UseCases *usecases.UseCases
+	UseCases *toggler.UseCases
 }
 
 //--------------------------------------------------------------------------------------------------------------------//

@@ -4,11 +4,11 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/interface/httpintf/webgui/views"
-	"github.com/toggler-io/toggler/usecases"
 )
 
-func NewController(uc *usecases.UseCases) (*Controller, error) {
+func NewController(uc *toggler.UseCases) (*Controller, error) {
 	renderer, err := NewHttpFileSystemRenderer(views.FS(false))
 	if err != nil {
 		return nil, err
@@ -21,7 +21,7 @@ func NewController(uc *usecases.UseCases) (*Controller, error) {
 }
 
 type Controller struct {
-	*usecases.UseCases
+	*toggler.UseCases
 	Renderer Renderer
 }
 

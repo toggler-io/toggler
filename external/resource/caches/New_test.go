@@ -7,9 +7,9 @@ import (
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 
+	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/resource/caches"
 	. "github.com/toggler-io/toggler/testing"
-	"github.com/toggler-io/toggler/usecases"
 )
 
 func TestNew(t *testing.T) {
@@ -17,7 +17,7 @@ func TestNew(t *testing.T) {
 	SetUp(s)
 
 	s.Describe(`New`, func(s *testcase.Spec) {
-		subject := func(t *testcase.T) (usecases.Storage, error) {
+		subject := func(t *testcase.T) (toggler.Storage, error) {
 			cache, err := caches.New(t.I(`connstr`).(string), ExampleStorage(t))
 			if err == nil {
 				t.Defer(cache.Close)
@@ -25,7 +25,7 @@ func TestNew(t *testing.T) {
 			return cache, err
 		}
 
-		onSuccess := func(t *testcase.T) usecases.Storage {
+		onSuccess := func(t *testcase.T) toggler.Storage {
 			s, err := subject(t)
 			require.Nil(t, err)
 			return s

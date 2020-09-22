@@ -6,12 +6,12 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 
+	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
-	"github.com/toggler-io/toggler/usecases"
 )
 
 type Controller struct {
-	UseCases *usecases.UseCases
+	UseCases *toggler.UseCases
 	Upgrader *websocket.Upgrader
 }
 

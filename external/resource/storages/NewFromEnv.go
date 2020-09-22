@@ -6,7 +6,7 @@ import (
 
 	"github.com/adamluzsi/frameless"
 
-	"github.com/toggler-io/toggler/usecases"
+	"github.com/toggler-io/toggler/domains/toggler"
 )
 
 const ErrRDSEngineNotSet frameless.Error = `RDS_ENGINE environment variable not set.
@@ -18,7 +18,7 @@ Missing variables from your environment for storage initialization.
 Please set "DATABASE_URL" in your environment variable to solve this.
 e.g.: DATABASE_URL=memory`
 
-func NewFromEnv() (usecases.Storage, error) {
+func NewFromEnv() (toggler.Storage, error) {
 	if databaseURL, ok := os.LookupEnv(`DATABASE_URL`); ok {
 		return New(databaseURL)
 	}

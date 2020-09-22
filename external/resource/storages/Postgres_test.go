@@ -17,7 +17,7 @@ import (
 
 	"github.com/adamluzsi/frameless/resources"
 
-	"github.com/toggler-io/toggler/usecases/specs"
+	"github.com/toggler-io/toggler/domains/toggler/specs"
 )
 
 func BenchmarkPostgres(b *testing.B) {

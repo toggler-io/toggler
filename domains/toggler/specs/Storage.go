@@ -4,15 +4,16 @@ import (
 	"testing"
 
 	frmlspecs "github.com/adamluzsi/frameless/resources/specs"
+
+	deplspecs "github.com/toggler-io/toggler/domains/deployment/specs"
 	rollspecs "github.com/toggler-io/toggler/domains/release/specs"
 	secuspecs "github.com/toggler-io/toggler/domains/security/specs"
-	deplspecs "github.com/toggler-io/toggler/domains/deployment/specs"
 
-	"github.com/toggler-io/toggler/usecases"
+	"github.com/toggler-io/toggler/domains/toggler"
 )
 
 type Storage struct {
-	Subject usecases.Storage
+	Subject toggler.Storage
 	frmlspecs.FixtureFactory
 }
 

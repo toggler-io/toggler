@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/toggler-io/toggler/usecases"
+	"github.com/toggler-io/toggler/domains/toggler"
 )
 
 // ErrorResponse will contains a response about request that had some kind of problem.
@@ -49,7 +49,7 @@ func ErrorWriterFunc(w http.ResponseWriter, error string, code int) {
 }
 
 func handleError(w http.ResponseWriter, err error, errCode int) bool {
-	if err == usecases.ErrInvalidToken {
+	if err == toggler.ErrInvalidToken {
 		const code = http.StatusUnauthorized
 		ErrorWriterFunc(w, http.StatusText(code), code)
 		return true

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/toggler-io/toggler/usecases"
+	"github.com/toggler-io/toggler/domains/toggler"
 )
 
-func New(connstr string) (usecases.Storage, error) {
+func New(connstr string) (toggler.Storage, error) {
 	var driver string = connstr
 
 	u, err := url.Parse(connstr)

@@ -10,14 +10,14 @@ import (
 	"github.com/lib/pq"
 	"github.com/stretchr/testify/require"
 
+	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/resource/storages"
-	"github.com/toggler-io/toggler/usecases"
 )
 
 func TestNewFromEnv(t *testing.T) {
 	s := testcase.NewSpec(t)
 
-	subject := func() (usecases.Storage, error) {
+	subject := func() (toggler.Storage, error) {
 		return storages.NewFromEnv()
 	}
 
@@ -89,7 +89,7 @@ func TestNewFromEnv(t *testing.T) {
 				return SetEnv(t, `RDS_ENGINE`, `postgres`)
 			})
 
-			shouldBePostgresStorage := func(t *testcase.T, s usecases.Storage) {
+			shouldBePostgresStorage := func(t *testcase.T, s toggler.Storage) {
 				require.NotNil(t, s)
 				pg, ok := s.(*storages.Postgres)
 				require.True(t, ok)

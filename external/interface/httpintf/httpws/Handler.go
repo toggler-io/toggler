@@ -5,11 +5,11 @@ import (
 
 	"github.com/gorilla/websocket"
 
+	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
-	"github.com/toggler-io/toggler/usecases"
 )
 
-func NewHandler(uc *usecases.UseCases) http.Handler {
+func NewHandler(uc *toggler.UseCases) http.Handler {
 	mux := http.NewServeMux()
 
 	ctrl := Controller{

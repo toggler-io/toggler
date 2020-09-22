@@ -3,12 +3,12 @@ package httputils
 import (
 	"net/http"
 
-	"github.com/toggler-io/toggler/usecases"
+	"github.com/toggler-io/toggler/domains/toggler"
 )
 
 type ErrorWriterFunc func(w http.ResponseWriter, error string, code int)
 
-func AuthMiddleware(next http.Handler, uc *usecases.UseCases, errorWriterFunc ErrorWriterFunc) http.Handler {
+func AuthMiddleware(next http.Handler, uc *toggler.UseCases, errorWriterFunc ErrorWriterFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		token, err := GetAppToken(r)

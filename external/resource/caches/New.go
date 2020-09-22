@@ -3,10 +3,10 @@ package caches
 import (
 	"net/url"
 
-	"github.com/toggler-io/toggler/usecases"
+	"github.com/toggler-io/toggler/domains/toggler"
 )
 
-func New(connstr string, storage usecases.Storage) (Interface, error) {
+func New(connstr string, storage toggler.Storage) (Interface, error) {
 	var driver string = connstr
 
 	u, err := url.Parse(connstr)

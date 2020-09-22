@@ -6,10 +6,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/resource/caches"
 	"github.com/toggler-io/toggler/external/resource/caches/specs"
 	. "github.com/toggler-io/toggler/testing"
-	"github.com/toggler-io/toggler/usecases"
 )
 
 func TestRedis(t *testing.T) {
@@ -17,7 +17,7 @@ func TestRedis(t *testing.T) {
 	require.Nil(t, err)
 	defer cache.Close()
 
-	factory := func(s usecases.Storage) caches.Interface {
+	factory := func(s toggler.Storage) caches.Interface {
 		cache.Storage = s
 		return cache
 	}

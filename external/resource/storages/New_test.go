@@ -7,19 +7,19 @@ import (
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 
+	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/resource/storages"
-	"github.com/toggler-io/toggler/usecases"
 )
 
 func TestNew(t *testing.T) {
 	s := testcase.NewSpec(t)
 
 	s.Describe(`New`, func(s *testcase.Spec) {
-		subject := func(t *testcase.T) (usecases.Storage, error) {
+		subject := func(t *testcase.T) (toggler.Storage, error) {
 			return storages.New(t.I(`connstr`).(string))
 		}
 
-		onSuccess := func(t *testcase.T) usecases.Storage {
+		onSuccess := func(t *testcase.T) toggler.Storage {
 			s, err := subject(t)
 			require.Nil(t, err)
 			return s

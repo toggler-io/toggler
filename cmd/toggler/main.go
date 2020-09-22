@@ -20,8 +20,8 @@ import (
 
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/security"
+	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/interface/httpintf"
-	"github.com/toggler-io/toggler/usecases"
 )
 
 const commandsHelpDescription = `
@@ -87,7 +87,7 @@ func main() {
 
 }
 
-func httpServerCMD(args []string, s usecases.Storage) {
+func httpServerCMD(args []string, s toggler.Storage) {
 	flagSet := flag.NewFlagSet(`http-server`, flag.ExitOnError)
 	portConfValue := flagSet.String(`port`, os.Getenv(`PORT`), `set http server port else the env variable "PORT" value will be used.`)
 
@@ -98,7 +98,7 @@ func httpServerCMD(args []string, s usecases.Storage) {
 	httpServer(getPort(*portConfValue), s)
 }
 
-func httpServer(port int, storage usecases.Storage) {
+func httpServer(port int, storage toggler.Storage) {
 	s := makeHTTPServer(storage, port)
 	withGracefulShutdown(func() {
 		if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -147,7 +147,7 @@ func setupCacheURL(cacheURL *string, cacheTTL *time.Duration) {
 	}
 }
 
-func fixturesCMD(args []string, s usecases.Storage) {
+func fixturesCMD(args []string, s toggler.Storage) {
 	flagSet := flag.NewFlagSet(`fixtures`, flag.ExitOnError)
 	fixtures := flagSet.Bool(`create-fixtures`, false, `create default fixtures for development purpose.`)
 	localDevelopmentToken := flagSet.String(`create-unsafe-token`, ``, `create token for local development purpose (don't use in prod)`)
@@ -165,8 +165,8 @@ func fixturesCMD(args []string, s usecases.Storage) {
 	}
 }
 
-func createFixtures(s usecases.Storage) {
-	uc := usecases.NewUseCases(s)
+func createFixtures(s toggler.Storage) {
+	uc := toggler.NewUseCases(s)
 	ff := release.Flag{Name: `test`}
 	ctx := context.Background()
 	devEnv := deployment.Environment{Name: "development"}
@@ -176,8 +176,8 @@ func createFixtures(s usecases.Storage) {
 	_ = uc.RolloutManager.SetPilotEnrollmentForFeature(context.Background(), ff.ID, devEnv.ID, `test-public-pilot-id-2`, false)
 }
 
-func makeHTTPServer(storage usecases.Storage, port int) *http.Server {
-	useCases := usecases.NewUseCases(storage)
+func makeHTTPServer(storage toggler.Storage, port int) *http.Server {
+	useCases := toggler.NewUseCases(storage)
 	mux, err := httpintf.NewServeMux(useCases)
 	if err != nil {
 		log.Fatal(err)
@@ -194,7 +194,7 @@ func makeHTTPServer(storage usecases.Storage, port int) *http.Server {
 	return server
 }
 
-func createTokenCMD(args []string, s usecases.Storage) {
+func createTokenCMD(args []string, s toggler.Storage) {
 	flagSet := flag.NewFlagSet(`create-token`, flag.ExitOnError)
 
 	flagSet.Usage = func() {
@@ -210,7 +210,7 @@ func createTokenCMD(args []string, s usecases.Storage) {
 	createToken(s, flagSet.Arg(0))
 }
 
-func createToken(s usecases.Storage, ownerUID string) {
+func createToken(s toggler.Storage, ownerUID string) {
 	if ownerUID == `` {
 		log.Fatal(`owner uid required to create a token`)
 	}
@@ -226,7 +226,7 @@ func createToken(s usecases.Storage, ownerUID string) {
 	fmt.Println(`token:`, tStr)
 }
 
-func createDevelopmentToken(s usecases.Storage, tokenSTR string) {
+func createDevelopmentToken(s toggler.Storage, tokenSTR string) {
 	defer func() {
 		fmt.Println(`WARNING - you created a non random token for local development purpose`)
 		fmt.Println(`if this is a production environment, it is advised to delete this token immediately`)

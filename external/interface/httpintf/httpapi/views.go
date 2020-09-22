@@ -7,11 +7,11 @@ import (
 	"net/http"
 
 	"github.com/toggler-io/toggler/domains/deployment"
+	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
-	"github.com/toggler-io/toggler/usecases"
 )
 
-func NewViewsHandler(uc *usecases.UseCases) http.Handler {
+func NewViewsHandler(uc *toggler.UseCases) http.Handler {
 	vc := ViewsController{UseCases: uc}
 	m := http.NewServeMux()
 	m.HandleFunc(`/config`, vc.GetPilotConfig)
@@ -19,7 +19,7 @@ func NewViewsHandler(uc *usecases.UseCases) http.Handler {
 }
 
 type ViewsController struct {
-	UseCases *usecases.UseCases
+	UseCases *toggler.UseCases
 }
 
 // GetPilotConfigRequest defines the parameters that
