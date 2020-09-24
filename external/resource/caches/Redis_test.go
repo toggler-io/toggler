@@ -24,7 +24,7 @@ func TestRedis(t *testing.T) {
 
 	specs.Cache{
 		Factory:        factory,
-		FixtureFactory: NewFixtureFactory(),
+		FixtureFactory: DefaultFixtureFactory,
 	}.Test(t)
 }
 

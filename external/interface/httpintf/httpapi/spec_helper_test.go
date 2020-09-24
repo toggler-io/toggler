@@ -38,7 +38,7 @@ func protectedAuth(t *testcase.T) runtime.ClientAuthInfoWriterFunc {
 		if err := publicAuth(t)(request, registry); err != nil {
 			return err
 		}
-		
+
 		return request.SetHeaderParam(`X-APP-TOKEN`, ExampleTextToken(t))
 	}
 }

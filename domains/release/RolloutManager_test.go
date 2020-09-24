@@ -5,12 +5,12 @@ import (
 	"testing"
 
 	"github.com/adamluzsi/frameless/fixtures"
+	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/testcase"
 
 	"github.com/toggler-io/toggler/domains/release"
 	. "github.com/toggler-io/toggler/testing"
 
-	"github.com/adamluzsi/frameless/iterators"
 	"github.com/stretchr/testify/require"
 )
 

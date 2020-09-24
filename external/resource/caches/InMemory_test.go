@@ -14,7 +14,7 @@ import (
 func TestInMemory_StorageSpec(t *testing.T) {
 	specs.Storage{
 		Subject:        caches.NewInMemory(storages.NewInMemory()),
-		FixtureFactory: NewFixtureFactory(),
+		FixtureFactory: DefaultFixtureFactory,
 	}.Test(t)
 }
 
@@ -23,7 +23,7 @@ func TestInMemory_CacheSpec(t *testing.T) {
 		Factory: func(s toggler.Storage) caches.Interface {
 			return caches.NewInMemory(s)
 		},
-		FixtureFactory: NewFixtureFactory(),
+		FixtureFactory: DefaultFixtureFactory,
 	}.Test(t)
 }
 
@@ -32,6 +32,6 @@ func BenchmarkInMemory_CacheSpec(b *testing.B) {
 		Factory: func(s toggler.Storage) caches.Interface {
 			return caches.NewInMemory(s)
 		},
-		FixtureFactory: NewFixtureFactory(),
+		FixtureFactory: DefaultFixtureFactory,
 	}.Benchmark(b)
 }

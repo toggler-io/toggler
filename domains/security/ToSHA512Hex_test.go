@@ -1,9 +1,10 @@
 package security_test
 
 import (
-	"github.com/toggler-io/toggler/domains/security"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+	"github.com/toggler-io/toggler/domains/security"
 )
 
 func TestToSHA512Hex(t *testing.T) {

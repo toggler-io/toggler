@@ -3,7 +3,7 @@ package release
 import (
 	"context"
 
-	"github.com/adamluzsi/frameless"
+	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/resources"
 
 	"github.com/toggler-io/toggler/domains/deployment"
@@ -15,15 +15,18 @@ type Storage interface {
 	resources.Updater
 	resources.Deleter
 	resources.OnePhaseCommitProtocol
+	resources.CreatorPublisher
+	resources.UpdaterPublisher
+	resources.DeleterPublisher
 	FlagFinder
 	PilotFinder
 	RolloutFinder
 }
 
 type (
-	PilotEntries   = frameless.Iterator
-	FlagEntries    = frameless.Iterator
-	RolloutEntries = frameless.Iterator
+	PilotEntries   = iterators.Interface
+	FlagEntries    = iterators.Interface
+	RolloutEntries = iterators.Interface
 )
 
 type FlagFinder interface {

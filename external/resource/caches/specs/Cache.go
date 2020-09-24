@@ -1,4 +1,4 @@
-//go:generate mockgen -package cachespecs -source ../../../../usecases/Storage.go -destination MockStorage.go
+//go:generate mockgen -package specs -source ../../../../domains/toggler/Storage.go -destination MockStorage.go
 package specs
 
 import (
@@ -9,7 +9,6 @@ import (
 	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources"
-	frmls "github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/testcase"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
@@ -21,11 +20,13 @@ import (
 	"github.com/toggler-io/toggler/domains/toggler/specs"
 	"github.com/toggler-io/toggler/external/resource/caches"
 	"github.com/toggler-io/toggler/external/resource/storages"
+
+	. "github.com/toggler-io/toggler/testing"
 )
 
 type Cache struct {
-	Factory func(toggler.Storage) caches.Interface
-	frmls.FixtureFactory
+	Factory        func(toggler.Storage) caches.Interface
+	FixtureFactory FixtureFactory
 }
 
 func (spec Cache) Test(t *testing.T) {
@@ -45,7 +46,7 @@ func (spec Cache) Test(t *testing.T) {
 		})
 
 		s.Describe(`cache invalidation`, func(s *testcase.Spec) {
-			
+
 		})
 	})
 }
@@ -92,11 +93,11 @@ func (spec Cache) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 
 		s.Around(func(t *testcase.T) func() {
 			value := t.I(`value`)
-			require.Nil(t, spec.storage(t).Create(spec.Context(), value))
+			require.Nil(t, spec.storage(t).Create(spec.FixtureFactory.Context(), value))
 			id, found := resources.LookupID(value)
 			require.True(t, found)
 			return func() {
-				require.Nil(t, spec.storage(t).DeleteByID(spec.Context(), T, id))
+				require.Nil(t, spec.storage(t).DeleteByID(spec.FixtureFactory.Context(), T, id))
 			}
 		})
 
@@ -104,7 +105,7 @@ func (spec Cache) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 			v := spec.new(T)
 			id, found := resources.LookupID(t.I(`value`))
 			require.True(t, found)
-			found, err := spec.cache(t).FindByID(spec.Context(), v, id)
+			found, err := spec.cache(t).FindByID(spec.FixtureFactory.Context(), v, id)
 			require.Nil(t, err)
 			require.True(t, found)
 			require.Equal(t, t.I(`value`), v)
@@ -115,7 +116,7 @@ func (spec Cache) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 				v := spec.new(T)
 				id, found := resources.LookupID(t.I(`value`))
 				require.True(t, found)
-				found, err := spec.cache(t).FindByID(spec.Context(), v, id)
+				found, err := spec.cache(t).FindByID(spec.FixtureFactory.Context(), v, id)
 				require.Nil(t, err)
 				require.True(t, found)
 				require.Equal(t, t.I(`value`), v)
@@ -132,14 +133,14 @@ func (spec Cache) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 
 				s.Before(func(t *testcase.T) {
 					v := t.I(`value-with-new-content`)
-					require.Nil(t, spec.cache(t).Update(spec.Context(), v))
+					require.Nil(t, spec.cache(t).Update(spec.FixtureFactory.Context(), v))
 				})
 
 				s.Then(`it will return the new value instead the old one`, func(t *testcase.T) {
 					v := spec.new(T)
 					id, found := resources.LookupID(t.I(`value`))
 					require.True(t, found)
-					found, err := spec.cache(t).FindByID(spec.Context(), v, id)
+					found, err := spec.cache(t).FindByID(spec.FixtureFactory.Context(), v, id)
 					require.Nil(t, err)
 					require.True(t, found)
 					require.Equal(t, t.I(`value-with-new-content`), v)
@@ -155,7 +156,7 @@ func (spec Cache) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 
 				for i := 0; i < 42; i++ {
 					v := spec.new(T)
-					found, err := spec.cache(t).FindByID(spec.Context(), v, id)
+					found, err := spec.cache(t).FindByID(spec.FixtureFactory.Context(), v, id)
 					require.Nil(t, err)
 					require.True(t, found)
 					require.Equal(t, value, v)
@@ -194,13 +195,13 @@ func (spec Cache) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 						require.True(t, found)
 
 						nv = spec.new(T)
-						found, err := spec.cache(t).FindByID(spec.Context(), nv, id)
+						found, err := spec.cache(t).FindByID(spec.FixtureFactory.Context(), nv, id)
 						require.Nil(t, err)
 						require.True(t, found)
 						require.Equal(t, value, nv)
 
 						nv = spec.new(T)
-						found, err = spec.cache(t).FindByID(spec.Context(), nv, id)
+						found, err = spec.cache(t).FindByID(spec.FixtureFactory.Context(), nv, id)
 						require.Nil(t, err)
 						require.True(t, found)
 						require.Equal(t, value, nv)

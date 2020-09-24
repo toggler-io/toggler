@@ -1,11 +1,8 @@
 package specs
 
 import (
-	"fmt"
-	"net/url"
 	"testing"
 
-	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/frameless/resources"
 	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/testcase"
@@ -24,12 +21,21 @@ type RolloutStorage struct {
 		resources.Deleter
 		resources.Updater
 		resources.OnePhaseCommitProtocol
+		resources.CreatorPublisher
+		resources.UpdaterPublisher
+		resources.DeleterPublisher
 	}
-	specs.FixtureFactory
+
+	FixtureFactory FixtureFactory
 }
 
 func (spec RolloutStorage) Test(t *testing.T) {
-	s := testcase.NewSpec(t)
+	t.Run(`RolloutStorage`, func(t *testing.T) {
+		spec.Spec(t)
+	})
+}
+
+func (spec RolloutStorage) setup(s *testcase.Spec) {
 	SetUp(s)
 
 	s.Let(LetVarExampleStorage, func(t *testcase.T) interface{} {
@@ -41,133 +47,91 @@ func (spec RolloutStorage) Test(t *testing.T) {
 		require.Nil(t, spec.Subject.DeleteAll(GetContext(t), release.Flag{}))
 		require.Nil(t, spec.Subject.DeleteAll(GetContext(t), release.Rollout{}))
 	})
-
-	s.Context(`RolloutStorage`, func(s *testcase.Spec) {
-		s.Test(`OnePhaseCommitProtocol`, func(t *testcase.T) {
-			specs.OnePhaseCommitProtocol{
-				EntityType: release.Rollout{},
-				Subject:    spec.Subject,
-				FixtureFactory: RolloutStorageSpecFixtureFactory{
-					FixtureFactory: spec.FixtureFactory,
-					flag:           ExampleReleaseFlag(t),
-					env:            ExampleDeploymentEnvironment(t),
-				},
-			}.Test(t.T)
-		})
-
-		s.Test(`CommonSpec#Rollout`, func(t *testcase.T) {
-			specs.CRUD{
-				EntityType: release.Rollout{},
-				FixtureFactory: RolloutStorageSpecFixtureFactory{
-					FixtureFactory: spec.FixtureFactory,
-					flag:           ExampleReleaseFlag(t),
-					env:            ExampleDeploymentEnvironment(t),
-				},
-				Subject: spec.Subject,
-			}.Test(t.T)
-		})
-
-
-		s.Describe(`#FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment`, func(s *testcase.Spec) {
-			var subject = func(t *testcase.T, rollout *release.Rollout) (bool, error) {
-				return spec.Subject.FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(
-					GetContext(t),
-					*ExampleReleaseFlag(t),
-					*ExampleDeploymentEnvironment(t),
-					rollout,
-				)
-			}
-
-			const rolloutLetVar = `rollout`
-
-			s.When(`rollout was stored before`, func(s *testcase.Spec) {
-				GivenWeHaveReleaseRollout(s,
-					rolloutLetVar,
-					LetVarExampleReleaseFlag,
-					LetVarExampleDeploymentEnvironment,
-				)
-				s.Before(func(t *testcase.T) { GetReleaseRollout(t, rolloutLetVar) }) // eager load
-
-				s.Then(`it will find the rollout entry`, func(t *testcase.T) {
-					var r release.Rollout
-					found, err := subject(t, &r)
-					require.Nil(t, err)
-					require.True(t, found)
-					require.Equal(t, *GetReleaseRollout(t, rolloutLetVar), r)
-				})
-			})
-
-			s.When(`rollout is not in the storage`, func(s *testcase.Spec) {
-				s.Before(func(t *testcase.T) {
-					require.Nil(t, spec.Subject.DeleteAll(GetContext(t), release.Rollout{}))
-				})
-
-				s.Then(`it will yield no result`, func(t *testcase.T) {
-					var r release.Rollout
-					found, err := subject(t, &r)
-					require.Nil(t, err)
-					require.False(t, found)
-				})
-			})
-		})
-	})
 }
 
 func (spec RolloutStorage) Benchmark(b *testing.B) {
-	b.Skip()
+	b.Run(`RolloutStorage`, func(b *testing.B) {
+		spec.Spec(b)
+	})
 }
 
-type RolloutStorageSpecFixtureFactory struct {
-	specs.FixtureFactory
-	env  *deployment.Environment
-	flag *release.Flag
+func (spec RolloutStorage) Spec(tb testing.TB) {
+	s := testcase.NewSpec(tb)
+	spec.setup(s)
+
+	s.Test(``, func(t *testcase.T) {
+		specs.Run(t.T,
+			specs.OnePhaseCommitProtocol{
+				EntityType:     release.Rollout{},
+				Subject:        spec.Subject,
+				FixtureFactory: spec.FixtureFactory.Dynamic(t),
+			},
+			specs.CRUD{
+				EntityType:     release.Rollout{},
+				FixtureFactory: spec.FixtureFactory.Dynamic(t),
+				Subject:        spec.Subject,
+			},
+			specs.CreatorPublisher{
+				Subject:        spec.Subject,
+				EntityType:     release.Rollout{},
+				FixtureFactory: spec.FixtureFactory.Dynamic(t),
+			},
+			specs.UpdaterPublisher{
+				Subject:        spec.Subject,
+				EntityType:     release.Rollout{},
+				FixtureFactory: spec.FixtureFactory.Dynamic(t),
+			},
+			specs.DeleterPublisher{
+				Subject:        spec.Subject,
+				EntityType:     release.Rollout{},
+				FixtureFactory: spec.FixtureFactory.Dynamic(t),
+			},
+		)
+	})
+
+	s.Describe(`#FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment`,
+		spec.specFindReleaseRolloutByReleaseFlagAndDeploymentEnvironment)
 }
 
-func (ff RolloutStorageSpecFixtureFactory) Create(EntityType interface{}) (StructPTR interface{}) {
-	switch EntityType.(type) {
-	case release.Rollout:
-		r := ff.FixtureFactory.Create(EntityType).(*release.Rollout)
-		r.DeploymentEnvironmentID = ff.env.ID
-		r.FlagID = ff.flag.ID
-		r.Plan = func() release.RolloutDefinition {
-			switch fixtures.Random.IntN(3) {
-			case 0:
-				byPercentage := release.NewRolloutDecisionByPercentage()
-				byPercentage.Percentage = fixtures.Random.IntBetween(0, 100)
-				return byPercentage
-
-			case 1:
-				byAPI := release.NewRolloutDecisionByAPI()
-				u, err := url.ParseRequestURI(fmt.Sprintf(`https://example.com/%s`, url.PathEscape(fixtures.Random.String())))
-				if err != nil {
-					panic(err.Error())
-				}
-				byAPI.URL = u
-				return byAPI
-
-			case 2:
-				byPercentage := release.NewRolloutDecisionByPercentage()
-				byPercentage.Percentage = fixtures.Random.IntBetween(0, 100)
-
-				byAPI := release.NewRolloutDecisionByAPI()
-				u, err := url.ParseRequestURI(fmt.Sprintf(`https://example.com/%s`, url.PathEscape(fixtures.Random.String())))
-				if err != nil {
-					panic(err.Error())
-				}
-				byAPI.URL = u
-
-				return release.RolloutDecisionAND{
-					Left:  byPercentage,
-					Right: byAPI,
-				}
-
-			default:
-				panic(`shouldn't be the case`)
-			}
-		}()
-		return r
-
-	default:
-		return ff.FixtureFactory.Create(EntityType)
+func (spec RolloutStorage) specFindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(s *testcase.Spec) {
+	var subject = func(t *testcase.T, rollout *release.Rollout) (bool, error) {
+		return spec.Subject.FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(
+			GetContext(t),
+			*ExampleReleaseFlag(t),
+			*ExampleDeploymentEnvironment(t),
+			rollout,
+		)
 	}
+
+	const rolloutLetVar = `rollout`
+
+	s.When(`rollout was stored before`, func(s *testcase.Spec) {
+		GivenWeHaveReleaseRollout(s,
+			rolloutLetVar,
+			LetVarExampleReleaseFlag,
+			LetVarExampleDeploymentEnvironment,
+		)
+		s.Before(func(t *testcase.T) { GetReleaseRollout(t, rolloutLetVar) }) // eager load
+
+		s.Then(`it will find the rollout entry`, func(t *testcase.T) {
+			var r release.Rollout
+			found, err := subject(t, &r)
+			require.Nil(t, err)
+			require.True(t, found)
+			require.Equal(t, *GetReleaseRollout(t, rolloutLetVar), r)
+		})
+	})
+
+	s.When(`rollout is not in the storage`, func(s *testcase.Spec) {
+		s.Before(func(t *testcase.T) {
+			require.Nil(t, spec.Subject.DeleteAll(GetContext(t), release.Rollout{}))
+		})
+
+		s.Then(`it will yield no result`, func(t *testcase.T) {
+			var r release.Rollout
+			found, err := subject(t, &r)
+			require.Nil(t, err)
+			require.False(t, found)
+		})
+	})
 }

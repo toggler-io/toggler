@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/adamluzsi/testcase"
-	"github.com/toggler-io/toggler/domains/security"
 	"github.com/stretchr/testify/require"
+	"github.com/toggler-io/toggler/domains/security"
 )
 
 func TestToken(t *testing.T) {

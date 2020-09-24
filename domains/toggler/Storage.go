@@ -16,9 +16,9 @@ type Storage interface {
 	resources.Updater
 	resources.Deleter
 	resources.OnePhaseCommitProtocol
-	//resources.CreatorPublisher
-	//resources.UpdaterPublisher
-	//resources.DeleterPublisher
+	resources.CreatorPublisher
+	resources.UpdaterPublisher
+	resources.DeleterPublisher
 	release.FlagFinder
 	release.PilotFinder
 	release.RolloutFinder

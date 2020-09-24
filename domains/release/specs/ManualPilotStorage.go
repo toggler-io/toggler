@@ -6,23 +6,101 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/frameless/iterators"
-	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources"
+	"github.com/adamluzsi/frameless/resources/specs"
 	"github.com/adamluzsi/testcase"
+	"github.com/adamluzsi/testcase/fixtures"
 	"github.com/google/uuid"
-
-	. "github.com/toggler-io/toggler/testing"
+	"github.com/stretchr/testify/require"
 
 	"github.com/toggler-io/toggler/domains/release"
-
-	"github.com/adamluzsi/frameless"
-	"github.com/adamluzsi/frameless/resources/specs"
-	"github.com/stretchr/testify/require"
+	. "github.com/toggler-io/toggler/testing"
 )
 
-type pilotFinder struct {
+type ManualPilotStorage struct {
+	Subject interface {
+		resources.Creator
+		resources.Finder
+		resources.Updater
+		resources.Deleter
+		resources.OnePhaseCommitProtocol
+		resources.CreatorPublisher
+		resources.UpdaterPublisher
+		resources.DeleterPublisher
+		release.PilotFinder
+	}
+
+	FixtureFactory FixtureFactory
+}
+
+func (spec ManualPilotStorage) Test(t *testing.T) {
+	t.Run(`ManualPilotStorage`, func(t *testing.T) {
+		spec.Spec(t)
+	})
+}
+
+func (spec ManualPilotStorage) Benchmark(b *testing.B) {
+	b.Run(`ManualPilotStorage`, func(b *testing.B) {
+		spec.Spec(b)
+	})
+}
+
+func (spec ManualPilotStorage) setup(s *testcase.Spec) {
+	SetUp(s)
+
+	s.Let(LetVarExampleStorage, func(t *testcase.T) interface{} {
+		return spec.Subject
+	})
+
+	s.After(func(t *testcase.T) {
+		require.Nil(t, spec.Subject.DeleteAll(spec.FixtureFactory.Context(), release.Flag{}))
+		require.Nil(t, spec.Subject.DeleteAll(spec.FixtureFactory.Context(), release.ManualPilot{}))
+	})
+}
+
+func (spec ManualPilotStorage) Spec(tb testing.TB) {
+	s := testcase.NewSpec(tb)
+	spec.setup(s)
+
+	s.Test(``, func(t *testcase.T) {
+		specs.Run(t.TB,
+			specs.OnePhaseCommitProtocol{
+				EntityType:     release.ManualPilot{},
+				FixtureFactory: spec.FixtureFactory.Dynamic(t),
+				Subject:        spec.Subject,
+			},
+			specs.CRUD{
+				EntityType:     release.ManualPilot{},
+				FixtureFactory: spec.FixtureFactory.Dynamic(t),
+				Subject:        spec.Subject,
+			},
+			ManualPilotFinder{
+				FixtureFactory: spec.FixtureFactory,
+				Subject:        spec.Subject,
+			},
+			specs.CreatorPublisher{
+				Subject:        spec.Subject,
+				EntityType:     release.ManualPilot{},
+				FixtureFactory: spec.FixtureFactory.Dynamic(t),
+			},
+			specs.UpdaterPublisher{
+				Subject:        spec.Subject,
+				EntityType:     release.ManualPilot{},
+				FixtureFactory: spec.FixtureFactory.Dynamic(t),
+			},
+			specs.DeleterPublisher{
+				Subject:        spec.Subject,
+				EntityType:     release.ManualPilot{},
+				FixtureFactory: spec.FixtureFactory.Dynamic(t),
+			},
+		)
+	})
+}
+
+///////////////////////////////////////////////////////- query -////////////////////////////////////////////////////////
+
+type ManualPilotFinder struct {
 	Subject interface {
 		release.PilotFinder
 		resources.Creator
@@ -31,10 +109,11 @@ type pilotFinder struct {
 		resources.Deleter
 		resources.OnePhaseCommitProtocol
 	}
-	FixtureFactory specs.FixtureFactory
+
+	FixtureFactory FixtureFactory
 }
 
-func (spec pilotFinder) Test(t *testing.T) {
+func (spec ManualPilotFinder) Test(t *testing.T) {
 	s := testcase.NewSpec(t)
 	SetUp(s)
 
@@ -42,32 +121,18 @@ func (spec pilotFinder) Test(t *testing.T) {
 		return spec.Subject
 	})
 
-	s.Test(`ManualPilot`, func(t *testcase.T) {
-		specs.CRUD{
-			EntityType:     release.ManualPilot{},
-			FixtureFactory: spec.ff(t),
-			Subject:        spec.Subject,
-		}.Test(t.T)
-
-		specs.OnePhaseCommitProtocol{
-			EntityType:     release.Flag{},
-			FixtureFactory: spec.FixtureFactory,
-			Subject:        spec.Subject,
-		}.Test(t.T)
-	})
-
-	s.Describe(`pilotFinder`, func(s *testcase.Spec) {
+	s.Describe(`ManualPilotFinder`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.ManualPilot{}))
+			require.Nil(t, spec.Subject.DeleteAll(spec.context(), release.ManualPilot{}))
 		})
 
 		s.After(func(t *testcase.T) {
-			require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.ManualPilot{}))
+			require.Nil(t, spec.Subject.DeleteAll(spec.context(), release.ManualPilot{}))
 		})
 
 		s.Describe(`FindReleasePilotsByReleaseFlag`, func(s *testcase.Spec) {
-			subject := func(t *testcase.T) frameless.Iterator {
-				pilotEntriesIter := spec.Subject.FindReleasePilotsByReleaseFlag(spec.ctx(), *ExampleReleaseFlag(t))
+			subject := func(t *testcase.T) iterators.Interface {
+				pilotEntriesIter := spec.Subject.FindReleasePilotsByReleaseFlag(spec.context(), *ExampleReleaseFlag(t))
 				t.Defer(pilotEntriesIter.Close)
 				return pilotEntriesIter
 			}
@@ -84,7 +149,7 @@ func (spec pilotFinder) Test(t *testing.T) {
 
 			s.When(`flag was never persisted before`, func(s *testcase.Spec) {
 				s.Let(LetVarExampleReleaseFlag, func(t *testcase.T) interface{} {
-					return Create(release.Flag{})
+					return spec.FixtureFactory.Create(release.Flag{})
 				})
 
 				thenNoPilotsFound(s)
@@ -98,7 +163,7 @@ func (spec pilotFinder) Test(t *testing.T) {
 						expectedPilots := t.I(`expectedPilots`).([]*release.ManualPilot)
 
 						for _, pilot := range expectedPilots {
-							require.Nil(t, spec.Subject.Create(spec.ctx(), pilot))
+							require.Nil(t, spec.Subject.Create(spec.context(), pilot))
 						}
 					})
 
@@ -139,7 +204,7 @@ func (spec pilotFinder) Test(t *testing.T) {
 		s.Describe(`FindReleaseManualPilotByExternalID`, func(s *testcase.Spec) {
 			var subject = func(t *testcase.T) (*release.ManualPilot, error) {
 				return spec.Subject.FindReleaseManualPilotByExternalID(
-					spec.ctx(),
+					spec.context(),
 					ExampleReleaseFlag(t).ID,
 					ExampleDeploymentEnvironment(t).ID,
 					ExampleID(t),
@@ -147,7 +212,7 @@ func (spec pilotFinder) Test(t *testing.T) {
 			}
 
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.ManualPilot{}))
+				require.Nil(t, spec.Subject.DeleteAll(spec.context(), release.ManualPilot{}))
 			})
 
 			ThenNoPilotsFound := func(s *testcase.Spec) {
@@ -160,7 +225,7 @@ func (spec pilotFinder) Test(t *testing.T) {
 
 			s.When(`flag is not persisted`, func(s *testcase.Spec) {
 				s.Let(LetVarExampleReleaseFlag, func(t *testcase.T) interface{} {
-					return Create(release.Flag{})
+					return spec.FixtureFactory.Create(release.Flag{})
 				})
 
 				ThenNoPilotsFound(s)
@@ -180,8 +245,8 @@ func (spec pilotFinder) Test(t *testing.T) {
 							DeploymentEnvironmentID: ExampleDeploymentEnvironment(t).ID,
 							ExternalID:              ExampleID(t),
 						}
-						require.Nil(t, spec.Subject.Create(spec.ctx(), pilot))
-						return func() { require.Nil(t, spec.Subject.DeleteByID(spec.ctx(), *pilot, pilot.ID)) }
+						require.Nil(t, spec.Subject.Create(spec.context(), pilot))
+						return func() { require.Nil(t, spec.Subject.DeleteByID(spec.context(), *pilot, pilot.ID)) }
 					})
 
 					s.Then(`then pilots will be retrieved`, func(t *testcase.T) {
@@ -198,8 +263,8 @@ func (spec pilotFinder) Test(t *testing.T) {
 		})
 
 		s.Describe(`FindReleasePilotsByExternalID`, func(s *testcase.Spec) {
-			subject := func(t *testcase.T) frameless.Iterator {
-				pilotEntriesIter := spec.Subject.FindReleasePilotsByExternalID(spec.ctx(), ExampleExternalPilotID(t))
+			subject := func(t *testcase.T) iterators.Interface {
+				pilotEntriesIter := spec.Subject.FindReleasePilotsByExternalID(spec.context(), ExampleExternalPilotID(t))
 				t.Defer(pilotEntriesIter.Close)
 				return pilotEntriesIter
 			}
@@ -209,7 +274,7 @@ func (spec pilotFinder) Test(t *testing.T) {
 			})
 
 			s.When(`there is no pilot records`, func(s *testcase.Spec) {
-				s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.DeleteAll(spec.ctx(), release.ManualPilot{})) })
+				s.Before(func(t *testcase.T) { require.Nil(t, spec.Subject.DeleteAll(spec.context(), release.ManualPilot{})) })
 
 				s.Then(`it will return an empty result set`, func(t *testcase.T) {
 					count, err := iterators.Count(subject(t))
@@ -220,7 +285,7 @@ func (spec pilotFinder) Test(t *testing.T) {
 
 			s.When(`the given pilot id has no records`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					ctx := spec.ctx()
+					ctx := spec.context()
 					extID := fixtures.Random.String()
 
 					var newUUID = func() string {
@@ -256,7 +321,7 @@ func (spec pilotFinder) Test(t *testing.T) {
 							IsParticipating:         rand.Intn(1) == 0,
 						}
 
-						require.Nil(t, spec.Subject.Create(spec.ctx(), &pilot))
+						require.Nil(t, spec.Subject.Create(spec.context(), &pilot))
 						pilots = append(pilots, pilot)
 					}
 
@@ -275,39 +340,12 @@ func (spec pilotFinder) Test(t *testing.T) {
 	})
 }
 
-func (spec pilotFinder) Benchmark(b *testing.B) {
-	b.Run(`pilotFinder`, func(b *testing.B) {
+func (spec ManualPilotFinder) Benchmark(b *testing.B) {
+	b.Run(`ManualPilotFinder`, func(b *testing.B) {
 		b.Skip(`TODO`)
 	})
 }
 
-func (spec pilotFinder) ctx() context.Context {
+func (spec ManualPilotFinder) context() context.Context {
 	return spec.FixtureFactory.Context()
-}
-
-func (spec pilotFinder) ff(t *testcase.T) specs.FixtureFactory {
-	return &FixtureFactoryForPilots{
-		FixtureFactory:             spec.FixtureFactory,
-		GetFlagID:                  func() string { return ExampleReleaseFlag(t).ID },
-		GetDeploymentEnvironmentID: func() string { return ExampleDeploymentEnvironment(t).ID },
-	}
-}
-
-type FixtureFactoryForPilots struct {
-	specs.FixtureFactory
-	GetFlagID                  func() string
-	GetDeploymentEnvironmentID func() string
-}
-
-func (ff *FixtureFactoryForPilots) Create(EntityType interface{}) interface{} {
-	switch reflects.BaseValueOf(EntityType).Interface().(type) {
-	case release.ManualPilot:
-		pilot := ff.FixtureFactory.Create(EntityType).(*release.ManualPilot)
-		pilot.FlagID = ff.GetFlagID()
-		pilot.DeploymentEnvironmentID = ff.GetDeploymentEnvironmentID()
-		return pilot
-
-	default:
-		return ff.FixtureFactory.Create(EntityType)
-	}
 }

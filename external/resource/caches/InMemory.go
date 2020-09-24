@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources"
@@ -28,9 +27,9 @@ func NewInMemory(s toggler.Storage) *InMemory {
 //TODO: possible improvement to protect with mux around actions instead of set and lookup, so on concurrent access there will be only 1 find
 //TODO: implement cache invalidation with delete/update event streams in the next iterations
 type InMemory struct {
-	Storage toggler.Storage
-	cache   map[string]map[string]*inMemoryCachedItem
-	ttl     time.Duration
+	toggler.Storage
+	cache map[string]map[string]*inMemoryCachedItem
+	ttl   time.Duration
 
 	lock   sync.Mutex
 	init   sync.Once
@@ -236,7 +235,7 @@ func (c *InMemory) FindByID(ctx context.Context, ptr interface{}, id string) (_f
 	return true, reflects.Link(fbii.value, ptr)
 }
 
-func (c *InMemory) FindAll(ctx context.Context, T interface{}) frameless.Iterator {
+func (c *InMemory) FindAll(ctx context.Context, T interface{}) iterators.Interface {
 	defer c.withLock()()
 
 	if shouldSkipCache(ctx) {

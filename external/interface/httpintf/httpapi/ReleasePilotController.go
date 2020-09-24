@@ -132,8 +132,7 @@ func (ctrl ReleasePilotController) Create(w http.ResponseWriter, r *http.Request
 	req.Body.Pilot.ID = `` // ignore id if given
 	pilot := req.Body.Pilot.ToReleasePilot()
 
-	if err := ctrl.UseCases.SetPilotEnrollmentForFeature(r.Context(), pilot.FlagID, pilot.DeploymentEnvironmentID, pilot.ExternalID, pilot.IsParticipating);
-		handleError(w, err, http.StatusInternalServerError) {
+	if err := ctrl.UseCases.SetPilotEnrollmentForFeature(r.Context(), pilot.FlagID, pilot.DeploymentEnvironmentID, pilot.ExternalID, pilot.IsParticipating); handleError(w, err, http.StatusInternalServerError) {
 		return
 	}
 
@@ -305,8 +304,7 @@ func (ctrl ReleasePilotController) Update(w http.ResponseWriter, r *http.Request
 	req.Body.Pilot.ID = r.Context().Value(ReleasePilotContextKey{}).(release.ManualPilot).ID
 	pilot := req.Body.Pilot.ToReleasePilot()
 
-	if err := ctrl.UseCases.SetPilotEnrollmentForFeature(r.Context(), pilot.FlagID, pilot.DeploymentEnvironmentID, pilot.ExternalID, pilot.IsParticipating);
-		handleError(w, err, http.StatusInternalServerError) {
+	if err := ctrl.UseCases.SetPilotEnrollmentForFeature(r.Context(), pilot.FlagID, pilot.DeploymentEnvironmentID, pilot.ExternalID, pilot.IsParticipating); handleError(w, err, http.StatusInternalServerError) {
 		return
 	}
 

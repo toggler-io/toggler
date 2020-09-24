@@ -327,7 +327,6 @@ func (ctrl ReleaseRolloutController) Update(w http.ResponseWriter, r *http.Reque
 	}
 	var p Payload
 
-
 	if handleError(w, decoder.Decode(&p), http.StatusBadRequest) {
 		return
 	}
@@ -346,8 +345,6 @@ func (ctrl ReleaseRolloutController) Update(w http.ResponseWriter, r *http.Reque
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
-
-
 
 //--------------------------------------------------------------------------------------------------------------------//
 

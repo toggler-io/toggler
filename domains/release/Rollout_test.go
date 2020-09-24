@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/adamluzsi/frameless/errs"
+	"github.com/adamluzsi/frameless/consterror"
 	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
@@ -60,7 +60,7 @@ func TestRolloutDecisionByPercentage(t *testing.T) {
 
 		var andRandGeneratorEncounterAnError = func(s *testcase.Spec) {
 			s.And(`rand generator encounter an error`, func(s *testcase.Spec) {
-				const expectedError errs.Error = `boom`
+				const expectedError consterror.Error = `boom`
 				s.LetValue(`pseudo rand error`, expectedError)
 
 				s.Then(`it will propagate back the error`, func(t *testcase.T) {
@@ -429,10 +429,11 @@ func TestRollout(t *testing.T) {
 
 	var rollout = func(t *testcase.T) *release.Rollout { return t.I(`rollout`).(*release.Rollout) }
 	s.Let(`rollout`, func(t *testcase.T) interface{} {
+		plan, _ := t.I(`plan`).(release.RolloutDefinition)
 		return &release.Rollout{
 			FlagID:                  ExampleReleaseFlag(t).ID,
 			DeploymentEnvironmentID: ExampleDeploymentEnvironment(t).ID,
-			Plan:                    t.I(`plan`).(release.RolloutDefinition),
+			Plan:                    plan,
 		}
 	})
 
@@ -445,7 +446,7 @@ func TestRollout(t *testing.T) {
 			return release.NewRolloutDecisionByPercentage()
 		})
 
-		s.And(`when env id is not set`, func(s *testcase.Spec) {
+		s.When(`env id is not set`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
 				rollout(t).DeploymentEnvironmentID = ``
 			})
@@ -455,7 +456,7 @@ func TestRollout(t *testing.T) {
 			})
 		})
 
-		s.And(`when flag id is not set`, func(s *testcase.Spec) {
+		s.When(`flag id is not set`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
 				rollout(t).FlagID = ``
 			})
@@ -465,12 +466,20 @@ func TestRollout(t *testing.T) {
 			})
 		})
 
-		s.And(`when plan invalid`, func(s *testcase.Spec) {
+		s.When(`plan invalid`, func(s *testcase.Spec) {
 			s.Let(`plan`, func(t *testcase.T) interface{} {
 				p := release.NewRolloutDecisionByPercentage()
 				p.Percentage = 120
 				return p
 			})
+
+			s.Then(`it will yield error about it`, func(t *testcase.T) {
+				require.Error(t, subject(t))
+			})
+		})
+
+		s.When(`plan is not provided`, func(s *testcase.Spec) {
+			s.Let(`plan`, func(t *testcase.T) interface{} { return nil })
 
 			s.Then(`it will yield error about it`, func(t *testcase.T) {
 				require.Error(t, subject(t))

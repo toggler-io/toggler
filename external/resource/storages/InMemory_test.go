@@ -22,20 +22,20 @@ var (
 func TestInMemory(t *testing.T) {
 	specs.Storage{
 		Subject:        storages.NewInMemory(),
-		FixtureFactory: NewFixtureFactory(),
+		FixtureFactory: DefaultFixtureFactory,
 	}.Test(t)
 }
 
 func BenchmarkInMemory(b *testing.B) {
 	specs.Storage{
 		Subject:        storages.NewInMemory(),
-		FixtureFactory: NewFixtureFactory(),
+		FixtureFactory: DefaultFixtureFactory,
 	}.Benchmark(b)
 }
 
 func TestNewTestingStorage(t *testing.T) {
 	specs.Storage{
 		Subject:        storages.NewTestingStorage(),
-		FixtureFactory: NewFixtureFactory(),
+		FixtureFactory: DefaultFixtureFactory,
 	}.Test(t)
 }

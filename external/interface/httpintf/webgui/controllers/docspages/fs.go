@@ -209,11 +209,11 @@ func FSMustString(useLocal bool, name string) string {
 
 var _escData = map[string]*_escFile{
 
-	"/docs/README.md": {
-		name:    "README.md",
-		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/README.md",
-		size:    7186,
-		modtime: 1593645606,
+	"/docs/README.bak.md": {
+		name:    "README.bak.md",
+		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/README.bak.md",
+		size:    7182,
+		modtime: 1600721109,
 		compressed: `
 H4sIAAAAAAAC/6xZ3W4juXK+76eo7AQ5Y0dqYTbJjYFk4hnPJgZ2s87Yg4PAODiqJqvVXLHJXv5Iow0C
 5GnyYHmSoIpsSZZnkZtzZbtJFsmqr776in4DyW82lkLTrOtvazAREB7J9jD4mEjDD4QpB4InmQGPFHZG
@@ -246,28 +246,70 @@ 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
-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
-IKELBhIcAAA=
+78mCXhegzXsUgcGljKGzCWdqC+cTSW04af9jLp41LHElnLQ6Ml11hfVK1ObcOxOscyRmk7gqOHkse6zB
+dwzNtvnBB6CvOEqYj4pJDaS2RcJWqqKvJnLT8jt+O74AlKL1/Lk2nrXriJc6/dS7l/l3AukLgF9M+vds
+1JbrYUiwgkdKeSpV4kev0MLdic8bYd45euRirkxzallm/ClD8aZZwsZLmhpujd6OTILMZVfNksvmAG/j
+IHqwfAQAuIboR0ZfMJP0M/tgUiLJ2jWvWTdL0F5tKSyFACJ908rfljnNEp61CeR2p3zcmDTkrlV+XJWh
++uMK3roqWIul5qlqRukfz6hnAfSVlNDdi9uz/Eenb5r1Ws7atNCS2wXVtKvOuNXRWPMGfGhOf15cKE+w
+XGpKqAY2JQc531Fgetpl4+ULtCuWy+v1GkoAP8prQS7p8IpGKrhVncRBLZWHjCivjz/eg58K8YaSTOR2
+JngnKbfDIK8isW3u0wsePKnhovW4bSr8bA/FjrxyTRYT92mxPmywBKFgfiunK6rq+BJWhAvLNkmTInlr
+yrymspmscixQnShEE1ORl0K6ohPL6wzXvrLM98Lfs/yqCgi0p8iMW9slbuxAUeDzHs9QdIu4glntyC71
+GhMp01fHL6RkDlzOs01cCC7rnHitz7Y3tgoXrq/IvPJU/mS0Tz6xl9HaAwQa/a5go8tBk+NTntp/5kqX
+pAGkytO6K5pkbiwibumiwLYl3wtxeX/+KnWEfHMNzw9VLH0zw2YldfzlqrmGe/cTjT4c4G1f1RAHYsqB
+0V9enK5qna3+Vd65Uq5/H7dCzHe3T7cfbh8//fnL5x/X3wRsU9qL0gzOkmO9ZGxwtJY52DUoa2bwJ18L
+JucfG2glHznM3h19dlHv5ne1It3K45eJzVkTWjNlvlVMIn9M4ZmXuVc/fusybdPUMvPa2E3zTzB7/Wa1
+ypHCzYQx7vU/k/p++e7du5byck8xLd9xrKacqMURf/MO95G/3PzD3//d9yvdORypOdINfZ18SHDu6X/8
+7i+30XeF8iTdnz+iGmiuX4r/iBf16w3cHd95GI0DBb/Np5LHY6vyUZZcw/PtHx/hk8WYjIIP3F8mtNuL
+FbiPK+rO97qGZ++WU6DRxFPlrdPryDzxTvj8Yk4h+dO5v0RmssprpHLgdiz5LbkigYS0PWyYZ1CJIkxe
+6mF5is6TZp0UyIo6QVUUQ0VLYaRFwyCUwnuUVfHlXoWjzxlTxHuteHvq/uXLfYH80YIs/H+K4GyAW3MK
+ZyVx/l8DLNWoq81lOcp38mMp7wvLbHSFApvJzvwKRs/pJlMqEXZ8JBrRWNahgf3Un+RXW7l8Kw1JuSVL
+8Pq/Czb2+HT385en84kKHTee8r+JTXnaMz032vVVJuKOPV5eJF9EbC5Utw/3cOdVPlICw2J+RGYBcxqZ
+YcLsiZN5iblZOvamVC2Ie9xspCqdmQBMMriqo+0v0TsgpydvXGqb6zmWm2zKK0KloTjbW2YjPUj1b+e/
+zt5Znc2YMA0iGlnffjx1hFFuZzYDWJaLwAJ6Z2h/zNx5qvHuIqdeqcwiQb+5MvLIvPADqq31m29WnbN/
+Z9VfV7Woxaum+eG82/ATOWkVpdkwpceIxCl2kLcCue/TgG4rQ730DKhPrwjnL/B/xT3//wUAAP//RZuX
+SQ4cAAA=
+`,
+	},
+
+	"/docs/README.md": {
+		name:    "README.md",
+		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/README.md",
+		size:    4258,
+		modtime: 1600568879,
+		compressed: `
+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
+6QAbhSyX6Mn8/8H1RfXvAAAA//9pshaBohAAAA==
 `,
 	},
 
@@ -311,8 +353,8 @@ u6Z2Ii90qiatW1hxrul1VfTCVeFMOUX/Jzk4kVyI4vPP2qJUz3zOLoaQLnU5dhfcnZWvt7Je+BRdbwDg
 	"/docs/contribution/README.md": {
 		name:    "README.md",
 		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/contribution/README.md",
-		size:    5952,
-		modtime: 1566726869,
+		size:    5948,
+		modtime: 1600721108,
 		compressed: `
 H4sIAAAAAAAC/4RY32/ctrJ+Xv4VEwf31jaU3Yv7dBDgoEhspzWQkwS2i6IoipgrjSTWFKlyqJWVIv/7
 wQwprez+fGm8IofDmW+++YYv4cK7GMx+iMY7pe5aQ0BY8l9QobYEo4kt4GNvtXHGNaD3fogQW4TSd513
@@ -339,26 +381,26 @@ oKXfPG0CW/XG2tQ/9UEcqjzTbc6MTlaPaZWY8MFzwe/R+rGAhV/lJOmgV5e7726urj7sbq7evbm4+3gj
 PwesaOFObQPqapKycVtQ6npmVxqahk/OMbx/xX5sa21srSneg+/Z+2IBE5u2XhxMbLIPqB8EiEL4uaL3
 2BgngjZDmTvy2KLtjGu2AErd3983XvW6fGAspNx+ZhtKma73IcKp2pz8PfvgYzQu1ruMKNoFrAydqE1M
 OvL/4R8M5HUn/3jSQMjJph3DhJ6tpxgwlm02V0+7kEQNL/OyeDnnTKl6cCXcIcUE+NMI5/nz9u4Mfleb
-UACGAK//naOy/YDjaYPxuOfCOyah03h2pjb5sO0HY0+jbD1TG7URR7e3KTK3PZa/q83mdtgz0b6G/F8o
-1Gbzzjxy33sn+mF6DXPw+Nyn307PCrX5umVHTuOZ+pov8+e+PbkWRVEmv6uN0FwBhm4x8h09bd97/zD0
-V+5wen93dXv3+fbu482b764+/3Dz/vPFxw+3P7y/P1NqY2p4kbbxVeL29sH0p/eSchiC5WpKOjcyCk/+
-wtTJ/ZnafFUctzgEl2hXfWU8wp+NRLmiP91AwIPBkXvrT08nCClHb60fjWteK3UOBwxHLmGqFYH0H20c
-M6DeG2viBEmxkQI4Xzpclg//O6trpw+m0dEHUJywc5ZkfN4zibm0k3LpiTSr22UiUynp14kW2qHb2wk0
-pdEp+qTsydusUQwRZyrvEt4JE6+T5quzyGTZgY9xNbiejO10wt+T2JoNS0vugy+R0pWDt3mkSkpKukU0
-KTj5thJa1KLLZGSqKugGmSuX9RaTVk5sadIEORDTSo6A7vsn91gp9lw9IuBk4GRmFqUJJoqbMQzuQcRt
-JTO5iZTmTOMW1/ZBu7LNPot0SSvnkwL2AYnHcw0UNbtMUYvyPAq4ReBGv9LF2e1zPk76DYeh8u6bmDoJ
-YzAYdOUSBUPF3LpHHx6kLwaRorKAfhs0tdBhaLBQMxPsh8jAEG913wcsDftn5E1gxPWJ0XPKJshtcoks
-8JcHxDQdtoZZeeKpSXMZZb0RUNNcE6J355bRQYo2cnzWEHAeyLjGYuRhU/iL8qeArwaaq8nU7C337FTS
-aQkP1M8m32U8kQP9nmXibGQ2rI2bXvU6tjz7iZZLH/IcxVLRh05z1MOQgJO1GddkXux7gha1jS2ULZYP
-CfbdUxbIa4UgRLOyr663WlwV1ckTNbWAE64XrzJS+qGXUtpjHBEd3N58goVcBDxP6WJRtPLQwERTCAJK
-6xnm/EVmvkxhCwZnVRJwJTmdn8dlruPMmJ3mkZnbQxJGR4ww4isPlalrDFwSIngoV1gWmcb1wxzG3EaW
-qX4xdQ465jP/9X//Iy8gQshYLUvyMqY73cu8F9tnHyXX8iG/xj1T5M+Wk4Tyj7uMq4M+DpGsoPj/s5Jv
-nA/P/FqF9PIte1+hroqVKp872nwroVLtKit1KRHW1k6reAjHMtvSk1rkWJtysHGaGXH9YhhE0IP1o1I/
-zi8pK4pMx0tfy+8BQ8oUDzV2OOrlfFd8ZLLjJfOr2pJr4Qoj7wxDzy5Ofii4VYikzOW75Jm7InaJYVmH
-duZLgu9acqvcFI/S+fnwJMHKPWMZoOR18oU65yaVJHjSr3WetNZsK0MGd54k7DPpy8E8HsoYGlvtMsZy
-w0sVxQHMw6nUmmhmOXEN6YUeZ9vncF2vnlGWdYaOgnve8+lmFdY1VvYItXlMefijZiiWt9meA6WtYkIt
-kZt7jVjxNM9WavMIceo9/c33sTURgXpd4nrZp4unTT1JCoLTVcZHnUBuHEfHeMeQluehM/XfAAAA//9a
-MmSWQBcAAA==
+UACGAK//naOy/YDjaYPxuOfCOyah03h2pjb5sO0HY0+jbD1TG7URR7e3KTK/q83mdtgzyb6G/F8o1Gbz
+zjxyz3sn2mF6DXPg+Myn307PCrX5umUnTuOZ+pov8ud+PbkSRVElv6uNUFwBhm4x8v08bd97/zD0V+5w
+en93dXv3+fbu482b764+/3Dz/vPFxw+3P7y/P1NqY2p4kbbxVeL29sH0p/eSbhiC5UpKGjcyAk/+wtTJ
+/ZnafFUcszgElyhXfWUswp+NQ7maP91AwIPBkfvqT0+nBylFb60fjWteK3UOBwxHHmGaFXH0H20cs5/e
+G2viBEmtkQI4X7pblg7/Oytrpw+m0dEHUJywc5ZjfN4zebm0knLphzQr22UaUynp14kS2qHb2wk0pbEp
++qTqydusTwwRZyrvEs4JE6+TxquzwGTJgY9xNbSejO10wt+T0JoNSzvugy+R0pWDt3mcSipKOkU0KTj5
+thJa1KLJZFyqKugGmSmX9RaTTk5MadL0OBBTSo6A7vsn91ip9Vw5It5k2GRWFpUJJoqbMQzuQYRtJfO4
+iZRmTOMW1/ZBu7LNPotsSSvnkwL2AYlHcw0UNbtMUYvqPIq3RdxGv9LE2e1zPk56DYeh8u6bmLoIYzAY
+dOUSBUPF3LZHHx6kJwaRobKAfhs0tdBhaLBQMxPsh8jAEG913wcsDftn5D1gxPWJ0XPKJsgtcoks8JcH
+xDQZtoYZeeKJSXMZZa0RUNNcE6J153bRQYo2cnzWEHAeyLjGYuRBU/iL8qeArwaaq8nU7C3361TSaQkP
+08+m3mU0kQP9niXibGQ2rI2bXvU6tjz3iY5LH/IMxTLRh05z1MOQgJN1GddkXux7gha1jS2ULZYPCfbd
+UxbIa4UgRK+yr663WlwVxcnTNLWAE64XrzJS+qGXUtpjHBEd3N58goVcBDxP6WJRs/LIwERTCAJK6xnm
+/EXmvUxhCwZnRRJwJTedn0dlruPMmJ3mcZnbQxJFR4ww4isPlalrDFwSInYoV1gWmMb1wxzG3EaWiX4x
+dQ465jP/9X//I68fQshYLUvyMqY73cusF9tnHyXX8iG/xD1T48+Wk4Tyj7uMq4M+DpCsnvj/s4pvnA/P
+/FqF9PIte1+hroqVIp872nwroVLtKit1KRHW1k6reAjHMtvSk1rkWJtysHGaGXH9WhhEzIP1o1I/zq8o
+K4pMx0tfy28BQ8oUDzR2OGrlfFd8ZLLjJfOL2pJr4QojbwxDzy5Ofii4VYiczOW75Jm7InaJYVmDduZL
+gu9abqvcFI+y+fngJMHKPWMZnuRl8oU65yaV5HfSrnWestZsKwMGd54k6jPpy8E8GsoIGlvtMsZyw0sV
+xQHMg6nUmuhlOXEN6YUeZ9vncF2vnlCWdYaOYnve8+lmFdY1VvYItXlMefijZiiWd9meA6WtYkItkZt7
+jVjxJM9WavMIceo9/c33sTURgXpd4nrZp4unTT1JCoLTVcZHnUBuHEfHeMeQlqehM/XfAAAA//+477A+
+PBcAAA==
 `,
 	},
 
@@ -471,34 +513,20 @@ PhSFxFVvi7Ixr9oPQ5Lgq2hGuDL84PNkGlpJ/Pr/SC9o1cBf3w+Je/cXAAD//1QndS1RAQAA
 	"/docs/design/DirectoryLayout.md": {
 		name:    "DirectoryLayout.md",
 		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/design/DirectoryLayout.md",
-		size:    3978,
-		modtime: 1593645606,
+		size:    1892,
+		modtime: 1600762748,
 		compressed: `
-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
+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
 `,
 	},
 
@@ -1904,6 +1932,31 @@ isaLd/FBAb8CAAD//yRFGrfkBQAA
 `,
 	},
 
+	"/docs/readiness.md": {
+		name:    "readiness.md",
+		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/readiness.md",
+		size:    1900,
+		modtime: 1600721110,
+		compressed: `
+H4sIAAAAAAAC/3RVT2sbyRO9z6coMPx+SVAkkmMuS4IS8CFgbMOymIBqut9oOunpnu2qkTzffqkeaW3Z
+m5vomq569f60rug+7/cRhW5K/gmndAv2IUGkaa6u6HNxfVA4nQqa5r4H7XS5sKPxdMPlAvKQsE8UhFoW
+eMqJdtqDXAQn4mdt7GJILowRsmo4eZIxBiV2JYtcfEqRZxRZL5O7HD0KiZZpqXKUTFoChDRTwVggSEpB
+SUue9j3txBXwENL+BQREDEhqra+u6B6i3IYYdKb/0XcOSTmk08nv1z6g8B6288AedAza0ztq0fMh5KmQ
+L+GARB4HxDzavHevdmchmVy/IiNLISrEYbB9fk6ioZtJZlEMT21XlLJSGMZlBdaQ07r5K0+GrOU2ztSD
+iyftgxDHAvYzDZxm0jBAVtROSiEtdccC+2UMtXkpMB15bo49CmjOE/V8AO1usui+QHYvZte97SaThLSP
+oL8nlJlyoe0XUm4jiEVQKlD69La5mQriXBd8xpYtDxPkz342Tiu8fc7+D7rvFzntaEXX5DgtoFiWxXzo
+OpSq/QW2s8F6LqgM43GEO9WoK3kgwciFFeTyMOZkpqiKVGU0LwpfND0Jl2ZyOWkJ7aS5VEw/p2GsBCb/
+VIOJGXRFMDOcyfLASPfbrdH0ZbulsbDT4IyAW3TsNBfTxDCHpCiJ40vec1fLT358wt/nKXpqQWCZF5Z+
+VYljrDzTvgBp3TQP33KhwQK8qG8NZYQLXXAnBskMRGaG9Y83G5+dbJawbyqt3j6X9eDfNs0V3TmOF7m5
+QzkEV8Mb81HqgIcPH98vKxKP4483veoonzabDx+X03WCbt6+fiYcR7w3lIfA59UdRGjIHnFd5/E4xhN0
+8hmS/q80iQl/IrFA8lQc3nuMSP61Z1aNZKMs5hP/r67WUFhT07zFAsxTnnRVS8cQo513IWHdNNddPU2A
+Nyuw98SUcPytvVo4tvbPb001pqyrpgMidQXVV/a8KYgTXYtMMDcx3dyum+ZuGse8NCnVG9WwfOajCr3M
+3zh2/UsUcumtqVi67GlhWdN1qljq47Gs/OS4mndz/LndgoA9j4pihgxxXt5Km9Ajjubkf7m9dJ+laTcJ
+bJJsFqvdLbB366Yx9+KRh2qSCsQkcT3cr9r9/PrhMYhaAP6bcjG9j4jR/g7o4da8OikVRFZ4+ga2fw05
+278gggWb26+ft9+/nq3/sK2peJGRZ9/8EwAA//9NwjpobAcAAA==
+`,
+	},
+
 	"/docs/release/DarkLaunch.md": {
 		name:    "DarkLaunch.md",
 		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/release/DarkLaunch.md",
@@ -1998,6 +2051,28 @@ rXojre0PxUXNrjetm6Ca1uTbSAWubWy6gmlGIkEjY1ZjMHkuV+gmtHYd0HXfo30GxXUDvZDUWzNNH8n9
 `,
 	},
 
+	"/docs/why.md": {
+		name:    "why.md",
+		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/why.md",
+		size:    1432,
+		modtime: 1600568879,
+		compressed: `
+H4sIAAAAAAAC/2xUW6okNw9+9yoE88OfDD3VSzgcZvJwIJdhMiEPIeSobVWV07ZUY9ldFCGQ1WRhWUmQ
+qzqcCXm15U/Sd/EreFKoc1T4nsoteoJRCmzSClTCfPaSF+QNHpx7ZF2pQJ2tJiVZI0/wqZHWKKwniAxS
+glUIBKpUcmQ6uTju+EuRX8lXiApMFCh83gmkAEsdnHuLDHnrh3/98adzrwGXJW3w0zssV/gaG/s58vTz
+F+cgXs+FEqHS2W73yyGHL2Ep6Gv0pPDgXkOgJckGY6FPjbimra/hJdAFlSByoIU47FdjkQwjYW2F4IDv
+KF54jEfRgVjFFgvNGwmAYz0YwlYlY6UAlbQqYCFYUJVCR1qojFLygZKJK4RWjFCWkjHBpWlkUoVZWlFY
+Y52BaUpxipdEEGTlGjPtU+UlUSWIVWGVcu3V0mrn2TDHyPRmKhiZgpXnxtHjPjHbiZQQeT/onRaSJRFI
+qxoDgYx9J1PkBZn29M6OtT54MCH18JIwBMrI4fQvimUEqTP9U6m9wX8g7I+gLcIPzj2Nu2Fwt+Jm7wSy
+aD1mzCdXZ2KrAo8MWmWBmQqd4EIemxJg6Jx0T967VNlxtaK/wiotBTMjqKSb3Qrk5ufBUVI6wbLv7IVr
+5EbDMDj3Cn6czQ3TlKicYJ23DvC/395/+O7dD28//vLt4zdf/W4xej6KnmEpMWPZYBJMFovdSzdjHOFG
+HKS8SeKvZluyWVpXqAogrFZVkKeuDrYQiT0N7uNM8Pj+6f96ZBQ0mjts2BvxkdSM105BQdbYMQm1exlT
+J9MS/5k+LjJ4W9pkurNmSZYKxNKmuad5D1X/Mc491OZAHVwfS8kLh5cLByrxZh+BBW43QGfE+It+PjiR
+lftlwIqD+0ATlpD2aKzdhKsJ3CVvJo/VyspUdI7L3bv2GC6UhCc95O5klWMNeDaSn2FJaN2wAsasHbQK
+dBUiw2XrQCdz6OVOUSZk23E3Z0+6Yo06Rgp7nF6QdvjTTl4aYf8aQwywUkqDc38HAAD//9RublKYBQAA
+`,
+	},
+
 	"/docs": {
 		name:  "docs",
 		local: `/home/adamluzsi/src/github.com/toggler-io/toggler/docs`,
@@ -2074,6 +2149,7 @@ rXojre0PxUXNrjetm6Ca1uTbSAWubWy6gmlGIkEjY1ZjMHkuV+gmtHYd0HXfo30GxXUDvZDUWzNNH8n9
 var _escDirs = map[string][]os.FileInfo{
 
 	"/home/adamluzsi/src/github.com/toggler-io/toggler/docs": {
+		_escData["/docs/README.bak.md"],
 		_escData["/docs/README.md"],
 		_escData["/docs/assets"],
 		_escData["/docs/caches"],
@@ -2081,8 +2157,10 @@ var _escDirs = map[string][]os.FileInfo{
 		_escData["/docs/deploy"],
 		_escData["/docs/design"],
 		_escData["/docs/httpapi"],
+		_escData["/docs/readiness.md"],
 		_escData["/docs/release"],
 		_escData["/docs/toggler-io"],
+		_escData["/docs/why.md"],
 	},
 
 	"/home/adamluzsi/src/github.com/toggler-io/toggler/docs/assets": {

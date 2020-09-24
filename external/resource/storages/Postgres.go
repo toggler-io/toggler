@@ -6,17 +6,22 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"log"
 	"path"
+	"reflect"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/adamluzsi/frameless"
-	"github.com/adamluzsi/frameless/errs"
+	"github.com/adamluzsi/frameless/consterror"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/source"
 	bindata "github.com/golang-migrate/migrate/v4/source/go_bindata"
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 
 	pgmigr "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -27,8 +32,8 @@ import (
 	"github.com/toggler-io/toggler/external/resource/storages/migrations"
 )
 
-func NewPostgres(db *sql.DB) (*Postgres, error) {
-	pg := &Postgres{DB: db}
+func NewPostgres(db *sql.DB, dsn string) (*Postgres, error) {
+	pg := &Postgres{DB: db, DSN: dsn}
 
 	if err := PostgresMigrate(db); err != nil {
 		return nil, err
@@ -38,7 +43,8 @@ func NewPostgres(db *sql.DB) (*Postgres, error) {
 }
 
 type Postgres struct {
-	DB *sql.DB
+	DB  *sql.DB
+	DSN string
 }
 
 type PostgresTxCtxKey struct{}
@@ -106,6 +112,26 @@ func (pg *Postgres) lookupTx(ctx context.Context) (*PostgresTx, bool) {
 	return tx, ok
 }
 
+// return func meant to ensure tx is only closed if we made it
+func (pg *Postgres) getTx(ctx context.Context) (tx *sql.Tx, commit func() error, rollback func() error, err error) {
+	db := pg.getDB(ctx)
+
+	switch db := db.(type) {
+	case *sql.DB:
+		tx, err := db.BeginTx(ctx, nil)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		return tx, tx.Commit, tx.Rollback, nil
+
+	case *sql.Tx:
+		return db, func() error { return nil }, func() error { return nil }, nil
+
+	default:
+		return nil, nil, nil, fmt.Errorf(`unknown db type received: %T`, db)
+	}
+}
+
 func (pg *Postgres) getDB(ctx context.Context) interface {
 	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
@@ -164,15 +190,15 @@ func (pg *Postgres) Create(ctx context.Context, ptr interface{}) error {
 
 	switch e := ptr.(type) {
 	case *deployment.Environment:
-		return pg.deploymentEnvironmentInsertNew(ctx, e)
+		return pg.deploymentEnvironmentCreate(ctx, e)
 	case *release.Flag:
-		return pg.releaseFlagInsertNew(ctx, e)
+		return pg.releaseFlagCreate(ctx, e)
 	case *release.Rollout:
-		return pg.releaseRolloutInsertNew(ctx, e)
+		return pg.releaseRolloutCreate(ctx, e)
 	case *release.ManualPilot:
-		return pg.pilotInsertNew(ctx, e)
+		return pg.releaseManualPilotCreate(ctx, e)
 	case *security.Token:
-		return pg.tokenInsertNew(ctx, e)
+		return pg.securityTokenCreate(ctx, e)
 	case *resources.TestEntity:
 		return pg.testEntityInsertNew(ctx, e)
 	default:
@@ -204,16 +230,31 @@ func (pg *Postgres) FindByID(ctx context.Context, ptr interface{}, id string) (b
 }
 
 func (pg *Postgres) DeleteAll(ctx context.Context, Type interface{}) error {
-	var tableName string
+	tx, commit, rollback, err := pg.getTx(ctx)
+	if err != nil {
+		return err
+	}
+
+	var (
+		tableName string
+		topicName string
+		message   interface{}
+	)
 	switch Type.(type) {
 	case deployment.Environment, *deployment.Environment:
 		tableName = `deployment_environments`
 	case release.Flag, *release.Flag:
 		tableName = `release_flags`
+		topicName = releaseFlagDeleteAllSubscriptionName
+		message = release.Flag{}
 	case release.Rollout, *release.Rollout:
 		tableName = `release_rollouts`
+		topicName = releaseRolloutDeleteAllSubscriptionName
+		message = release.Rollout{}
 	case release.ManualPilot, *release.ManualPilot:
 		tableName = `release_pilots`
+		topicName = releaseManualPilotDeleteAllSubscriptionName
+		message = release.ManualPilot{}
 	case security.Token, *security.Token:
 		tableName = `tokens`
 	case resources.TestEntity, *resources.TestEntity:
@@ -223,8 +264,19 @@ func (pg *Postgres) DeleteAll(ctx context.Context, Type interface{}) error {
 	}
 
 	query := fmt.Sprintf(`DELETE FROM "%s"`, tableName)
-	_, err := pg.getDB(ctx).ExecContext(ctx, query)
-	return err
+	if _, err := tx.ExecContext(ctx, query); err != nil {
+		_ = rollback()
+		return err
+	}
+
+	if message != nil {
+		if err := pg.notify(ctx, tx, topicName, message); err != nil {
+			_ = rollback()
+			return err
+		}
+	}
+
+	return commit()
 }
 
 func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, id string) error {
@@ -232,19 +284,34 @@ func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, id string)
 		return fmt.Errorf(`ErrNotFound`)
 	}
 
-	var query string
+	tx, commit, rollback, err := pg.getTx(ctx)
+	if err != nil {
+		return err
+	}
+
+	var (
+		query     string
+		topicName string
+		message   interface{}
+	)
 	switch Type.(type) {
 	case deployment.Environment, *deployment.Environment:
 		query = `DELETE FROM "deployment_environments" WHERE "id" = $1`
 
 	case release.Flag, *release.Flag:
 		query = `DELETE FROM "release_flags" WHERE "id" = $1`
+		topicName = releaseFlagDeleteByIDSubscriptionName
+		message = release.Flag{ID: id}
 
 	case release.Rollout, *release.Rollout:
 		query = `DELETE FROM "release_rollouts" WHERE "id" = $1`
+		topicName = releaseRolloutDeleteByIDSubscriptionName
+		message = release.Rollout{ID: id}
 
 	case release.ManualPilot, *release.ManualPilot:
 		query = `DELETE FROM "release_pilots" WHERE "id" = $1`
+		topicName = releaseManualPilotDeleteByIDSubscriptionName
+		message = release.ManualPilot{ID: id}
 
 	case security.Token, *security.Token:
 		query = `DELETE FROM "tokens" WHERE "id" = $1`
@@ -256,21 +323,31 @@ func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, id string)
 		return fmt.Errorf(`ErrNotImplemented`)
 	}
 
-	result, err := pg.getDB(ctx).ExecContext(ctx, query, id)
+	result, err := tx.ExecContext(ctx, query, id)
 	if err != nil {
+		_ = rollback()
 		return err
 	}
 
 	count, err := result.RowsAffected()
 	if err != nil {
+		_ = rollback()
 		return err
 	}
 
 	if count == 0 {
+		_ = rollback()
 		return fmt.Errorf(`ErrNotFound`)
 	}
 
-	return nil
+	if message != nil {
+		if err := pg.notify(ctx, tx, topicName, message); err != nil {
+			_ = rollback()
+			return err
+		}
+	}
+
+	return commit()
 }
 
 func (pg *Postgres) Update(ctx context.Context, ptr interface{}) error {
@@ -285,17 +362,17 @@ func (pg *Postgres) Update(ctx context.Context, ptr interface{}) error {
 		return pg.releaseRolloutUpdate(ctx, e)
 
 	case *release.ManualPilot:
-		return pg.pilotUpdate(ctx, e)
+		return pg.releaseManualPilotUpdate(ctx, e)
 
 	case *security.Token:
-		return pg.tokenUpdate(ctx, e)
+		return pg.securityTokenUpdate(ctx, e)
 
 	default:
 		return fmt.Errorf(`ErrNotImplemented`)
 	}
 }
 
-func (pg *Postgres) FindAll(ctx context.Context, Type interface{}) frameless.Iterator {
+func (pg *Postgres) FindAll(ctx context.Context, Type interface{}) iterators.Interface {
 	switch Type.(type) {
 	case deployment.Environment, *deployment.Environment:
 		return pg.deploymentEnvironmentFindAll(ctx)
@@ -426,7 +503,7 @@ func (pg *Postgres) FindReleasePilotsByExternalID(ctx context.Context, pilotExtI
 	return iterators.NewSQLRows(rows, m)
 }
 
-func (pg *Postgres) FindReleaseFlagsByName(ctx context.Context, flagNames ...string) frameless.Iterator {
+func (pg *Postgres) FindReleaseFlagsByName(ctx context.Context, flagNames ...string) iterators.Interface {
 	var namesInClause []string
 	var args []interface{}
 
@@ -456,18 +533,32 @@ INSERT INTO "release_flags" (id, name)
 VALUES ($1, $2);
 `
 
-func (pg *Postgres) releaseFlagInsertNew(ctx context.Context, flag *release.Flag) error {
+func (pg *Postgres) releaseFlagCreate(ctx context.Context, flag *release.Flag) error {
 	id, err := newV4UUID()
 	if err != nil {
 		return err
 	}
 
-	if _, err := pg.getDB(ctx).ExecContext(ctx, releaseFlagInsertNewQuery, id, flag.Name,
-	); err != nil {
+	tx, commit, rollback, err := pg.getTx(ctx)
+	if err != nil {
 		return err
 	}
 
-	return resources.SetID(flag, id)
+	if _, err := tx.ExecContext(ctx, releaseFlagInsertNewQuery, id, flag.Name); err != nil {
+		return err
+	}
+
+	if err := resources.SetID(flag, id); err != nil {
+		_ = rollback()
+		return err
+	}
+
+	if err := pg.notify(ctx, tx, releaseFlagCreateSubscriptionName, *flag); err != nil {
+		_ = rollback()
+		return err
+	}
+
+	return commit()
 }
 
 const releaseRolloutInsertNewQuery = `
@@ -475,7 +566,7 @@ INSERT INTO "release_rollouts" (id, flag_id, env_id, plan)
 VALUES ($1, $2, $3, $4);
 `
 
-func (pg *Postgres) releaseRolloutInsertNew(ctx context.Context, rollout *release.Rollout) error {
+func (pg *Postgres) releaseRolloutCreate(ctx context.Context, rollout *release.Rollout) error {
 	id, err := newV4UUID()
 	if err != nil {
 		return err
@@ -487,16 +578,32 @@ func (pg *Postgres) releaseRolloutInsertNew(ctx context.Context, rollout *releas
 		return err
 	}
 
-	if _, err := pg.getDB(ctx).ExecContext(ctx, releaseRolloutInsertNewQuery,
+	tx, commit, rollback, err := pg.getTx(ctx)
+	if err != nil {
+		return err
+	}
+
+	if _, err := tx.ExecContext(ctx, releaseRolloutInsertNewQuery,
 		id,
 		rollout.FlagID,
 		rollout.DeploymentEnvironmentID,
 		planJSON,
 	); err != nil {
+		_ = rollback()
 		return err
 	}
 
-	return resources.SetID(rollout, id)
+	if err := resources.SetID(rollout, id); err != nil {
+		_ = rollback()
+		return err
+	}
+
+	if err := pg.notify(ctx, tx, releaseRolloutCreateSubscriptionName, *rollout); err != nil {
+		_ = rollback()
+		return err
+	}
+
+	return commit()
 }
 
 const deploymentEnvironmentInsertNewQuery = `
@@ -504,7 +611,7 @@ INSERT INTO "deployment_environments" (id, name)
 VALUES ($1, $2);
 `
 
-func (pg *Postgres) deploymentEnvironmentInsertNew(ctx context.Context, env *deployment.Environment) error {
+func (pg *Postgres) deploymentEnvironmentCreate(ctx context.Context, env *deployment.Environment) error {
 	id, err := newV4UUID()
 	if err != nil {
 		return err
@@ -522,8 +629,7 @@ INSERT INTO "release_pilots" (id, flag_id, env_id, external_id, is_participating
 VALUES ($1, $2, $3, $4, $5);
 `
 
-func (pg *Postgres) pilotInsertNew(ctx context.Context, pilot *release.ManualPilot) error {
-
+func (pg *Postgres) releaseManualPilotCreate(ctx context.Context, pilot *release.ManualPilot) error {
 	id, err := newV4UUID()
 	if err != nil {
 		return err
@@ -533,18 +639,33 @@ func (pg *Postgres) pilotInsertNew(ctx context.Context, pilot *release.ManualPil
 		return fmt.Errorf(`invalid name Flag ID: ` + pilot.FlagID)
 	}
 
-	if _, err := pg.getDB(ctx).ExecContext(ctx, pilotInsertNewQuery,
+	tx, commit, rollback, err := pg.getTx(ctx)
+	if err != nil {
+		return err
+	}
+
+	if _, err := tx.ExecContext(ctx, pilotInsertNewQuery,
 		id,
 		pilot.FlagID,
 		pilot.DeploymentEnvironmentID,
 		pilot.ExternalID,
 		pilot.IsParticipating,
 	); err != nil {
+		_ = rollback()
 		return err
 	}
 
-	return resources.SetID(pilot, id)
+	if err := resources.SetID(pilot, id); err != nil {
+		_ = rollback()
+		return err
+	}
 
+	if err := pg.notify(ctx, tx, releaseManualPilotCreateSubscriptionName, *pilot); err != nil {
+		_ = rollback()
+		return err
+	}
+
+	return commit()
 }
 
 const testEntityInsertNewQuery = `
@@ -571,7 +692,7 @@ INSERT INTO "tokens" (id, sha512, owner_uid, issued_at, duration)
 VALUES ($1, $2, $3, $4, $5);
 `
 
-func (pg *Postgres) tokenInsertNew(ctx context.Context, token *security.Token) error {
+func (pg *Postgres) securityTokenCreate(ctx context.Context, token *security.Token) error {
 
 	id, err := newV4UUID()
 	if err != nil {
@@ -721,7 +842,7 @@ func (pg *Postgres) tokenFindByID(ctx context.Context, token *security.Token, id
 	return true, nil
 }
 
-func (pg *Postgres) releaseFlagFindAll(ctx context.Context) frameless.Iterator {
+func (pg *Postgres) releaseFlagFindAll(ctx context.Context) iterators.Interface {
 	mapper := releaseFlagMapper{}
 	query := fmt.Sprintf(`%s FROM "release_flags"`, mapper.SelectClause())
 	rows, err := pg.getDB(ctx).QueryContext(ctx, query)
@@ -732,7 +853,7 @@ func (pg *Postgres) releaseFlagFindAll(ctx context.Context) frameless.Iterator {
 	return iterators.NewSQLRows(rows, mapper)
 }
 
-func (pg *Postgres) releaseRolloutFindAll(ctx context.Context) frameless.Iterator {
+func (pg *Postgres) releaseRolloutFindAll(ctx context.Context) iterators.Interface {
 	mapper := releaseRolloutMapper{}
 	query := fmt.Sprintf(`SELECT %s FROM "release_rollouts"`, strings.Join(mapper.Columns(), `, `))
 	rows, err := pg.getDB(ctx).QueryContext(ctx, query)
@@ -743,7 +864,7 @@ func (pg *Postgres) releaseRolloutFindAll(ctx context.Context) frameless.Iterato
 	return iterators.NewSQLRows(rows, mapper)
 }
 
-func (pg *Postgres) deploymentEnvironmentFindAll(ctx context.Context) frameless.Iterator {
+func (pg *Postgres) deploymentEnvironmentFindAll(ctx context.Context) iterators.Interface {
 	mapper := deploymentEnvironmentMapper{}
 	query := fmt.Sprintf(`SELECT %s FROM "deployment_environments"`, strings.Join(mapper.Columns(), `,`))
 
@@ -755,7 +876,7 @@ func (pg *Postgres) deploymentEnvironmentFindAll(ctx context.Context) frameless.
 	return iterators.NewSQLRows(rows, mapper)
 }
 
-func (pg *Postgres) pilotFindAll(ctx context.Context) frameless.Iterator {
+func (pg *Postgres) pilotFindAll(ctx context.Context) iterators.Interface {
 	m := pilotMapper{}
 	q := fmt.Sprintf(`SELECT %s FROM "release_pilots"`, strings.Join(m.Columns(), `, `))
 	rows, err := pg.getDB(ctx).QueryContext(ctx, q)
@@ -766,7 +887,7 @@ func (pg *Postgres) pilotFindAll(ctx context.Context) frameless.Iterator {
 	return iterators.NewSQLRows(rows, m)
 }
 
-func (pg *Postgres) testEntityFindAll(ctx context.Context) frameless.Iterator {
+func (pg *Postgres) testEntityFindAll(ctx context.Context) iterators.Interface {
 
 	mapper := iterators.SQLRowMapperFunc(func(s iterators.SQLRowScanner, e frameless.Entity) error {
 		te := e.(*resources.TestEntity)
@@ -788,7 +909,7 @@ SELECT %s
 FROM "tokens"
 `
 
-func (pg *Postgres) tokenFindAll(ctx context.Context) frameless.Iterator {
+func (pg *Postgres) tokenFindAll(ctx context.Context) iterators.Interface {
 	m := tokenMapper{}
 
 	rows, err := pg.getDB(ctx).QueryContext(ctx, fmt.Sprintf(tokenFindAllQuery, strings.Join(m.Columns(), `, `)))
@@ -819,9 +940,22 @@ WHERE id = $1;
 `
 
 func (pg *Postgres) releaseFlagUpdate(ctx context.Context, flag *release.Flag) error {
-	_, err := pg.getDB(ctx).ExecContext(ctx, releaseFlagUpdateQuery, flag.ID, flag.Name)
+	tx, commit, rollback, err := pg.getTx(ctx)
+	if err != nil {
+		return err
+	}
 
-	return err
+	if _, err := tx.ExecContext(ctx, releaseFlagUpdateQuery, flag.ID, flag.Name); err != nil {
+		_ = rollback()
+		return err
+	}
+
+	if err := pg.notify(ctx, tx, releaseFlagUpdateSubscriptionName, *flag); err != nil {
+		_ = rollback()
+		return err
+	}
+
+	return commit()
 }
 
 const releaseRolloutUpdateQuery = `
@@ -838,14 +972,27 @@ func (pg *Postgres) releaseRolloutUpdate(ctx context.Context, rollout *release.R
 		return err
 	}
 
-	_, err = pg.getDB(ctx).ExecContext(ctx, releaseRolloutUpdateQuery,
+	tx, commit, rollback, err := pg.getTx(ctx)
+	if err != nil {
+		return err
+	}
+
+	if _, err = tx.ExecContext(ctx, releaseRolloutUpdateQuery,
 		rollout.ID,
 		rollout.FlagID,
 		rollout.DeploymentEnvironmentID,
 		planJSON,
-	)
+	); err != nil {
+		_ = rollback()
+		return err
+	}
 
-	return err
+	if err := pg.notify(ctx, tx, releaseRolloutUpdateSubscriptionName, *rollout); err != nil {
+		_ = rollback()
+		return err
+	}
+
+	return commit()
 }
 
 const pilotUpdateQuery = `
@@ -857,15 +1004,28 @@ SET flag_id = $2,
 WHERE id = $1;
 `
 
-func (pg *Postgres) pilotUpdate(ctx context.Context, pilot *release.ManualPilot) error {
-	_, err := pg.getDB(ctx).ExecContext(ctx, pilotUpdateQuery, pilot.ID,
+func (pg *Postgres) releaseManualPilotUpdate(ctx context.Context, pilot *release.ManualPilot) error {
+	tx, commit, rollback, err := pg.getTx(ctx)
+	if err != nil {
+		return err
+	}
+
+	if _, err := tx.ExecContext(ctx, pilotUpdateQuery, pilot.ID,
 		pilot.FlagID,
 		pilot.DeploymentEnvironmentID,
 		pilot.ExternalID,
 		pilot.IsParticipating,
-	)
+	); err != nil {
+		_ = rollback()
+		return err
+	}
 
-	return err
+	if err := pg.notify(ctx, tx, releaseManualPilotUpdateSubscriptionName, *pilot); err != nil {
+		_ = rollback()
+		return err
+	}
+
+	return commit()
 }
 
 const tokenUpdateQuery = `
@@ -877,7 +1037,7 @@ SET sha512 = $1,
 WHERE id = $5;
 `
 
-func (pg *Postgres) tokenUpdate(ctx context.Context, t *security.Token) error {
+func (pg *Postgres) securityTokenUpdate(ctx context.Context, t *security.Token) error {
 	_, err := pg.getDB(ctx).ExecContext(ctx, tokenUpdateQuery,
 		t.SHA512,
 		t.OwnerUID,
@@ -1019,7 +1179,7 @@ func (rp releaseRolloutPlanValue) Value() (driver.Value, error) {
 func (rp *releaseRolloutPlanValue) Scan(iSRC interface{}) error {
 	src, ok := iSRC.([]byte)
 	if !ok {
-		const err errs.Error = "Type assertion .([]byte) failed."
+		const err consterror.Error = "Type assertion .([]byte) failed."
 		return err
 	}
 
@@ -1096,4 +1256,175 @@ func (pilotMapper) Map(s iterators.SQLRowScanner, ptr interface{}) error {
 	}
 
 	return reflects.Link(p, ptr)
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+
+func (pg *Postgres) notify(ctx context.Context, tx *sql.Tx, name string, v interface{}) error {
+	data, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, `SELECT pg_notify($1, $2)`, name, string(data))
+	return err
+}
+
+func newPostgresSubscription(connstr string, name string, T interface{}, subscriber resources.Subscriber) (*postgresSubscription, error) {
+	const (
+		minReconnectInterval = 10 * time.Second
+		maxReconnectInterval = time.Minute
+	)
+	var sub postgresSubscription
+	sub.rType = reflect.TypeOf(T)
+	sub.subscriber = subscriber
+	sub.listener = pq.NewListener(connstr, minReconnectInterval, maxReconnectInterval, sub.reportProblemToSubscriber)
+	sub.exit.context, sub.exit.signaler = context.WithCancel(context.Background())
+	return &sub, sub.start(name)
+}
+
+type postgresSubscription struct {
+	// T       interface{}
+	rType      reflect.Type
+	subscriber resources.Subscriber
+	listener   *pq.Listener
+	exit       struct {
+		wg       sync.WaitGroup
+		context  context.Context
+		signaler func()
+	}
+}
+
+func (sub *postgresSubscription) start(name string) error {
+	if err := sub.listener.Listen(name); err != nil {
+		return err
+	}
+
+	sub.exit.wg.Add(1)
+	go sub.handler()
+	return nil
+}
+
+func (sub *postgresSubscription) handler() {
+	defer sub.exit.wg.Done()
+
+wrk:
+	for {
+		ctx := context.Background()
+
+		select {
+		case <-sub.exit.context.Done():
+			break wrk
+
+		case n := <-sub.listener.Notify:
+			ptr := reflect.New(sub.rType)
+
+			if sub.handleError(ctx, json.Unmarshal([]byte(n.Extra), ptr.Interface())) {
+				continue wrk
+			}
+
+			sub.handleError(ctx, sub.subscriber.Handle(ctx, ptr.Elem().Interface()))
+
+			continue wrk
+		case <-time.After(time.Minute):
+			sub.handleError(ctx, sub.listener.Ping())
+			continue wrk
+		}
+	}
+}
+
+func (sub *postgresSubscription) handleError(ctx context.Context, err error) (isErrorHandled bool) {
+	if err == nil {
+		return false
+	}
+
+	if sErr := sub.subscriber.Error(ctx, err); sErr != nil {
+		log.Println(`ERROR`, sErr.Error())
+	}
+
+	return true
+}
+
+func (sub *postgresSubscription) Close() error {
+	if sub.exit.signaler == nil || sub.listener == nil {
+		return nil
+	}
+
+	sub.exit.signaler()
+	sub.exit.wg.Wait()
+	return sub.listener.Close()
+}
+
+func (sub *postgresSubscription) reportProblemToSubscriber(ev pq.ListenerEventType, err error) {
+	if err != nil {
+		_ = sub.subscriber.Error(context.Background(), err)
+	}
+}
+
+const (
+	releaseFlagCreateSubscriptionName            = `create_release_flag`
+	releaseFlagUpdateSubscriptionName            = `update_release_flag`
+	releaseFlagDeleteByIDSubscriptionName        = `delete_by_id_release_flag`
+	releaseFlagDeleteAllSubscriptionName         = `delete_all_release_flag`
+	releaseManualPilotCreateSubscriptionName     = `create_release_manual_pilot`
+	releaseManualPilotUpdateSubscriptionName     = `update_release_manual_pilot`
+	releaseManualPilotDeleteByIDSubscriptionName = `delete_by_id_release_manual_pilot`
+	releaseManualPilotDeleteAllSubscriptionName  = `delete_all_release_manual_pilot`
+	releaseRolloutCreateSubscriptionName         = `create_release_rollout`
+	releaseRolloutUpdateSubscriptionName         = `update_release_rollout`
+	releaseRolloutDeleteByIDSubscriptionName     = `delete_by_id_release_rollout`
+	releaseRolloutDeleteAllSubscriptionName      = `delete_all_release_rollout`
+)
+
+// no support for tx
+func (pg *Postgres) SubscribeToCreate(ctx context.Context, T interface{}, subscriber resources.Subscriber) (resources.Subscription, error) {
+	switch T.(type) {
+	case release.Flag:
+		return newPostgresSubscription(pg.DSN, releaseFlagCreateSubscriptionName, T, subscriber)
+	case release.ManualPilot:
+		return newPostgresSubscription(pg.DSN, releaseManualPilotCreateSubscriptionName, T, subscriber)
+	case release.Rollout:
+		return newPostgresSubscription(pg.DSN, releaseRolloutCreateSubscriptionName, T, subscriber)
+	default:
+		return nil, fmt.Errorf(`ErrNotImplemented`)
+	}
+}
+
+func (pg *Postgres) SubscribeToUpdate(ctx context.Context, T resources.T, subscriber resources.Subscriber) (resources.Subscription, error) {
+	switch T.(type) {
+	case release.Flag:
+		return newPostgresSubscription(pg.DSN, releaseFlagUpdateSubscriptionName, T, subscriber)
+	case release.ManualPilot:
+		return newPostgresSubscription(pg.DSN, releaseManualPilotUpdateSubscriptionName, T, subscriber)
+	case release.Rollout:
+		return newPostgresSubscription(pg.DSN, releaseRolloutUpdateSubscriptionName, T, subscriber)
+	default:
+		return nil, fmt.Errorf(`ErrNotImplemented`)
+	}
+}
+
+func (pg *Postgres) SubscribeToDeleteByID(ctx context.Context, T resources.T, subscriber resources.Subscriber) (resources.Subscription, error) {
+	switch T.(type) {
+	case release.Flag:
+		return newPostgresSubscription(pg.DSN, releaseFlagDeleteByIDSubscriptionName, T, subscriber)
+	case release.ManualPilot:
+		return newPostgresSubscription(pg.DSN, releaseManualPilotDeleteByIDSubscriptionName, T, subscriber)
+	case release.Rollout:
+		return newPostgresSubscription(pg.DSN, releaseRolloutDeleteByIDSubscriptionName, T, subscriber)
+	default:
+		return nil, fmt.Errorf(`ErrNotImplemented`)
+	}
+}
+
+func (pg *Postgres) SubscribeToDeleteAll(ctx context.Context, T resources.T, subscriber resources.Subscriber) (resources.Subscription, error) {
+	switch T.(type) {
+	case release.Flag:
+		return newPostgresSubscription(pg.DSN, releaseFlagDeleteAllSubscriptionName, T, subscriber)
+	case release.ManualPilot:
+		return newPostgresSubscription(pg.DSN, releaseManualPilotDeleteAllSubscriptionName, T, subscriber)
+	case release.Rollout:
+		return newPostgresSubscription(pg.DSN, releaseRolloutDeleteAllSubscriptionName, T, subscriber)
+	default:
+		return nil, fmt.Errorf(`ErrNotImplemented`)
+	}
 }

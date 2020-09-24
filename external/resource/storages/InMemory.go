@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/resources/storages"
 
@@ -55,7 +54,7 @@ func (s *InMemory) FindReleasePilotsByExternalID(ctx context.Context, pilotExtID
 	return iterators.NewSlice(pilots)
 }
 
-func (s *InMemory) FindReleaseFlagsByName(ctx context.Context, names ...string) frameless.Iterator {
+func (s *InMemory) FindReleaseFlagsByName(ctx context.Context, names ...string) iterators.Interface {
 	var flags []release.Flag
 
 	nameIndex := make(map[string]struct{})

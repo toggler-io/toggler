@@ -3,18 +3,17 @@ package specs
 import (
 	"testing"
 
-	frmlspecs "github.com/adamluzsi/frameless/resources/specs"
-
 	deplspecs "github.com/toggler-io/toggler/domains/deployment/specs"
 	rollspecs "github.com/toggler-io/toggler/domains/release/specs"
 	secuspecs "github.com/toggler-io/toggler/domains/security/specs"
 
 	"github.com/toggler-io/toggler/domains/toggler"
+	. "github.com/toggler-io/toggler/testing"
 )
 
 type Storage struct {
-	Subject toggler.Storage
-	frmlspecs.FixtureFactory
+	Subject        toggler.Storage
+	FixtureFactory FixtureFactory
 }
 
 func (spec Storage) Benchmark(b *testing.B) {

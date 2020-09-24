@@ -20,7 +20,7 @@ type Rollout struct {
 	// EnvironmentID is the deployment environment id
 	DeploymentEnvironmentID string
 	// Plan holds the composited rule set about the pilot participation decision logic.
-	Plan RolloutDefinition
+	Plan RolloutDefinition `json:"plan,omitempty"`
 }
 
 func (r Rollout) Validate() error {
@@ -32,6 +32,10 @@ func (r Rollout) Validate() error {
 		return ErrMissingEnv
 	}
 
+	if r.Plan == nil {
+		return ErrMissingRolloutPlan
+	}
+
 	return r.Plan.Validate()
 }
 
@@ -41,6 +45,25 @@ func (r Rollout) Validate() error {
 type RolloutDefinition interface {
 	IsParticipating(ctx context.Context, pilotExternalID string) (bool, error)
 	Validate() error
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+
+// TODO: add proper coverage
+func NewRolloutDecisionGlobal() RolloutDecisionGlobal {
+	return RolloutDecisionGlobal{}
+}
+
+type RolloutDecisionGlobal struct {
+	State bool
+}
+
+func (r RolloutDecisionGlobal) IsParticipating(ctx context.Context, pilotExternalID string) (bool, error) {
+	return r.State, nil
+}
+
+func (r RolloutDecisionGlobal) Validate() error {
+	return nil
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -335,8 +358,10 @@ func (view *RolloutDefinitionView) UnmarshalJSON(bytes []byte) error {
 		return err
 	}
 
-	if err := plan.Validate(); err != nil {
-		return err
+	if plan != nil {
+		if err := plan.Validate(); err != nil {
+			return err
+		}
 	}
 
 	view.Definition = plan
@@ -346,6 +371,11 @@ func (view *RolloutDefinitionView) UnmarshalJSON(bytes []byte) error {
 func (view RolloutDefinitionView) MarshalMapping(this RolloutDefinition) (map[string]interface{}, error) {
 	var m = make(map[string]interface{})
 	switch d := this.(type) {
+	case RolloutDecisionGlobal:
+		m[`type`] = `global`
+		m[`state`] = d.State
+		return m, nil
+
 	case RolloutDecisionByPercentage:
 		m[`type`] = `percentage`
 		m[`percentage`] = d.Percentage
@@ -396,6 +426,9 @@ func (view RolloutDefinitionView) MarshalMapping(this RolloutDefinition) (map[st
 		}
 		return m, nil
 
+	case nil:
+		return nil, nil
+
 	default:
 		return nil, fmt.Errorf(`unknown rollout definition struct: %T`, this)
 	}
@@ -408,7 +441,18 @@ func (view RolloutDefinitionView) UnmarshalMapping(this map[string]interface{}) 
 		}
 	}()
 
+	if this == nil {
+		return nil, nil
+	}
+
 	switch strings.ToLower(this[`type`].(string)) {
+	case `global`:
+		d := NewRolloutDecisionGlobal()
+		if v, ok := this[`state`]; ok {
+			d.State = v.(bool)
+		}
+		return d, nil
+
 	case `percentage`:
 		d := NewRolloutDecisionByPercentage()
 		if v, ok := this[`percentage`]; ok {

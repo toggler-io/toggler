@@ -14,4 +14,3 @@ func ToSHA512Hex(text string) (string, error) {
 
 	return hex.EncodeToString(hasher.Sum(nil)), nil
 }
-

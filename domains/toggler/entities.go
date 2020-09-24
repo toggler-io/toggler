@@ -4,7 +4,7 @@
 package toggler
 
 import (
-	"github.com/adamluzsi/frameless"
+	"github.com/adamluzsi/frameless/consterror"
 
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/security"
@@ -26,4 +26,4 @@ type UseCases struct {
 	*security.Issuer
 }
 
-const ErrInvalidToken frameless.Error = `invalid token error`
+const ErrInvalidToken consterror.Error = `invalid token error`

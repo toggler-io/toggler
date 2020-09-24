@@ -1,7 +1,9 @@
 package deployment
 
-import "github.com/adamluzsi/frameless"
+import (
+	"github.com/adamluzsi/frameless/consterror"
+)
 
 const (
-	ErrEnvironmentNameIsEmpty frameless.Error = `deployment environment name can't be empty`
+	ErrEnvironmentNameIsEmpty consterror.Error = `deployment environment name can't be empty`
 )

@@ -111,8 +111,7 @@ func (ctrl *Controller) rolloutIndexPage(w http.ResponseWriter, r *http.Request)
 
 		var rollout release.Rollout
 		var byPercentage = release.NewRolloutDecisionByPercentage()
-		if found, err := ctrl.Storage.FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(r.Context(), ff, env, &rollout);
-			ctrl.handleError(w, r, err) {
+		if found, err := ctrl.Storage.FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(r.Context(), ff, env, &rollout); ctrl.handleError(w, r, err) {
 			return
 		} else if found {
 			if bp, ok := rollout.Plan.(release.RolloutDecisionByPercentage); ok {
@@ -169,8 +168,7 @@ func (ctrl *Controller) rolloutEditPage(w http.ResponseWriter, r *http.Request) 
 	var byPercentage = release.NewRolloutDecisionByPercentage()
 
 	var rollout release.Rollout
-	if found, err := ctrl.Storage.FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(r.Context(), flag, env, &rollout);
-		ctrl.handleError(w, r, err) {
+	if found, err := ctrl.Storage.FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(r.Context(), flag, env, &rollout); ctrl.handleError(w, r, err) {
 		return
 	} else if found {
 		if bp, ok := rollout.Plan.(release.RolloutDecisionByPercentage); ok {
@@ -209,8 +207,7 @@ func (ctrl *Controller) rolloutUpdateAction(w http.ResponseWriter, r *http.Reque
 	rollout.FlagID = r.FormValue(`flag_id`)
 	rollout.DeploymentEnvironmentID = r.FormValue(`env_id`)
 
-	if storedRollout, found, err := ctrl.lookupRollout(r.Context(), rollout.FlagID, rollout.DeploymentEnvironmentID);
-		ctrl.handleError(w, r, err) {
+	if storedRollout, found, err := ctrl.lookupRollout(r.Context(), rollout.FlagID, rollout.DeploymentEnvironmentID); ctrl.handleError(w, r, err) {
 		return
 	} else if found {
 		rollout = storedRollout
