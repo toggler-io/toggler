@@ -11,6 +11,10 @@ type Storage interface {
 	resources.Finder
 	resources.Updater
 	resources.Deleter
+	resources.CreatorPublisher
+	resources.UpdaterPublisher
+	resources.DeleterPublisher
+	resources.OnePhaseCommitProtocol
 	EnvironmentFinder
 }
 

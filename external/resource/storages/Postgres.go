@@ -243,6 +243,8 @@ func (pg *Postgres) DeleteAll(ctx context.Context, Type interface{}) error {
 	switch Type.(type) {
 	case deployment.Environment, *deployment.Environment:
 		tableName = `deployment_environments`
+		topicName = deploymentEnvironmentDeleteAllSubscriptionName
+		message = deployment.Environment{}
 	case release.Flag, *release.Flag:
 		tableName = `release_flags`
 		topicName = releaseFlagDeleteAllSubscriptionName
@@ -297,6 +299,8 @@ func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, id string)
 	switch Type.(type) {
 	case deployment.Environment, *deployment.Environment:
 		query = `DELETE FROM "deployment_environments" WHERE "id" = $1`
+		topicName = deploymentEnvironmentDeleteByIDSubscriptionName
+		message = deployment.Environment{ID: id}
 
 	case release.Flag, *release.Flag:
 		query = `DELETE FROM "release_flags" WHERE "id" = $1`
@@ -617,11 +621,27 @@ func (pg *Postgres) deploymentEnvironmentCreate(ctx context.Context, env *deploy
 		return err
 	}
 
-	if _, err := pg.getDB(ctx).ExecContext(ctx, deploymentEnvironmentInsertNewQuery, id, env.Name); err != nil {
+	tx, commit, rollback, err := pg.getTx(ctx)
+	if err != nil {
 		return err
 	}
 
-	return resources.SetID(env, id)
+	if _, err := tx.ExecContext(ctx, deploymentEnvironmentInsertNewQuery, id, env.Name); err != nil {
+		_ = rollback()
+		return err
+	}
+
+	if err := resources.SetID(env, id); err != nil {
+		_ = rollback()
+		return err
+	}
+
+	if err := pg.notify(ctx, tx, deploymentEnvironmentCreateSubscriptionName, *env); err != nil {
+		_ = rollback()
+		return err
+	}
+
+	return commit()
 }
 
 const pilotInsertNewQuery = `
@@ -928,9 +948,22 @@ WHERE id = $1;
 `
 
 func (pg *Postgres) deploymentEnvironmentUpdate(ctx context.Context, env *deployment.Environment) error {
-	_, err := pg.getDB(ctx).ExecContext(ctx, deploymentEnvironmentUpdateQuery, env.ID, env.Name)
+	tx, commit, rollback, err := pg.getTx(ctx)
+	if err != nil {
+		return err
+	}
 
-	return err
+	if _, err := tx.ExecContext(ctx, deploymentEnvironmentUpdateQuery, env.ID, env.Name); err != nil {
+		_ = rollback()
+		return err
+	}
+
+	if err := pg.notify(ctx, tx, deploymentEnvironmentUpdateSubscriptionName, *env); err != nil {
+		_ = rollback()
+		return err
+	}
+
+	return commit()
 }
 
 const releaseFlagUpdateQuery = `
@@ -1362,18 +1395,25 @@ func (sub *postgresSubscription) reportProblemToSubscriber(ev pq.ListenerEventTy
 }
 
 const (
-	releaseFlagCreateSubscriptionName            = `create_release_flag`
-	releaseFlagUpdateSubscriptionName            = `update_release_flag`
-	releaseFlagDeleteByIDSubscriptionName        = `delete_by_id_release_flag`
-	releaseFlagDeleteAllSubscriptionName         = `delete_all_release_flag`
+	releaseFlagCreateSubscriptionName     = `create_release_flag`
+	releaseFlagUpdateSubscriptionName     = `update_release_flag`
+	releaseFlagDeleteByIDSubscriptionName = `delete_by_id_release_flag`
+	releaseFlagDeleteAllSubscriptionName  = `delete_all_release_flag`
+
 	releaseManualPilotCreateSubscriptionName     = `create_release_manual_pilot`
 	releaseManualPilotUpdateSubscriptionName     = `update_release_manual_pilot`
 	releaseManualPilotDeleteByIDSubscriptionName = `delete_by_id_release_manual_pilot`
 	releaseManualPilotDeleteAllSubscriptionName  = `delete_all_release_manual_pilot`
-	releaseRolloutCreateSubscriptionName         = `create_release_rollout`
-	releaseRolloutUpdateSubscriptionName         = `update_release_rollout`
-	releaseRolloutDeleteByIDSubscriptionName     = `delete_by_id_release_rollout`
-	releaseRolloutDeleteAllSubscriptionName      = `delete_all_release_rollout`
+
+	releaseRolloutCreateSubscriptionName     = `create_release_rollout`
+	releaseRolloutUpdateSubscriptionName     = `update_release_rollout`
+	releaseRolloutDeleteByIDSubscriptionName = `delete_by_id_release_rollout`
+	releaseRolloutDeleteAllSubscriptionName  = `delete_all_release_rollout`
+
+	deploymentEnvironmentCreateSubscriptionName     = `create_deployment_environment`
+	deploymentEnvironmentUpdateSubscriptionName     = `update_deployment_environment`
+	deploymentEnvironmentDeleteByIDSubscriptionName = `delete_by_id_deployment_environment`
+	deploymentEnvironmentDeleteAllSubscriptionName  = `delete_all_deployment_environment`
 )
 
 // no support for tx
@@ -1385,6 +1425,8 @@ func (pg *Postgres) SubscribeToCreate(ctx context.Context, T interface{}, subscr
 		return newPostgresSubscription(pg.DSN, releaseManualPilotCreateSubscriptionName, T, subscriber)
 	case release.Rollout:
 		return newPostgresSubscription(pg.DSN, releaseRolloutCreateSubscriptionName, T, subscriber)
+	case deployment.Environment:
+		return newPostgresSubscription(pg.DSN, deploymentEnvironmentCreateSubscriptionName, T, subscriber)
 	default:
 		return nil, fmt.Errorf(`ErrNotImplemented`)
 	}
@@ -1398,6 +1440,8 @@ func (pg *Postgres) SubscribeToUpdate(ctx context.Context, T resources.T, subscr
 		return newPostgresSubscription(pg.DSN, releaseManualPilotUpdateSubscriptionName, T, subscriber)
 	case release.Rollout:
 		return newPostgresSubscription(pg.DSN, releaseRolloutUpdateSubscriptionName, T, subscriber)
+	case deployment.Environment:
+		return newPostgresSubscription(pg.DSN, deploymentEnvironmentUpdateSubscriptionName, T, subscriber)
 	default:
 		return nil, fmt.Errorf(`ErrNotImplemented`)
 	}
@@ -1411,6 +1455,8 @@ func (pg *Postgres) SubscribeToDeleteByID(ctx context.Context, T resources.T, su
 		return newPostgresSubscription(pg.DSN, releaseManualPilotDeleteByIDSubscriptionName, T, subscriber)
 	case release.Rollout:
 		return newPostgresSubscription(pg.DSN, releaseRolloutDeleteByIDSubscriptionName, T, subscriber)
+	case deployment.Environment:
+		return newPostgresSubscription(pg.DSN, deploymentEnvironmentDeleteByIDSubscriptionName, T, subscriber)
 	default:
 		return nil, fmt.Errorf(`ErrNotImplemented`)
 	}
@@ -1424,6 +1470,8 @@ func (pg *Postgres) SubscribeToDeleteAll(ctx context.Context, T resources.T, sub
 		return newPostgresSubscription(pg.DSN, releaseManualPilotDeleteAllSubscriptionName, T, subscriber)
 	case release.Rollout:
 		return newPostgresSubscription(pg.DSN, releaseRolloutDeleteAllSubscriptionName, T, subscriber)
+	case deployment.Environment:
+		return newPostgresSubscription(pg.DSN, deploymentEnvironmentDeleteAllSubscriptionName, T, subscriber)
 	default:
 		return nil, fmt.Errorf(`ErrNotImplemented`)
 	}
