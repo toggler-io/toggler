@@ -65,7 +65,7 @@ func TestNew(t *testing.T) {
 			s.Let(`connstr`, func(t *testcase.T) interface{} { return `memory` })
 
 			s.Then(`it will return the redis cache object`, func(t *testcase.T) {
-				s, isThat := onSuccess(t).(*caches.InMemory)
+				s, isThat := onSuccess(t).(*caches.Memory)
 				require.True(t, isThat)
 				require.Nil(t, s.Close())
 			})

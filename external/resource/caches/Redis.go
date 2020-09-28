@@ -11,7 +11,6 @@ import (
 	"github.com/adamluzsi/frameless/resources"
 	"github.com/go-redis/redis"
 
-	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/toggler"
 )
 
@@ -20,12 +19,6 @@ func NewRedis(connstr string, storage toggler.Storage) (*Redis, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	gob.Register(release.RolloutDecisionNOT{})
-	gob.Register(release.RolloutDecisionAND{})
-	gob.Register(release.RolloutDecisionOR{})
-	gob.Register(release.RolloutDecisionByAPI{})
-	gob.Register(release.RolloutDecisionByPercentage{})
 
 	return &Redis{Storage: storage, client: redis.NewClient(redisClientOpt)}, nil
 }

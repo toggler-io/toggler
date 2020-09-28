@@ -15,7 +15,6 @@ import (
 
 	"github.com/toggler-io/toggler/domains/deployment"
 	"github.com/toggler-io/toggler/domains/release"
-	"github.com/toggler-io/toggler/domains/security"
 	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/domains/toggler/specs"
 	"github.com/toggler-io/toggler/external/resource/caches"
@@ -42,7 +41,6 @@ func (spec Cache) Test(t *testing.T) {
 			spec.expectResultCachingFor(s, release.Flag{})
 			spec.expectResultCachingFor(s, release.Rollout{})
 			spec.expectResultCachingFor(s, release.ManualPilot{})
-			spec.expectResultCachingFor(s, security.Token{})
 		})
 
 		s.Describe(`cache invalidation`, func(s *testcase.Spec) {

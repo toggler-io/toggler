@@ -18,15 +18,15 @@ import (
 	"github.com/toggler-io/toggler/domains/toggler"
 )
 
-func NewInMemory(s toggler.Storage) *InMemory {
-	c := &InMemory{Storage: s, ttl: 5 * time.Minute}
+func NewInMemory(s toggler.Storage) *Memory {
+	c := &Memory{Storage: s, ttl: 5 * time.Minute}
 	c.Start()
 	return c
 }
 
 //TODO: possible improvement to protect with mux around actions instead of set and lookup, so on concurrent access there will be only 1 find
 //TODO: implement cache invalidation with delete/update event streams in the next iterations
-type InMemory struct {
+type Memory struct {
 	toggler.Storage
 	cache map[string]map[string]*inMemoryCachedItem
 	ttl   time.Duration
@@ -36,7 +36,7 @@ type InMemory struct {
 	cancel func()
 }
 
-func (c *InMemory) SetTimeToLiveForValuesToCache(duration time.Duration) error {
+func (c *Memory) SetTimeToLiveForValuesToCache(duration time.Duration) error {
 	c.ttl = duration
 	return nil
 }
@@ -50,7 +50,7 @@ type inMemoryCachedItem struct {
 	lastUpdated time.Time
 }
 
-func (c *InMemory) Start() {
+func (c *Memory) Start() {
 	c.init.Do(func() {
 		var wg sync.WaitGroup
 		ctx, cancel := context.WithCancel(context.Background())
@@ -83,7 +83,7 @@ func (c *InMemory) Start() {
 	})
 }
 
-func (c *InMemory) updateCacheItems() {
+func (c *Memory) updateCacheItems() {
 	for _, nsv := range c.cache {
 		for _, item := range nsv {
 			if err := item.updater(setterFuncWrapper(func(value interface{}) {
@@ -95,7 +95,7 @@ func (c *InMemory) updateCacheItems() {
 	}
 }
 
-func (c *InMemory) gcWRK() {
+func (c *Memory) gcWRK() {
 	now := time.Now()
 	for _, nsv := range c.cache {
 		for key, item := range nsv {
@@ -110,7 +110,7 @@ func (c *InMemory) gcWRK() {
 	}
 }
 
-func (c *InMemory) Close() error {
+func (c *Memory) Close() error {
 	if c.cancel != nil {
 		c.cancel()
 	}
@@ -129,7 +129,7 @@ func (fn setterFuncWrapper) set(value interface{}) {
 	fn(value)
 }
 
-func (c *InMemory) get(namespace, key string, upd updater) (interface{}, error) {
+func (c *Memory) get(namespace, key string, upd updater) (interface{}, error) {
 	v, ok := c.lookup(namespace, key)
 	if !ok {
 		if err := upd(setterFuncWrapper(func(newValue interface{}) {
@@ -148,7 +148,7 @@ func (c *InMemory) get(namespace, key string, upd updater) (interface{}, error) 
 	return v, nil
 }
 
-func (c *InMemory) namespaceKey(T interface{}) string {
+func (c *Memory) namespaceKey(T interface{}) string {
 	switch T.(type) {
 	case release.Flag, *release.Flag:
 		return `release.Flag`
@@ -161,7 +161,7 @@ func (c *InMemory) namespaceKey(T interface{}) string {
 	}
 }
 
-func (c *InMemory) namespace(namespaceKey string) map[string]*inMemoryCachedItem {
+func (c *Memory) namespace(namespaceKey string) map[string]*inMemoryCachedItem {
 	if c.cache == nil {
 		c.cache = make(map[string]map[string]*inMemoryCachedItem)
 	}
@@ -171,11 +171,11 @@ func (c *InMemory) namespace(namespaceKey string) map[string]*inMemoryCachedItem
 	return c.cache[namespaceKey]
 }
 
-func (c *InMemory) dropCache() {
+func (c *Memory) dropCache() {
 	c.cache = nil
 }
 
-func (c *InMemory) lookup(namespace, key string) (interface{}, bool) {
+func (c *Memory) lookup(namespace, key string) (interface{}, bool) {
 	var (
 		value interface{}
 		found bool
@@ -188,20 +188,20 @@ func (c *InMemory) lookup(namespace, key string) (interface{}, bool) {
 	return value, found
 }
 
-func (c *InMemory) withLock() func() {
+func (c *Memory) withLock() func() {
 	c.lock.Lock()
 	return c.lock.Unlock
 }
 
 ////////////////////////////////////////// cached actions //////////////////////////////////////////
 
-func (c *InMemory) Create(ctx context.Context, value interface{}) error {
+func (c *Memory) Create(ctx context.Context, value interface{}) error {
 	defer c.withLock()()
 	c.dropCache()
 	return c.Storage.Create(ctx, value)
 }
 
-func (c *InMemory) FindByID(ctx context.Context, ptr interface{}, id string) (_found bool, _err error) {
+func (c *Memory) FindByID(ctx context.Context, ptr interface{}, id string) (_found bool, _err error) {
 	defer c.withLock()()
 
 	if shouldSkipCache(ctx) {
@@ -235,7 +235,7 @@ func (c *InMemory) FindByID(ctx context.Context, ptr interface{}, id string) (_f
 	return true, reflects.Link(fbii.value, ptr)
 }
 
-func (c *InMemory) FindAll(ctx context.Context, T interface{}) iterators.Interface {
+func (c *Memory) FindAll(ctx context.Context, T interface{}) iterators.Interface {
 	defer c.withLock()()
 
 	if shouldSkipCache(ctx) {
@@ -260,25 +260,25 @@ func (c *InMemory) FindAll(ctx context.Context, T interface{}) iterators.Interfa
 	return iterators.NewSlice(v)
 }
 
-func (c *InMemory) Update(ctx context.Context, ptr interface{}) error {
+func (c *Memory) Update(ctx context.Context, ptr interface{}) error {
 	defer c.withLock()()
 	c.dropCache()
 	return c.Storage.Update(ctx, ptr)
 }
 
-func (c *InMemory) DeleteByID(ctx context.Context, T interface{}, id string) error {
+func (c *Memory) DeleteByID(ctx context.Context, T interface{}, id string) error {
 	defer c.withLock()()
 	c.dropCache()
 	return c.Storage.DeleteByID(ctx, T, id)
 }
 
-func (c *InMemory) DeleteAll(ctx context.Context, T interface{}) error {
+func (c *Memory) DeleteAll(ctx context.Context, T interface{}) error {
 	defer c.withLock()()
 	c.dropCache()
 	return c.Storage.DeleteAll(ctx, T)
 }
 
-func (c *InMemory) FindReleaseFlagByName(ctx context.Context, name string) (*release.Flag, error) {
+func (c *Memory) FindReleaseFlagByName(ctx context.Context, name string) (*release.Flag, error) {
 	defer c.withLock()()
 
 	if shouldSkipCache(ctx) {
@@ -298,7 +298,7 @@ func (c *InMemory) FindReleaseFlagByName(ctx context.Context, name string) (*rel
 	return v.(*release.Flag), err
 }
 
-func (c *InMemory) FindReleaseFlagsByName(ctx context.Context, names ...string) release.FlagEntries {
+func (c *Memory) FindReleaseFlagsByName(ctx context.Context, names ...string) release.FlagEntries {
 	defer c.withLock()()
 
 	if shouldSkipCache(ctx) {
@@ -326,7 +326,7 @@ func (c *InMemory) FindReleaseFlagsByName(ctx context.Context, names ...string) 
 	return iterators.NewSlice(v)
 }
 
-func (c *InMemory) FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID, pilotExtID string) (*release.ManualPilot, error) {
+func (c *Memory) FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID, pilotExtID string) (*release.ManualPilot, error) {
 	defer c.withLock()()
 
 	if shouldSkipCache(ctx) {
@@ -346,7 +346,7 @@ func (c *InMemory) FindReleaseManualPilotByExternalID(ctx context.Context, flagI
 	return v.(*release.ManualPilot), err
 }
 
-func (c *InMemory) FindReleasePilotsByReleaseFlag(ctx context.Context, flag release.Flag) release.PilotEntries {
+func (c *Memory) FindReleasePilotsByReleaseFlag(ctx context.Context, flag release.Flag) release.PilotEntries {
 	defer c.withLock()()
 
 	if shouldSkipCache(ctx) {
@@ -379,7 +379,7 @@ func (c *InMemory) FindReleasePilotsByReleaseFlag(ctx context.Context, flag rele
 	return iterators.NewSlice(v)
 }
 
-func (c *InMemory) FindReleasePilotsByExternalID(ctx context.Context, pilotExtID string) release.PilotEntries {
+func (c *Memory) FindReleasePilotsByExternalID(ctx context.Context, pilotExtID string) release.PilotEntries {
 	defer c.withLock()()
 
 	if shouldSkipCache(ctx) {
@@ -403,7 +403,7 @@ func (c *InMemory) FindReleasePilotsByExternalID(ctx context.Context, pilotExtID
 	return iterators.NewSlice(v)
 }
 
-func (c *InMemory) FindTokenBySHA512Hex(ctx context.Context, sha512hex string) (*security.Token, error) {
+func (c *Memory) FindTokenBySHA512Hex(ctx context.Context, sha512hex string) (*security.Token, error) {
 	defer c.withLock()()
 
 	if shouldSkipCache(ctx) {
@@ -422,7 +422,7 @@ func (c *InMemory) FindTokenBySHA512Hex(ctx context.Context, sha512hex string) (
 	return v.(*security.Token), err
 }
 
-func (c *InMemory) FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx context.Context, flag release.Flag, environment deployment.Environment, rollout *release.Rollout) (bool, error) {
+func (c *Memory) FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx context.Context, flag release.Flag, environment deployment.Environment, rollout *release.Rollout) (bool, error) {
 	defer c.withLock()()
 
 	if shouldSkipCache(ctx) {
@@ -459,7 +459,7 @@ func (c *InMemory) FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx c
 	return true, reflects.Link(result.value, rollout)
 }
 
-func (c *InMemory) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrName string, env *deployment.Environment) (bool, error) {
+func (c *Memory) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrName string, env *deployment.Environment) (bool, error) {
 	defer c.withLock()()
 
 	if shouldSkipCache(ctx) {
@@ -496,11 +496,11 @@ func (c *InMemory) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrNam
 	return true, reflects.Link(value.value, env)
 }
 
-func (c *InMemory) BeginTx(ctx context.Context) (context.Context, error) {
+func (c *Memory) BeginTx(ctx context.Context) (context.Context, error) {
 	return c.Storage.BeginTx(contextWithNoCache(ctx))
 }
 
-func (c *InMemory) CommitTx(ctx context.Context) error {
+func (c *Memory) CommitTx(ctx context.Context) error {
 	if err := c.Storage.CommitTx(ctx); err != nil {
 		return err
 	}
@@ -510,7 +510,7 @@ func (c *InMemory) CommitTx(ctx context.Context) error {
 	return nil
 }
 
-func (c *InMemory) RollbackTx(ctx context.Context) error {
+func (c *Memory) RollbackTx(ctx context.Context) error {
 	if err := c.Storage.RollbackTx(ctx); err != nil {
 		return err
 	}
