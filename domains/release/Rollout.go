@@ -50,19 +50,19 @@ type RolloutDefinition interface {
 //--------------------------------------------------------------------------------------------------------------------//
 
 // TODO: add proper coverage
-func NewRolloutDecisionGlobal() RolloutDecisionGlobal {
-	return RolloutDecisionGlobal{}
+func NewRolloutDecisionGlobal() RolloutDecisionByGlobal {
+	return RolloutDecisionByGlobal{}
 }
 
-type RolloutDecisionGlobal struct {
+type RolloutDecisionByGlobal struct {
 	State bool
 }
 
-func (r RolloutDecisionGlobal) IsParticipating(ctx context.Context, pilotExternalID string) (bool, error) {
+func (r RolloutDecisionByGlobal) IsParticipating(ctx context.Context, pilotExternalID string) (bool, error) {
 	return r.State, nil
 }
 
-func (r RolloutDecisionGlobal) Validate() error {
+func (r RolloutDecisionByGlobal) Validate() error {
 	return nil
 }
 
@@ -371,7 +371,7 @@ func (view *RolloutDefinitionView) UnmarshalJSON(bytes []byte) error {
 func (view RolloutDefinitionView) MarshalMapping(this RolloutDefinition) (map[string]interface{}, error) {
 	var m = make(map[string]interface{})
 	switch d := this.(type) {
-	case RolloutDecisionGlobal:
+	case RolloutDecisionByGlobal:
 		m[`type`] = `global`
 		m[`state`] = d.State
 		return m, nil
