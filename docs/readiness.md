@@ -1,5 +1,10 @@
 # Toggler Project Readiness
 
+## Production readiness
+
+The Toggler code base master branch is considered stable
+and in production use.
+
 ## Architecture
 
 The `toggler` project core design is based on `the clean architecture` principles,
