@@ -1,8 +1,5 @@
 # Caches
 
-If the backing storage you use is not able to handle the load on it's own,
-you can enable caching in toggler.
-
 The cache external resource is an optional addition.
 By default, the service don't try to be smart, and will avoid to use any cache.
 
