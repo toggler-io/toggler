@@ -1,63 +1,47 @@
 {{/* GET /pilot/edit */}}
 {{define "main"}}
-	<div class="content">
-		<h2 class="content-head is-center">
-			Edit Release Flag Rollout Plan on {{ .DeployEnvironmentName }} for {{ .ReleaseFlagName }}
-		</h2>
+<div class="content">
+	<h2 class="content-head is-center">
+		Rollouts - Edit {{ .DeployEnvironmentName }} for {{ .ReleaseFlagName }}
+	</h2>
 
-		<form action="/rollout/update" method="post" class="pure-form pure-form-stacked" data-bitwarden-watching="1">
-			<fieldset>
-				<legend>Rollout Plan</legend>
-				<input type="hidden" name="_method" value="post">
-				<input type="hidden" name="flag_id" value="{{ .ReleaseFlagID }}">
-				<input type="hidden" name="env_id" value="{{ .DeployEnvironmentID }}">
-
-				<label for="percentage">Percentage:</label>
-				<input type="number" id="percentage" name="percentage"
-				       min="0" max="100" value="{{ .ByPercentage.Percentage }}">
-
-				<label for="seed">Control group randomizer (seed):</label>
+	<form action="/rollout/update" method="post" class="pure-form pure-form-aligned" data-bitwarden-watching="1">
+		<fieldset>
+			<input type="hidden" name="_method" value="post">
+			<input type="hidden" name="flag_id" value="{{ .ReleaseFlagID }}">
+			<input type="hidden" name="env_id" value="{{ .DeployEnvironmentID }}">
+			<div class="pure-control-group">
+				<label for="percentage">Percentage</label>
+				<input type="number" id="percentage" name="percentage" min="0" max="100" value="{{ .ByPercentage.Percentage }}">
+			</div>
+			<div class="pure-control-group">
+				<label for="seed">Control group randomizer</label>
 				<input type="number" id="seed" name="seed" value="{{ .ByPercentage.Seed }}">
+			</div>
+			<div class="pure-controls">
+				<button type="submit" class="pure-button pure-button-primary">Save</button>
+			</div>
+		</fieldset>
+	</form>
 
-				<button type="submit" class="pure-button pure-button-primary">save</button>
-			</fieldset>
-		</form>
+	<h2>Global</h2>
 
-		<style scoped="">
-			.button-enable {
-				color: white;
-				border-radius: 4px;
-				background: rgb(28, 184, 65);
-			}
+	<form action="/rollout/update" method="post" data-bitwarden-watching="1" style="margin: 1em">
+		<input type="hidden" name="_method" value="post">
+		<input type="hidden" name="flag_id" value="{{ .ReleaseFlagID }}">
+		<input type="hidden" name="env_id" value="{{ .DeployEnvironmentID }}">
+		<input type="hidden" id="seed" name="seed" value="{{ .ByPercentage.Seed }}">
+		<input type="hidden" id="percentage" name="percentage" value="100">
+		<button type="submit" class="pure-button button-enable">Enable</button>
+	</form>
 
-			.button-disable {
-				color: white;
-				border-radius: 4px;
-				background: rgb(223, 117, 20);
-			}
-		</style>
-
-		<form action="/rollout/update" method="post" class="pure-form pure-form-stacked" data-bitwarden-watching="1">
-			<fieldset>
-				<input type="hidden" name="_method" value="post">
-				<input type="hidden" name="flag_id" value="{{ .ReleaseFlagID }}">
-				<input type="hidden" name="env_id" value="{{ .DeployEnvironmentID }}">
-				<input type="hidden" id="seed" name="seed" value="{{ .ByPercentage.Seed }}">
-				<input type="hidden" id="percentage" name="percentage" value="100">
-				<button type="submit" class="pure-button button-enable">Enable Globally</button>
-			</fieldset>
-		</form>
-
-		<form action="/rollout/update" method="post" class="pure-form pure-form-stacked" data-bitwarden-watching="1">
-			<fieldset>
-				<input type="hidden" name="_method" value="post">
-				<input type="hidden" name="flag_id" value="{{ .ReleaseFlagID }}">
-				<input type="hidden" name="env_id" value="{{ .DeployEnvironmentID }}">
-				<input type="hidden" id="seed" name="seed" value="{{ .ByPercentage.Seed }}">
-				<input type="hidden" id="percentage" name="percentage" value="0">
-				<button type="submit" class="pure-button button-disable">Disable Globally</button>
-			</fieldset>
-		</form>
-
-	</div>
+	<form action="/rollout/update" method="post" data-bitwarden-watching="1" style="margin: 1em">
+		<input type="hidden" name="_method" value="post">
+		<input type="hidden" name="flag_id" value="{{ .ReleaseFlagID }}">
+		<input type="hidden" name="env_id" value="{{ .DeployEnvironmentID }}">
+		<input type="hidden" id="seed" name="seed" value="{{ .ByPercentage.Seed }}">
+		<input type="hidden" id="percentage" name="percentage" value="0">
+		<button type="submit" class="pure-button button-disable">Disable</button>
+	</form>
+</div>
 {{end}}

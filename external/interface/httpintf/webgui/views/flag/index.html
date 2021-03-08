@@ -1,32 +1,31 @@
 {{define "main"}}
-	<div class="content">
-		<h2 class="content-head is-center">Rollout Flag List</h2>
+<div class="content">
+	<h2 class="content-head is-center">Flags</h2>
 
-		<a class="pure-button pure-button-primary" href="/flag/create" class="pure-menu-link">Create Release Flags</a>
+	<a class="pure-button pure-button-primary" href="/flag/create" class="pure-menu-link"
+		style="margin-bottom: 1em">Create</a>
 
-		<table class="pure-table pure-table-horizontal">
-			<thead>
+	<table class="pure-table pure-table-horizontal" style="width: 100%">
+		<thead>
 			<tr>
 				<th>Name</th>
 				<th>ID</th>
 				<th>Actions</th>
 			</tr>
-			</thead>
+		</thead>
 
-			<tbody>
-            {{ range . }}
-				<tr>
-					<td>{{ .Name }}</td>
-					<td>{{ .ID }}</td>
-					<td>
-						<ul>
-							<li><a href="/flag?id={{ .ID }}">edit</a></li>
-						</ul>
-					</td>
-				</tr>
-            {{ end }}
-			</tbody>
-		</table>
+		<tbody>
+			{{ range . }}
+			<tr>
+				<td>{{ .Name }}</td>
+				<td>{{ .ID }}</td>
+				<td>
+					<a href="/flag?id={{ .ID }}" class="pure-button">edit</a>
+				</td>
+			</tr>
+			{{ end }}
+		</tbody>
+	</table>
 
-	</div>
+</div>
 {{end}}

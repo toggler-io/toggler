@@ -1,30 +1,29 @@
 {{define "main"}}
 <div class="content">
-    <h2 class="content-head is-center">Deployment Environment List</h2>
+    <h2 class="content-head is-center">Environments</h2>
 
-    <a class="pure-button pure-button-primary" href="/env/create" class="pure-menu-link">Create Deployment Environment</a>
+    <a class="pure-button pure-button-primary" href="/env/create" class="pure-menu-link"
+        style="margin-bottom: 1em">Create</a>
 
-    <table class="pure-table pure-table-horizontal">
+    <table class="pure-table pure-table-horizontal" style="width: 100%">
         <thead>
-        <tr>
-            <th>Name</th>
-            <th>ID</th>
-            <th>Actions</th>
-        </tr>
+            <tr>
+                <th>Name</th>
+                <th>ID</th>
+                <th>Actions</th>
+            </tr>
         </thead>
 
         <tbody>
-        {{ range . }}
-        <tr>
-            <td>{{ .Name }}</td>
-            <td>{{ .ID }}</td>
-            <td>
-                <ul>
-                    <li><a href="/env?id={{ .ID }}">edit</a></li>
-                </ul>
-            </td>
-        </tr>
-        {{ end }}
+            {{ range . }}
+            <tr>
+                <td>{{ .Name }}</td>
+                <td>{{ .ID }}</td>
+                <td>
+                    <a href="/env?id={{ .ID }}" class="pure-button">edit</a>
+                </td>
+            </tr>
+            {{ end }}
         </tbody>
     </table>
 

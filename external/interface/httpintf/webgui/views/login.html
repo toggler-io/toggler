@@ -1,11 +1,14 @@
 {{define "main"}}
-    <div class="content">
-        <form class="pure-form" action="/login" method="post">
-            <fieldset>
-                <input name="token" type="password" placeholder="Token...">
-
-                <button type="submit" class="pure-button pure-button-primary">Sign in</button>
-            </fieldset>
-        </form>
-    </div>
+<div class="content">
+  <form class="pure-form" action="/login" method="post">
+    <fieldset>
+      <div class="pure-control-group">
+        <input name="token" type="password" placeholder="Token...">
+      </div>
+      <div class="pure-controls">
+        <button type="submit" class="pure-button pure-button-primary">Sign in</button>
+      </div>
+    </fieldset>
+  </form>
+</div>
 {{end}}
