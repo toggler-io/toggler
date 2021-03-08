@@ -4,13 +4,13 @@ set -e -u -x
 : ${DATABASE_URL:="${TEST_STORAGE_URL_POSTGRES}"}
 export DATABASE_URL
 
-cd ${WDP}
+cd "${WDP}"
 go generate -x ./...
 
 go run cmd/toggler/main.go fixtures \
-    -create-fixtures \
-    -create-unsafe-token 'root'
+	-create-fixtures \
+	-create-unsafe-token 'root'
 
 go run cmd/toggler/main.go \
-    http-server \
-    -port 8080
+	http-server \
+	-port 8080

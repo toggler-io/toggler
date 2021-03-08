@@ -3,7 +3,10 @@ EXPOSE 8080
 
 WORKDIR /src/
 COPY . .
-RUN CGO_ENABLED=0 go build -o /bin/toggler cmd/toggler/main.go
+RUN set -e; \
+	. .envrc.build; \
+	bin/provision; \
+	CGO_ENABLED=0 go build -o /bin/toggler cmd/toggler/main.go
 
 FROM scratch
 COPY --from=build /bin/toggler /bin/toggler

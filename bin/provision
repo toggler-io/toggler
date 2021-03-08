@@ -1,12 +1,2 @@
-#!/usr/bin/env bash
-set -e -u
-
-(
-	type go
-) 1>/dev/null
-
-: ${WDP:?"required"}
-export PATH="${WDP}/bin:${PATH}"
-
 go generate tools.go
 go generate -x ./...
