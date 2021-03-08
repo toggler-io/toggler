@@ -1,24 +1,22 @@
 {{define "main"}}
-    <div class="content">
-        <h2 class="content-head is-center">{{ .Name }}</h2>
-        <div class="pure-g">
-            <div class="l-box-lrg pure-u pure-u-1">
-                <form action="/env" method="post" class="pure-form pure-form-aligned" data-bitwarden-watching="1">
-                    <fieldset>
-                        <input name="_method" type="hidden" value="post">
+<div class="content">
+    <h2 class="content-head is-center">Create envionment</h2>
+    <div class="pure-g">
+        <div class="l-box-lrg pure-u pure-u-1">
+            <form action="/env" method="post" class="pure-form pure-form-aligned" data-bitwarden-watching="1">
+                <fieldset>
+                    <input name="_method" type="hidden" value="post">
 
-                        <div class="pure-control-group">
-                            <label for="env.name">Deploy Environment Name</label>
-                            <input id="env.name" name="env.name"
-                                   type="text"
-                                   placeholder="deployment environment name...">
-                        </div>
-
+                    <div class="pure-control-group">
+                        <label for="env.name">Name</label>
+                        <input id="env.name" name="env.name" type="text">
+                    </div>
+                    <div class="pure-controls">
                         <button type="submit" class="pure-button pure-button-primary">Create</button>
-
-                    </fieldset>
-                </form>
-            </div>
+                    </div>
+                </fieldset>
+            </form>
         </div>
     </div>
+</div>
 {{end}}

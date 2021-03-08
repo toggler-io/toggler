@@ -1,34 +1,27 @@
 {{/* GET /pilot/edit */}}
 {{define "main"}}
-	<div class="content">
-
-		<h2 class="content-head is-center">Please select the release flag which rollout plan you wish to change</h2>
-
-		<table class="pure-table pure-table-horizontal">
-			<thead>
+<div class="content">
+	<h2 class="content-head is-center">Rollouts</h2>
+	<table class="pure-table pure-table-horizontal" style="width: 100%">
+		<thead>
 			<tr>
 				<th>Flag</th>
 				<th>Release Percentage</th>
 				<th>Actions</th>
 			</tr>
-			</thead>
-
-			<tbody>
-            {{ range .FeatureFlags }}
-				<tr>
-					<td>{{ .ReleaseFlagName }}</td>
-					<td>{{ .ReleasePercentage }}</td>
-					<td>
-						<ul>
-							<li><a href="/rollout/edit?env-id={{ $.DeployEnvironmentID }}&flag-id={{ .ReleaseFlagID }}">edit</a>
-							</li>
-						</ul>
-					</td>
-				</tr>
-            {{ end }}
-
-			</tbody>
-		</table>
-
-	</div>
+		</thead>
+		<tbody>
+			{{ range .FeatureFlags }}
+			<tr>
+				<td>{{ .ReleaseFlagName }}</td>
+				<td>{{ .ReleasePercentage }}%</td>
+				<td>
+					<a href="/rollout/edit?env-id={{ $.DeployEnvironmentID }}&flag-id={{ .ReleaseFlagID }}"
+						class="pure-button">edit</a>
+				</td>
+			</tr>
+			{{ end }}
+		</tbody>
+	</table>
+</div>
 {{end}}

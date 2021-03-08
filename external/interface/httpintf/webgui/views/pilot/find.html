@@ -1,17 +1,30 @@
 {{/* GET /pilot/find */}}
 {{define "main"}}
-	<div class="content">
-		<form action="/pilot/find" method="post" class="pure-form pure-form-aligned" data-bitwarden-watching="1">
-			<fieldset>
-				<select type="text" name="pilot.env_id">
-                    {{ range .Environments }}
-						<option value="{{ .ID }}">{{ .Name }}</option>
-                    {{ end }}
-				</select>
+<div class="content">
+	<h2 class="content-head is-center">Pilots</h2>
 
-				<input type="text" name="pilot.ext_id" placeholder="Pilot Public External ID...">
-				<button type="submit" class="pure-button pure-button-primary">Load Pilot</button>
-			</fieldset>
-		</form>
-	</div>
+	<form action="/pilot/find" method="post" class="pure-form pure-form-aligned" data-bitwarden-watching="1">
+		<fieldset>
+			<div class="pure-control-group">
+				<label for="enrollment">Environment</label>
+				<select type="text" name="pilot.env_id">
+					{{ range .Environments }}
+					<option value="{{ .ID }}">{{ .Name }}</option>
+					{{ end }}
+				</select>
+			</div>
+			<div class="pure-control-group">
+				<label for="enrollment">External ID</label>
+				<input type="text" name="pilot.ext_id">
+			</div>
+			<div class="pure-controls">
+				<button type="submit" class="pure-button pure-button-primary">Load</button>
+			</div>
+		</fieldset>
+	</form>
+
+
+
+
+</div>
 {{end}}
