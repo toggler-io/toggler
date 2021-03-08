@@ -3,10 +3,13 @@ EXPOSE 8080
 
 WORKDIR /src/
 COPY . .
-RUN set -e; \
-	. .envrc.build; \
-	bin/provision; \
-	CGO_ENABLED=0 go build -o /bin/toggler cmd/toggler/main.go
+
+ENV WDP="/src" \
+	GO111MODULE=on
+ENV PATH="${PATH}:${WDP}/bin:${WDP}/.tools"
+
+RUN bin/provision
+RUN CGO_ENABLED=0 go build -o /bin/toggler cmd/toggler/main.go
 
 FROM scratch
 COPY --from=build /bin/toggler /bin/toggler

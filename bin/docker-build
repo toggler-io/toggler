@@ -1,1 +1,1 @@
-docker build --tag toggler:latest .
+docker build --tag toggler:latest "${@}" .
