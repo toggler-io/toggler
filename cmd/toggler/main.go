@@ -38,7 +38,6 @@ func main() {
 	flagSet := flag.NewFlagSet(`toggler`, flag.ContinueOnError)
 	dbURL := flagSet.String(`database-url`, ``, `define what url should be used for the db connection. Default value used from ENV[DATABASE_URL].`)
 	cacheURL := flagSet.String(`cache-url`, ``, `define what url should be used for the cache connection. default value is taken from ENV[CACHE_URL].`)
-	cacheTTL := flagSet.Duration(`cache-ttl`, 30*time.Minute, `define the time-to-live duration for the cached objects (if cache used)`)
 
 	if err := flagSet.Parse(os.Args[1:]); err != nil {
 		if err == flag.ErrHelp {
@@ -51,7 +50,7 @@ func main() {
 	}
 
 	setupDatabaseURL(dbURL)
-	setupCacheURL(cacheURL, cacheTTL)
+	setupCacheURL(cacheURL)
 
 	storage, err := storages.NewFromEnv()
 	if err != nil {
@@ -64,10 +63,6 @@ func main() {
 		log.Fatal(err)
 	}
 	defer cache.Close()
-
-	if err := cache.SetTimeToLiveForValuesToCache(*cacheTTL); err != nil {
-		log.Fatal(err)
-	}
 
 	switch flagSet.Arg(0) {
 	case `create-token`:
@@ -130,20 +125,9 @@ func setupDatabaseURL(dbURL *string) {
 	}
 }
 
-func setupCacheURL(cacheURL *string, cacheTTL *time.Duration) {
+func setupCacheURL(cacheURL *string) {
 	if *cacheURL == `` {
 		*cacheURL = os.Getenv(`CACHE_URL`)
-	}
-
-	serializedTTL, isSet := os.LookupEnv(`CACHE_TTL`)
-
-	if isSet {
-		d, err := time.ParseDuration(serializedTTL)
-		if err != nil {
-			log.Println(`parsing CACHE_TTL failed`)
-			log.Fatal(err)
-		}
-		*cacheTTL = d
 	}
 }
 

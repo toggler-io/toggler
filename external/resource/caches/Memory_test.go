@@ -3,35 +3,25 @@ package caches_test
 import (
 	"testing"
 
-	"github.com/toggler-io/toggler/domains/toggler"
-	"github.com/toggler-io/toggler/domains/toggler/specs"
+	"github.com/adamluzsi/testcase"
 	"github.com/toggler-io/toggler/external/resource/caches"
-	cachespecs "github.com/toggler-io/toggler/external/resource/caches/specs"
-	"github.com/toggler-io/toggler/external/resource/storages"
-	. "github.com/toggler-io/toggler/testing"
+	"github.com/toggler-io/toggler/external/resource/caches/contracts"
+	sh "github.com/toggler-io/toggler/spechelper"
 )
 
-func TestInMemory_StorageSpec(t *testing.T) {
-	specs.Storage{
-		Subject:        caches.NewInMemory(storages.NewInMemory()),
-		FixtureFactory: DefaultFixtureFactory,
-	}.Test(t)
+func TestInMemoryCacheStorage(t *testing.T) {
+	SpecInMemoryCacheStorage(t)
 }
 
-func TestInMemory_CacheSpec(t *testing.T) {
-	cachespecs.Cache{
-		Factory: func(s toggler.Storage) caches.Interface {
-			return caches.NewInMemory(s)
-		},
-		FixtureFactory: DefaultFixtureFactory,
-	}.Test(t)
+func BenchmarkInMemoryCacheStorage(b *testing.B) {
+	SpecInMemoryCacheStorage(b)
 }
 
-func BenchmarkInMemory_CacheSpec(b *testing.B) {
-	cachespecs.Cache{
-		Factory: func(s toggler.Storage) caches.Interface {
-			return caches.NewInMemory(s)
+func SpecInMemoryCacheStorage(tb testing.TB) {
+	testcase.RunContract(tb, contracts.Storage{
+		Subject: func(tb testing.TB) caches.Storage {
+			return caches.NewInMemoryCacheStorage()
 		},
-		FixtureFactory: DefaultFixtureFactory,
-	}.Benchmark(b)
+		FixtureFactory: sh.DefaultFixtureFactory,
+	})
 }

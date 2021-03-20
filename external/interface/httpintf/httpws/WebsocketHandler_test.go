@@ -11,17 +11,17 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/toggler-io/toggler/external/interface/httpintf/httpws"
-	. "github.com/toggler-io/toggler/testing"
+	sh "github.com/toggler-io/toggler/spechelper"
 )
 
 func TestWebsocket(t *testing.T) {
 	t.Skip(`TODO`)
 	s := testcase.NewSpec(t)
-	SetUp(s)
+	sh.SetUp(s)
 
 	server := func(t *testcase.T) *httptest.Server { return t.I(`server`).(*httptest.Server) }
 	s.Let(`server`, func(t *testcase.T) interface{} {
-		return httptest.NewServer(httpws.NewHandler(ExampleUseCases(t)))
+		return httptest.NewServer(httpws.NewHandler(sh.ExampleUseCases(t)))
 	})
 	s.After(func(t *testcase.T) { server(t).Close() })
 
@@ -32,7 +32,7 @@ func TestWebsocket(t *testing.T) {
 	})
 
 	s.Let(`TokenString`, func(t *testcase.T) interface{} {
-		tSTR, _ := CreateToken(t, `manager`)
+		tSTR, _ := sh.CreateToken(t, `manager`)
 		return tSTR
 	})
 
@@ -68,8 +68,8 @@ func TestWebsocket(t *testing.T) {
 
 		s.Let(`data`, func(t *testcase.T) interface{} {
 			return httpws.IsFeatureEnabledRequestPayload{
-				Feature: ExampleReleaseFlag(t).Name,
-				PilotID: ExampleExternalPilotID(t),
+				Feature: sh.ExampleReleaseFlag(t).Name,
+				PilotID: sh.ExampleExternalPilotID(t),
 			}
 		})
 

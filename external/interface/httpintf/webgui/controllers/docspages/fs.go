@@ -326,89 +326,87 @@ H4sIAAAAAAAC/wEAAP//AAAAAAAAAAA=
 	"/docs/caches/README.md": {
 		name:    "README.md",
 		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/caches/README.md",
-		size:    2062,
-		modtime: 1593645606,
+		size:    1876,
+		modtime: 1615942986,
 		compressed: `
-H4sIAAAAAAAC/3RVTY7cNhPd8xSF9sI2oNFnf4mXWdiTAAngVdIOkFVUTZZaxFCkwiqqrSxyq1wgJwuK
-1PS4B86moRZL9fPeq8cXcI92IjbmpxFkIjihffDxDCwp45lgSwUKE3iGmATwFAgkwYTR6dNEEBI6SBG8
-vGRIl9gZ/cZiBIo13KKdNKWPIOl8DpR7Y45TOyCgz0I5YoBMnEq2tRZGSIv4pO/ROa+PvfmwgaMRS5Cu
-lmbKq7cELsWXApI3be1EwDNm6QCjg4sPAXBN3umZToJxa5V7Y37TTqeUeB9qJUCQjI4gjSOMKSsA+YoG
-byw0XzPVUL+36VDwhExGJpQ6/5LT6h21FCNaqTFw8TKBTSxA40hW/EqRmDtgwZMPXrba+Yw+Cvr4+G6h
-zEsL5958KKIQxEpQm/+CUbQ1Rpv9qLh8iVEmXlLUQf1MWizBI09tlsbG04ScwqopPPeVrfudxj3CJcAi
-aUbxdv/WxxWDd6iAtCmPx491lhTh0+JQ6H/fUyChK6BpoVzjuTfmvuRMUcIGmVwVgQMEH+9mmlPewM9L
-oJmitAoasaIPKjJVVAImKUudGpcleNvidrbkUXEdkJeJ8pUfPRnu6tldyWEAG/wuP5NyO75/f//jD79/
-+vnjABRXn1PURmDF7L9WvwFyPH7sblD+spLITSW4rXQ8/mel93t2kQCu5B2MCCxZ+RlTnlFgLiy6Cwgl
-sj9HcsD0R6FoVdvGkfUzBohlPlHmDgjt1Ei7Lt6Y0dbkjYgSvQCXcfSfO8PFToAMh2/evJn50MHhbf9u
-OugUh/9P376bD735VdVQ9Va/ZcBMcIg1uvABXmnwP3/z4XUHh5ak/sz6Mx16Y168eKK/IvwI4pModkoV
-5bq/W6XhhjBJMLTooTdmGIYT8mTo85KywDXuu0OLOWiEMV+p0szkgWi56jcTlyBcvW0iaNGdUcAWyj45
-bzGEDXiLFl7RSnmDv97Or59E4r4whbqvLXNvzAdkqqujr8fcyNsgNaNGa4lZ/yFYyuoUsGIo1EHtvWZ9
-oEVue6vW61m3u+x7GtR657QS8OIfiGHMab7xvTaQj5KTK1Y1NadM4LxK7lSEHBSu66zXwO7uu1PDUKXs
-GYZ389BD81yMMCfnx60aDEhO5Tw91/+eqPrxnfrxDpJnTVdttnZZRx0z8aQ+2iZSnVJuoyAMb+cBAooC
-2JlfEjzUmIsXvfyqvseAZ8gUCJnAThjPtKeKRLuKTzTq3DLRBoIPtBt4b8z7wKkpw0eYfXStPbmB+lG8
-u6Z2Ii90qiatW1hxrul1VfTCVeFMOUX/Jzk4kVyI4vPP2qJUz3zOLoaQLnU5dhfcnZWvt7Je+BRdbwDg
-3wAAAP//E+G4KA4IAAA=
+H4sIAAAAAAAC/3RVTW7kNhPd8xQFzWK+D2grkx8vsxg7ARLEq6AnQFbpElmyCFOkwiqqrdwrF8jJgiLl
+tnsw2TTUYql+3nv1+A7u0U7Exvw8gkwEA9onHx+BJWV8JNhSgcIEniEmARwCgSSYMDp9mghCQgcpgpf3
+DOkcD0a/sRiBYg23aCdN6SNIenwMlHtjjlM7IKBnoRwxQCZOJdtaCyOkRXzS9+ic18fe3G3gaMQS5FBL
+M+XVWwKX4nsByZu2NhDwjFkOgNHB2YcAuCbv9Ewnwbi1yr0xv2unU0q8D7USIEhGR5DGEcaUFYB8QYM3
+FpovmWqo39t0KDggk5EJpc6/5LR6Ry3FiFZqDJy9TGATC9A4khW/UiTmA7Dg4IOXrXY+o4+CPr68Wyjz
+0sK5N3dFFIJYCWrznzGKtsZosx8Vl7cYZeIlRR3Uz6TFErzw1GZpbLxOyCmsmsJzX9m632ncI1wCLJJm
+FG/3b31cMXiHCkib8nh8qLOkCJ8Wh0Jf/UCBhC6ApoVyjefemPuSM0UJG2RyVQQOEHy8mWlOeQM/L4Fm
+itIqaMSKPqjIVFEJmKQsdWpcluBti9vZkhfFHYC8TJQv/OjJ6aae3ZQcTmCD3+VnUm7H9x/vf/rxj0+/
+PpyA4upzitoIrJj9l+o3QI7Hh8MVym8riVxVgutKx+N/Vvq4ZxcJ4ErewYjAkpWfMeUZBebCoruAUCL7
+x0gOmP4sFK1q2ziyfsYAscwDZT4AoZ0aaZfFGzPamrwRUaIX4DKO/vlguNgJkKH79sOHmbsDdF/3t1On
+U3TfTN/dzl1vflM1VL3VbxkwE3SxRhfu4H8a/M/f3P3/AF1LUn9m/Zm63kAV3r7ycKqYeIbT7XzqwZh3
+717FUfF/gfhVMjvhykHd7q2SdEWnJDi16FNvzOl0GpAnQ89LygKXuO+7FtNphDFfqNKs5olouag7E5cg
+XJ1vImjRB6NwchnYZj9U41FLolVZrt5xTiW41216I13XHMSmecFM1dLqjrd6vTF3yFTXTV+PuRG+QWrm
+jtYSs/5DsJTVXWDFUKjZac39RItcN1zd2rMaQtlXO6hbz2kl4MU/EcOY03xllW1KHyUnV6zKcE6ZwHlV
+6VCEHBSuDqA3R2/MLwqcjzD76BoMclX0hdsd8n2iMw3V4VTCtaJMtFWd6W3FW7RTTtH/RU63Hat7hg0G
+kjNR/DxFXzVVzefzmTGEdK462u1ktyi+XG96c1J0vfk3AAD//0Vz15BUBwAA
 `,
 	},
 
 	"/docs/contribution/README.md": {
 		name:    "README.md",
 		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/contribution/README.md",
-		size:    5948,
-		modtime: 1600721108,
+		size:    5950,
+		modtime: 1615942986,
 		compressed: `
-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
-PBcAAA==
+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
+Yz4XAAA=
 `,
 	},
 
 	"/docs/contribution/setup.md": {
 		name:    "setup.md",
 		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/contribution/setup.md",
-		size:    1406,
-		modtime: 1566829365,
+		size:    1407,
+		modtime: 1615942986,
 		compressed: `
 H4sIAAAAAAAC/3xUQW/zNgy9+1cQX3dotkZGsduADcjQrhtQoEXjnYahVmTG1iKTnkQ7CYb990Fy4rhr
 +50Sk3yPeo+UruCRjXZwhwM67lokgTVK32VZ0SC4lKxmSY9/99ZjgO9BmJ2lGoSh8zzYYJlAGoxff6ER
@@ -420,8 +418,8 @@ RpvOVG+HC30Hy2pOO9un05JFlfPduq4ZWq56h2GRdjWWnsVNKDyg6QUTcoOO9xDNsUxYAeFBwHDbaqqi
 2zbA3jo3cSSeBieus13lw9Pzqvg131gqIbpqhP3xMulRcQAmNV6iafS6i5kPWITHHYmRchptmqEwDEhV
 VH++bjMXPDqLsRVc7Li4XDPUSOi1jCqCqnnu8pTUIaAE0FRBy2b3CYXKlVITXvjiLgaB0FvBN8AUfgsq
 LqANkmla7XefIZepAtR7Ct+P70xAP1hzuqXuCHsrTTQirpV16C+ceOjYC9ytitXPq/X96+8vjz9+809x
-vy5e18XTy+ohhV6fn9bFw8v9+t94iNjFtFUuXNcOfd5qSyqye9SCS+EdEnxJP0veE/ol6Ra/fA0aH59l
-PDX6pOe/AAAA//9JDbxCfgUAAA==
+vy5e57HX56d18fByv/43niK2MW2VC9e1Q5+32pKK9B614FJ4hwRf0s+S94R+SbrFL1+DxtdnGY+NPgn6
+LwAA//86+1qvfwUAAA==
 `,
 	},
 
@@ -1914,29 +1912,11 @@ zLpj6YdHyjrL0w4IhVLV+/8GAAD//7KtXRBlDwAA
 `,
 	},
 
-	"/docs/httpapi/README.md": {
-		name:    "README.md",
-		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/httpapi/README.md",
-		size:    1508,
-		modtime: 1593645606,
-		compressed: `
-H4sIAAAAAAAC/6xTsW7bMBDd+RUP9BrFu7YOiZstg4EORQGfqZPEmiIZkqpjFPn3gpIcC43tJm1Hie/u
-3Xv3bgFPakcNo03Jk9dCLBZY3a2xJK+X+yjEutUROoLwhbfRqR0nsK280zYhtZRAW8NIDvzMqk8M5zlQ
-0s5CJwRWrH9wvBXrdv6kXAgcvbMV9jq1SC3j83r9iE+PD6f+J7ylLje5dwGdC4yD66HIQrWsdkN13FPT
-cEDlVN+xTUNd1rOYtXmI90ypD3xn89iVECvOQxqmyKgNNYiJUh9RuwCC18alockCd8/UecNCBH7qOSax
-2Wy+R2fFTwHIVw5ZQv5OI28ypKJEskSGA7IeERneHYrj1834qCtZSt9vjVbFMEPRW/1U6EoK4EW8ZO48
-SHYw8mkSyTY4Y7J+WSKFnifoBRtWxm3JmMO77GgG8P9244IRfyfylF1lNNu0VM7WurkdCscsv4brmFuy
-cc8BXW+S9obfyucpDNGz0rVWYypuR1Ov+5D3iPOLHEyY1EZZ4usUC0NNkdNe0DEMp1/bt79UTsS3y2Zl
-lkFEnEVvxjEaeIapRE0m8hnCsWQexLnxk31LHY+7LHjc+7SF917cH6y9fD/XruffQnVGWzNd0AdEzu7o
-isaLd/FBAb8CAAD//yRFGrfkBQAA
-`,
-	},
-
 	"/docs/readiness.md": {
 		name:    "readiness.md",
 		local:   "/home/adamluzsi/src/github.com/toggler-io/toggler/docs/readiness.md",
 		size:    1900,
-		modtime: 1600721110,
+		modtime: 1615558419,
 		compressed: `
 H4sIAAAAAAAC/3RVT2sbyRO9z6coMPx+SVAkkmMuS4IS8CFgbMOymIBqut9oOunpnu2qkTzffqkeaW3Z
 m5vomq569f60rug+7/cRhW5K/gmndAv2IUGkaa6u6HNxfVA4nQqa5r4H7XS5sKPxdMPlAvKQsE8UhFoW
@@ -2127,12 +2107,6 @@ dBUiw2XrQCdz6OVOUSZk23E3Z0+6Yo06Rgp7nF6QdvjTTl4aYf8aQwywUkqDc38HAAD//9RublKYBQAA
 		isDir: true,
 	},
 
-	"/docs/httpapi": {
-		name:  "httpapi",
-		local: `/home/adamluzsi/src/github.com/toggler-io/toggler/docs/httpapi`,
-		isDir: true,
-	},
-
 	"/docs/release": {
 		name:  "release",
 		local: `/home/adamluzsi/src/github.com/toggler-io/toggler/docs/release`,
@@ -2156,7 +2130,6 @@ var _escDirs = map[string][]os.FileInfo{
 		_escData["/docs/contribution"],
 		_escData["/docs/deploy"],
 		_escData["/docs/design"],
-		_escData["/docs/httpapi"],
 		_escData["/docs/readiness.md"],
 		_escData["/docs/release"],
 		_escData["/docs/toggler-io"],
@@ -2202,10 +2175,6 @@ var _escDirs = map[string][]os.FileInfo{
 		_escData["/docs/design/feature-check-per-user-basis.svg"],
 		_escData["/docs/design/objectives.md"],
 		_escData["/docs/design/sharedspecs.md"],
-	},
-
-	"/home/adamluzsi/src/github.com/toggler-io/toggler/docs/httpapi": {
-		_escData["/docs/httpapi/README.md"],
 	},
 
 	"/home/adamluzsi/src/github.com/toggler-io/toggler/docs/release": {

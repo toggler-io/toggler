@@ -12,6 +12,10 @@ type Storage interface {
 	resources.Updater
 	resources.Deleter
 	TokenFinder
+
+	resources.CreatorPublisher
+	resources.UpdaterPublisher
+	resources.DeleterPublisher
 }
 
 type TokenFinder interface {

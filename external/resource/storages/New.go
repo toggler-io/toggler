@@ -29,7 +29,7 @@ func New(connstr string) (toggler.Storage, error) {
 		return NewPostgres(db, connstr)
 
 	case `memory`:
-		return NewInMemory(), nil
+		return NewMemory(), nil
 
 	default:
 		return nil, fmt.Errorf(`ErrNotImplemented`)

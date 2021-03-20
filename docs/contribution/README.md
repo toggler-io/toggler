@@ -90,10 +90,10 @@ func TestConsul(t *testing.T) {
 }
 
 func getTestConsulConnstr(t *testing.T) string {
-	value, isSet := os.LookupEnv(`TEST_STORAGE_URL_CONSUL`)
+	value, isSet := os.LookupEnv(`TEST_DATABASE_URL_CONSUL`)
 
 	if !isSet {
-		t.Skip(`redis url is not set in "TEST_STORAGE_URL_CONSUL"`)
+		t.Skip(`redis url is not set in "TEST_DATABASE_URL_CONSUL"`)
 	}
 
 	return value

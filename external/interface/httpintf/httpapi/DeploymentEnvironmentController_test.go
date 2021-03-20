@@ -1,7 +1,6 @@
 package httpapi_test
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -20,34 +19,34 @@ import (
 	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client"
 	swagger "github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client/deployment"
 	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/models"
-	. "github.com/toggler-io/toggler/testing"
+	sh "github.com/toggler-io/toggler/spechelper"
 )
 
 func TestDeploymentEnvironmentController(t *testing.T) {
 	s := testcase.NewSpec(t)
 	s.Parallel()
-	SetUp(s)
+	sh.SetUp(s)
 
-	HandlerSpec(s, func(t *testcase.T) http.Handler {
-		return httpapi.NewDeploymentEnvironmentHandler(ExampleUseCases(t))
+	Handler.Let(s, func(t *testcase.T) interface{} {
+		return httpapi.NewDeploymentEnvironmentHandler(sh.ExampleUseCases(t))
 	})
 
 	ContentTypeIsJSON(s)
 
-	LetContext(s, func(t *testcase.T) context.Context {
-		return GetContext(t)
+	Context.Let(s, func(t *testcase.T) interface{} {
+		return sh.GetContext(t)
 	})
 
 	s.Describe(`POST / - create deployment environment`, SpecDeploymentEnvironmentControllerCreate)
 	s.Describe(`GET / - list deployment environment`, SpecDeploymentEnvironmentControllerList)
 
 	s.Context(`given we have a deployment environment in the system`, func(s *testcase.Spec) {
-		GivenWeHaveDeploymentEnvironment(s, `deployment-environment`)
+		sh.GivenWeHaveDeploymentEnvironment(s, `deployment-environment`)
 
 		var andFlagIdentifierProvided = func(s *testcase.Spec, context func(s *testcase.Spec)) {
 			s.And(`deployment environment identifier provided as the external ID`, func(s *testcase.Spec) {
 				s.Let(`id`, func(t *testcase.T) interface{} {
-					return GetDeploymentEnvironment(t, `deployment-environment`).ID
+					return sh.GetDeploymentEnvironment(t, `deployment-environment`).ID
 				})
 
 				context(s)
@@ -72,9 +71,9 @@ func TestDeploymentEnvironmentController(t *testing.T) {
 }
 
 func SpecDeploymentEnvironmentControllerCreate(s *testcase.Spec) {
-	LetMethodValue(s, http.MethodPost)
-	LetPathValue(s, `/`)
-	GivenHTTPRequestHasAppToken(s)
+	Method.LetValue(s, http.MethodPost)
+	Path.LetValue(s, `/`)
+	sh.GivenHTTPRequestHasAppToken(s)
 
 	var onSuccess = func(t *testcase.T) (resp httpapi.CreateDeploymentEnvironmentResponse) {
 		rr := ServeHTTP(t)
@@ -84,14 +83,14 @@ func SpecDeploymentEnvironmentControllerCreate(s *testcase.Spec) {
 	}
 
 	s.After(func(t *testcase.T) {
-		require.Nil(t, ExampleStorage(t).DeleteAll(GetContext(t), deployment.Environment{}))
+		require.Nil(t, sh.StorageGet(t).DeleteAll(sh.GetContext(t), deployment.Environment{}))
 	})
 
 	s.Let(`deployment-environment`, func(t *testcase.T) interface{} {
-		return FixtureFactory{}.Create(deployment.Environment{}).(*deployment.Environment)
+		return sh.FixtureFactory{}.Create(deployment.Environment{}).(*deployment.Environment)
 	})
 
-	LetBody(s, func(t *testcase.T) interface{} {
+	Body.Let(s, func(t *testcase.T) interface{} {
 		var req httpapi.CreateDeploymentEnvironmentRequest
 		req.Body.Environment = *t.I(`deployment-environment`).(*deployment.Environment)
 		return req.Body
@@ -106,7 +105,7 @@ func SpecDeploymentEnvironmentControllerCreate(s *testcase.Spec) {
 		rfv := t.I(`deployment-environment`).(*deployment.Environment)
 
 		var actualDeploymentEnvironment deployment.Environment
-		found, err := ExampleStorage(t).FindDeploymentEnvironmentByAlias(GetContext(t), t.I(`deployment-environment`).(*deployment.Environment).Name, &actualDeploymentEnvironment)
+		found, err := sh.StorageGet(t).FindDeploymentEnvironmentByAlias(sh.GetContext(t), t.I(`deployment-environment`).(*deployment.Environment).Name, &actualDeploymentEnvironment)
 		require.Nil(t, err)
 		require.True(t, found)
 		require.Equal(t, rfv.Name, actualDeploymentEnvironment.Name)
@@ -116,7 +115,7 @@ func SpecDeploymentEnvironmentControllerCreate(s *testcase.Spec) {
 		resp := onSuccess(t)
 
 		var env deployment.Environment
-		found, err := ExampleStorage(t).FindDeploymentEnvironmentByAlias(GetContext(t), t.I(`deployment-environment`).(*deployment.Environment).Name, &env)
+		found, err := sh.StorageGet(t).FindDeploymentEnvironmentByAlias(sh.GetContext(t), t.I(`deployment-environment`).(*deployment.Environment).Name, &env)
 		require.Nil(t, err)
 		require.True(t, found)
 		require.Equal(t, resp.Body.Environment, env)
@@ -139,10 +138,10 @@ func SpecDeploymentEnvironmentControllerCreate(s *testcase.Spec) {
 	})
 
 	s.Context(`E2E`, func(s *testcase.Spec) {
-		s.Tag(TagBlackBox)
+		s.Tag(sh.TagBlackBox)
 
 		s.Test(`swagger`, func(t *testcase.T) {
-			sm, err := httpintf.NewServeMux(ExampleUseCases(t))
+			sm, err := httpintf.NewServeMux(sh.ExampleUseCases(t))
 			require.Nil(t, err)
 
 			s := httptest.NewServer(sm)
@@ -171,9 +170,9 @@ func SpecDeploymentEnvironmentControllerCreate(s *testcase.Spec) {
 }
 
 func SpecDeploymentEnvironmentControllerList(s *testcase.Spec) {
-	LetMethodValue(s, http.MethodGet)
-	LetPathValue(s, `/`)
-	GivenHTTPRequestHasAppToken(s)
+	Method.LetValue(s, http.MethodGet)
+	Path.LetValue(s, `/`)
+	sh.GivenHTTPRequestHasAppToken(s)
 
 	var onSuccess = func(t *testcase.T) httpapi.ListDeploymentEnvironmentResponse {
 		var resp httpapi.ListDeploymentEnvironmentResponse
@@ -184,7 +183,7 @@ func SpecDeploymentEnvironmentControllerList(s *testcase.Spec) {
 	}
 
 	s.And(`no flag present in the system`, func(s *testcase.Spec) {
-		NoDeploymentEnvironmentPresentInTheStorage(s)
+		sh.NoDeploymentEnvironmentPresentInTheStorage(s)
 
 		s.Then(`empty result received`, func(t *testcase.T) {
 			require.Empty(t, onSuccess(t).Body.Environments)
@@ -192,43 +191,44 @@ func SpecDeploymentEnvironmentControllerList(s *testcase.Spec) {
 	})
 
 	s.And(`deployment environment is present in the system`, func(s *testcase.Spec) {
-		GivenWeHaveDeploymentEnvironment(s, `feature-1`)
-		s.Before(func(t *testcase.T) { GetDeploymentEnvironment(t, `feature-1`) }) // eager load
+		sh.GivenWeHaveDeploymentEnvironment(s, `feature-1`)
+		s.Before(func(t *testcase.T) { sh.GetDeploymentEnvironment(t, `feature-1`) }) // eager load
 
 		s.Then(`env received back`, func(t *testcase.T) {
 			resp := onSuccess(t)
 			require.Len(t, resp.Body.Environments, 1)
-			require.Contains(t, resp.Body.Environments, *GetDeploymentEnvironment(t, `feature-1`))
+			require.Contains(t, resp.Body.Environments, *sh.GetDeploymentEnvironment(t, `feature-1`))
 		})
 
 		s.And(`even multiple flag in the system`, func(s *testcase.Spec) {
-			GivenWeHaveDeploymentEnvironment(s, `feature-2`)
-			s.Before(func(t *testcase.T) { GetDeploymentEnvironment(t, `feature-2`) }) // eager load
+			sh.GivenWeHaveDeploymentEnvironment(s, `feature-2`)
+			s.Before(func(t *testcase.T) { sh.GetDeploymentEnvironment(t, `feature-2`) }) // eager load
 
 			s.Then(`the flags will be received back`, func(t *testcase.T) {
 				resp := onSuccess(t)
 
 				require.Len(t, resp.Body.Environments, 2)
-				require.Contains(t, resp.Body.Environments, *GetDeploymentEnvironment(t, `feature-2`))
+				require.Contains(t, resp.Body.Environments, *sh.GetDeploymentEnvironment(t, `feature-2`))
 			})
 		})
 	})
 }
 
 func SpecDeploymentEnvironmentControllerUpdate(s *testcase.Spec) {
-	GivenHTTPRequestHasAppToken(s)
-	LetMethodValue(s, http.MethodPut)
-	LetPath(s, func(t *testcase.T) string {
+	sh.GivenHTTPRequestHasAppToken(s)
+	Method.LetValue(s, http.MethodPut)
+
+	Path.Let(s, func(t *testcase.T) interface{} {
 		return fmt.Sprintf(`/%s`, t.I(`id`))
 	})
 
 	s.Let(`updated-deployment-environment`, func(t *testcase.T) interface{} {
-		rf := FixtureFactory{}.Create(deployment.Environment{}).(*deployment.Environment)
-		rf.ID = GetDeploymentEnvironment(t, `deployment-environment`).ID
+		rf := sh.FixtureFactory{}.Create(deployment.Environment{}).(*deployment.Environment)
+		rf.ID = sh.GetDeploymentEnvironment(t, `deployment-environment`).ID
 		return rf
 	})
 
-	LetBody(s, func(t *testcase.T) interface{} {
+	Body.Let(s, func(t *testcase.T) interface{} {
 		var req httpapi.CreateDeploymentEnvironmentRequest
 		req.Body.Environment = *t.I(`updated-deployment-environment`).(*deployment.Environment)
 		return req.Body
@@ -248,7 +248,7 @@ func SpecDeploymentEnvironmentControllerUpdate(s *testcase.Spec) {
 		updatedDeploymentEnvironmentView := t.I(`updated-deployment-environment`).(*deployment.Environment)
 
 		var stored deployment.Environment
-		found, err := ExampleStorage(t).FindDeploymentEnvironmentByAlias(GetContext(t), updatedDeploymentEnvironmentView.Name, &stored)
+		found, err := sh.StorageGet(t).FindDeploymentEnvironmentByAlias(sh.GetContext(t), updatedDeploymentEnvironmentView.Name, &stored)
 		require.Nil(t, err)
 		require.True(t, found)
 		require.Equal(t, resp.Body.Environment, stored)
@@ -271,16 +271,16 @@ func SpecDeploymentEnvironmentControllerUpdate(s *testcase.Spec) {
 	})
 
 	s.Context(`E2E`, func(s *testcase.Spec) {
-		s.Tag(TagBlackBox)
+		s.Tag(sh.TagBlackBox)
 
 		s.Test(`swagger`, func(t *testcase.T) {
-			sm, err := httpintf.NewServeMux(ExampleUseCases(t))
+			sm, err := httpintf.NewServeMux(sh.ExampleUseCases(t))
 			require.Nil(t, err)
 
 			s := httptest.NewServer(sm)
 			defer s.Close()
 
-			id := GetDeploymentEnvironment(t, `deployment-environment`).ID
+			id := sh.GetDeploymentEnvironment(t, `deployment-environment`).ID
 
 			// TODO: ensure validation
 			p := swagger.NewUpdateDeploymentEnvironmentParams()

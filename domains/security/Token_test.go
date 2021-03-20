@@ -21,7 +21,7 @@ func TestToken(t *testing.T) {
 		return &security.Token{
 			OwnerUID: UserUID,
 			IssuedAt: t.I(`IssuedAt`).(time.Time),
-			Duration: t.I(`Duration`).(time.Duration),
+			Duration: t.I(`DefaultTTL`).(time.Duration),
 		}
 	}
 
@@ -41,7 +41,7 @@ func SpecTokenIsValid(token func(t *testcase.T) *security.Token, s *testcase.Spe
 	}
 
 	s.When(`the duration is zero`, func(s *testcase.Spec) {
-		s.Let(`Duration`, func(t *testcase.T) interface{} {
+		s.Let(`DefaultTTL`, func(t *testcase.T) interface{} {
 			return time.Duration(0)
 		})
 
@@ -66,7 +66,7 @@ func SpecTokenIsValid(token func(t *testcase.T) *security.Token, s *testcase.Spe
 		})
 	})
 	s.When(`the duration is limited`, func(s *testcase.Spec) {
-		s.Let(`Duration`, func(t *testcase.T) interface{} {
+		s.Let(`DefaultTTL`, func(t *testcase.T) interface{} {
 			return time.Minute
 		})
 
@@ -77,7 +77,7 @@ func SpecTokenIsValid(token func(t *testcase.T) *security.Token, s *testcase.Spe
 
 			s.And(`not older than the token duration`, func(s *testcase.Spec) {
 				s.Let(`IssuedAt`, func(t *testcase.T) interface{} {
-					return time.Now().Add(-1*t.I(`Duration`).(time.Duration) + 1*time.Second)
+					return time.Now().Add(-1*t.I(`DefaultTTL`).(time.Duration) + 1*time.Second)
 				})
 
 				s.Then(`it is still valid`, func(t *testcase.T) {
@@ -87,7 +87,7 @@ func SpecTokenIsValid(token func(t *testcase.T) *security.Token, s *testcase.Spe
 
 			s.And(`older than the duration`, func(s *testcase.Spec) {
 				s.Let(`IssuedAt`, func(t *testcase.T) interface{} {
-					return time.Now().Add(-1*t.I(`Duration`).(time.Duration) + -1*time.Second)
+					return time.Now().Add(-1*t.I(`DefaultTTL`).(time.Duration) + -1*time.Second)
 				})
 
 				s.Then(`it is still invalid already`, func(t *testcase.T) {
@@ -120,7 +120,7 @@ func SpecTokenIsExpirable(token func(t *testcase.T) *security.Token, s *testcase
 	s.Let(`IssuedAt`, func(t *testcase.T) interface{} { return time.Now().UTC() })
 
 	s.When(`the duration is zero`, func(s *testcase.Spec) {
-		s.Let(`Duration`, func(t *testcase.T) interface{} { return time.Duration(0) })
+		s.Let(`DefaultTTL`, func(t *testcase.T) interface{} { return time.Duration(0) })
 
 		s.Then(`there will be good forever, so will not expire`, func(t *testcase.T) {
 			require.False(t, subject(t))
@@ -128,7 +128,7 @@ func SpecTokenIsExpirable(token func(t *testcase.T) *security.Token, s *testcase
 	})
 
 	s.When(`the duration is limited`, func(s *testcase.Spec) {
-		s.Let(`Duration`, func(t *testcase.T) interface{} { return time.Minute })
+		s.Let(`DefaultTTL`, func(t *testcase.T) interface{} { return time.Minute })
 
 		s.Then(`it will be expirable`, func(t *testcase.T) {
 			require.True(t, subject(t))

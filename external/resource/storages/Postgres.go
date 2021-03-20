@@ -13,7 +13,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/consterror"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/reflects"
@@ -74,20 +73,12 @@ func (pg *Postgres) CommitTx(ctx context.Context) error {
 		return fmt.Errorf(`no postgres tx in the given context`)
 	}
 
-	if tx.Tx == nil {
-		return sql.ErrTxDone
-	}
-
 	if tx.depth > 0 {
 		tx.depth--
 		return nil
 	}
 
-	if err := tx.Commit(); err != nil {
-		return err
-	}
-	tx.Tx = nil
-	return nil
+	return tx.Commit()
 }
 
 func (pg *Postgres) RollbackTx(ctx context.Context) error {
@@ -96,15 +87,7 @@ func (pg *Postgres) RollbackTx(ctx context.Context) error {
 		return fmt.Errorf(`no postgres tx in the given context`)
 	}
 
-	if tx.Tx == nil {
-		return sql.ErrTxDone
-	}
-
-	if err := tx.Rollback(); err != nil {
-		return err
-	}
-	tx.Tx = nil
-	return nil
+	return tx.Rollback()
 }
 
 func (pg *Postgres) lookupTx(ctx context.Context) (*PostgresTx, bool) {
@@ -184,8 +167,13 @@ func (pg *Postgres) Close() error {
 }
 
 func (pg *Postgres) Create(ctx context.Context, ptr interface{}) error {
-	if currentID, ok := resources.LookupID(ptr); !ok || currentID != "" {
-		return fmt.Errorf("entity already have an ID: %s", currentID)
+	err := EnsureID(ptr)
+	if err != nil {
+		return err
+	}
+
+	if currentID, _ := resources.LookupID(ptr); !isUUIDValid(currentID) {
+		return fmt.Errorf(`invalid ID: %#v`, currentID)
 	}
 
 	switch e := ptr.(type) {
@@ -199,14 +187,12 @@ func (pg *Postgres) Create(ctx context.Context, ptr interface{}) error {
 		return pg.releaseManualPilotCreate(ctx, e)
 	case *security.Token:
 		return pg.securityTokenCreate(ctx, e)
-	case *resources.TestEntity:
-		return pg.testEntityInsertNew(ctx, e)
 	default:
 		return fmt.Errorf(`ErrNotImplemented`)
 	}
 }
 
-func (pg *Postgres) FindByID(ctx context.Context, ptr interface{}, id string) (bool, error) {
+func (pg *Postgres) FindByID(ctx context.Context, ptr, id interface{}) (bool, error) {
 	if !isUUIDValid(id) {
 		return false, nil
 	}
@@ -222,8 +208,6 @@ func (pg *Postgres) FindByID(ctx context.Context, ptr interface{}, id string) (b
 		return pg.pilotFindByID(ctx, e, id)
 	case *security.Token:
 		return pg.tokenFindByID(ctx, e, id)
-	case *resources.TestEntity:
-		return pg.testEntityFindByID(ctx, e, id)
 	default:
 		return false, fmt.Errorf(`ErrNotImplemented`)
 	}
@@ -259,6 +243,8 @@ func (pg *Postgres) DeleteAll(ctx context.Context, Type interface{}) error {
 		message = release.ManualPilot{}
 	case security.Token, *security.Token:
 		tableName = `tokens`
+		topicName = securityTokenDeleteAllSubscriptionName
+		message = security.Token{}
 	case resources.TestEntity, *resources.TestEntity:
 		tableName = `test_entities`
 	default:
@@ -281,10 +267,12 @@ func (pg *Postgres) DeleteAll(ctx context.Context, Type interface{}) error {
 	return commit()
 }
 
-func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, id string) error {
+func (pg *Postgres) DeleteByID(ctx context.Context, T, id interface{}) error {
 	if !isUUIDValid(id) {
 		return fmt.Errorf(`ErrNotFound`)
 	}
+
+	sid := id.(string)
 
 	tx, commit, rollback, err := pg.getTx(ctx)
 	if err != nil {
@@ -296,32 +284,31 @@ func (pg *Postgres) DeleteByID(ctx context.Context, Type interface{}, id string)
 		topicName string
 		message   interface{}
 	)
-	switch Type.(type) {
+	switch T.(type) {
 	case deployment.Environment, *deployment.Environment:
 		query = `DELETE FROM "deployment_environments" WHERE "id" = $1`
 		topicName = deploymentEnvironmentDeleteByIDSubscriptionName
-		message = deployment.Environment{ID: id}
+		message = deployment.Environment{ID: sid}
 
 	case release.Flag, *release.Flag:
 		query = `DELETE FROM "release_flags" WHERE "id" = $1`
 		topicName = releaseFlagDeleteByIDSubscriptionName
-		message = release.Flag{ID: id}
+		message = release.Flag{ID: sid}
 
 	case release.Rollout, *release.Rollout:
 		query = `DELETE FROM "release_rollouts" WHERE "id" = $1`
 		topicName = releaseRolloutDeleteByIDSubscriptionName
-		message = release.Rollout{ID: id}
+		message = release.Rollout{ID: sid}
 
 	case release.ManualPilot, *release.ManualPilot:
 		query = `DELETE FROM "release_pilots" WHERE "id" = $1`
 		topicName = releaseManualPilotDeleteByIDSubscriptionName
-		message = release.ManualPilot{ID: id}
+		message = release.ManualPilot{ID: sid}
 
 	case security.Token, *security.Token:
 		query = `DELETE FROM "tokens" WHERE "id" = $1`
-
-	case resources.TestEntity, *resources.TestEntity:
-		query = `DELETE FROM "test_entities" WHERE "id" = $1`
+		topicName = securityTokenDeleteByIDSubscriptionName
+		message = security.Token{ID: sid}
 
 	default:
 		return fmt.Errorf(`ErrNotImplemented`)
@@ -388,8 +375,6 @@ func (pg *Postgres) FindAll(ctx context.Context, Type interface{}) iterators.Int
 		return pg.pilotFindAll(ctx)
 	case security.Token, *security.Token:
 		return pg.tokenFindAll(ctx)
-	case resources.TestEntity, *resources.TestEntity:
-		return pg.testEntityFindAll(ctx)
 	default:
 		return iterators.NewError(fmt.Errorf(`ErrNotImplemented`))
 	}
@@ -419,7 +404,7 @@ func (pg *Postgres) FindReleaseFlagByName(ctx context.Context, name string) (*re
 
 }
 
-func (pg *Postgres) FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID, pilotExtID string) (*release.ManualPilot, error) {
+func (pg *Postgres) FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID interface{}, pilotExtID string) (*release.ManualPilot, error) {
 	if !isUUIDValid(flagID) {
 		return nil, nil
 	}
@@ -538,22 +523,12 @@ VALUES ($1, $2);
 `
 
 func (pg *Postgres) releaseFlagCreate(ctx context.Context, flag *release.Flag) error {
-	id, err := newV4UUID()
-	if err != nil {
-		return err
-	}
-
 	tx, commit, rollback, err := pg.getTx(ctx)
 	if err != nil {
 		return err
 	}
 
-	if _, err := tx.ExecContext(ctx, releaseFlagInsertNewQuery, id, flag.Name); err != nil {
-		return err
-	}
-
-	if err := resources.SetID(flag, id); err != nil {
-		_ = rollback()
+	if _, err := tx.ExecContext(ctx, releaseFlagInsertNewQuery, flag.ID, flag.Name); err != nil {
 		return err
 	}
 
@@ -571,11 +546,6 @@ VALUES ($1, $2, $3, $4);
 `
 
 func (pg *Postgres) releaseRolloutCreate(ctx context.Context, rollout *release.Rollout) error {
-	id, err := newV4UUID()
-	if err != nil {
-		return err
-	}
-
 	planJSON, err := json.Marshal(release.RolloutDefinitionView{Definition: rollout.Plan})
 
 	if err != nil {
@@ -588,16 +558,11 @@ func (pg *Postgres) releaseRolloutCreate(ctx context.Context, rollout *release.R
 	}
 
 	if _, err := tx.ExecContext(ctx, releaseRolloutInsertNewQuery,
-		id,
+		rollout.ID,
 		rollout.FlagID,
 		rollout.DeploymentEnvironmentID,
 		planJSON,
 	); err != nil {
-		_ = rollback()
-		return err
-	}
-
-	if err := resources.SetID(rollout, id); err != nil {
 		_ = rollback()
 		return err
 	}
@@ -616,22 +581,12 @@ VALUES ($1, $2);
 `
 
 func (pg *Postgres) deploymentEnvironmentCreate(ctx context.Context, env *deployment.Environment) error {
-	id, err := newV4UUID()
-	if err != nil {
-		return err
-	}
-
 	tx, commit, rollback, err := pg.getTx(ctx)
 	if err != nil {
 		return err
 	}
 
-	if _, err := tx.ExecContext(ctx, deploymentEnvironmentInsertNewQuery, id, env.Name); err != nil {
-		_ = rollback()
-		return err
-	}
-
-	if err := resources.SetID(env, id); err != nil {
+	if _, err := tx.ExecContext(ctx, deploymentEnvironmentInsertNewQuery, env.ID, env.Name); err != nil {
 		_ = rollback()
 		return err
 	}
@@ -650,11 +605,6 @@ VALUES ($1, $2, $3, $4, $5);
 `
 
 func (pg *Postgres) releaseManualPilotCreate(ctx context.Context, pilot *release.ManualPilot) error {
-	id, err := newV4UUID()
-	if err != nil {
-		return err
-	}
-
 	if !isUUIDValid(pilot.FlagID) {
 		return fmt.Errorf(`invalid name Flag ID: ` + pilot.FlagID)
 	}
@@ -665,17 +615,12 @@ func (pg *Postgres) releaseManualPilotCreate(ctx context.Context, pilot *release
 	}
 
 	if _, err := tx.ExecContext(ctx, pilotInsertNewQuery,
-		id,
+		pilot.ID,
 		pilot.FlagID,
 		pilot.DeploymentEnvironmentID,
 		pilot.ExternalID,
 		pilot.IsParticipating,
 	); err != nil {
-		_ = rollback()
-		return err
-	}
-
-	if err := resources.SetID(pilot, id); err != nil {
 		_ = rollback()
 		return err
 	}
@@ -688,52 +633,37 @@ func (pg *Postgres) releaseManualPilotCreate(ctx context.Context, pilot *release
 	return commit()
 }
 
-const testEntityInsertNewQuery = `
-INSERT INTO "test_entities" (id) 
-VALUES ($1)
-RETURNING id;
-`
-
-func (pg *Postgres) testEntityInsertNew(ctx context.Context, te *resources.TestEntity) error {
-	id, err := newV4UUID()
-	if err != nil {
-		return err
-	}
-
-	if _, err := pg.getDB(ctx).ExecContext(ctx, testEntityInsertNewQuery, id); err != nil {
-		return err
-	}
-
-	return resources.SetID(te, id)
-}
-
 const tokenInsertNewQuery = `
 INSERT INTO "tokens" (id, sha512, owner_uid, issued_at, duration)
 VALUES ($1, $2, $3, $4, $5);
 `
 
 func (pg *Postgres) securityTokenCreate(ctx context.Context, token *security.Token) error {
-
-	id, err := newV4UUID()
+	tx, commit, rollback, err := pg.getTx(ctx)
 	if err != nil {
 		return err
 	}
 
-	if _, err := pg.getDB(ctx).ExecContext(ctx, tokenInsertNewQuery,
-		id,
+	if _, err := tx.ExecContext(ctx, tokenInsertNewQuery,
+		token.ID,
 		token.SHA512,
 		token.OwnerUID,
 		token.IssuedAt,
 		token.Duration,
 	); err != nil {
+		_ = rollback()
 		return err
 	}
 
-	return resources.SetID(token, id)
+	if err := pg.notify(ctx, tx, securityTokenCreateSubscriptionName, *token); err != nil {
+		_ = rollback()
+		return err
+	}
 
+	return commit()
 }
 
-func (pg *Postgres) releaseRolloutFindByID(ctx context.Context, rollout *release.Rollout, id string) (bool, error) {
+func (pg *Postgres) releaseRolloutFindByID(ctx context.Context, rollout *release.Rollout, id interface{}) (bool, error) {
 	mapper := releaseRolloutMapper{}
 	query := fmt.Sprintf(`SELECT %s FROM "release_rollouts" WHERE "id" = $1`, strings.Join(mapper.Columns(), `, `))
 	err := mapper.Map(pg.getDB(ctx).QueryRowContext(ctx, query, id), rollout)
@@ -751,7 +681,6 @@ func (pg *Postgres) releaseRolloutFindByID(ctx context.Context, rollout *release
 			if err := mapper.Map(rows, &ro); err != nil {
 				panic(err)
 			}
-			fmt.Println(fmt.Sprintf(`%#v`, ro))
 		}
 
 		return false, nil
@@ -764,7 +693,7 @@ func (pg *Postgres) releaseRolloutFindByID(ctx context.Context, rollout *release
 	return true, nil
 }
 
-func (pg *Postgres) releaseFlagFindByID(ctx context.Context, flag *release.Flag, id string) (bool, error) {
+func (pg *Postgres) releaseFlagFindByID(ctx context.Context, flag *release.Flag, id interface{}) (bool, error) {
 	mapper := releaseFlagMapper{}
 	query := fmt.Sprintf(`SELECT %s FROM "release_flags" WHERE "id" = $1`, strings.Join(mapper.Columns(), `, `))
 	err := mapper.Map(pg.getDB(ctx).QueryRowContext(ctx, query, id), flag)
@@ -780,7 +709,7 @@ func (pg *Postgres) releaseFlagFindByID(ctx context.Context, flag *release.Flag,
 	return true, nil
 }
 
-func (pg *Postgres) deploymentEnvironmentFindByID(ctx context.Context, env *deployment.Environment, id string) (bool, error) {
+func (pg *Postgres) deploymentEnvironmentFindByID(ctx context.Context, env *deployment.Environment, id interface{}) (bool, error) {
 	mapper := deploymentEnvironmentMapper{}
 	query := fmt.Sprintf(`SELECT %s FROM "deployment_environments" WHERE "id" = $1`, strings.Join(mapper.Columns(), `, `))
 	err := mapper.Map(pg.getDB(ctx).QueryRowContext(ctx, query, id), env)
@@ -796,7 +725,7 @@ func (pg *Postgres) deploymentEnvironmentFindByID(ctx context.Context, env *depl
 	return true, nil
 }
 
-func (pg *Postgres) pilotFindByID(ctx context.Context, pilot *release.ManualPilot, id string) (bool, error) {
+func (pg *Postgres) pilotFindByID(ctx context.Context, pilot *release.ManualPilot, id interface{}) (bool, error) {
 	m := pilotMapper{}
 	query := fmt.Sprintf(`SELECT %s FROM "release_pilots" WHERE "id" = $1`, strings.Join(m.Columns(), `, `))
 	row := pg.getDB(ctx).QueryRowContext(ctx, query, id)
@@ -816,28 +745,6 @@ func (pg *Postgres) pilotFindByID(ctx context.Context, pilot *release.ManualPilo
 	return true, nil
 }
 
-const testEntityFindByIDQuery = `
-SELECT id
-FROM "test_entities" 
-WHERE id = $1;
-`
-
-func (pg *Postgres) testEntityFindByID(ctx context.Context, testEntity *resources.TestEntity, id string) (bool, error) {
-	row := pg.getDB(ctx).QueryRowContext(ctx, testEntityFindByIDQuery, id)
-
-	err := row.Scan(&testEntity.ID)
-
-	if err == sql.ErrNoRows {
-		return false, nil
-	}
-
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
-}
-
 const tokenFindByIDQueryTemplate = `
 SELECT %s
 FROM "tokens" 
@@ -846,7 +753,7 @@ WHERE id = $1;
 
 var tokenFindByIDQuery = fmt.Sprintf(tokenFindByIDQueryTemplate, strings.Join(tokenMapper{}.Columns(), `, `))
 
-func (pg *Postgres) tokenFindByID(ctx context.Context, token *security.Token, id string) (bool, error) {
+func (pg *Postgres) tokenFindByID(ctx context.Context, token *security.Token, id interface{}) (bool, error) {
 
 	row := pg.getDB(ctx).QueryRowContext(ctx, tokenFindByIDQuery, id)
 	err := tokenMapper{}.Map(row, token)
@@ -907,23 +814,6 @@ func (pg *Postgres) pilotFindAll(ctx context.Context) iterators.Interface {
 	return iterators.NewSQLRows(rows, m)
 }
 
-func (pg *Postgres) testEntityFindAll(ctx context.Context) iterators.Interface {
-
-	mapper := iterators.SQLRowMapperFunc(func(s iterators.SQLRowScanner, e frameless.Entity) error {
-		te := e.(*resources.TestEntity)
-		return s.Scan(&te.ID)
-	})
-
-	rows, err := pg.getDB(ctx).QueryContext(ctx, `SELECT id FROM "test_entities"`)
-
-	if err != nil {
-		return iterators.NewError(err)
-	}
-
-	return iterators.NewSQLRows(rows, mapper)
-
-}
-
 const tokenFindAllQuery = `
 SELECT %s
 FROM "tokens"
@@ -947,23 +837,32 @@ SET name = $2
 WHERE id = $1;
 `
 
-func (pg *Postgres) deploymentEnvironmentUpdate(ctx context.Context, env *deployment.Environment) error {
+func (pg *Postgres) deploymentEnvironmentUpdate(ctx context.Context, env *deployment.Environment) (rErr error) {
 	tx, commit, rollback, err := pg.getTx(ctx)
 	if err != nil {
 		return err
 	}
+	defer func() {
+		if rErr != nil {
+			_ = rollback()
+			return
+		}
+		rErr = commit()
+	}()
 
-	if _, err := tx.ExecContext(ctx, deploymentEnvironmentUpdateQuery, env.ID, env.Name); err != nil {
-		_ = rollback()
+	if res, err := tx.ExecContext(ctx, deploymentEnvironmentUpdateQuery, env.ID, env.Name); err != nil {
 		return err
+	} else {
+		affected, err := res.RowsAffected()
+		if err != nil {
+			return err
+		}
+		if affected == 0 {
+			return fmt.Errorf(`deployment environment not found`)
+		}
 	}
 
-	if err := pg.notify(ctx, tx, deploymentEnvironmentUpdateSubscriptionName, *env); err != nil {
-		_ = rollback()
-		return err
-	}
-
-	return commit()
+	return pg.notify(ctx, tx, deploymentEnvironmentUpdateSubscriptionName, *env)
 }
 
 const releaseFlagUpdateQuery = `
@@ -972,23 +871,32 @@ SET name = $2
 WHERE id = $1;
 `
 
-func (pg *Postgres) releaseFlagUpdate(ctx context.Context, flag *release.Flag) error {
+func (pg *Postgres) releaseFlagUpdate(ctx context.Context, flag *release.Flag) (rErr error) {
 	tx, commit, rollback, err := pg.getTx(ctx)
 	if err != nil {
 		return err
 	}
+	defer func() {
+		if rErr != nil {
+			_ = rollback()
+			return
+		}
+		rErr = commit()
+	}()
 
-	if _, err := tx.ExecContext(ctx, releaseFlagUpdateQuery, flag.ID, flag.Name); err != nil {
-		_ = rollback()
+	if res, err := tx.ExecContext(ctx, releaseFlagUpdateQuery, flag.ID, flag.Name); err != nil {
 		return err
+	} else {
+		affected, err := res.RowsAffected()
+		if err != nil {
+			return err
+		}
+		if affected == 0 {
+			return fmt.Errorf(`release flag not found`)
+		}
 	}
 
-	if err := pg.notify(ctx, tx, releaseFlagUpdateSubscriptionName, *flag); err != nil {
-		_ = rollback()
-		return err
-	}
-
-	return commit()
+	return pg.notify(ctx, tx, releaseFlagUpdateSubscriptionName, *flag)
 }
 
 const releaseRolloutUpdateQuery = `
@@ -999,7 +907,7 @@ SET flag_id = $2,
 WHERE id = $1;
 `
 
-func (pg *Postgres) releaseRolloutUpdate(ctx context.Context, rollout *release.Rollout) error {
+func (pg *Postgres) releaseRolloutUpdate(ctx context.Context, rollout *release.Rollout) (rErr error) {
 	planJSON, err := json.Marshal(release.RolloutDefinitionView{Definition: rollout.Plan})
 	if err != nil {
 		return err
@@ -1009,23 +917,32 @@ func (pg *Postgres) releaseRolloutUpdate(ctx context.Context, rollout *release.R
 	if err != nil {
 		return err
 	}
+	defer func() {
+		if rErr != nil {
+			_ = rollback()
+			return
+		}
+		rErr = commit()
+	}()
 
-	if _, err = tx.ExecContext(ctx, releaseRolloutUpdateQuery,
+	if res, err := tx.ExecContext(ctx, releaseRolloutUpdateQuery,
 		rollout.ID,
 		rollout.FlagID,
 		rollout.DeploymentEnvironmentID,
 		planJSON,
 	); err != nil {
-		_ = rollback()
 		return err
+	} else {
+		affected, err := res.RowsAffected()
+		if err != nil {
+			return err
+		}
+		if affected == 0 {
+			return fmt.Errorf(`release rollout not found`)
+		}
 	}
 
-	if err := pg.notify(ctx, tx, releaseRolloutUpdateSubscriptionName, *rollout); err != nil {
-		_ = rollback()
-		return err
-	}
-
-	return commit()
+	return pg.notify(ctx, tx, releaseRolloutUpdateSubscriptionName, *rollout)
 }
 
 const pilotUpdateQuery = `
@@ -1037,28 +954,37 @@ SET flag_id = $2,
 WHERE id = $1;
 `
 
-func (pg *Postgres) releaseManualPilotUpdate(ctx context.Context, pilot *release.ManualPilot) error {
+func (pg *Postgres) releaseManualPilotUpdate(ctx context.Context, pilot *release.ManualPilot) (rErr error) {
 	tx, commit, rollback, err := pg.getTx(ctx)
 	if err != nil {
 		return err
 	}
+	defer func() {
+		if rErr != nil {
+			_ = rollback()
+			return
+		}
+		rErr = commit()
+	}()
 
-	if _, err := tx.ExecContext(ctx, pilotUpdateQuery, pilot.ID,
+	if res, err := tx.ExecContext(ctx, pilotUpdateQuery, pilot.ID,
 		pilot.FlagID,
 		pilot.DeploymentEnvironmentID,
 		pilot.ExternalID,
 		pilot.IsParticipating,
 	); err != nil {
-		_ = rollback()
 		return err
+	} else {
+		affected, err := res.RowsAffected()
+		if err != nil {
+			return err
+		}
+		if affected == 0 {
+			return fmt.Errorf(`release pilot not found`)
+		}
 	}
 
-	if err := pg.notify(ctx, tx, releaseManualPilotUpdateSubscriptionName, *pilot); err != nil {
-		_ = rollback()
-		return err
-	}
-
-	return commit()
+	return pg.notify(ctx, tx, releaseManualPilotUpdateSubscriptionName, *pilot)
 }
 
 const tokenUpdateQuery = `
@@ -1070,16 +996,40 @@ SET sha512 = $1,
 WHERE id = $5;
 `
 
-func (pg *Postgres) securityTokenUpdate(ctx context.Context, t *security.Token) error {
-	_, err := pg.getDB(ctx).ExecContext(ctx, tokenUpdateQuery,
+func (pg *Postgres) securityTokenUpdate(ctx context.Context, t *security.Token) (rErr error) {
+	tx, commit, rollback, err := pg.getTx(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if rErr != nil {
+			_ = rollback()
+			return
+		}
+		rErr = commit()
+	}()
+
+	res, err := tx.ExecContext(ctx, tokenUpdateQuery,
 		t.SHA512,
 		t.OwnerUID,
 		t.IssuedAt,
 		t.Duration,
 		t.ID,
 	)
+	if err != nil {
+		return err
+	}
 
-	return err
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if affected == 0 {
+		return fmt.Errorf(`security token not found`)
+	}
+
+	return pg.notify(ctx, tx, securityTokenUpdateSubscriptionName, *t)
 }
 
 /* -------------------------- MIGRATION -------------------------- */
@@ -1410,6 +1360,11 @@ const (
 	releaseRolloutDeleteByIDSubscriptionName = `delete_by_id_release_rollout`
 	releaseRolloutDeleteAllSubscriptionName  = `delete_all_release_rollout`
 
+	securityTokenCreateSubscriptionName     = `create_security_token`
+	securityTokenUpdateSubscriptionName     = `update_security_token`
+	securityTokenDeleteByIDSubscriptionName = `delete_by_id_security_token`
+	securityTokenDeleteAllSubscriptionName  = `delete_all_security_token`
+
 	deploymentEnvironmentCreateSubscriptionName     = `create_deployment_environment`
 	deploymentEnvironmentUpdateSubscriptionName     = `update_deployment_environment`
 	deploymentEnvironmentDeleteByIDSubscriptionName = `delete_by_id_deployment_environment`
@@ -1425,6 +1380,8 @@ func (pg *Postgres) SubscribeToCreate(ctx context.Context, T interface{}, subscr
 		return newPostgresSubscription(pg.DSN, releaseManualPilotCreateSubscriptionName, T, subscriber)
 	case release.Rollout:
 		return newPostgresSubscription(pg.DSN, releaseRolloutCreateSubscriptionName, T, subscriber)
+	case security.Token:
+		return newPostgresSubscription(pg.DSN, securityTokenCreateSubscriptionName, T, subscriber)
 	case deployment.Environment:
 		return newPostgresSubscription(pg.DSN, deploymentEnvironmentCreateSubscriptionName, T, subscriber)
 	default:
@@ -1440,6 +1397,8 @@ func (pg *Postgres) SubscribeToUpdate(ctx context.Context, T resources.T, subscr
 		return newPostgresSubscription(pg.DSN, releaseManualPilotUpdateSubscriptionName, T, subscriber)
 	case release.Rollout:
 		return newPostgresSubscription(pg.DSN, releaseRolloutUpdateSubscriptionName, T, subscriber)
+	case security.Token:
+		return newPostgresSubscription(pg.DSN, securityTokenUpdateSubscriptionName, T, subscriber)
 	case deployment.Environment:
 		return newPostgresSubscription(pg.DSN, deploymentEnvironmentUpdateSubscriptionName, T, subscriber)
 	default:
@@ -1455,6 +1414,8 @@ func (pg *Postgres) SubscribeToDeleteByID(ctx context.Context, T resources.T, su
 		return newPostgresSubscription(pg.DSN, releaseManualPilotDeleteByIDSubscriptionName, T, subscriber)
 	case release.Rollout:
 		return newPostgresSubscription(pg.DSN, releaseRolloutDeleteByIDSubscriptionName, T, subscriber)
+	case security.Token:
+		return newPostgresSubscription(pg.DSN, securityTokenDeleteByIDSubscriptionName, T, subscriber)
 	case deployment.Environment:
 		return newPostgresSubscription(pg.DSN, deploymentEnvironmentDeleteByIDSubscriptionName, T, subscriber)
 	default:
@@ -1470,6 +1431,8 @@ func (pg *Postgres) SubscribeToDeleteAll(ctx context.Context, T resources.T, sub
 		return newPostgresSubscription(pg.DSN, releaseManualPilotDeleteAllSubscriptionName, T, subscriber)
 	case release.Rollout:
 		return newPostgresSubscription(pg.DSN, releaseRolloutDeleteAllSubscriptionName, T, subscriber)
+	case security.Token:
+		return newPostgresSubscription(pg.DSN, securityTokenDeleteAllSubscriptionName, T, subscriber)
 	case deployment.Environment:
 		return newPostgresSubscription(pg.DSN, deploymentEnvironmentDeleteAllSubscriptionName, T, subscriber)
 	default:

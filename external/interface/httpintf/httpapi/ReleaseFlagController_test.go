@@ -1,7 +1,6 @@
 package httpapi_test
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -20,34 +19,34 @@ import (
 	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client"
 	swagger "github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client/release"
 	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/models"
-	. "github.com/toggler-io/toggler/testing"
+	sh "github.com/toggler-io/toggler/spechelper"
 )
 
 func TestReleaseFlagController(t *testing.T) {
 	s := testcase.NewSpec(t)
 	s.Parallel()
-	SetUp(s)
+	sh.SetUp(s)
 
-	HandlerSpec(s, func(t *testcase.T) http.Handler {
-		return httpapi.NewReleaseFlagHandler(ExampleUseCases(t))
+	HandlerLet(s, func(t *testcase.T) http.Handler {
+		return httpapi.NewReleaseFlagHandler(sh.ExampleUseCases(t))
 	})
 
 	ContentTypeIsJSON(s)
 
-	LetContext(s, func(t *testcase.T) context.Context {
-		return GetContext(t)
+	Context.Let(s, func(t *testcase.T) interface{} {
+		return sh.GetContext(t)
 	})
 
 	s.Describe(`POST / - create release flag`, SpecReleaseFlagControllerCreate)
 	s.Describe(`GET / - list release flags`, SpecReleaseFlagControllerList)
 
 	s.Context(`given we have a release flag in the system`, func(s *testcase.Spec) {
-		GivenWeHaveReleaseFlag(s, `release-flag`)
+		sh.GivenWeHaveReleaseFlag(s, `release-flag`)
 
 		var andFlagIdentifierProvided = func(s *testcase.Spec, context func(s *testcase.Spec)) {
 			s.And(`release flag identifier provided as the external ID`, func(s *testcase.Spec) {
 				s.Let(`id`, func(t *testcase.T) interface{} {
-					return GetReleaseFlag(t, `release-flag`).ID
+					return sh.GetReleaseFlag(t, `release-flag`).ID
 				})
 
 				context(s)
@@ -72,9 +71,9 @@ func TestReleaseFlagController(t *testing.T) {
 }
 
 func SpecReleaseFlagControllerCreate(s *testcase.Spec) {
-	LetMethodValue(s, http.MethodPost)
-	LetPathValue(s, `/`)
-	GivenHTTPRequestHasAppToken(s)
+	Method.LetValue(s, http.MethodPost)
+	Path.LetValue(s, `/`)
+	sh.GivenHTTPRequestHasAppToken(s)
 
 	var onSuccess = func(t *testcase.T) (resp httpapi.CreateReleaseFlagResponse) {
 		rr := ServeHTTP(t)
@@ -84,14 +83,14 @@ func SpecReleaseFlagControllerCreate(s *testcase.Spec) {
 	}
 
 	s.After(func(t *testcase.T) {
-		require.Nil(t, ExampleStorage(t).DeleteAll(GetContext(t), release.Flag{}))
+		require.Nil(t, sh.StorageGet(t).DeleteAll(sh.GetContext(t), release.Flag{}))
 	})
 
 	s.Let(`release-flag`, func(t *testcase.T) interface{} {
-		return FixtureFactory{}.Create(release.Flag{}).(*release.Flag)
+		return sh.FixtureFactory{}.Create(release.Flag{}).(*release.Flag)
 	})
 
-	LetBody(s, func(t *testcase.T) interface{} {
+	Body.Let(s, func(t *testcase.T) interface{} {
 		var req httpapi.CreateReleaseFlagRequest
 		req.Body.Flag = *t.I(`release-flag`).(*release.Flag)
 		return req.Body
@@ -104,13 +103,13 @@ func SpecReleaseFlagControllerCreate(s *testcase.Spec) {
 	s.Then(`flag stored in the system`, func(t *testcase.T) {
 		onSuccess(t)
 		rfv := t.I(`release-flag`).(*release.Flag)
-		actualReleaseFlag := FindStoredReleaseFlagByName(t, rfv.Name)
+		actualReleaseFlag := sh.FindStoredReleaseFlagByName(t, rfv.Name)
 		require.Equal(t, rfv.Name, actualReleaseFlag.Name)
 	})
 
 	s.Then(`it returns flag in the response`, func(t *testcase.T) {
 		resp := onSuccess(t)
-		flag := *FindStoredReleaseFlagByName(t, t.I(`release-flag`).(*release.Flag).Name)
+		flag := *sh.FindStoredReleaseFlagByName(t, t.I(`release-flag`).(*release.Flag).Name)
 		require.Equal(t, flag.Name, resp.Body.Flag.Name)
 	})
 
@@ -131,10 +130,10 @@ func SpecReleaseFlagControllerCreate(s *testcase.Spec) {
 	})
 
 	s.Context(`E2E`, func(s *testcase.Spec) {
-		s.Tag(TagBlackBox)
+		s.Tag(sh.TagBlackBox)
 
 		s.Test(`swagger`, func(t *testcase.T) {
-			sm, err := httpintf.NewServeMux(ExampleUseCases(t))
+			sm, err := httpintf.NewServeMux(sh.ExampleUseCases(t))
 			require.Nil(t, err)
 
 			s := httptest.NewServer(sm)
@@ -165,9 +164,9 @@ func SpecReleaseFlagControllerCreate(s *testcase.Spec) {
 }
 
 func SpecReleaseFlagControllerList(s *testcase.Spec) {
-	LetMethodValue(s, http.MethodGet)
-	LetPathValue(s, `/`)
-	GivenHTTPRequestHasAppToken(s)
+	Method.LetValue(s, http.MethodGet)
+	Path.LetValue(s, `/`)
+	sh.GivenHTTPRequestHasAppToken(s)
 
 	var onSuccess = func(t *testcase.T) httpapi.ListReleaseFlagResponse {
 		var resp httpapi.ListReleaseFlagResponse
@@ -178,7 +177,7 @@ func SpecReleaseFlagControllerList(s *testcase.Spec) {
 	}
 
 	s.And(`no flag present in the system`, func(s *testcase.Spec) {
-		NoReleaseFlagPresentInTheStorage(s)
+		sh.NoReleaseFlagPresentInTheStorage(s)
 
 		s.Then(`empty result received`, func(t *testcase.T) {
 			require.Empty(t, onSuccess(t).Body.Flags)
@@ -186,43 +185,43 @@ func SpecReleaseFlagControllerList(s *testcase.Spec) {
 	})
 
 	s.And(`release flag is present in the system`, func(s *testcase.Spec) {
-		GivenWeHaveReleaseFlag(s, `feature-1`)
-		s.Before(func(t *testcase.T) { GetReleaseFlag(t, `feature-1`) }) // eager load
+		sh.GivenWeHaveReleaseFlag(s, `feature-1`)
+		s.Before(func(t *testcase.T) { sh.GetReleaseFlag(t, `feature-1`) }) // eager load
 
 		s.Then(`flag received back`, func(t *testcase.T) {
 			resp := onSuccess(t)
 			require.Len(t, resp.Body.Flags, 1)
-			require.Contains(t, resp.Body.Flags, *GetReleaseFlag(t, `feature-1`))
+			require.Contains(t, resp.Body.Flags, *sh.GetReleaseFlag(t, `feature-1`))
 		})
 
 		s.And(`even multiple flag in the system`, func(s *testcase.Spec) {
-			GivenWeHaveReleaseFlag(s, `feature-2`)
-			s.Before(func(t *testcase.T) { GetReleaseFlag(t, `feature-2`) }) // eager load
+			sh.GivenWeHaveReleaseFlag(s, `feature-2`)
+			s.Before(func(t *testcase.T) { sh.GetReleaseFlag(t, `feature-2`) }) // eager load
 
 			s.Then(`the flags will be received back`, func(t *testcase.T) {
 				resp := onSuccess(t)
 
 				require.Len(t, resp.Body.Flags, 2)
-				require.Contains(t, resp.Body.Flags, *GetReleaseFlag(t, `feature-2`))
+				require.Contains(t, resp.Body.Flags, *sh.GetReleaseFlag(t, `feature-2`))
 			})
 		})
 	})
 }
 
 func SpecReleaseFlagControllerUpdate(s *testcase.Spec) {
-	GivenHTTPRequestHasAppToken(s)
-	LetMethodValue(s, http.MethodPut)
-	LetPath(s, func(t *testcase.T) string {
+	sh.GivenHTTPRequestHasAppToken(s)
+	Method.LetValue(s, http.MethodPut)
+	Path.Let(s, func(t *testcase.T) interface{} {
 		return fmt.Sprintf(`/%s`, t.I(`id`))
 	})
 
 	s.Let(`updated-release-flag`, func(t *testcase.T) interface{} {
-		rf := FixtureFactory{}.Create(release.Flag{}).(*release.Flag)
-		rf.ID = GetReleaseFlag(t, `release-flag`).ID
+		rf := sh.FixtureFactory{}.Create(release.Flag{}).(*release.Flag)
+		rf.ID = sh.GetReleaseFlag(t, `release-flag`).ID
 		return rf
 	})
 
-	LetBody(s, func(t *testcase.T) interface{} {
+	Body.Let(s, func(t *testcase.T) interface{} {
 		var req httpapi.CreateReleaseFlagRequest
 		req.Body.Flag = *t.I(`updated-release-flag`).(*release.Flag)
 		return req.Body
@@ -240,7 +239,7 @@ func SpecReleaseFlagControllerUpdate(s *testcase.Spec) {
 		resp := onSuccess(t)
 
 		updatedReleaseFlagView := t.I(`updated-release-flag`).(*release.Flag)
-		stored := FindStoredReleaseFlagByName(t, updatedReleaseFlagView.Name)
+		stored := sh.FindStoredReleaseFlagByName(t, updatedReleaseFlagView.Name)
 		require.Equal(t, resp.Body.Flag, *stored)
 	})
 
@@ -261,16 +260,16 @@ func SpecReleaseFlagControllerUpdate(s *testcase.Spec) {
 	})
 
 	s.Context(`E2E`, func(s *testcase.Spec) {
-		s.Tag(TagBlackBox)
+		s.Tag(sh.TagBlackBox)
 
 		s.Test(`swagger`, func(t *testcase.T) {
-			sm, err := httpintf.NewServeMux(ExampleUseCases(t))
+			sm, err := httpintf.NewServeMux(sh.ExampleUseCases(t))
 			require.Nil(t, err)
 
 			s := httptest.NewServer(sm)
 			defer s.Close()
 
-			id := GetReleaseFlag(t, `release-flag`).ID
+			id := sh.GetReleaseFlag(t, `release-flag`).ID
 
 			// TODO: ensure validation
 			p := swagger.NewUpdateReleaseFlagParams()

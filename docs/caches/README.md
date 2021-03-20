@@ -18,6 +18,8 @@ A cache ttl duration in string format must be a unsigned sequence of
 decimal numbers, each with optional fraction and a unit suffix,
 such as "300ms", "1.5h" or "2h45m".
 Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+ 
+The default `TTL` is `5m`. 
 
 ## in-memory
 
@@ -28,22 +30,15 @@ export CACHE_URL="memory"
 ```
 
 the in-memory cache will keep storage results in the memory,
-and periodically sync (every ~1m) the cached data with the storage.
+and subscribe to any event that would invalidate the cached data compared to the storage.
 
-Based on the frequency of the access of a certain value, 
-the data kept in the memory.
+Based on the frequency of the access of a certain value, the data kept in the memory.
 
 This solution will remove spikes from your storage,
 and introduce a more distributed usage on it.
 
-The default `TTL` is `5m`. 
-You can modify this trough the `CACHE_TTL`.
-
-The trade-off with this is that your data freshness will suffer from a `1m` latency,
-So kill switches and flag release changes will need time before they take effect.
-
-Also keep in mind that this solution use the memory of the web servers,
-and they are not synchronized between the web servers.
+Keep in mind that this solution use the memory of the web servers,
+and they are not synchronized proactively between the web servers.
 
 ## redis
 

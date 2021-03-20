@@ -7,15 +7,16 @@ import (
 	"time"
 
 	"github.com/adamluzsi/testcase"
+	"github.com/toggler-io/toggler/domains/toggler"
 
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/require"
 
 	"github.com/toggler-io/toggler/external/resource/storages"
 
-	. "github.com/toggler-io/toggler/testing"
+	sh "github.com/toggler-io/toggler/spechelper"
 
-	"github.com/toggler-io/toggler/domains/toggler/specs"
+	"github.com/toggler-io/toggler/domains/toggler/contracts"
 )
 
 func BenchmarkPostgres(b *testing.B) {
@@ -29,9 +30,11 @@ func BenchmarkPostgres(b *testing.B) {
 	storage, err := storages.NewPostgres(db, dsn)
 	require.Nil(b, err)
 
-	specs.Storage{
-		Subject:        storage,
-		FixtureFactory: DefaultFixtureFactory,
+	contracts.Storage{
+		Subject: func(tb testing.TB) toggler.Storage {
+			return storage
+		},
+		FixtureFactory: sh.DefaultFixtureFactory,
 	}.Benchmark(b)
 }
 
@@ -46,9 +49,11 @@ func TestPostgres(t *testing.T) {
 	storage, err := storages.NewPostgres(db, dsn)
 	require.Nil(t, err)
 
-	specs.Storage{
-		Subject:        storage,
-		FixtureFactory: DefaultFixtureFactory,
+	contracts.Storage{
+		Subject: func(tb testing.TB) toggler.Storage {
+			return storage
+		},
+		FixtureFactory: sh.DefaultFixtureFactory,
 	}.Test(t)
 }
 
@@ -68,10 +73,10 @@ func MustOpenDB(tb testing.TB) (*sql.DB, string) {
 }
 
 func getDatabaseConnectionString(tb testing.TB) string {
-	databaseURL, isSet := os.LookupEnv("TEST_STORAGE_URL_POSTGRES")
+	databaseURL, isSet := os.LookupEnv("TEST_DATABASE_URL_POSTGRES")
 
 	if !isSet {
-		tb.Skip(`"TEST_STORAGE_URL_POSTGRES" env var is not set, therefore skipping this test`)
+		tb.Skip(`"TEST_DATABASE_URL_POSTGRES" env var is not set, therefore skipping this test`)
 	}
 
 	return databaseURL
@@ -93,7 +98,7 @@ func TestPostgres_Close(t *testing.T) {
 	}
 
 	s.Let(`DB`, func(t *testcase.T) interface{} {
-		db, _ := MustOpenDB(t.T)
+		db, _ := MustOpenDB(t)
 		t.Defer(db.Close)
 		return db
 	})

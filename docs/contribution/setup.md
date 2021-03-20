@@ -57,7 +57,7 @@ go test -bench . ./...
 ## To run the service locally with go compiler
 
 ```bash
-export DATABASE_URL=${TEST_STORAGE_URL_POSTGRES}
+export DATABASE_URL=${TEST_DATABASE_URL_POSTGRES}
 go run cmd/toggler/main.go create-token "token-owner-name"
 go run cmd/toggler/main.go http-server
 ```

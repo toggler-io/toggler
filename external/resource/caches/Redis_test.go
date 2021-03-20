@@ -4,35 +4,38 @@ import (
 	"os"
 	"testing"
 
+	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
-
-	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/resource/caches"
-	"github.com/toggler-io/toggler/external/resource/caches/specs"
-	. "github.com/toggler-io/toggler/testing"
+	"github.com/toggler-io/toggler/external/resource/caches/contracts"
+	sh "github.com/toggler-io/toggler/spechelper"
 )
 
-func TestRedis(t *testing.T) {
-	cache, err := caches.NewRedis(getTestRedisConnstr(t), nil)
-	require.Nil(t, err)
-	defer cache.Close()
-
-	factory := func(s toggler.Storage) caches.Interface {
-		cache.Storage = s
-		return cache
-	}
-
-	specs.Cache{
-		Factory:        factory,
-		FixtureFactory: DefaultFixtureFactory,
-	}.Test(t)
+func TestRedisCacheStorage(t *testing.T) {
+	SpecRedisCacheStorage(t)
 }
 
-func getTestRedisConnstr(t *testing.T) string {
-	value, isSet := os.LookupEnv(`TEST_CACHE_URL_REDIS`)
+func BenchmarkRedisCacheStorage(b *testing.B) {
+	SpecRedisCacheStorage(b)
+}
 
+func SpecRedisCacheStorage(tb testing.TB) {
+	connstr := getTestRedisConnstr(tb)
+	testcase.RunContract(tb, contracts.Storage{
+		Subject: func(tb testing.TB) caches.Storage {
+			cs, err := caches.NewRedisCacheStorage(connstr)
+			require.Nil(tb, err)
+			return cs
+		},
+		FixtureFactory: sh.DefaultFixtureFactory,
+	})
+}
+
+func getTestRedisConnstr(tb testing.TB) string {
+	const envKey = `TEST_CACHE_URL_REDIS`
+	value, isSet := os.LookupEnv(envKey)
 	if !isSet {
-		t.Skip(`redis url is not set in "TEST_CACHE_URL_REDIS"`)
+		tb.Skipf(`redis url is not index in "%s"`, envKey)
 	}
 
 	return value

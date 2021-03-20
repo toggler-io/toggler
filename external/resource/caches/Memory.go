@@ -3,519 +3,94 @@ package caches
 import (
 	"context"
 	"fmt"
-	"sort"
-	"strings"
-	"sync"
-	"time"
+	"reflect"
 
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources"
-
-	"github.com/toggler-io/toggler/domains/deployment"
-	"github.com/toggler-io/toggler/domains/release"
-	"github.com/toggler-io/toggler/domains/security"
-	"github.com/toggler-io/toggler/domains/toggler"
+	"github.com/adamluzsi/frameless/resources/storages/inmemory"
 )
 
-func NewInMemory(s toggler.Storage) *Memory {
-	c := &Memory{Storage: s, ttl: 5 * time.Minute}
-	c.Start()
-	return c
+func NewInMemoryCacheStorage() *InMemoryCacheStorage {
+	s := inmemory.New()
+	s.Options.DisableEventLogging = true
+	s.Options.DisableAsyncSubscriptionHandling = true
+	s.Options.DisableRelativePathResolvingForTrace = true
+	return &InMemoryCacheStorage{Storage: s}
 }
 
-//TODO: possible improvement to protect with mux around actions instead of set and lookup, so on concurrent access there will be only 1 find
-//TODO: implement cache invalidation with delete/update event streams in the next iterations
-type Memory struct {
-	toggler.Storage
-	cache map[string]map[string]*inMemoryCachedItem
-	ttl   time.Duration
-
-	lock   sync.Mutex
-	init   sync.Once
-	cancel func()
+type InMemoryCacheStorage struct {
+	*inmemory.Storage
 }
 
-func (c *Memory) SetTimeToLiveForValuesToCache(duration time.Duration) error {
-	c.ttl = duration
+func (c InMemoryCacheStorage) Close() error {
 	return nil
 }
 
-type inMemoryCachedItem struct {
-	value   interface{}
-	updater updater
-
-	createdAt   time.Time
-	lastAccess  time.Time
-	lastUpdated time.Time
-}
-
-func (c *Memory) Start() {
-	c.init.Do(func() {
-		var wg sync.WaitGroup
-		ctx, cancel := context.WithCancel(context.Background())
-		c.cancel = func() {
-			cancel()
-			wg.Wait()
-		}
-
-		wg.Add(+1)
-		go func() {
-			defer wg.Done()
-			select {
-			case <-ctx.Done():
-				return
-			case <-time.Tick(time.Second):
-				c.gcWRK()
-			}
-		}()
-
-		wg.Add(+1)
-		go func() {
-			defer wg.Done()
-			select {
-			case <-ctx.Done():
-				return
-			case <-time.Tick(time.Minute):
-				c.updateCacheItems()
-			}
-		}()
-	})
-}
-
-func (c *Memory) updateCacheItems() {
-	for _, nsv := range c.cache {
-		for _, item := range nsv {
-			if err := item.updater(setterFuncWrapper(func(value interface{}) {
-				item.value = value
-				item.lastUpdated = time.Now()
-			})); err != nil {
-			}
-		}
-	}
-}
-
-func (c *Memory) gcWRK() {
-	now := time.Now()
-	for _, nsv := range c.cache {
-		for key, item := range nsv {
-			// for now, using TTL on the created at time is enough,
-			// since we don't have push event about item deletion yet.
-			if now.Add(c.ttl * -1).After(item.lastAccess) {
-				c.lock.Lock()
-				delete(nsv, key)
-				c.lock.Unlock()
-			}
-		}
-	}
-}
-
-func (c *Memory) Close() error {
-	if c.cancel != nil {
-		c.cancel()
-	}
-	return c.Storage.Close()
-}
-
-type updater func(setter) error
-
-type setter interface {
-	set(value interface{})
-}
-
-type setterFuncWrapper func(value interface{})
-
-func (fn setterFuncWrapper) set(value interface{}) {
-	fn(value)
-}
-
-func (c *Memory) get(namespace, key string, upd updater) (interface{}, error) {
-	v, ok := c.lookup(namespace, key)
-	if !ok {
-		if err := upd(setterFuncWrapper(func(newValue interface{}) {
-			item, ok := c.namespace(namespace)[key]
-			if !ok {
-				item = &inMemoryCachedItem{value: newValue, updater: upd}
-				c.namespace(namespace)[key] = item
-				item.createdAt = time.Now()
-			}
-			item.lastAccess = time.Now()
-		})); err != nil {
-			return nil, err
-		}
-	}
-	v, _ = c.lookup(namespace, key)
-	return v, nil
-}
-
-func (c *Memory) namespaceKey(T interface{}) string {
-	switch T.(type) {
-	case release.Flag, *release.Flag:
-		return `release.Flag`
-	case release.ManualPilot, *release.ManualPilot:
-		return `release.ManualPilot`
-	case security.Token:
-		return `security.Token`
-	default:
-		return reflects.SymbolicName(T)
-	}
-}
-
-func (c *Memory) namespace(namespaceKey string) map[string]*inMemoryCachedItem {
-	if c.cache == nil {
-		c.cache = make(map[string]map[string]*inMemoryCachedItem)
-	}
-	if c.cache[namespaceKey] == nil {
-		c.cache[namespaceKey] = make(map[string]*inMemoryCachedItem)
-	}
-	return c.cache[namespaceKey]
-}
-
-func (c *Memory) dropCache() {
-	c.cache = nil
-}
-
-func (c *Memory) lookup(namespace, key string) (interface{}, bool) {
-	var (
-		value interface{}
-		found bool
-	)
-	if item, ok := c.namespace(namespace)[key]; ok {
-		value = item.value
-		item.lastAccess = time.Now()
-		found = true
-	}
-	return value, found
-}
-
-func (c *Memory) withLock() func() {
-	c.lock.Lock()
-	return c.lock.Unlock
-}
-
-////////////////////////////////////////// cached actions //////////////////////////////////////////
-
-func (c *Memory) Create(ctx context.Context, value interface{}) error {
-	defer c.withLock()()
-	c.dropCache()
-	return c.Storage.Create(ctx, value)
-}
-
-func (c *Memory) FindByID(ctx context.Context, ptr interface{}, id string) (_found bool, _err error) {
-	defer c.withLock()()
-
-	if shouldSkipCache(ctx) {
-		return c.Storage.FindByID(ctx, ptr, id)
-	}
-
-	type ValueOfFindByID struct {
-		value interface{}
-		found bool
-	}
-
-	v, err := c.get(c.namespaceKey(ptr), id, func(s setter) error {
-		found, err := c.Storage.FindByID(ctx, ptr, id)
-		if err != nil {
-			return err
-		}
-
-		s.set(&ValueOfFindByID{value: reflects.BaseValueOf(ptr).Interface(), found: found})
-		return nil
-	})
-
+func (c *InMemoryCacheStorage) UpsertMany(ctx context.Context, ptrs ...interface{}) (rErr error) {
+	tx, err := c.Storage.BeginTx(ctx)
 	if err != nil {
-		return false, err
-	}
-
-	fbii := v.(*ValueOfFindByID)
-	if !fbii.found {
-		return false, nil
-	}
-
-	return true, reflects.Link(fbii.value, ptr)
-}
-
-func (c *Memory) FindAll(ctx context.Context, T interface{}) iterators.Interface {
-	defer c.withLock()()
-
-	if shouldSkipCache(ctx) {
-		return c.Storage.FindAll(ctx, T)
-	}
-
-	const namespace = `FindAll`
-	v, err := c.get(namespace, c.namespaceKey(T), func(s setter) error {
-		iter := c.Storage.FindAll(ctx, T)
-		var results []interface{}
-		if err := iterators.Collect(iter, &results); err != nil {
-			return err
-		}
-		s.set(results)
-		return nil
-	})
-
-	if err != nil {
-		return iterators.NewError(err)
-	}
-
-	return iterators.NewSlice(v)
-}
-
-func (c *Memory) Update(ctx context.Context, ptr interface{}) error {
-	defer c.withLock()()
-	c.dropCache()
-	return c.Storage.Update(ctx, ptr)
-}
-
-func (c *Memory) DeleteByID(ctx context.Context, T interface{}, id string) error {
-	defer c.withLock()()
-	c.dropCache()
-	return c.Storage.DeleteByID(ctx, T, id)
-}
-
-func (c *Memory) DeleteAll(ctx context.Context, T interface{}) error {
-	defer c.withLock()()
-	c.dropCache()
-	return c.Storage.DeleteAll(ctx, T)
-}
-
-func (c *Memory) FindReleaseFlagByName(ctx context.Context, name string) (*release.Flag, error) {
-	defer c.withLock()()
-
-	if shouldSkipCache(ctx) {
-		return c.Storage.FindReleaseFlagByName(ctx, name)
-	}
-
-	const namespace = `FindReleaseFlagByName`
-
-	v, err := c.get(namespace, name, func(s setter) error {
-		ff, err := c.Storage.FindReleaseFlagByName(ctx, name)
-		if err != nil {
-			return err
-		}
-		s.set(ff)
-		return nil
-	})
-	return v.(*release.Flag), err
-}
-
-func (c *Memory) FindReleaseFlagsByName(ctx context.Context, names ...string) release.FlagEntries {
-	defer c.withLock()()
-
-	if shouldSkipCache(ctx) {
-		return c.Storage.FindReleaseFlagsByName(ctx, names...)
-	}
-
-	const namespace = `FindReleaseFlagsByName`
-
-	sort.Strings(names)
-	key := strings.Join(names, `.`)
-
-	v, err := c.get(namespace, key, func(s setter) error {
-		var flags []interface{}
-		if err := iterators.Collect(c.Storage.FindReleaseFlagsByName(ctx, names...), &flags); err != nil {
-			return err
-		}
-		s.set(flags)
-		return nil
-	})
-
-	if err != nil {
-		return iterators.NewError(err)
-	}
-
-	return iterators.NewSlice(v)
-}
-
-func (c *Memory) FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID, pilotExtID string) (*release.ManualPilot, error) {
-	defer c.withLock()()
-
-	if shouldSkipCache(ctx) {
-		return c.Storage.FindReleaseManualPilotByExternalID(ctx, flagID, envID, pilotExtID)
-	}
-
-	const namespace = `FindReleaseManualPilotByExternalID`
-	var key = fmt.Sprintf(`%s|%s|%s`, flagID, envID, pilotExtID)
-	v, err := c.get(namespace, key, func(s setter) error {
-		p, err := c.Storage.FindReleaseManualPilotByExternalID(ctx, flagID, envID, pilotExtID)
-		if err != nil {
-			return err
-		}
-		s.set(p)
-		return nil
-	})
-	return v.(*release.ManualPilot), err
-}
-
-func (c *Memory) FindReleasePilotsByReleaseFlag(ctx context.Context, flag release.Flag) release.PilotEntries {
-	defer c.withLock()()
-
-	if shouldSkipCache(ctx) {
-		return c.Storage.FindReleasePilotsByReleaseFlag(ctx, flag)
-	}
-
-	const namespace = `FindReleasePilotsByReleaseFlag`
-
-	if flag.ID == `` {
-		return iterators.NewEmpty()
-	}
-
-	if id, _ := resources.LookupID(flag); id == `` {
-		return iterators.NewEmpty()
-	}
-
-	v, err := c.get(namespace, flag.ID, func(s setter) error {
-		var pilots []interface{}
-		if err := iterators.Collect(c.Storage.FindReleasePilotsByReleaseFlag(ctx, flag), &pilots); err != nil {
-			return err
-		}
-		s.set(pilots)
-		return nil
-	})
-
-	if err != nil {
-		return iterators.NewError(err)
-	}
-
-	return iterators.NewSlice(v)
-}
-
-func (c *Memory) FindReleasePilotsByExternalID(ctx context.Context, pilotExtID string) release.PilotEntries {
-	defer c.withLock()()
-
-	if shouldSkipCache(ctx) {
-		return c.Storage.FindReleasePilotsByExternalID(ctx, pilotExtID)
-	}
-
-	const namespace = `FindReleasePilotsByExternalID`
-
-	v, err := c.get(namespace, pilotExtID, func(s setter) error {
-		var pilots []interface{}
-		if err := iterators.Collect(c.Storage.FindReleasePilotsByExternalID(ctx, pilotExtID), &pilots); err != nil {
-			return err
-		}
-		s.set(pilots)
-		return nil
-	})
-
-	if err != nil {
-		return iterators.NewError(err)
-	}
-	return iterators.NewSlice(v)
-}
-
-func (c *Memory) FindTokenBySHA512Hex(ctx context.Context, sha512hex string) (*security.Token, error) {
-	defer c.withLock()()
-
-	if shouldSkipCache(ctx) {
-		return c.Storage.FindTokenBySHA512Hex(ctx, sha512hex)
-	}
-
-	const namespace = `FindTokenBySHA512Hex`
-	v, err := c.get(namespace, sha512hex, func(s setter) error {
-		t, err := c.Storage.FindTokenBySHA512Hex(ctx, sha512hex)
-		if err != nil {
-			return err
-		}
-		s.set(t)
-		return nil
-	})
-	return v.(*security.Token), err
-}
-
-func (c *Memory) FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx context.Context, flag release.Flag, environment deployment.Environment, rollout *release.Rollout) (bool, error) {
-	defer c.withLock()()
-
-	if shouldSkipCache(ctx) {
-		return c.Storage.FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx, flag, environment, rollout)
-	}
-
-	type FindReleaseRolloutByReleaseFlagAndDeploymentEnvironmentValue struct {
-		value release.Rollout
-		found bool
-	}
-
-	key := strings.Join([]string{`flag`, flag.ID, `env`, environment.ID}, `/`)
-
-	v, err := c.get(c.namespaceKey(FindReleaseRolloutByReleaseFlagAndDeploymentEnvironmentValue{}), key, func(s setter) error {
-		var r release.Rollout
-		found, err := c.Storage.FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx, flag, environment, &r)
-		if err != nil {
-			return err
-		}
-
-		s.set(&FindReleaseRolloutByReleaseFlagAndDeploymentEnvironmentValue{value: r, found: found})
-		return nil
-	})
-
-	if err != nil {
-		return false, err
-	}
-
-	result := v.(*FindReleaseRolloutByReleaseFlagAndDeploymentEnvironmentValue)
-	if !result.found {
-		return false, nil
-	}
-
-	return true, reflects.Link(result.value, rollout)
-}
-
-func (c *Memory) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrName string, env *deployment.Environment) (bool, error) {
-	defer c.withLock()()
-
-	if shouldSkipCache(ctx) {
-		return c.Storage.FindDeploymentEnvironmentByAlias(ctx, idOrName, env)
-	}
-
-	type FindDeploymentEnvironmentByAliasValue struct {
-		value deployment.Environment
-		found bool
-	}
-
-	key := strings.Join([]string{`idOrName`, idOrName, `env`, env.ID}, `/`)
-
-	v, err := c.get(c.namespaceKey(FindDeploymentEnvironmentByAliasValue{}), key, func(s setter) error {
-		var d deployment.Environment
-		found, err := c.Storage.FindDeploymentEnvironmentByAlias(ctx, idOrName, &d)
-		if err != nil {
-			return err
-		}
-
-		s.set(&FindDeploymentEnvironmentByAliasValue{value: d, found: found})
-		return nil
-	})
-
-	if err != nil {
-		return false, err
-	}
-
-	value := v.(*FindDeploymentEnvironmentByAliasValue)
-	if !value.found {
-		return false, nil
-	}
-
-	return true, reflects.Link(value.value, env)
-}
-
-func (c *Memory) BeginTx(ctx context.Context) (context.Context, error) {
-	return c.Storage.BeginTx(contextWithNoCache(ctx))
-}
-
-func (c *Memory) CommitTx(ctx context.Context) error {
-	if err := c.Storage.CommitTx(ctx); err != nil {
 		return err
 	}
+	defer func() {
+		if rErr != nil {
+			_ = c.Storage.RollbackTx(tx)
+		}
+	}()
 
-	noCacheDone(ctx)
-	c.dropCache()
-	return nil
+	for _, ptr := range ptrs {
+		id, _ := resources.LookupID(ptr)
+		n := reflect.New(reflects.BaseTypeOf(ptr)).Interface()
+		if found, err := c.Storage.FindByID(ctx, n, id); err != nil {
+			return err
+		} else if found {
+			if err := c.Storage.Update(tx, ptr); err != nil {
+				return err
+			}
+			continue
+		}
+
+		if err := c.Storage.Create(tx, ptr); err != nil {
+			return err
+		}
+	}
+	return c.Storage.CommitTx(tx)
 }
 
-func (c *Memory) RollbackTx(ctx context.Context) error {
-	if err := c.Storage.RollbackTx(ctx); err != nil {
-		return err
+func (c *InMemoryCacheStorage) FindByIDs(ctx context.Context, T resources.T, ids ...interface{}) iterators.Interface {
+	index := make(index)
+	for _, id := range ids {
+		index.Add(id)
 	}
 
-	noCacheDone(ctx)
-	c.dropCache()
-	return nil
+	pipe, sender := iterators.NewPipe()
+	go func() {
+		defer sender.Close()
+
+		iter := iterators.Filter(c.Storage.FindAll(ctx, T), func(ent interface{}) bool {
+			id, _ := resources.LookupID(ent)
+			return index.Has(id)
+		})
+
+		var total int
+		rT := reflect.TypeOf(T)
+		for iter.Next() {
+			total++
+			ptr := reflect.New(rT)
+
+			if err := iter.Decode(ptr.Interface()); err != nil {
+				sender.Error(err)
+				return
+			}
+
+			if err := sender.Encode(ptr.Elem().Interface()); err != nil {
+				return
+			}
+		}
+
+		if total != len(index) {
+			sender.Error(fmt.Errorf(`not all %T was found by id: %d/%d`, T, total, len(index)))
+		}
+	}()
+	return pipe
 }
