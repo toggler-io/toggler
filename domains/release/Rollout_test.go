@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/toggler-io/toggler/domains/release"
-	. "github.com/toggler-io/toggler/testing"
+	sh "github.com/toggler-io/toggler/spechelper"
 )
 
 var (
@@ -31,7 +31,7 @@ var (
 
 func TestRolloutDecisionByPercentage(t *testing.T) {
 	s := testcase.NewSpec(t)
-	SetUp(s)
+	sh.SetUp(s)
 
 	var rolloutDefinition = func(t *testcase.T) release.RolloutDecisionByPercentage {
 		r := release.NewRolloutDecisionByPercentage()
@@ -49,7 +49,7 @@ func TestRolloutDecisionByPercentage(t *testing.T) {
 
 	s.Describe(`IsParticipating`, func(s *testcase.Spec) {
 		var subject = func(t *testcase.T) (bool, error) {
-			return rolloutDefinition(t).IsParticipating(GetContext(t), ExampleExternalPilotID(t))
+			return rolloutDefinition(t).IsParticipating(sh.GetContext(t), sh.ExampleExternalPilotID(t))
 		}
 
 		var onSuccess = func(t *testcase.T) bool {
@@ -144,7 +144,7 @@ func TestRolloutDecisionByPercentage(t *testing.T) {
 
 func TestRolloutDecisionByAPI(t *testing.T) {
 	s := testcase.NewSpec(t)
-	SetUp(s)
+	sh.SetUp(s)
 
 	var rolloutDefinition = func(t *testcase.T) release.RolloutDecisionByAPI {
 		r := release.NewRolloutDecisionByAPI()
@@ -154,7 +154,7 @@ func TestRolloutDecisionByAPI(t *testing.T) {
 
 	s.Describe(`IsParticipating`, func(s *testcase.Spec) {
 		var subject = func(t *testcase.T) (bool, error) {
-			return rolloutDefinition(t).IsParticipating(GetContext(t), ExampleExternalPilotID(t))
+			return rolloutDefinition(t).IsParticipating(sh.GetContext(t), sh.ExampleExternalPilotID(t))
 		}
 
 		const testServerLetVar = `httptest.NewServer`
@@ -169,7 +169,7 @@ func TestRolloutDecisionByAPI(t *testing.T) {
 		s.Let(testServerLetVar, func(t *testcase.T) interface{} {
 			s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				q := r.URL.Query()
-				require.Equal(t, ExampleExternalPilotID(t), q.Get(`pilot-external-id`))
+				require.Equal(t, sh.ExampleExternalPilotID(t), q.Get(`pilot-external-id`))
 				w.WriteHeader(t.I(`replyCode`).(int))
 			}))
 			t.Defer(s.Close)
@@ -265,7 +265,7 @@ func TestRolloutDecisionByIPAddress(t *testing.T) {
 	//	t.Log(`the flag has 0 as release percentage`)
 	//	getReleaseFlag(t).Rollout.Strategy.Percentage = 0
 	//	t.Log(`the flag is saved in the storage`)
-	//	require.Nil(t, ExampleStorage(t).Create(GetContext(t), getReleaseFlag(t)))
+	//	require.Nil(t, StorageGet(t).Create(GetContext(t), getReleaseFlag(t)))
 	//})
 	//
 	//s.Let(`ip-addr`, func(t *testcase.T) interface{} {
@@ -288,7 +288,7 @@ func TestRolloutDecisionByIPAddress(t *testing.T) {
 	//
 	//s.Describe(`relation with GetAllReleaseFlagStatesOfThePilot`, func(s *testcase.Spec) {
 	//	releaseFlagState := func(t *testcase.T) bool {
-	//		fc := release.NewFlagChecker(ExampleStorage(t))
+	//		fc := release.NewFlagChecker(StorageGet(t))
 	//		ctx := context.WithValue(GetContext(t), release.CtxPilotIpAddr, t.I(`ip-addr`).(string))
 	//		states, err := fc.GetAllReleaseFlagStatesOfThePilot(ctx, ExampleReleaseFlagName(t), *ExampleDeploymentEnvironment(t), ExampleExternalPilotID(t))
 	//		require.Nil(t, err)
@@ -425,14 +425,14 @@ func TestPseudoRandPercentageGenerator_FNV1a64(t *testing.T) {
 
 func TestRollout(t *testing.T) {
 	s := testcase.NewSpec(t)
-	SetUp(s)
+	sh.SetUp(s)
 
 	var rollout = func(t *testcase.T) *release.Rollout { return t.I(`rollout`).(*release.Rollout) }
 	s.Let(`rollout`, func(t *testcase.T) interface{} {
 		plan, _ := t.I(`plan`).(release.RolloutDefinition)
 		return &release.Rollout{
-			FlagID:                  ExampleReleaseFlag(t).ID,
-			DeploymentEnvironmentID: ExampleDeploymentEnvironment(t).ID,
+			FlagID:                  sh.ExampleReleaseFlag(t).ID,
+			DeploymentEnvironmentID: sh.ExampleDeploymentEnvironment(t).ID,
 			Plan:                    plan,
 		}
 	})

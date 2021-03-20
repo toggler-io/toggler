@@ -8,14 +8,14 @@ import (
 	"github.com/adamluzsi/testcase"
 
 	"github.com/toggler-io/toggler/domains/release"
-	. "github.com/toggler-io/toggler/testing"
+	sh "github.com/toggler-io/toggler/spechelper"
 )
 
 func TestFlag(t *testing.T) {
 	s := testcase.NewSpec(t)
 
 	s.Let(`flag`, func(t *testcase.T) interface{} {
-		return Create(release.Flag{})
+		return sh.Create(release.Flag{})
 	})
 
 	s.Describe(`Validate`, func(s *testcase.Spec) {
@@ -30,7 +30,7 @@ func TestFlag(t *testing.T) {
 		})
 
 		s.When(`name is empty`, func(s *testcase.Spec) {
-			s.Before(func(t *testcase.T) { GetReleaseFlag(t, `flag`).Name = `` })
+			s.Before(func(t *testcase.T) { sh.GetReleaseFlag(t, `flag`).Name = `` })
 
 			s.Then(`error reported`, func(t *testcase.T) {
 				require.Equal(t, release.ErrNameIsEmpty, subject(t))

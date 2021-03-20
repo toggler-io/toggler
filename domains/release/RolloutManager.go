@@ -207,9 +207,14 @@ func (manager *RolloutManager) DeleteFeatureFlag(ctx context.Context, id string)
 	if err != nil {
 		return err
 	}
+	var noRollback bool
 	defer func() {
 		if returnErr != nil {
-			manager.Storage.RollbackTx(ctx)
+			if noRollback {
+				return
+			}
+
+			_ = manager.Storage.RollbackTx(ctx)
 			return
 		}
 
@@ -217,6 +222,7 @@ func (manager *RolloutManager) DeleteFeatureFlag(ctx context.Context, id string)
 	}()
 
 	if id == `` {
+		noRollback = true
 		return fmt.Errorf(`entity id is empty`)
 	}
 
@@ -227,6 +233,7 @@ func (manager *RolloutManager) DeleteFeatureFlag(ctx context.Context, id string)
 		return err
 	}
 	if !found {
+		noRollback = true
 		return fmt.Errorf(`ErrNotFound`)
 	}
 

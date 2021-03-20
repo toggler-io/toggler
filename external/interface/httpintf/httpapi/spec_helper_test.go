@@ -11,11 +11,11 @@ import (
 
 	"github.com/toggler-io/toggler/domains/security"
 
-	. "github.com/toggler-io/toggler/testing"
+	sh "github.com/toggler-io/toggler/spechelper"
 )
 
 func CreateSecurityTokenString(t *testcase.T) string {
-	textToken, token, err := security.NewIssuer(ExampleStorage(t)).CreateNewToken(GetContext(t), ExampleUniqueUserID(t), nil, nil)
+	textToken, token, err := security.NewIssuer(sh.StorageGet(t)).CreateNewToken(sh.GetContext(t), sh.ExampleUniqueUserID(t), nil, nil)
 	require.Nil(t, err)
 	require.NotNil(t, token)
 	require.NotEmpty(t, token.SHA512)
@@ -39,6 +39,6 @@ func protectedAuth(t *testcase.T) runtime.ClientAuthInfoWriterFunc {
 			return err
 		}
 
-		return request.SetHeaderParam(`X-APP-TOKEN`, ExampleTextToken(t))
+		return request.SetHeaderParam(`X-APP-TOKEN`, sh.ExampleTextToken(t))
 	}
 }

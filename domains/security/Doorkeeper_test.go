@@ -7,21 +7,21 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/toggler-io/toggler/domains/security"
-	. "github.com/toggler-io/toggler/testing"
+	sh "github.com/toggler-io/toggler/spechelper"
 )
 
 func TestDoorkeeper(t *testing.T) {
 	s := testcase.NewSpec(t)
 	s.Parallel()
-	SetUp(s)
+	sh.SetUp(s)
 
 	s.Let(`doorkeeper`, func(t *testcase.T) interface{} {
-		return security.NewDoorkeeper(ExampleStorage(t))
+		return security.NewDoorkeeper(sh.StorageGet(t))
 	})
 
 	s.Let(`token`, func(t *testcase.T) interface{} {
-		issuer := security.NewIssuer(ExampleStorage(t))
-		textToken, token, err := issuer.CreateNewToken(GetContext(t), ExampleUniqueUserID(t), nil, nil)
+		issuer := security.NewIssuer(sh.StorageGet(t))
+		textToken, token, err := issuer.CreateNewToken(sh.GetContext(t), sh.ExampleUniqueUserID(t), nil, nil)
 		t.Let(`text token`, textToken)
 		require.Nil(t, err)
 		return token
@@ -42,7 +42,7 @@ func SpecDoorkeeperVerifyTextToken(s *testcase.Spec) {
 
 	s.Describe(`VerifyTextToken`, func(s *testcase.Spec) {
 		subject := func(t *testcase.T) (bool, error) {
-			return doorkeeper(t).VerifyTextToken(GetContext(t), getTextToken(t))
+			return doorkeeper(t).VerifyTextToken(sh.GetContext(t), getTextToken(t))
 		}
 
 		onSuccess := func(t *testcase.T) bool {
@@ -53,7 +53,7 @@ func SpecDoorkeeperVerifyTextToken(s *testcase.Spec) {
 
 		s.When(`token is a known resource`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				persisted, err := ExampleStorage(t).FindByID(GetContext(t), &security.Token{}, getToken(t).ID)
+				persisted, err := sh.StorageGet(t).FindByID(sh.GetContext(t), &security.Token{}, getToken(t).ID)
 				require.Nil(t, err)
 				require.True(t, persisted)
 			})
@@ -65,7 +65,7 @@ func SpecDoorkeeperVerifyTextToken(s *testcase.Spec) {
 
 		s.When(`token is unknown`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, ExampleStorage(t).DeleteByID(GetContext(t), security.Token{}, getToken(t).ID))
+				require.Nil(t, sh.StorageGet(t).DeleteByID(sh.GetContext(t), security.Token{}, getToken(t).ID))
 			})
 
 			s.Then(`it will reject it`, func(t *testcase.T) {

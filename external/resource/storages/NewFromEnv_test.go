@@ -52,14 +52,14 @@ func TestNewFromEnv(t *testing.T) {
 			storage, err := subject()
 			require.Nil(t, err)
 			require.NotNil(t, storage)
-			_, ok := storage.(*storages.InMemory)
+			_, ok := storage.(*storages.Memory)
 			require.True(t, ok)
 		})
 	})
 
 	s.When(`Amazon Relational Database Service variables are set`, func(s *testcase.Spec) {
 		s.Let(`pg_url`, func(t *testcase.T) interface{} {
-			u, err := url.Parse(os.Getenv(`TEST_STORAGE_URL_POSTGRES`))
+			u, err := url.Parse(os.Getenv(`TEST_DATABASE_URL_POSTGRES`))
 			require.Nil(t, err)
 			return u
 		})

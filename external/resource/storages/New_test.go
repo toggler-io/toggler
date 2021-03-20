@@ -39,7 +39,7 @@ func TestNew(t *testing.T) {
 
 		s.When(`the connection string is a "postgres"`, func(s *testcase.Spec) {
 			s.Let(`connstr`, func(t *testcase.T) interface{} {
-				return os.Getenv(`TEST_STORAGE_URL_POSTGRES`)
+				return os.Getenv(`TEST_DATABASE_URL_POSTGRES`)
 			})
 
 			s.Then(`then it will return postgres implementation`, func(t *testcase.T) {
@@ -53,7 +53,7 @@ func TestNew(t *testing.T) {
 			s.Let(`connstr`, func(t *testcase.T) interface{} { return `memory` })
 
 			s.Then(`then it will return "inmemory" implementation`, func(t *testcase.T) {
-				_, isThat := onSuccess(t).(*storages.InMemory)
+				_, isThat := onSuccess(t).(*storages.Memory)
 
 				require.True(t, isThat)
 			})

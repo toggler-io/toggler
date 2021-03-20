@@ -3,10 +3,9 @@ module github.com/toggler-io/toggler
 go 1.14
 
 require (
-	github.com/Pallinder/go-randomdata v1.2.0
-	github.com/adamluzsi/frameless v0.13.2
+	github.com/adamluzsi/frameless v0.27.2
 	github.com/adamluzsi/gorest v0.6.1
-	github.com/adamluzsi/testcase v0.13.0
+	github.com/adamluzsi/testcase v0.37.4
 	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535 // indirect
 	github.com/go-openapi/errors v0.19.4
 	github.com/go-openapi/runtime v0.19.15
@@ -17,7 +16,7 @@ require (
 	github.com/go-redis/redis v6.15.7+incompatible
 	github.com/go-swagger/go-swagger v0.23.0
 	github.com/golang-migrate/migrate/v4 v4.11.0
-	github.com/golang/mock v1.4.4
+	github.com/golang/mock v1.5.0
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.2
 	github.com/lib/pq v1.5.2
@@ -28,9 +27,9 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/russross/blackfriday v2.0.0+incompatible
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
-	github.com/stretchr/testify v1.6.1
-	github.com/unrolled/logger v0.0.0-20190327162521-be1a2406c7c9
+	github.com/stretchr/testify v1.7.0
+	github.com/unrolled/logger v0.0.0-20190327162521-be1a2406c7c9 // test
 	go.mongodb.org/mongo-driver v1.3.3 // indirect
-	golang.org/x/tools v0.0.0-20200924205911-8a9a89368bd3 // indirect
+	golang.org/x/sys v0.0.0-20210317225723-c4fcb01b228e // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 )

@@ -35,7 +35,7 @@ type FlagFinder interface {
 }
 
 type PilotFinder interface {
-	FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID, pilotExtID string) (*ManualPilot, error)
+	FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID interface{}, pilotExtID string) (*ManualPilot, error)
 	// deployment.Environment independent queries
 	FindReleasePilotsByReleaseFlag(ctx context.Context, flag Flag) PilotEntries
 	FindReleasePilotsByExternalID(ctx context.Context, externalID string) PilotEntries

@@ -19,24 +19,24 @@ import (
 	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client"
 	swagger "github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client/release"
 	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/models"
-	. "github.com/toggler-io/toggler/testing"
+	sh "github.com/toggler-io/toggler/spechelper"
 )
 
 func TestReleaseRolloutController(t *testing.T) {
 	s := testcase.NewSpec(t)
 	s.Parallel()
-	SetUp(s)
+	sh.SetUp(s)
 
-	HandlerSpec(s, func(t *testcase.T) http.Handler {
-		return httpapi.NewReleaseRolloutHandler(ExampleUseCases(t))
+	HandlerLet(s, func(t *testcase.T) http.Handler {
+		return httpapi.NewReleaseRolloutHandler(sh.ExampleUseCases(t))
 	})
 
 	ContentTypeIsJSON(s)
 
-	LetContext(s, func(t *testcase.T) context.Context {
-		ctx := GetContext(t)
-		ctx = context.WithValue(ctx, httpapi.DeploymentEnvironmentContextKey{}, *ExampleDeploymentEnvironment(t))
-		ctx = context.WithValue(ctx, httpapi.ReleaseFlagContextKey{}, *ExampleReleaseFlag(t))
+	Context.Let(s, func(t *testcase.T) interface{} {
+		ctx := sh.GetContext(t)
+		ctx = context.WithValue(ctx, httpapi.DeploymentEnvironmentContextKey{}, *sh.ExampleDeploymentEnvironment(t))
+		ctx = context.WithValue(ctx, httpapi.ReleaseFlagContextKey{}, *sh.ExampleReleaseFlag(t))
 		return ctx
 	})
 
@@ -45,11 +45,11 @@ func TestReleaseRolloutController(t *testing.T) {
 	s.Describe(`DELETE / - delete release rollout`, SpecReleaseRolloutControllerDelete)
 
 	s.Context(`given we have a release rollout in the system`, func(s *testcase.Spec) {
-		GivenWeHaveReleaseRollout(s, `rollout`, LetVarExampleReleaseFlag, LetVarExampleDeploymentEnvironment)
+		sh.GivenWeHaveReleaseRollout(s, `rollout`, sh.LetVarExampleReleaseFlag, sh.LetVarExampleDeploymentEnvironment)
 
 		s.And(`release rollout identifier provided as the external ID`, func(s *testcase.Spec) {
 			s.Let(`id`, func(t *testcase.T) interface{} {
-				return GetReleaseRollout(t, `rollout`).ID
+				return sh.GetReleaseRollout(t, `rollout`).ID
 			})
 
 			s.Describe(`PUT|PATCH /{id} - update a release rollout`,
@@ -59,17 +59,17 @@ func TestReleaseRolloutController(t *testing.T) {
 }
 
 func SpecReleaseRolloutControllerDelete(s *testcase.Spec) {
-	LetMethodValue(s, http.MethodDelete)
-	LetPathValue(s, `/`)
-	GivenHTTPRequestHasAppToken(s)
+	Method.LetValue(s, http.MethodDelete)
+	Path.LetValue(s, `/`)
+	sh.GivenHTTPRequestHasAppToken(s)
 
 	s.Test(`TODO: add the ability to delete rollout`, func(t *testcase.T) { t.Skip() })
 }
 
 func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
-	LetMethodValue(s, http.MethodPost)
-	LetPathValue(s, `/`)
-	GivenHTTPRequestHasAppToken(s)
+	Method.LetValue(s, http.MethodPost)
+	Path.LetValue(s, `/`)
+	sh.GivenHTTPRequestHasAppToken(s)
 
 	var onSuccess = func(t *testcase.T) (resp httpapi.CreateReleaseRolloutResponse) {
 		rr := ServeHTTP(t)
@@ -79,20 +79,20 @@ func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
 	}
 
 	s.After(func(t *testcase.T) {
-		require.Nil(t, ExampleStorage(t).DeleteAll(GetContext(t), release.Rollout{}))
-		require.Nil(t, ExampleStorage(t).DeleteAll(GetContext(t), release.Flag{}))
+		require.Nil(t, sh.StorageGet(t).DeleteAll(sh.GetContext(t), release.Rollout{}))
+		require.Nil(t, sh.StorageGet(t).DeleteAll(sh.GetContext(t), release.Flag{}))
 	})
 
 	s.Let(`rollout`, func(t *testcase.T) interface{} {
-		r := FixtureFactory{}.Create(release.Rollout{}).(*release.Rollout)
-		r.FlagID = ExampleReleaseFlag(t).ID
-		r.DeploymentEnvironmentID = ExampleDeploymentEnvironment(t).ID
-		r.Plan = *FixtureFactory{}.Create(release.RolloutDecisionByPercentage{}).(*release.RolloutDecisionByPercentage)
+		r := sh.FixtureFactory{}.Create(release.Rollout{}).(*release.Rollout)
+		r.FlagID = sh.ExampleReleaseFlag(t).ID
+		r.DeploymentEnvironmentID = sh.ExampleDeploymentEnvironment(t).ID
+		r.Plan = *sh.FixtureFactory{}.Create(release.RolloutDecisionByPercentage{}).(*release.RolloutDecisionByPercentage)
 		return r
 	})
 
-	LetBody(s, func(t *testcase.T) interface{} {
-		r := GetReleaseRollout(t, `rollout`)
+	Body.Let(s, func(t *testcase.T) interface{} {
+		r := sh.GetReleaseRollout(t, `rollout`)
 		var req httpapi.CreateReleaseRolloutRequest
 		t.Log(r)
 		req.Body.Rollout.Plan = release.RolloutDefinitionView{Definition: r.Plan}
@@ -105,7 +105,7 @@ func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
 
 	s.Then(`rollout stored in the system`, func(t *testcase.T) {
 		onSuccess(t)
-		rfv := *GetReleaseRollout(t, `rollout`)
+		rfv := *sh.GetReleaseRollout(t, `rollout`)
 		actualReleaseRollout := FindStoredReleaseRollout(t)
 		actualReleaseRollout.ID = ``
 		require.Equal(t, rfv, actualReleaseRollout)
@@ -124,7 +124,7 @@ func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
 			p := release.NewRolloutDecisionByPercentage()
 			p.Percentage = 120
-			GetReleaseRollout(t, `rollout`).Plan = p
+			sh.GetReleaseRollout(t, `rollout`).Plan = p
 		})
 
 		s.Then(`it will return with failure`, func(t *testcase.T) {
@@ -138,10 +138,10 @@ func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
 	})
 
 	s.Context(`E2E`, func(s *testcase.Spec) {
-		s.Tag(TagBlackBox)
+		s.Tag(sh.TagBlackBox)
 
 		s.Test(`swagger`, func(t *testcase.T) {
-			sm, err := httpintf.NewServeMux(ExampleUseCases(t))
+			sm, err := httpintf.NewServeMux(sh.ExampleUseCases(t))
 			require.Nil(t, err)
 
 			s := httptest.NewServer(sm)
@@ -155,8 +155,8 @@ func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
 			c := client.NewHTTPClientWithConfig(nil, tc)
 
 			p := swagger.NewCreateReleaseRolloutParams()
-			p.FlagID = ExampleReleaseFlag(t).ID
-			p.EnvironmentID = ExampleDeploymentEnvironment(t).ID
+			p.FlagID = sh.ExampleReleaseFlag(t).ID
+			p.EnvironmentID = sh.ExampleDeploymentEnvironment(t).ID
 			p.Body.Rollout = &models.Rollout{
 				Plan: release.RolloutDefinitionView{Definition: release.NewRolloutDecisionByPercentage()},
 			}
@@ -170,9 +170,9 @@ func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
 }
 
 func SpecReleaseRolloutControllerList(s *testcase.Spec) {
-	LetMethodValue(s, http.MethodGet)
-	LetPathValue(s, `/`)
-	GivenHTTPRequestHasAppToken(s)
+	Method.LetValue(s, http.MethodGet)
+	Path.LetValue(s, `/`)
+	sh.GivenHTTPRequestHasAppToken(s)
 
 	var onSuccess = func(t *testcase.T) httpapi.ListReleaseRolloutResponse {
 		var resp httpapi.ListReleaseRolloutResponse
@@ -183,7 +183,7 @@ func SpecReleaseRolloutControllerList(s *testcase.Spec) {
 	}
 
 	s.And(`no rollout present in the system`, func(s *testcase.Spec) {
-		NoReleaseRolloutPresentInTheStorage(s)
+		sh.NoReleaseRolloutPresentInTheStorage(s)
 
 		s.Then(`empty result received`, func(t *testcase.T) {
 			require.Empty(t, onSuccess(t).Body.Rollouts)
@@ -191,13 +191,13 @@ func SpecReleaseRolloutControllerList(s *testcase.Spec) {
 	})
 
 	s.And(`release rollout is present in the system`, func(s *testcase.Spec) {
-		GivenWeHaveReleaseRollout(s, `rollout-1`, LetVarExampleReleaseFlag, LetVarExampleDeploymentEnvironment)
-		s.Before(func(t *testcase.T) { GetReleaseRollout(t, `rollout-1`) }) // eager load
+		sh.GivenWeHaveReleaseRollout(s, `rollout-1`, sh.LetVarExampleReleaseFlag, sh.LetVarExampleDeploymentEnvironment)
+		s.Before(func(t *testcase.T) { sh.GetReleaseRollout(t, `rollout-1`) }) // eager load
 
 		s.Then(`rollout received back`, func(t *testcase.T) {
 			resp := onSuccess(t)
 			require.Len(t, resp.Body.Rollouts, 1)
-			rollout := GetReleaseRollout(t, `rollout-1`)
+			rollout := sh.GetReleaseRollout(t, `rollout-1`)
 			plan, err := release.RolloutDefinitionView{}.MarshalMapping(rollout.Plan)
 			require.Nil(t, err)
 
@@ -209,12 +209,12 @@ func SpecReleaseRolloutControllerList(s *testcase.Spec) {
 		})
 
 		s.And(`even multiple rollout in the system`, func(s *testcase.Spec) {
-			GivenWeHaveReleaseRollout(s, `feature-2`, LetVarExampleReleaseFlag, LetVarExampleDeploymentEnvironment)
-			s.Before(func(t *testcase.T) { GetReleaseRollout(t, `feature-2`) }) // eager load
+			sh.GivenWeHaveReleaseRollout(s, `feature-2`, sh.LetVarExampleReleaseFlag, sh.LetVarExampleDeploymentEnvironment)
+			s.Before(func(t *testcase.T) { sh.GetReleaseRollout(t, `feature-2`) }) // eager load
 
 			s.Then(`the rollouts will be received back`, func(t *testcase.T) {
 				resp := onSuccess(t)
-				rollout := GetReleaseRollout(t, `feature-2`)
+				rollout := sh.GetReleaseRollout(t, `feature-2`)
 				require.Len(t, resp.Body.Rollouts, 2)
 				plan, err := release.RolloutDefinitionView{}.MarshalMapping(rollout.Plan)
 				require.Nil(t, err)
@@ -237,24 +237,24 @@ func SpecReleaseRolloutControllerList(s *testcase.Spec) {
 }
 
 func SpecReleaseRolloutControllerUpdate(s *testcase.Spec) {
-	GivenHTTPRequestHasAppToken(s)
-	LetMethodValue(s, http.MethodPut)
-	LetPath(s, func(t *testcase.T) string {
+	sh.GivenHTTPRequestHasAppToken(s)
+	Method.LetValue(s, http.MethodPut)
+	Path.Let(s, func(t *testcase.T) interface{} {
 		return fmt.Sprintf(`/%s`, t.I(`id`))
 	})
 
 	s.Let(`updated-rollout`, func(t *testcase.T) interface{} {
-		rf := Create(release.Rollout{}).(*release.Rollout)
-		rollout := GetReleaseRollout(t, `rollout`)
+		rf := sh.Create(release.Rollout{}).(*release.Rollout)
+		rollout := sh.GetReleaseRollout(t, `rollout`)
 		rf.ID = rollout.ID
 		rf.FlagID = rollout.FlagID
 		rf.DeploymentEnvironmentID = rollout.DeploymentEnvironmentID
-		rf.Plan = *Create(release.RolloutDecisionByPercentage{}).(*release.RolloutDecisionByPercentage)
+		rf.Plan = *sh.Create(release.RolloutDecisionByPercentage{}).(*release.RolloutDecisionByPercentage)
 		return rf
 	})
 
-	LetBody(s, func(t *testcase.T) interface{} {
-		rollout := GetReleaseRollout(t, `updated-rollout`)
+	Body.Let(s, func(t *testcase.T) interface{} {
+		rollout := sh.GetReleaseRollout(t, `updated-rollout`)
 		var req httpapi.CreateReleaseRolloutRequest
 		req.Body.Rollout.Plan = release.RolloutDefinitionView{Definition: rollout.Plan}
 		return req.Body
@@ -270,7 +270,7 @@ func SpecReleaseRolloutControllerUpdate(s *testcase.Spec) {
 
 	s.Then(`rollout is updated in the system`, func(t *testcase.T) {
 		onSuccess(t)
-		updatedReleaseRolloutView := *GetReleaseRollout(t, `updated-rollout`)
+		updatedReleaseRolloutView := *sh.GetReleaseRollout(t, `updated-rollout`)
 		stored := FindStoredReleaseRollout(t)
 		require.Equal(t, updatedReleaseRolloutView, stored)
 	})
@@ -279,7 +279,7 @@ func SpecReleaseRolloutControllerUpdate(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
 			percentage := release.NewRolloutDecisionByPercentage()
 			percentage.Percentage = 128
-			GetReleaseRollout(t, `updated-rollout`).Plan = percentage
+			sh.GetReleaseRollout(t, `updated-rollout`).Plan = percentage
 		})
 
 		s.Then(`it will return with failure`, func(t *testcase.T) {
@@ -293,16 +293,16 @@ func SpecReleaseRolloutControllerUpdate(s *testcase.Spec) {
 	})
 
 	s.Context(`E2E`, func(s *testcase.Spec) {
-		s.Tag(TagBlackBox)
+		s.Tag(sh.TagBlackBox)
 
 		s.Test(`swagger`, func(t *testcase.T) {
-			sm, err := httpintf.NewServeMux(ExampleUseCases(t))
+			sm, err := httpintf.NewServeMux(sh.ExampleUseCases(t))
 			require.Nil(t, err)
 
 			s := httptest.NewServer(sm)
 			defer s.Close()
 
-			id := GetReleaseRollout(t, `rollout`).ID
+			id := sh.GetReleaseRollout(t, `rollout`).ID
 
 			tc := client.DefaultTransportConfig()
 			u, _ := url.Parse(s.URL)
@@ -313,8 +313,8 @@ func SpecReleaseRolloutControllerUpdate(s *testcase.Spec) {
 
 			p := swagger.NewUpdateReleaseRolloutParams()
 			p.RolloutID = id
-			p.FlagID = ExampleReleaseFlag(t).ID
-			p.EnvironmentID = ExampleDeploymentEnvironment(t).ID
+			p.FlagID = sh.ExampleReleaseFlag(t).ID
+			p.EnvironmentID = sh.ExampleDeploymentEnvironment(t).ID
 			p.Body.Rollout = &models.Rollout{
 				Plan: release.RolloutDefinitionView{Definition: release.NewRolloutDecisionByPercentage()},
 			}
@@ -328,10 +328,10 @@ func SpecReleaseRolloutControllerUpdate(s *testcase.Spec) {
 }
 
 func FindStoredReleaseRollout(t *testcase.T) release.Rollout {
-	flag := *ExampleReleaseFlag(t)
-	env := *ExampleDeploymentEnvironment(t)
+	flag := *sh.ExampleReleaseFlag(t)
+	env := *sh.ExampleDeploymentEnvironment(t)
 	var r release.Rollout
-	found, err := ExampleStorage(t).FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(GetContext(t), flag, env, &r)
+	found, err := sh.StorageGet(t).FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(sh.GetContext(t), flag, env, &r)
 	require.Nil(t, err)
 	require.True(t, found)
 	return r

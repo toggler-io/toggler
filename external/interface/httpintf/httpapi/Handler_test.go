@@ -13,17 +13,17 @@ import (
 	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/interface/httpintf"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
-	. "github.com/toggler-io/toggler/testing"
+	sh "github.com/toggler-io/toggler/spechelper"
 )
 
 func NewServeMux(t *testcase.T) *http.ServeMux {
-	m, err := httpintf.NewServeMux(ExampleUseCases(t))
+	m, err := httpintf.NewServeMux(sh.ExampleUseCases(t))
 	require.Nil(t, err)
 	return m
 }
 
 func NewHandler(t *testcase.T) *httpapi.Handler {
-	return httpapi.NewHandler(toggler.NewUseCases(ExampleStorage(t)))
+	return httpapi.NewHandler(toggler.NewUseCases(sh.StorageGet(t)))
 }
 
 func TestServeMuxRoutingPOC(t *testing.T) {

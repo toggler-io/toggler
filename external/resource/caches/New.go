@@ -6,7 +6,7 @@ import (
 	"github.com/toggler-io/toggler/domains/toggler"
 )
 
-func New(connstr string, storage toggler.Storage) (Interface, error) {
+func New(connstr string, src toggler.Storage) (toggler.Storage, error) {
 	var driver string = connstr
 
 	u, err := url.Parse(connstr)
@@ -18,12 +18,19 @@ func New(connstr string, storage toggler.Storage) (Interface, error) {
 		driver = u.Scheme
 	}
 
+	var cache Storage
 	switch driver {
 	case `redis`:
-		return NewRedis(connstr, storage)
+		s, err := NewRedisCacheStorage(connstr)
+		if err != nil {
+			return nil, err
+		}
+		cache = s
 	case `memory`:
-		return NewInMemory(storage), nil
+		cache = NewInMemoryCacheStorage()
 	default:
-		return NewNullCache(storage), nil
+		return src, nil
 	}
+
+	return NewManager(src, cache)
 }
