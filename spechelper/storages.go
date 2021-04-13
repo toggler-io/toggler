@@ -2,7 +2,6 @@ package spechelper
 
 import (
 	"os"
-	"sync"
 
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
@@ -49,13 +48,9 @@ func storageInit(t *testcase.T) interface{} {
 		return s
 	}
 
-	initCachedStorages.Do(func() {
-		s, err := storages.New(connstr)
-		require.Nil(t, err)
-		//t.Defer(storage.Close)
-		cachedStorages = s
-	})
-	var storage = cachedStorages
+	storage, err := storages.New(connstr)
+	require.Nil(t, err)
+	t.Defer(storage.Close)
 
 	// TODO: replace this solution for external interface testing with middleware approach where tx is injected to the request context.
 	// 	go runs each package tests in parallel, and as soon there would be multiple external interface tests, it would cause side effects between the two package testing suite.
@@ -81,8 +76,3 @@ func storageInit(t *testcase.T) interface{} {
 
 	return storage
 }
-
-var (
-	cachedStorages     toggler.Storage
-	initCachedStorages sync.Once
-)

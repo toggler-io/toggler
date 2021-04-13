@@ -13,6 +13,8 @@ type Storage interface {
 	resources.Deleter
 	TokenFinder
 
+	resources.OnePhaseCommitProtocol
+
 	resources.CreatorPublisher
 	resources.UpdaterPublisher
 	resources.DeleterPublisher

@@ -55,12 +55,12 @@ func (spec TokenStorage) Spec(tb testing.TB) {
 				Subject:        func(tb testing.TB) TokenFinderSubject { return spec.Subject(tb) },
 				FixtureFactory: spec.FixtureFactory,
 			},
-			//contracts.OnePhaseCommitProtocol{T: T,
-			//	Subject: func(tb testing.TB) contracts.OnePhaseCommitProtocolSubject {
-			//		return spec.Subject(tb)
-			//	},
-			//	FixtureFactory: spec.FixtureFactory,
-			//},
+			contracts.OnePhaseCommitProtocol{T: T,
+				Subject: func(tb testing.TB) contracts.OnePhaseCommitProtocolSubject {
+					return spec.Subject(tb)
+				},
+				FixtureFactory: spec.FixtureFactory,
+			},
 			contracts.CreatorPublisher{T: T,
 				Subject: func(tb testing.TB) contracts.CreatorPublisherSubject {
 					return spec.Subject(tb)

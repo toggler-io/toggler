@@ -113,8 +113,7 @@ func (s *Memory) FindReleaseManualPilotByExternalID(ctx context.Context, flagID,
 
 func (s *Memory) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrName string, env *deployment.Environment) (bool, error) {
 	var found bool
-
-	_ = s.Storage.InTx(ctx, func(tx *inmemory.MemoryTransaction) error {
+	return found, s.Storage.InTx(ctx, func(tx *inmemory.MemoryTransaction) error {
 		for _, v := range tx.ViewFor(deployment.Environment{}) {
 			record := v.(deployment.Environment)
 
@@ -127,8 +126,6 @@ func (s *Memory) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrName 
 
 		return nil
 	})
-
-	return found, nil
 }
 
 func (s *Memory) FindReleaseFlagByName(ctx context.Context, name string) (*release.Flag, error) {

@@ -1,11 +1,13 @@
 package contracts
 
 import (
+	"context"
 	"testing"
 
 	"github.com/adamluzsi/frameless/resources"
 	"github.com/adamluzsi/frameless/resources/contracts"
 	"github.com/adamluzsi/testcase"
+	"github.com/adamluzsi/testcase/fixtures"
 	"github.com/stretchr/testify/require"
 
 	"github.com/toggler-io/toggler/domains/deployment"
@@ -121,6 +123,28 @@ func (spec EnvironmentStorage) specFindDeploymentEnvironmentByAlias(s *testcase.
 			)
 		}
 	)
+
+	testcase.RunContract(s, contracts.FindOne{T: deployment.Environment{},
+		Subject:        func(tb testing.TB) contracts.CRD { return spec.Subject(tb) },
+		FixtureFactory: spec.FixtureFactory,
+		ToQuery: func(tb testing.TB, resource interface{}, ent contracts.T) contracts.QueryOne {
+			var (
+				storage   = resource.(EnvironmentStorageSubject)
+				env       = ent.(*deployment.Environment)
+				idOrAlias string
+			)
+			if fixtures.Random.Bool() {
+				tb.Log(`.ID is used as deployment environment alias`)
+				idOrAlias = env.ID
+			} else {
+				tb.Log(`.Name is used as deployment environment alias`)
+				idOrAlias = env.Name
+			}
+			return func(tb testing.TB, ctx context.Context, ptr contracts.T) (found bool, err error) {
+				return storage.FindDeploymentEnvironmentByAlias(ctx, idOrAlias, ptr.(*deployment.Environment))
+			}
+		},
+	})
 
 	s.When(`no environment stored`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {

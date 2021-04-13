@@ -10,6 +10,7 @@ import (
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/reflects"
 	"github.com/adamluzsi/frameless/resources"
+	contracts2 "github.com/adamluzsi/frameless/resources/contracts"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 	"github.com/toggler-io/toggler/domains/deployment"
@@ -207,12 +208,9 @@ func (spec Cache) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 
 		s.And(`after value already cached`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				v := spec.new(T)
 				id, found := resources.LookupID(value.Get(t))
 				require.True(t, found)
-				found, err := spec.cacheGet(t).FindByID(spec.context(), v, id)
-				require.Nil(t, err)
-				require.True(t, found)
+				v := contracts2.IsFindable(t, T, spec.storageGet(t), spec.context(), id)
 				require.Equal(t, value.Get(t), v)
 			})
 
