@@ -3,9 +3,9 @@ module github.com/toggler-io/toggler
 go 1.14
 
 require (
-	github.com/adamluzsi/frameless v0.28.0
+	github.com/adamluzsi/frameless v0.29.2
 	github.com/adamluzsi/gorest v0.6.1
-	github.com/adamluzsi/testcase v0.37.4
+	github.com/adamluzsi/testcase v0.38.2
 	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535 // indirect
 	github.com/go-openapi/errors v0.19.4
 	github.com/go-openapi/runtime v0.19.15
@@ -30,6 +30,6 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/unrolled/logger v0.0.0-20190327162521-be1a2406c7c9 // test
 	go.mongodb.org/mongo-driver v1.3.3 // indirect
-	golang.org/x/sys v0.0.0-20210412220455-f1c623a9e750 // indirect
+	golang.org/x/sys v0.0.0-20210415045647-66c3f260301c // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 )

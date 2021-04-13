@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -e
+: "${WDP:?"required"}"
+. "${WDP}/.envrc.e2e"
+go test "${@}" \
+	-parallel 1 \
+	-timeout 30s \
+	-failfast \
+	./...

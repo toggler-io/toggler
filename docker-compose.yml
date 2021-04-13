@@ -1,8 +1,10 @@
+---
 version: '3'
 
 services:
   pg:
     image: "postgres"
+    command: postgres -c 'max_connections=1024'
     ports:
       - 7200:5432
     environment:
@@ -12,7 +14,6 @@ services:
     image: redis:4.0.5-alpine
     ports:
       - 7100:6379
-
 
 
 #    hostname: redis

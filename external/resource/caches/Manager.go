@@ -197,18 +197,19 @@ func (m *Manager) FindAll(ctx context.Context, T interface{}) iterators.Interfac
 }
 
 func (m *Manager) FindReleaseFlagByName(ctx context.Context, name string) (*release.Flag, error) {
-	queryID := fmt.Sprintf(`FindReleaseFlagByName{name:%s}`, name)
-	f := &release.Flag{}
-	found, err := m.cacheQueryOne(ctx, queryID, release.Flag{}, &f, func() (v interface{}, err error) {
-		return m.Storage.FindReleaseFlagByName(ctx, name)
-	})
-	if err != nil {
-		return nil, err
-	}
-	if !found {
-		f = nil
-	}
-	return f, nil
+	return m.Storage.FindReleaseFlagByName(ctx, name)
+	//queryID := fmt.Sprintf(`FindReleaseFlagByName{name:%s}`, name)
+	//f := &release.Flag{}
+	//found, err := m.cacheQueryOne(ctx, queryID, release.Flag{}, &f, func() (v interface{}, err error) {
+	//	return m.Storage.FindReleaseFlagByName(ctx, name)
+	//})
+	//if err != nil {
+	//	return nil, err
+	//}
+	//if !found {
+	//	f = nil
+	//}
+	//return f, nil
 }
 
 func (m *Manager) FindReleaseFlagsByName(ctx context.Context, names ...string) release.FlagEntries {

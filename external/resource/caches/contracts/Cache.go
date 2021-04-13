@@ -100,13 +100,10 @@ func (spec Cache) specCacheInvalidationByEventsThatMutatesAnEntity(s *testcase.S
 			// mutate
 			vUpdated := spec.create(t, T)
 			require.Nil(t, resources.SetID(vUpdated, id))
-			require.Nil(t, spec.cacheGet(t).Update(spec.context(), vUpdated))
+			contracts2.UpdateEntity(t, spec.cacheGet(t), spec.context(), vUpdated)
 			waiter.Wait()
 
-			ptr := spec.new(T)
-			found, err := spec.cacheGet(t).FindByID(spec.context(), ptr, id) // should trigger caching
-			require.Nil(t, err)
-			require.True(t, found)
+			ptr := contracts2.IsFindable(t, T, spec.cacheGet(t), spec.context(), id) // should trigger caching
 			require.Equal(t, vUpdated, ptr)
 		})
 
@@ -121,11 +118,8 @@ func (spec Cache) specCacheInvalidationByEventsThatMutatesAnEntity(s *testcase.S
 			// delete
 			require.Nil(t, spec.cacheGet(t).DeleteByID(spec.context(), T, id))
 
-			async.Assert(t, func(tb testing.TB) {
-				found, err := spec.cacheGet(t).FindByID(spec.context(), spec.new(T), id)
-				require.Nil(tb, err)
-				require.False(tb, found)
-			})
+			// assert
+			contracts2.IsAbsent(t, T, spec.cacheGet(t), spec.context(), id)
 		})
 
 		s.Test(`a delete all entity in the storage should invalidate the local cache unit entity state`, func(t *testcase.T) {
@@ -140,9 +134,7 @@ func (spec Cache) specCacheInvalidationByEventsThatMutatesAnEntity(s *testcase.S
 			require.Nil(t, spec.cacheGet(t).DeleteAll(spec.context(), T))
 			waiter.Wait()
 
-			found, err := spec.cacheGet(t).FindByID(spec.context(), spec.new(T), id) // should trigger caching
-			require.Nil(t, err)
-			require.False(t, found)
+			contracts2.IsAbsent(t, T, spec.cacheGet(t), spec.context(), id) // should trigger caching for not found
 		})
 	})
 }
@@ -225,7 +217,7 @@ func (spec Cache) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 
 				s.Before(func(t *testcase.T) {
 					ptr := valueWithNewContent.Get(t)
-					require.Nil(t, spec.cacheGet(t).Update(spec.context(), ptr))
+					contracts2.UpdateEntity(t, spec.cacheGet(t), spec.context(), ptr)
 					waiter.Wait()
 				})
 
@@ -233,14 +225,15 @@ func (spec Cache) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 					id, found := resources.LookupID(value.Get(t))
 					require.True(t, found)
 					require.NotEmpty(t, id)
-					async.Assert(t, func(tb testing.TB) {
-						v := spec.new(T)
-						found, err := spec.cacheGet(t).FindByID(spec.context(), v, id)
-						require.Nil(tb, err)
-						require.True(tb, found)
-						tb.Log(`actually`, v)
-						require.Equal(tb, valueWithNewContent.Get(t), v)
-					})
+					contracts2.HasEntity(t, spec.cacheGet(t), spec.context(), valueWithNewContent.Get(t))
+					//async.Assert(t, func(tb testing.TB) {
+					//	v := spec.new(T)
+					//	found, err := spec.cacheGet(t).FindByID(spec.context(), v, id)
+					//	require.Nil(tb, err)
+					//	require.True(tb, found)
+					//	tb.Log(`actually`, v)
+					//	require.Equal(tb, valueWithNewContent.Get(t), v)
+					//})
 				})
 			})
 		})
@@ -271,18 +264,18 @@ func (spec Cache) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 				})
 
 				s.Then(`it will only bother the storage for the value once`, func(t *testcase.T) {
-					var nv interface{}
+					var (
+						nv  interface{}
+						err error
+					)
 					value := value.Get(t)
 					id, found := resources.LookupID(value)
 					require.True(t, found)
 
-					nv = spec.new(T)
 					// trigger caching
-					found, err := spec.cacheGet(t).FindByID(spec.context(), nv, id)
-					require.Nil(t, err)
-					require.True(t, found)
+					nv = contracts2.IsFindable(t, T, spec.cacheGet(t), spec.context(), id)
 					require.Equal(t, value, nv)
-					require.Equal(t, 1, stubGet(t).count.FindByID)
+					numberOfFindByIDCallAfterEntityIsFound := stubGet(t).count.FindByID
 
 					waiter.Wait()
 
@@ -292,11 +285,11 @@ func (spec Cache) expectResultCachingFor(s *testcase.Spec, T interface{}) {
 					require.Nil(t, err)
 					require.True(t, found)
 					require.Equal(t, value, nv)
-					require.Equal(t, 1, stubGet(t).count.FindByID)
+					require.Equal(t, numberOfFindByIDCallAfterEntityIsFound, stubGet(t).count.FindByID)
 				})
 			})
 		})
-	})
+	},  testcase.Flaky(time.Minute))
 }
 
 func (spec Cache) context() context.Context {
