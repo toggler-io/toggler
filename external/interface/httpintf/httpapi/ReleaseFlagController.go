@@ -124,8 +124,6 @@ func (ctrl ReleaseFlagController) Create(w http.ResponseWriter, r *http.Request)
 // ListReleaseFlagRequest
 // swagger:parameters listReleaseFlags
 type ListReleaseFlagRequest struct {
-	// in: body
-	Body struct{}
 }
 
 // ListReleaseFlagResponse

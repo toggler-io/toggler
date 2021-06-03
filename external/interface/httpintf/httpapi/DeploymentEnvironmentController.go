@@ -128,8 +128,6 @@ func (ctrl DeploymentEnvironmentController) Create(w http.ResponseWriter, r *htt
 // ListDeploymentEnvironmentRequest
 // swagger:parameters listDeploymentEnvironments
 type ListDeploymentEnvironmentRequest struct {
-	// in: body
-	Body struct{}
 }
 
 // ListDeploymentEnvironmentResponse

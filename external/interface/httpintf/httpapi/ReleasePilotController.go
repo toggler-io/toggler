@@ -159,8 +159,6 @@ type ListReleasePilotRequest struct {
 	// in: path
 	// required: true
 	ReleaseFlagID string `json:"flagID"`
-	// in: body
-	Body struct{}
 }
 
 // ListReleasePilotResponse

@@ -166,8 +166,6 @@ type ListReleaseRolloutRequest struct {
 	// in: path
 	// required: true
 	FlagID string `json:"flagID"`
-	// in: body
-	Body struct{}
 }
 
 // ListReleaseRolloutResponse
