@@ -22,6 +22,8 @@ func NewHandler(uc *toggler.UseCases) *Handler {
 	gorest.Mount(mux.ServeMux, `/v`, NewViewsHandler(uc))
 	gorest.Mount(mux.ServeMux, `/release-flags`, NewReleaseFlagHandler(uc))
 	gorest.Mount(mux.ServeMux, `/deployment-environments`, NewDeploymentEnvironmentHandler(uc))
+	gorest.Mount(mux.ServeMux, `/release-pilots`, NewReleasePilotHandler(uc))
+	gorest.Mount(mux.ServeMux, `/release-rollouts`, NewReleaseRolloutHandler(uc))
 
 	mux.HandleFunc(`/healthcheck`, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)

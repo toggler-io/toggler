@@ -1,7 +1,6 @@
 package httpapi_test
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -17,7 +16,7 @@ import (
 	"github.com/toggler-io/toggler/external/interface/httpintf"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
 	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client"
-	swagger "github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client/release"
+	swagger "github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client/rollout"
 	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/models"
 	sh "github.com/toggler-io/toggler/spechelper"
 )
@@ -32,13 +31,6 @@ func TestReleaseRolloutController(t *testing.T) {
 	})
 
 	ContentTypeIsJSON(s)
-
-	Context.Let(s, func(t *testcase.T) interface{} {
-		ctx := sh.GetContext(t)
-		ctx = context.WithValue(ctx, httpapi.DeploymentEnvironmentContextKey{}, *sh.ExampleDeploymentEnvironment(t))
-		ctx = context.WithValue(ctx, httpapi.ReleaseFlagContextKey{}, *sh.ExampleReleaseFlag(t))
-		return ctx
-	})
 
 	s.Describe(`POST / - create release rollout`, SpecReleaseRolloutControllerCreate)
 	s.Describe(`GET / - list release rollout`, SpecReleaseRolloutControllerList)
@@ -96,6 +88,8 @@ func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
 		var req httpapi.CreateReleaseRolloutRequest
 		t.Log(r)
 		req.Body.Rollout.Plan = release.RolloutDefinitionView{Definition: r.Plan}
+		req.Body.EnvironmentID = sh.ExampleDeploymentEnvironment(t).ID
+		req.Body.FlagID = sh.ExampleReleaseFlag(t).ID
 		return req.Body
 	})
 
@@ -155,13 +149,13 @@ func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
 			c := client.NewHTTPClientWithConfig(nil, tc)
 
 			p := swagger.NewCreateReleaseRolloutParams()
-			p.FlagID = sh.ExampleReleaseFlag(t).ID
-			p.EnvironmentID = sh.ExampleDeploymentEnvironment(t).ID
 			p.Body.Rollout = &models.Rollout{
-				Plan: release.RolloutDefinitionView{Definition: release.NewRolloutDecisionByPercentage()},
+				FlagID:        sh.ExampleReleaseFlag(t).ID,
+				EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID,
+				Plan:          release.RolloutDefinitionView{Definition: release.NewRolloutDecisionByPercentage()},
 			}
 
-			resp, err := c.Release.CreateReleaseRollout(p, protectedAuth(t))
+			resp, err := c.Rollout.CreateReleaseRollout(p, protectedAuth(t))
 			require.Nil(t, err)
 			require.NotNil(t, resp)
 			require.NotNil(t, resp.Payload)
@@ -255,7 +249,7 @@ func SpecReleaseRolloutControllerUpdate(s *testcase.Spec) {
 
 	Body.Let(s, func(t *testcase.T) interface{} {
 		rollout := sh.GetReleaseRollout(t, `updated-rollout`)
-		var req httpapi.CreateReleaseRolloutRequest
+		var req httpapi.UpdateReleaseRolloutRequest
 		req.Body.Rollout.Plan = release.RolloutDefinitionView{Definition: rollout.Plan}
 		return req.Body
 	})
@@ -313,13 +307,11 @@ func SpecReleaseRolloutControllerUpdate(s *testcase.Spec) {
 
 			p := swagger.NewUpdateReleaseRolloutParams()
 			p.RolloutID = id
-			p.FlagID = sh.ExampleReleaseFlag(t).ID
-			p.EnvironmentID = sh.ExampleDeploymentEnvironment(t).ID
 			p.Body.Rollout = &models.Rollout{
 				Plan: release.RolloutDefinitionView{Definition: release.NewRolloutDecisionByPercentage()},
 			}
 
-			resp, err := c.Release.UpdateReleaseRollout(p, protectedAuth(t))
+			resp, err := c.Rollout.UpdateReleaseRollout(p, protectedAuth(t))
 			require.Nil(t, err)
 			require.NotNil(t, resp)
 			require.NotNil(t, resp.Payload)

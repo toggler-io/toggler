@@ -17,7 +17,7 @@ import (
 	"github.com/toggler-io/toggler/external/interface/httpintf"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
 	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client"
-	swagger "github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client/release"
+	swagger "github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client/flag"
 	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/models"
 	sh "github.com/toggler-io/toggler/spechelper"
 )
@@ -152,7 +152,7 @@ func SpecReleaseFlagControllerCreate(s *testcase.Spec) {
 
 			c := client.NewHTTPClientWithConfig(nil, tc)
 
-			resp, err := c.Release.CreateReleaseFlag(p, protectedAuth(t))
+			resp, err := c.Flag.CreateReleaseFlag(p, protectedAuth(t))
 			if err != nil {
 				t.Fatal(err.Error())
 			}
@@ -286,7 +286,7 @@ func SpecReleaseFlagControllerUpdate(s *testcase.Spec) {
 
 			c := client.NewHTTPClientWithConfig(nil, tc)
 
-			resp, err := c.Release.UpdateReleaseFlag(p, protectedAuth(t))
+			resp, err := c.Flag.UpdateReleaseFlag(p, protectedAuth(t))
 			require.Nil(t, err)
 			require.NotNil(t, resp)
 			require.NotNil(t, resp.Payload)

@@ -25,7 +25,6 @@ func NewReleaseFlagHandler(uc *toggler.UseCases) *gorest.Handler {
 		ListController:   gorest.AsListController(httputils.AuthMiddleware(http.HandlerFunc(c.List), uc, ErrorWriterFunc)),
 		UpdateController: gorest.AsUpdateController(httputils.AuthMiddleware(http.HandlerFunc(c.Update), uc, ErrorWriterFunc)),
 	})
-	gorest.Mount(h, `/pilots/`, NewReleasePilotHandler(uc))
 	return h
 }
 
@@ -73,7 +72,7 @@ type CreateReleaseFlagResponse struct {
 /*
 
 	Create
-	swagger:route POST /release-flags release feature flag createReleaseFlag
+	swagger:route POST /release-flags flag createReleaseFlag
 
 	Create a release flag that can be used for managing a feature rollout.
 	This operation allows you to create a new release flag.
@@ -138,7 +137,7 @@ type ListReleaseFlagResponse struct {
 /*
 
 	List
-	swagger:route GET /release-flags release feature flag listReleaseFlags
+	swagger:route GET /release-flags flag listReleaseFlags
 
 	List all the release flag that can be used to manage a feature rollout.
 
@@ -224,7 +223,7 @@ type UpdateReleaseFlagResponse struct {
 /*
 
 	Update
-	swagger:route PUT /release-flags/{flagID} release feature flag pilot updateReleaseFlag
+	swagger:route PUT /release-flags/{flagID} flag updateReleaseFlag
 
 	Update a release flag.
 
