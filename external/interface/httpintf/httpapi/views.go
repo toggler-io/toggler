@@ -62,7 +62,7 @@ type GetPilotConfigResponse struct {
 
 /*
 
-	swagger:route GET /v/config pilot release feature flag getPilotConfig
+	swagger:route GET /v/config pilot getPilotConfig
 
 	Return all the flag states that was requested in the favor of a Pilot.
 	This endpoint especially useful for Mobile & SPA apps.

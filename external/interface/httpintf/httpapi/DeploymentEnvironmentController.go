@@ -27,10 +27,6 @@ func NewDeploymentEnvironmentHandler(uc *toggler.UseCases) *gorest.Handler {
 		UpdateController: gorest.AsUpdateController(httputils.AuthMiddleware(http.HandlerFunc(c.Update), uc, ErrorWriterFunc)),
 	})
 
-	rfh := gorest.NewHandler(struct{ gorest.ContextHandler }{ContextHandler: ReleaseFlagController{UseCases: uc}})
-	gorest.Mount(h, `release-flags`, rfh)
-	gorest.Mount(rfh, `release-rollouts`, NewReleaseRolloutHandler(uc))
-
 	return h
 }
 
@@ -73,7 +69,7 @@ type CreateDeploymentEnvironmentResponse struct {
 /*
 
 	Create
-	swagger:route POST /deployment-environments deployment environment createDeploymentEnvironment
+	swagger:route POST /deployment-environments deployment createDeploymentEnvironment
 
 	Create a deployment environment that can be used for managing a feature rollout.
 	This operation allows you to create a new deployment environment.
@@ -128,8 +124,6 @@ func (ctrl DeploymentEnvironmentController) Create(w http.ResponseWriter, r *htt
 // ListDeploymentEnvironmentRequest
 // swagger:parameters listDeploymentEnvironments
 type ListDeploymentEnvironmentRequest struct {
-	// in: body
-	Body struct{}
 }
 
 // ListDeploymentEnvironmentResponse
@@ -144,7 +138,7 @@ type ListDeploymentEnvironmentResponse struct {
 /*
 
 	List
-	swagger:route GET /deployment-environments deployment environment listDeploymentEnvironments
+	swagger:route GET /deployment-environments deployment listDeploymentEnvironments
 
 	List all the deployment environment that can be used to manage a feature rollout.
 
@@ -231,7 +225,7 @@ type UpdateDeploymentEnvironmentResponse struct {
 /*
 
 	Update
-	swagger:route PUT /deployment-environments/{envID} deployment environment updateDeploymentEnvironment
+	swagger:route PUT /deployment-environments/{envID} deployment updateDeploymentEnvironment
 
 	Update a deployment environment.
 

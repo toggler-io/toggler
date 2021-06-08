@@ -65,23 +65,16 @@ func (ctrl ReleaseRolloutController) handleFlagValidationError(w http.ResponseWr
 // CreateReleaseRolloutRequest
 // swagger:parameters createReleaseRollout
 type CreateReleaseRolloutRequest struct {
-	// EnvironmentID is the deployment environment ID
-	//
-	// in: path
 	// required: true
-	EnvironmentID string `json:"envID"`
-	// FlagID is the release flag id
-	//
-	// in: path
-	// required: true
-	FlagID string `json:"flagID"`
 	// in: body
 	Body struct {
-		Rollout struct {
+		EnvironmentID string `json:"envID"`
+		FlagID        string `json:"flagID"`
+		Rollout       struct {
 			// Plan holds the composited rule set about the pilot participation decision logic.
 			//
 			// required: true
-			// example: {"percentage":{"percentage":42,"seed":10240}}
+			// example: {"type": "percentage","percentage":42,"seed":10240}
 			Plan interface{} `json:"plan"`
 		} `json:"rollout"`
 	}
@@ -99,7 +92,7 @@ type CreateReleaseRolloutResponse struct {
 /*
 
 	Create
-	swagger:route POST /deployment-environments/{envID}/release-flags/{flagID}/release-rollouts release rollout flag createReleaseRollout
+	swagger:route POST /release-rollouts rollout createReleaseRollout
 
 	This operation allows you to create a new release rollout.
 
@@ -127,7 +120,9 @@ func (ctrl ReleaseRolloutController) Create(w http.ResponseWriter, r *http.Reque
 	defer r.Body.Close() // ignorable
 
 	type Payload struct {
-		Rollout release.Rollout `json:"rollout"`
+		Rollout       release.Rollout `json:"rollout"`
+		EnvironmentID string          `json:"envID"`
+		FlagID        string          `json:"flagID"`
 	}
 	var p Payload
 
@@ -135,10 +130,8 @@ func (ctrl ReleaseRolloutController) Create(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	ctx := r.Context()
-
-	p.Rollout.FlagID = ctrl.getReleaseFlag(ctx).ID
-	p.Rollout.DeploymentEnvironmentID = ctrl.getDeploymentEnvironment(ctx).ID
+	p.Rollout.FlagID = p.FlagID
+	p.Rollout.DeploymentEnvironmentID = p.EnvironmentID
 
 	if ctrl.handleFlagValidationError(w, ctrl.UseCases.Storage.Create(r.Context(), &p.Rollout)) {
 		return
@@ -153,23 +146,6 @@ func (ctrl ReleaseRolloutController) Create(w http.ResponseWriter, r *http.Reque
 
 //--------------------------------------------------------------------------------------------------------------------//
 
-// ListReleaseRolloutRequest
-// swagger:parameters listReleaseRollouts
-type ListReleaseRolloutRequest struct {
-	// EnvironmentID is the deployment environment ID
-	//
-	// in: path
-	// required: true
-	EnvironmentID string `json:"envID"`
-	// FlagID is the release flag id
-	//
-	// in: path
-	// required: true
-	FlagID string `json:"flagID"`
-	// in: body
-	Body struct{}
-}
-
 // ListReleaseRolloutResponse
 // swagger:response listReleaseRolloutResponse
 type ListReleaseRolloutResponse struct {
@@ -182,7 +158,7 @@ type ListReleaseRolloutResponse struct {
 /*
 
 	List
-	swagger:route GET /deployment-environments/{envID}/release-flags/{flagID}/release-rollouts release rollout flag listReleaseRollouts
+	swagger:route GET /release-rollouts rollout listReleaseRollouts
 
 	List all the release flag that can be used to manage a feature rollout.
 
@@ -205,17 +181,13 @@ type ListReleaseRolloutResponse struct {
 */
 func (ctrl ReleaseRolloutController) List(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	env := ctrl.getDeploymentEnvironment(ctx)
 
 	var resp ListReleaseRolloutResponse
 
 	// TODO: replace with Storage Contract
 	// TODO:DEBT
 	err := iterators.ForEach(
-		iterators.Filter(
-			ctrl.UseCases.Storage.FindAll(ctx, release.Rollout{}),
-			func(r release.Rollout) bool { return r.DeploymentEnvironmentID == env.ID },
-		),
+		ctrl.UseCases.Storage.FindAll(ctx, release.Rollout{}),
 		func(r release.Rollout) error {
 			resp.Body.Rollouts = append(resp.Body.Rollouts, Rollout{
 				ID:            r.ID,
@@ -257,17 +229,7 @@ func (ctrl ReleaseRolloutController) ContextWithResource(ctx context.Context, re
 // UpdateReleaseRolloutRequest
 // swagger:parameters updateReleaseRollout
 type UpdateReleaseRolloutRequest struct {
-	// EnvironmentID is the deployment environment ID
-	//
-	// in: path
-	// required: true
-	EnvironmentID string `json:"envID"`
-	// FlagID is the release flag id
-	//
-	// in: path
-	// required: true
-	FlagID string `json:"flagID"`
-	// FlagID is the release flag id or the alias name.
+	// RolloutID is the rollout id
 	//
 	// in: path
 	// required: true
@@ -294,7 +256,7 @@ type UpdateReleaseRolloutResponse struct {
 /*
 
 	Update
-	swagger:route PUT /deployment-environments/{envID}/release-flags/{flagID}/release-rollouts/{rolloutID} release rollout flag pilot updateReleaseRollout
+	swagger:route PUT /release-rollouts/{rolloutID} rollout updateReleaseRollout
 
 	Update a release flag.
 

@@ -72,11 +72,6 @@ func (v ReleasePilotView) ToReleasePilot() release.ManualPilot {
 // CreateReleasePilotRequest
 // swagger:parameters createReleasePilot
 type CreateReleasePilotRequest struct {
-	// ReleaseFlagID is the release flag id or the alias name.
-	//
-	// in: path
-	// required: true
-	ReleaseFlagID string `json:"flagID"`
 	// in: body
 	Body struct {
 		Pilot ReleasePilotView `json:"pilot"`
@@ -95,7 +90,7 @@ type CreateReleasePilotResponse struct {
 /*
 
 	Create
-	swagger:route POST /release-flags/{flagID}/pilots release feature flag createReleasePilot
+	swagger:route POST /release-pilots pilot createReleasePilot
 
 	Create a release flag that can be used for managing a feature rollout.
 	This operation allows you to create a new release flag.
@@ -151,18 +146,6 @@ func (ctrl ReleasePilotController) Create(w http.ResponseWriter, r *http.Request
 
 //--------------------------------------------------------------------------------------------------------------------//
 
-// ListReleasePilotRequest
-// swagger:parameters listReleasePilots
-type ListReleasePilotRequest struct {
-	// ReleaseFlagID is the release flag id or the alias name.
-	//
-	// in: path
-	// required: true
-	ReleaseFlagID string `json:"flagID"`
-	// in: body
-	Body struct{}
-}
-
 // ListReleasePilotResponse
 // swagger:response listReleasePilotResponse
 type ListReleasePilotResponse struct {
@@ -175,7 +158,7 @@ type ListReleasePilotResponse struct {
 /*
 
 	List
-	swagger:route GET /release-flags/{flagID}/pilots release feature flag listReleasePilots
+	swagger:route GET /release-pilots pilot listReleasePilots
 
 	List all the release flag that can be used to manage a feature rollout.
 
@@ -197,9 +180,8 @@ type ListReleasePilotResponse struct {
 
 */
 func (ctrl ReleasePilotController) List(w http.ResponseWriter, r *http.Request) {
-	flag := r.Context().Value(ReleaseFlagContextKey{}).(release.Flag)
 	//FIXME
-	pilotsIter := ctrl.UseCases.RolloutManager.Storage.FindReleasePilotsByReleaseFlag(r.Context(), flag)
+	pilotsIter := ctrl.UseCases.RolloutManager.Storage.FindAll(r.Context(), release.ManualPilot{})
 	defer pilotsIter.Close()
 
 	var resp ListReleasePilotResponse
@@ -241,12 +223,7 @@ func (ctrl ReleasePilotController) ContextWithResource(ctx context.Context, pilo
 // UpdateReleasePilotRequest
 // swagger:parameters updateReleasePilot
 type UpdateReleasePilotRequest struct {
-	// ReleaseFlagID is the release flag id or the alias name.
-	//
-	// in: path
-	// required: true
-	ReleaseFlagID string `json:"flagID"`
-	// PilotID is the release flag id or the alias name.
+	// PilotID is the pilot id.
 	//
 	// in: path
 	// required: true
@@ -269,7 +246,7 @@ type UpdateReleasePilotResponse struct {
 /*
 
 	Update
-	swagger:route PUT /release-flags/{flagID}/pilots/{pilotID} release feature flag pilot updateReleasePilot
+	swagger:route PUT /release-pilots/{pilotID} pilot updateReleasePilot
 
 	Update a release flag.
 
