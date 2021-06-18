@@ -43,7 +43,7 @@ func TestDeploymentEnvironmentController(t *testing.T) {
 	s.Context(`given we have a deployment environment in the system`, func(s *testcase.Spec) {
 		sh.GivenWeHaveDeploymentEnvironment(s, `deployment-environment`)
 
-		var andFlagIdentifierProvided = func(s *testcase.Spec, context func(s *testcase.Spec)) {
+		var andDeploymentIdentifierProvided = func(s *testcase.Spec, context func(s *testcase.Spec)) {
 			s.And(`deployment environment identifier provided as the external ID`, func(s *testcase.Spec) {
 				s.Let(`id`, func(t *testcase.T) interface{} {
 					return sh.GetDeploymentEnvironment(t, `deployment-environment`).ID
@@ -63,9 +63,12 @@ func TestDeploymentEnvironmentController(t *testing.T) {
 			//})
 		}
 
-		andFlagIdentifierProvided(s, func(s *testcase.Spec) {
+		andDeploymentIdentifierProvided(s, func(s *testcase.Spec) {
 			s.Describe(`PUT|PATCH /{id} - update a deployment environment`,
 				SpecDeploymentEnvironmentControllerUpdate)
+
+			s.Describe(`DELETE /{id} - delete a deployment environment`,
+				SpecDeploymentEnvironmentControllerDelete)
 		})
 	})
 }
@@ -301,6 +304,60 @@ func SpecDeploymentEnvironmentControllerUpdate(s *testcase.Spec) {
 			require.Nil(t, err)
 			require.NotNil(t, resp)
 			require.NotNil(t, resp.Payload)
+		})
+	})
+}
+
+func SpecDeploymentEnvironmentControllerDelete(s *testcase.Spec) {
+	sh.GivenHTTPRequestHasAppToken(s)
+	Method.LetValue(s, http.MethodDelete)
+
+	Path.Let(s, func(t *testcase.T) interface{} {
+		return fmt.Sprintf(`/%s`, t.I(`id`))
+	})
+
+	var onSuccess = func(t *testcase.T) {
+		rr := ServeHTTP(t)
+		require.Equal(t, http.StatusOK, rr.Code)
+	}
+
+	s.Then(`env is deleted from the system`, func(t *testcase.T) {
+		onSuccess(t)
+
+		deletedDeploymentEnvironment := t.I(`deployment-environment`).(*deployment.Environment)
+
+		var stored deployment.Environment
+		found, err := sh.StorageGet(t).DeploymentEnvironment(sh.ContextGet(t)).FindDeploymentEnvironmentByAlias(sh.ContextGet(t), deletedDeploymentEnvironment.Name, &stored)
+		require.Nil(t, err)
+		require.False(t, found)
+		require.Equal(t, deployment.Environment{}, stored)
+	})
+
+	s.Context(`E2E`, func(s *testcase.Spec) {
+		s.Tag(sh.TagBlackBox)
+
+		s.Test(`swagger`, func(t *testcase.T) {
+			sm, err := httpintf.NewServeMux(sh.ExampleUseCases(t))
+			require.Nil(t, err)
+
+			s := httptest.NewServer(sm)
+			defer s.Close()
+
+			id := sh.GetDeploymentEnvironment(t, `deployment-environment`).ID
+
+			// TODO: ensure validation
+			p := swagger.NewDeleteDeploymentEnvironmentParams()
+			p.EnvironmentID = id
+
+			tc := client.DefaultTransportConfig()
+			u, _ := url.Parse(s.URL)
+			tc.Host = u.Host
+			tc.Schemes = []string{`http`}
+
+			c := client.NewHTTPClientWithConfig(nil, tc)
+
+			_, err = c.Deployment.DeleteDeploymentEnvironment(p, protectedAuth(t))
+			require.Nil(t, err)
 		})
 	})
 }

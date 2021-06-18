@@ -13,21 +13,10 @@ import (
 	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
 )
 
-func NewDeploymentEnvironmentHandler(uc *toggler.UseCases) *gorest.Handler {
+func NewDeploymentEnvironmentHandler(uc *toggler.UseCases) http.Handler {
 	c := DeploymentEnvironmentController{UseCases: uc}
-	h := gorest.NewHandler(struct {
-		gorest.ContextHandler
-		gorest.CreateController
-		gorest.ListController
-		gorest.UpdateController
-	}{
-		ContextHandler:   c,
-		CreateController: gorest.AsCreateController(httputils.AuthMiddleware(http.HandlerFunc(c.Create), uc, ErrorWriterFunc)),
-		ListController:   gorest.AsListController(httputils.AuthMiddleware(http.HandlerFunc(c.List), uc, ErrorWriterFunc)),
-		UpdateController: gorest.AsUpdateController(httputils.AuthMiddleware(http.HandlerFunc(c.Update), uc, ErrorWriterFunc)),
-	})
-
-	return h
+	h := gorest.NewHandler(c)
+	return httputils.AuthMiddleware(h, uc, ErrorWriterFunc)
 }
 
 type DeploymentEnvironmentController struct {
@@ -178,13 +167,6 @@ type DeploymentEnvironmentContextKey struct{}
 
 func (ctrl DeploymentEnvironmentController) ContextWithResource(ctx context.Context, resourceID string) (context.Context, bool, error) {
 	s := ctrl.UseCases.Storage.DeploymentEnvironment(ctx)
-	//flag, err := s.FindDeploymentEnvironmentByName(ctx, resourceID)
-	//if err != nil {
-	//	return ctx, false, err
-	//}
-	//if flag != nil {
-	//	return context.WithValue(ctx, DeploymentEnvironmentContextKey{}, *flag), true, nil
-	//}
 
 	var f deployment.Environment
 	found, err := s.FindByID(ctx, &f, resourceID)
@@ -271,4 +253,57 @@ func (ctrl DeploymentEnvironmentController) Update(w http.ResponseWriter, r *htt
 	var resp UpdateDeploymentEnvironmentResponse
 	resp.Body.Environment = env
 	serveJSON(w, resp.Body)
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+
+// DeleteDeploymentEnvironmentRequest
+// swagger:parameters deleteDeploymentEnvironment
+type DeleteDeploymentEnvironmentRequest struct {
+	// EnvironmentID is the deployment environment id or the alias name.
+	//
+	// in: path
+	// required: true
+	EnvironmentID string `json:"envID"`
+}
+
+// DeleteDeploymentEnvironmentResponse
+// swagger:response deleteDeploymentEnvironmentResponse
+type DeleteDeploymentEnvironmentResponse struct {
+}
+
+/*
+
+	Delete
+	swagger:route DELETE /deployment-environments/{envID} deployment deleteDeploymentEnvironment
+
+	Delete a deployment environment.
+
+		Consumes:
+		- application/json
+
+		Produces:
+		- application/json
+
+		Schemes: http, https
+
+		Security:
+		  AppToken: []
+
+		Responses:
+		  200: deleteDeploymentEnvironmentResponse
+		  400: errorResponse
+		  500: errorResponse
+
+*/
+
+func (ctrl DeploymentEnvironmentController) Delete(w http.ResponseWriter, r *http.Request) {
+	ID := r.Context().Value(DeploymentEnvironmentContextKey{}).(deployment.Environment).ID
+
+	err := ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).DeleteByID(r.Context(), ID)
+	if handleError(w, err, http.StatusBadRequest) {
+		return
+	}
+
+	w.WriteHeader(200)
 }

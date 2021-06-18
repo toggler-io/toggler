@@ -161,6 +161,51 @@
             "$ref": "#/responses/errorResponse"
           }
         }
+      },
+      "delete": {
+        "security": [
+          {
+            "AppToken": [
+              "[]"
+            ]
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "deployment"
+        ],
+        "summary": "Delete a deployment environment.",
+        "operationId": "deleteDeploymentEnvironment",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "EnvironmentID",
+            "description": "EnvironmentID is the deployment environment id or the alias name.",
+            "name": "envID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/deleteDeploymentEnvironmentResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
       }
     },
     "/release-flags": {
@@ -310,6 +355,51 @@
             "$ref": "#/responses/errorResponse"
           }
         }
+      },
+      "delete": {
+        "security": [
+          {
+            "AppToken": [
+              "[]"
+            ]
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "flag"
+        ],
+        "summary": "Delete a release flag.",
+        "operationId": "deleteReleaseFlag",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "FlagID",
+            "description": "FlagID is the release flag id or the alias name.",
+            "name": "flagID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/deleteReleaseFlagResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
       }
     },
     "/release-pilots": {
@@ -451,6 +541,51 @@
         "responses": {
           "200": {
             "$ref": "#/responses/updateReleasePilotResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "AppToken": [
+              "[]"
+            ]
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "pilot"
+        ],
+        "summary": "Delete a release pilot.",
+        "operationId": "deleteReleasePilot",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "PilotID",
+            "description": "PilotID is the pilot id.",
+            "name": "pilotID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/deleteReleasePilotResponse"
           },
           "400": {
             "$ref": "#/responses/errorResponse"
@@ -631,6 +766,51 @@
         "responses": {
           "200": {
             "$ref": "#/responses/updateReleaseRolloutResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorResponse"
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "AppToken": [
+              "[]"
+            ]
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "rollout"
+        ],
+        "summary": "Delete a release rollout.",
+        "operationId": "deleteReleaseRollout",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "RolloutID",
+            "description": "RolloutID is the rollout id",
+            "name": "rolloutID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/deleteReleaseRolloutResponse"
           },
           "400": {
             "$ref": "#/responses/errorResponse"
@@ -850,6 +1030,33 @@
         "properties": {
           "rollout": {
             "$ref": "#/definitions/Rollout"
+          }
+        }
+      }
+    },
+    "deleteDeploymentEnvironmentResponse": {
+      "description": "DeleteDeploymentEnvironmentResponse"
+    },
+    "deleteReleaseFlagResponse": {
+      "description": "DeleteReleaseFlagResponse"
+    },
+    "deleteReleasePilotResponse": {
+      "description": "DeleteReleasePilotResponse"
+    },
+    "deleteReleaseRolloutResponse": {
+      "description": "DeleteReleaseRolloutResponse",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "rollout": {
+            "type": "object",
+            "properties": {
+              "plan": {
+                "type": "object",
+                "x-go-name": "Plan"
+              }
+            },
+            "x-go-name": "Rollout"
           }
         }
       }

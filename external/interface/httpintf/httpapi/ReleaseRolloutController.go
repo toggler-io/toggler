@@ -14,21 +14,10 @@ import (
 	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
 )
 
-func NewReleaseRolloutHandler(uc *toggler.UseCases) *gorest.Handler {
+func NewReleaseRolloutHandler(uc *toggler.UseCases) http.Handler {
 	c := ReleaseRolloutController{UseCases: uc}
-	h := gorest.NewHandler(struct {
-		gorest.ContextHandler
-		gorest.CreateController
-		gorest.ListController
-		gorest.UpdateController
-	}{
-		ContextHandler:   c,
-		CreateController: gorest.AsCreateController(httputils.AuthMiddleware(http.HandlerFunc(c.Create), uc, ErrorWriterFunc)),
-		ListController:   gorest.AsListController(httputils.AuthMiddleware(http.HandlerFunc(c.List), uc, ErrorWriterFunc)),
-		UpdateController: gorest.AsUpdateController(httputils.AuthMiddleware(http.HandlerFunc(c.Update), uc, ErrorWriterFunc)),
-	})
-	return h
-	//return httputils.AuthMiddleware(h, uc, ErrorWriterFunc)
+	h := gorest.NewHandler(c)
+	return httputils.AuthMiddleware(h, uc, ErrorWriterFunc)
 }
 
 type ReleaseRolloutController struct {
@@ -305,6 +294,62 @@ func (ctrl ReleaseRolloutController) Update(w http.ResponseWriter, r *http.Reque
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
+
+// DeleteReleaseRolloutRequest
+// swagger:parameters deleteReleaseRollout
+type DeleteReleaseRolloutRequest struct {
+	// RolloutID is the rollout id
+	//
+	// in: path
+	// required: true
+	RolloutID string `json:"rolloutID"`
+}
+
+// DeleteReleaseRolloutResponse
+// swagger:response deleteReleaseRolloutResponse
+type DeleteReleaseRolloutResponse struct {
+	// in: body
+	Body struct {
+		Rollout struct {
+			Plan interface{} `json:"plan"`
+		} `json:"rollout"`
+	}
+}
+
+/*
+
+	Delete
+	swagger:route DELETE /release-rollouts/{rolloutID} rollout deleteReleaseRollout
+
+	Delete a release rollout.
+
+		Consumes:
+		- application/json
+
+		Produces:
+		- application/json
+
+		Schemes: http, https
+
+		Security:
+		  AppToken: []
+
+		Responses:
+		  200: deleteReleaseRolloutResponse
+		  400: errorResponse
+		  500: errorResponse
+
+*/
+func (ctrl ReleaseRolloutController) Delete(w http.ResponseWriter, r *http.Request) {
+	ID := r.Context().Value(ReleaseRolloutContextKey{}).(release.Rollout).ID
+
+	err := ctrl.UseCases.Storage.ReleaseRollout(r.Context()).DeleteByID(r.Context(), ID)
+	if handleError(w, err, http.StatusBadRequest) {
+		return
+	}
+
+	w.WriteHeader(200)
+}
 
 //--------------------------------------------------------------------------------------------------------------------//
 

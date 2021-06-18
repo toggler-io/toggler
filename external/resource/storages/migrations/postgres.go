@@ -3,12 +3,12 @@ package migrations
 import (
 	"database/sql"
 	"embed"
+
 	"github.com/golang-migrate/migrate/v4"
 	pgmigr "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/source"
 	bindata "github.com/golang-migrate/migrate/v4/source/go_bindata"
 	_ "github.com/lib/pq"
-	"path/filepath"
 )
 
 func MigratePostgres(dsn string) error {
@@ -72,7 +72,7 @@ func NewPostgresBindataSourceDriver() (source.Driver, error) {
 	}
 
 	s := bindata.Resource(names, func(name string) ([]byte, error) {
-		return fs.ReadFile(filepath.Join(dirName, name))
+		return fs.ReadFile(dirName + "/" + name)
 	})
 
 	return bindata.WithInstance(s)

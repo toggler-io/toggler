@@ -67,6 +67,10 @@ func TestReleaseFlagController(t *testing.T) {
 			s.Describe(`PUT|PATCH /{id} - update a release flag`,
 				SpecReleaseFlagControllerUpdate)
 		})
+		andFlagIdentifierProvided(s, func(s *testcase.Spec) {
+			s.Describe(`DELETE /{id} - delete a release flag`,
+				SpecReleaseFlagControllerDelete)
+		})
 	})
 }
 
@@ -290,6 +294,57 @@ func SpecReleaseFlagControllerUpdate(s *testcase.Spec) {
 			require.Nil(t, err)
 			require.NotNil(t, resp)
 			require.NotNil(t, resp.Payload)
+		})
+	})
+}
+
+func SpecReleaseFlagControllerDelete(s *testcase.Spec) {
+	sh.GivenHTTPRequestHasAppToken(s)
+	Method.LetValue(s, http.MethodDelete)
+
+	Path.Let(s, func(t *testcase.T) interface{} {
+		return fmt.Sprintf(`/%s`, t.I(`id`))
+	})
+
+	var onSuccess = func(t *testcase.T) {
+		rr := ServeHTTP(t)
+		require.Equal(t, http.StatusOK, rr.Code)
+	}
+
+	s.Then(`flag is deleted from the system`, func(t *testcase.T) {
+		onSuccess(t)
+
+		deletedFlag := sh.GetReleaseFlag(t, `release-flag`)
+
+		var stored release.Flag
+		found, err := sh.StorageGet(t).ReleaseFlag(sh.ContextGet(t)).FindByID(sh.ContextGet(t), deletedFlag.ID, &stored)
+		require.Nil(t, err)
+		require.False(t, found)
+		require.Equal(t, release.Flag{}, stored)
+	})
+
+	s.Context(`E2E`, func(s *testcase.Spec) {
+		s.Tag(sh.TagBlackBox)
+
+		s.Test(`swagger`, func(t *testcase.T) {
+			sm, err := httpintf.NewServeMux(sh.ExampleUseCases(t))
+			require.Nil(t, err)
+
+			s := httptest.NewServer(sm)
+			defer s.Close()
+
+			p := swagger.NewDeleteReleaseFlagParams()
+			p.FlagID = sh.GetReleaseFlag(t, `release-flag`).ID
+
+			tc := client.DefaultTransportConfig()
+			u, _ := url.Parse(s.URL)
+			tc.Host = u.Host
+			tc.Schemes = []string{`http`}
+
+			c := client.NewHTTPClientWithConfig(nil, tc)
+
+			_, err = c.Flag.DeleteReleaseFlag(p, protectedAuth(t))
+			require.Nil(t, err)
 		})
 	})
 }
