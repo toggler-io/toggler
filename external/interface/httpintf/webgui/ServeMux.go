@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/toggler-io/toggler/domains/toggler"
-	"github.com/toggler-io/toggler/external/interface/httpintf/webgui/assets"
 	"github.com/toggler-io/toggler/external/interface/httpintf/webgui/controllers"
 )
 
@@ -15,7 +14,8 @@ func NewServeMux(uc *toggler.UseCases) (*ServeMux, error) {
 	}
 
 	mux := &ServeMux{ServeMux: http.NewServeMux(), UseCases: uc}
-	mux.Handle(`/assets/`, http.StripPrefix(`/assets`, assetsFS()))
+
+	mux.Handle(`/assets/`, http.StripPrefix(`/assets`, http.FileServer(http.FS(assetFS))))
 	mux.HandleFunc(`/`, ctrl.IndexPage)
 	mux.HandleFunc(`/flag`, ctrl.FlagPage)
 	mux.HandleFunc(`/flag/`, ctrl.FlagPage)
@@ -33,8 +33,4 @@ func NewServeMux(uc *toggler.UseCases) (*ServeMux, error) {
 type ServeMux struct {
 	*http.ServeMux
 	*toggler.UseCases
-}
-
-func assetsFS() http.Handler {
-	return http.FileServer(assets.FS(false))
 }

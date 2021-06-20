@@ -1,6 +1,7 @@
 package httputils
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/toggler-io/toggler/domains/toggler"
@@ -30,15 +31,16 @@ func GetAppToken(r *http.Request) (string, error) {
 }
 
 func HandleError(w http.ResponseWriter, err error, errCode int) (errorWasHandled bool) {
+	if err != nil {
+		log.Println("ERROR", err.Error())
+	}
 	if err == toggler.ErrInvalidToken {
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return true
 	}
-
 	if err != nil {
 		http.Error(w, http.StatusText(errCode), errCode)
 		return true
 	}
-
 	return false
 }

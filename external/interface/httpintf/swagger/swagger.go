@@ -7,14 +7,12 @@ import (
 	"sync"
 
 	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
-	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/specfs"
-	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/uifs"
 )
 
 func HandleSwaggerConfigJSON(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set(`Content-Type`, `application/json`)
 	w.WriteHeader(200)
-	_, _ = w.Write(specfs.FSMustByte(false, `/swagger.json`))
+	_, _ = w.Write(configJSON)
 }
 
 func HandleSwaggerUI() http.Handler {
@@ -29,7 +27,8 @@ func HandleSwaggerUI() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case `/`, `/index.html`:
-			t, err := template.New(`swagger-ui`).Parse(uifs.FSMustString(false, `/index.html`))
+			t := template.New(`index.html`)
+			t, err := t.ParseFS(uiFS, "index.html")
 			if httputils.HandleError(w, err, http.StatusInternalServerError) {
 				return
 			}
@@ -58,7 +57,7 @@ func HandleSwaggerUI() http.Handler {
 			return
 
 		default:
-			http.FileServer(uifs.FS(false)).ServeHTTP(w, r)
+			http.FileServer(http.FS(uiFS)).ServeHTTP(w, r)
 		}
 	})
 }

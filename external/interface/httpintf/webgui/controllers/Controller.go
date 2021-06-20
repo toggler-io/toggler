@@ -9,7 +9,7 @@ import (
 )
 
 func NewController(uc *toggler.UseCases) (*Controller, error) {
-	renderer, err := NewHttpFileSystemRenderer(views.FS(false))
+	renderer, err := NewHttpFileSystemRenderer(http.FS(views.FS))
 	if err != nil {
 		return nil, err
 	}
