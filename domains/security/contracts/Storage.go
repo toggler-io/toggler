@@ -1,9 +1,10 @@
 package contracts
 
 import (
+	"github.com/adamluzsi/frameless"
 	"testing"
 
-	"github.com/adamluzsi/frameless/resources/contracts"
+	"github.com/adamluzsi/frameless/contracts"
 	"github.com/adamluzsi/testcase"
 
 	"github.com/toggler-io/toggler/domains/security"
@@ -26,7 +27,16 @@ func (spec Storage) Spec(tb testing.TB) {
 	testcase.NewSpec(tb).Describe(`security#Storage`, func(s *testcase.Spec) {
 		testcase.RunContract(s,
 			TokenStorage{
-				Subject:        spec.Subject,
+				Subject: func(tb testing.TB) security.TokenStorage {
+					return spec.Subject(tb).SecurityToken(spec.Context())
+				},
+				FixtureFactory: spec.FixtureFactory,
+			},
+			contracts.OnePhaseCommitProtocol{T: security.Token{},
+				Subject: func(tb testing.TB) (frameless.OnePhaseCommitProtocol, contracts.CRD) {
+					storage := spec.Subject(tb)
+					return storage, storage.SecurityToken(spec.Context())
+				},
 				FixtureFactory: spec.FixtureFactory,
 			},
 		)

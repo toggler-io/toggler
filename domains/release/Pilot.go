@@ -12,6 +12,7 @@ type ManualPilot struct {
 	DeploymentEnvironmentID string
 	// ExternalID is the uniq id key that connect the caller services,
 	// with this service and able to use A-B/Percentage or ManualPilot based testings.
+	// TODO: rename it to PublicID
 	ExternalID string
 	// IsParticipating states that whether the pilot for the given flag in a given environment is enrolled, or blacklisted.
 	IsParticipating bool

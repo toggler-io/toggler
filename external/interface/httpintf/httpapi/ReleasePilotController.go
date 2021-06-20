@@ -131,7 +131,7 @@ func (ctrl ReleasePilotController) Create(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	p, err := ctrl.UseCases.RolloutManager.Storage.FindReleaseManualPilotByExternalID(r.Context(), pilot.FlagID, pilot.DeploymentEnvironmentID, pilot.ExternalID)
+	p, err := ctrl.UseCases.RolloutManager.Storage.ReleasePilot(r.Context()).FindReleaseManualPilotByExternalID(r.Context(), pilot.FlagID, pilot.DeploymentEnvironmentID, pilot.ExternalID)
 	if handleError(w, err, http.StatusInternalServerError) {
 		return
 	}
@@ -181,7 +181,7 @@ type ListReleasePilotResponse struct {
 */
 func (ctrl ReleasePilotController) List(w http.ResponseWriter, r *http.Request) {
 	//FIXME
-	pilotsIter := ctrl.UseCases.RolloutManager.Storage.FindAll(r.Context(), release.ManualPilot{})
+	pilotsIter := ctrl.UseCases.RolloutManager.Storage.ReleasePilot(r.Context()).FindAll(r.Context())
 	defer pilotsIter.Close()
 
 	var resp ListReleasePilotResponse
@@ -208,7 +208,7 @@ type ReleasePilotContextKey struct{}
 
 func (ctrl ReleasePilotController) ContextWithResource(ctx context.Context, pilotID string) (context.Context, bool, error) {
 	var p release.ManualPilot
-	found, err := ctrl.UseCases.RolloutManager.Storage.FindByID(ctx, &p, pilotID)
+	found, err := ctrl.UseCases.RolloutManager.Storage.ReleasePilot(ctx).FindByID(ctx, &p, pilotID)
 	if err != nil {
 		return ctx, false, err
 	}
@@ -285,7 +285,7 @@ func (ctrl ReleasePilotController) Update(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	p, err := ctrl.UseCases.Storage.FindReleaseManualPilotByExternalID(r.Context(), pilot.FlagID, pilot.DeploymentEnvironmentID, pilot.ExternalID)
+	p, err := ctrl.UseCases.Storage.ReleasePilot(r.Context()).FindReleaseManualPilotByExternalID(r.Context(), pilot.FlagID, pilot.DeploymentEnvironmentID, pilot.ExternalID)
 	if handleError(w, err, http.StatusInternalServerError) {
 		return
 	}

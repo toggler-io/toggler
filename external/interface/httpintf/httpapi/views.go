@@ -103,7 +103,7 @@ func (ctrl ViewsController) GetPilotConfig(w http.ResponseWriter, r *http.Reques
 	ctx := context.WithValue(r.Context(), `pilot-ip-addr`, httputils.GetClientIP(r))
 
 	var env deployment.Environment
-	found, err := ctrl.UseCases.Storage.FindDeploymentEnvironmentByAlias(ctx, request.Body.DeploymentEnvironmentAlias, &env)
+	found, err := ctrl.UseCases.Storage.DeploymentEnvironment(ctx).FindDeploymentEnvironmentByAlias(ctx, request.Body.DeploymentEnvironmentAlias, &env)
 	if handleError(w, err, http.StatusInternalServerError) {
 		return
 	}

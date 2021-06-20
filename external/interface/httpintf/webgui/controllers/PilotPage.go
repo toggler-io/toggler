@@ -38,7 +38,7 @@ func (ctrl *Controller) pilotFindPage(w http.ResponseWriter, r *http.Request) {
 			Environments []deployment.Environment
 		}
 		var content Content
-		iterators.Collect(ctrl.UseCases.Storage.FindAll(r.Context(), deployment.Environment{}), &content.Environments)
+		iterators.Collect(ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).FindAll(r.Context()), &content.Environments)
 		ctrl.Render(w, `/pilot/find.html`, content)
 
 	case http.MethodPost:
@@ -67,7 +67,7 @@ func (ctrl *Controller) pilotEditPage(w http.ResponseWriter, r *http.Request) {
 	pilotExtID := query.Get(`ext-id`)
 	envID := query.Get(`env-id`)
 
-	pilots := ctrl.UseCases.Storage.FindReleasePilotsByExternalID(r.Context(), pilotExtID)
+	pilots := ctrl.UseCases.Storage.ReleasePilot(r.Context()).FindReleasePilotsByExternalID(r.Context(), pilotExtID)
 	defer pilots.Close()
 	pilots = iterators.Filter(pilots, func(p release.ManualPilot) bool { return p.DeploymentEnvironmentID == envID })
 

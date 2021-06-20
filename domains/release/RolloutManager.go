@@ -36,7 +36,7 @@ func (manager *RolloutManager) GetAllReleaseFlagStatesOfThePilot(ctx context.Con
 	flagIndexByID := make(map[string]*Flag)
 
 	var pilotsIndex = make(map[string]*ManualPilot)
-	pilotsByExternalID := manager.Storage.FindReleasePilotsByExternalID(ctx, pilotExternalID)
+	pilotsByExternalID := manager.Storage.ReleasePilot(ctx).FindReleasePilotsByExternalID(ctx, pilotExternalID)
 	pilotsByExternalIDFilteredByEnv := iterators.Filter(pilotsByExternalID, func(p ManualPilot) bool {
 		return p.DeploymentEnvironmentID == env.ID
 	})
@@ -48,7 +48,7 @@ func (manager *RolloutManager) GetAllReleaseFlagStatesOfThePilot(ctx context.Con
 	}
 
 	var flags []Flag
-	if err := iterators.Collect(manager.Storage.FindReleaseFlagsByName(ctx, flagNames...), &flags); err != nil {
+	if err := iterators.Collect(manager.Storage.ReleaseFlag(ctx).FindReleaseFlagsByName(ctx, flagNames...), &flags); err != nil {
 		return nil, err
 	}
 
@@ -77,7 +77,7 @@ func (manager *RolloutManager) checkEnrollment(ctx context.Context, env deployme
 	}
 
 	var rollout Rollout
-	found, err := manager.Storage.FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx, flag, env, &rollout)
+	found, err := manager.Storage.ReleaseRollout(ctx).FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx, flag, env, &rollout)
 	if err != nil {
 		return false, err
 	}
@@ -100,7 +100,7 @@ func (manager *RolloutManager) CreateFeatureFlag(ctx context.Context, flag *Flag
 	if flag.ID != `` {
 		return ErrInvalidAction
 	}
-	ff, err := manager.Storage.FindReleaseFlagByName(ctx, flag.Name)
+	ff, err := manager.Storage.ReleaseFlag(ctx).FindReleaseFlagByName(ctx, flag.Name)
 
 	if err != nil {
 		return err
@@ -114,7 +114,7 @@ func (manager *RolloutManager) CreateFeatureFlag(ctx context.Context, flag *Flag
 		return ErrFlagAlreadyExist
 	}
 
-	return manager.Storage.Create(ctx, flag)
+	return manager.Storage.ReleaseFlag(ctx).Create(ctx, flag)
 }
 
 func (manager *RolloutManager) UpdateFeatureFlag(ctx context.Context, flag *Flag) error {
@@ -126,12 +126,12 @@ func (manager *RolloutManager) UpdateFeatureFlag(ctx context.Context, flag *Flag
 		return err
 	}
 
-	return manager.Storage.Update(ctx, flag)
+	return manager.Storage.ReleaseFlag(ctx).Update(ctx, flag)
 }
 
 // TODO convert this into a stream
 func (manager *RolloutManager) ListFeatureFlags(ctx context.Context) ([]Flag, error) {
-	iter := manager.Storage.FindAll(ctx, Flag{})
+	iter := manager.Storage.ReleaseFlag(ctx).FindAll(ctx)
 	ffs := make([]Flag, 0) // empty slice required for null object pattern enforcement
 	err := iterators.Collect(iter, &ffs)
 	return ffs, err
@@ -141,7 +141,7 @@ func (manager *RolloutManager) UnsetPilotEnrollmentForFeature(ctx context.Contex
 
 	var ff Flag
 
-	found, err := manager.Storage.FindByID(ctx, &ff, flagID)
+	found, err := manager.Storage.ReleaseFlag(ctx).FindByID(ctx, &ff, flagID)
 
 	if err != nil {
 		return err
@@ -151,7 +151,7 @@ func (manager *RolloutManager) UnsetPilotEnrollmentForFeature(ctx context.Contex
 		return fmt.Errorf(`ErrNotFound`)
 	}
 
-	pilot, err := manager.Storage.FindReleaseManualPilotByExternalID(ctx, ff.ID, envID, pilotExternalID)
+	pilot, err := manager.Storage.ReleasePilot(ctx).FindReleaseManualPilotByExternalID(ctx, ff.ID, envID, pilotExternalID)
 
 	if err != nil {
 		return err
@@ -161,7 +161,7 @@ func (manager *RolloutManager) UnsetPilotEnrollmentForFeature(ctx context.Contex
 		return nil
 	}
 
-	return manager.Storage.DeleteByID(ctx, ManualPilot{}, pilot.ID)
+	return manager.Storage.ReleasePilot(ctx).DeleteByID(ctx, pilot.ID)
 
 }
 
@@ -169,7 +169,7 @@ func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context,
 
 	var ff Flag
 
-	found, err := manager.Storage.FindByID(ctx, &ff, flagID)
+	found, err := manager.Storage.ReleaseFlag(ctx).FindByID(ctx, &ff, flagID)
 
 	if err != nil {
 		return err
@@ -179,7 +179,7 @@ func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context,
 		return fmt.Errorf(`ErrNotFound`)
 	}
 
-	pilot, err := manager.Storage.FindReleaseManualPilotByExternalID(ctx, ff.ID, envID, externalPilotID)
+	pilot, err := manager.Storage.ReleasePilot(ctx).FindReleaseManualPilotByExternalID(ctx, ff.ID, envID, externalPilotID)
 
 	if err != nil {
 		return err
@@ -187,10 +187,10 @@ func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context,
 
 	if pilot != nil {
 		pilot.IsParticipating = isParticipating
-		return manager.Storage.Update(ctx, pilot)
+		return manager.Storage.ReleasePilot(ctx).Update(ctx, pilot)
 	}
 
-	return manager.Storage.Create(ctx, &ManualPilot{
+	return manager.Storage.ReleasePilot(ctx).Create(ctx, &ManualPilot{
 		FlagID:                  ff.ID,
 		DeploymentEnvironmentID: envID,
 		ExternalID:              externalPilotID,
@@ -227,7 +227,7 @@ func (manager *RolloutManager) DeleteFeatureFlag(ctx context.Context, id string)
 	}
 
 	var ff Flag
-	found, err := manager.Storage.FindByID(ctx, &ff, id)
+	found, err := manager.Storage.ReleaseFlag(ctx).FindByID(ctx, &ff, id)
 
 	if err != nil {
 		return err
@@ -238,15 +238,15 @@ func (manager *RolloutManager) DeleteFeatureFlag(ctx context.Context, id string)
 	}
 
 	var pilots []ManualPilot
-	if err := iterators.Collect(manager.Storage.FindReleasePilotsByReleaseFlag(ctx, ff), &pilots); err != nil {
+	if err := iterators.Collect(manager.Storage.ReleasePilot(ctx).FindReleasePilotsByReleaseFlag(ctx, ff), &pilots); err != nil {
 		return err
 	}
 
 	for _, pilot := range pilots {
-		if err := manager.Storage.DeleteByID(ctx, pilot, pilot.ID); err != nil {
+		if err := manager.Storage.ReleasePilot(ctx).DeleteByID(ctx, pilot.ID); err != nil {
 			return err
 		}
 	}
 
-	return manager.Storage.DeleteByID(ctx, Flag{}, id)
+	return manager.Storage.ReleaseFlag(ctx).DeleteByID(ctx, id)
 }

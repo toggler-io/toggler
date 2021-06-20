@@ -27,8 +27,9 @@ func init() {
 			mpe.FlagID = ExampleReleaseFlag(t).ID
 			mpe.DeploymentEnvironmentID = ExampleDeploymentEnvironment(t).ID
 			mpe.ExternalID = ExampleExternalPilotID(t)
-			require.Nil(t, StorageGet(t).Create(GetContext(t), mpe))
-			t.Defer(StorageGet(t).DeleteByID, GetContext(t), release.ManualPilot{}, mpe.ID)
+			storae := StorageGet(t).ReleasePilot(ContextGet(t))
+			require.Nil(t, storae.Create(ContextGet(t), mpe))
+			t.Defer(storae.DeleteByID, ContextGet(t), mpe.ID)
 			return mpe
 		})
 
@@ -69,7 +70,7 @@ func ExampleExternalPilotID(t *testcase.T) string {
 }
 
 func FindStoredReleaseFlagByName(t *testcase.T, name string) *release.Flag {
-	f, err := StorageGet(t).FindReleaseFlagByName(GetContext(t), name)
+	f, err := StorageGet(t).ReleaseFlag(ContextGet(t)).FindReleaseFlagByName(ContextGet(t), name)
 	require.Nil(t, err)
 	require.NotNil(t, f)
 	return f
@@ -107,8 +108,9 @@ func GivenWeHaveReleaseRollout(s *testcase.Spec, vn, flagLVN, envLVN string) {
 		require.Nil(t, rollout.Plan.Validate())
 
 		// TODO: replace when rollout manager has function for this
-		require.Nil(t, ExampleRolloutManager(t).Storage.Create(GetContext(t), rollout))
-		t.Defer(ExampleRolloutManager(t).Storage.DeleteByID, GetContext(t), *rollout, rollout.ID)
+		storage := StorageGet(t).ReleaseRollout(ContextGet(t))
+		require.Nil(t, storage.Create(ContextGet(t), rollout))
+		t.Defer(storage.DeleteByID, ContextGet(t), rollout.ID)
 		t.Logf(`%#v`, rollout)
 		return rollout
 	})
@@ -118,9 +120,10 @@ func GivenWeHaveReleaseFlag(s *testcase.Spec, vn string) {
 	s.Let(vn, func(t *testcase.T) interface{} {
 		rf := FixtureFactory{}.Create(release.Flag{}).(*release.Flag)
 		rf.Name = fmt.Sprintf(`%s - %s`, vn, rf.Name)
-		require.Nil(t, ExampleRolloutManager(t).Storage.Create(GetContext(t), rf))
-		t.Defer(ExampleRolloutManager(t).DeleteFeatureFlag, GetContext(t), rf.ID)
-		t.Defer(StorageGet(t).DeleteByID, GetContext(t), release.Flag{}, rf.ID)
+		storage := StorageGet(t).ReleaseFlag(ContextGet(t))
+		require.Nil(t, storage.Create(ContextGet(t), rf))
+		t.Defer(ExampleRolloutManager(t).DeleteFeatureFlag, ContextGet(t), rf.ID)
+		t.Defer(storage.DeleteByID, ContextGet(t), rf.ID)
 		t.Logf(`%#v`, rf)
 		return rf
 	})
@@ -139,9 +142,9 @@ func AndReleaseFlagRolloutPercentageIs(s *testcase.Spec, rolloutLVN string, perc
 		//
 		// And in case if we already initialized such context where rollout entry exists,
 		// we need to update its rollout plan as well.
-		t.Let(getReleaseRolloutPlanLetVar(rolloutLVN), byPercentage)
+		t.Set(getReleaseRolloutPlanLetVar(rolloutLVN), byPercentage)
 		rollout.Plan = GetReleaseRolloutPlan(t, LetVarExampleReleaseRollout)
-		require.Nil(t, StorageGet(t).Update(GetContext(t), rollout))
+		require.Nil(t, StorageGet(t).ReleaseRollout(ContextGet(t)).Update(ContextGet(t), rollout))
 	})
 }
 
@@ -163,11 +166,11 @@ func ExampleRolloutManager(t *testcase.T) *release.RolloutManager {
 
 func SpecPilotEnrolmentIs(t *testcase.T, enrollment bool) {
 	if ExampleReleaseFlag(t).ID == `` {
-		require.Nil(t, StorageGet(t).Create(GetContext(t), ExampleReleaseFlag(t)))
+		require.Nil(t, StorageGet(t).ReleaseFlag(ContextGet(t)).Create(ContextGet(t), ExampleReleaseFlag(t)))
 	}
 
 	rm := release.NewRolloutManager(StorageGet(t))
-	require.Nil(t, rm.SetPilotEnrollmentForFeature(GetContext(t),
+	require.Nil(t, rm.SetPilotEnrollmentForFeature(ContextGet(t),
 		ExampleReleaseFlag(t).ID,
 		ExampleDeploymentEnvironment(t).ID,
 		ExampleExternalPilotID(t),
@@ -177,21 +180,21 @@ func SpecPilotEnrolmentIs(t *testcase.T, enrollment bool) {
 func NoReleaseFlagPresentInTheStorage(s *testcase.Spec) {
 	s.Before(func(t *testcase.T) {
 		// TODO: replace with flag manager list+delete
-		require.Nil(t, StorageGet(t).DeleteAll(GetContext(t), release.Flag{}))
+		require.Nil(t, StorageGet(t).ReleaseFlag(ContextGet(t)).DeleteAll(ContextGet(t)))
 	})
 }
 
 func NoReleaseRolloutPresentInTheStorage(s *testcase.Spec) {
 	s.Before(func(t *testcase.T) {
 		// TODO: replace with rollout manager list+delete
-		require.Nil(t, StorageGet(t).DeleteAll(GetContext(t), release.Rollout{}))
+		require.Nil(t, StorageGet(t).ReleaseRollout(ContextGet(t)).DeleteAll(ContextGet(t)))
 	})
 }
 
 func AndExamplePilotManualParticipatingIsSetTo(s *testcase.Spec, isParticipating bool) {
 	s.Before(func(t *testcase.T) {
 		require.Nil(t, ExampleRolloutManager(t).SetPilotEnrollmentForFeature(
-			GetContext(t),
+			ContextGet(t),
 			ExampleReleaseFlag(t).ID,
 			ExampleDeploymentEnvironment(t).ID,
 			ExampleExternalPilotID(t),
@@ -199,7 +202,7 @@ func AndExamplePilotManualParticipatingIsSetTo(s *testcase.Spec, isParticipating
 		))
 
 		t.Defer(ExampleRolloutManager(t).UnsetPilotEnrollmentForFeature,
-			GetContext(t),
+			ContextGet(t),
 			ExampleReleaseFlag(t).ID,
 			ExampleDeploymentEnvironment(t).ID,
 			ExampleExternalPilotID(t),

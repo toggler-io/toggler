@@ -19,7 +19,7 @@ func (dk *Doorkeeper) VerifyTextToken(ctx context.Context, textToken string) (bo
 		return false, err
 	}
 
-	token, err := dk.Storage.FindTokenBySHA512Hex(ctx, sha512hex)
+	token, err := dk.Storage.SecurityToken(ctx).FindTokenBySHA512Hex(ctx, sha512hex)
 
 	if token == nil {
 		return false, nil

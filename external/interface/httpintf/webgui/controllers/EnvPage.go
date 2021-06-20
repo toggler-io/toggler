@@ -26,7 +26,7 @@ func (ctrl *Controller) EnvPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ctrl *Controller) envListAction(w http.ResponseWriter, r *http.Request) {
-	envsIter := ctrl.UseCases.Storage.FindAll(r.Context(), deployment.Environment{})
+	envsIter := ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).FindAll(r.Context())
 
 	var envs []deployment.Environment
 	if err := iterators.Collect(envsIter, &envs); err != nil {
@@ -48,7 +48,7 @@ func (ctrl *Controller) envAction(w http.ResponseWriter, r *http.Request) {
 		id := r.Form.Get(`id`)
 
 		var env deployment.Environment
-		found, err := ctrl.UseCases.Storage.FindByID(r.Context(), &env, id)
+		found, err := ctrl.UseCases.Storage.ReleaseRollout(r.Context()).FindByID(r.Context(), &env, id)
 
 		if ctrl.handleError(w, r, err) {
 			return
@@ -73,7 +73,7 @@ func (ctrl *Controller) envAction(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			if ctrl.handleError(w, r, ctrl.UseCases.Storage.Update(r.Context(), &env)) {
+			if ctrl.handleError(w, r, ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).Update(r.Context(), &env)) {
 				return
 			}
 
@@ -96,7 +96,7 @@ func (ctrl *Controller) envAction(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			if ctrl.handleError(w, r, ctrl.UseCases.Storage.Create(r.Context(), &env)) {
+			if ctrl.handleError(w, r, ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).Create(r.Context(), &env)) {
 				return
 			}
 
@@ -114,7 +114,7 @@ func (ctrl *Controller) envAction(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			if ctrl.handleError(w, r, ctrl.UseCases.Storage.DeleteByID(r.Context(), deployment.Environment{}, envID)) {
+			if ctrl.handleError(w, r, ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).DeleteByID(r.Context(), envID)) {
 				return
 			}
 
@@ -185,7 +185,7 @@ func (ctrl *Controller) envCreateNewAction(w http.ResponseWriter, r *http.Reques
 			return
 		}
 
-		err = ctrl.UseCases.Storage.Create(r.Context(), &env)
+		err = ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).Create(r.Context(), &env)
 
 		if err != nil {
 			log.Println(err)

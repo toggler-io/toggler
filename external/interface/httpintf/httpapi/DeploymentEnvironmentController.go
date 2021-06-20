@@ -110,7 +110,7 @@ func (ctrl DeploymentEnvironmentController) Create(w http.ResponseWriter, r *htt
 		return
 	}
 
-	if ctrl.handleValidationError(w, ctrl.UseCases.Storage.Create(r.Context(), &env)) {
+	if ctrl.handleValidationError(w, ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).Create(r.Context(), &env)) {
 		return
 	}
 
@@ -163,7 +163,7 @@ func (ctrl DeploymentEnvironmentController) List(w http.ResponseWriter, r *http.
 	var resp ListDeploymentEnvironmentResponse
 
 	if handleError(w,
-		iterators.Collect(ctrl.UseCases.Storage.FindAll(r.Context(), deployment.Environment{}), &resp.Body.Environments),
+		iterators.Collect(ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).FindAll(r.Context()), &resp.Body.Environments),
 		http.StatusInternalServerError,
 	) {
 		return
@@ -177,7 +177,7 @@ func (ctrl DeploymentEnvironmentController) List(w http.ResponseWriter, r *http.
 type DeploymentEnvironmentContextKey struct{}
 
 func (ctrl DeploymentEnvironmentController) ContextWithResource(ctx context.Context, resourceID string) (context.Context, bool, error) {
-	s := ctrl.UseCases.Storage
+	s := ctrl.UseCases.Storage.DeploymentEnvironment(ctx)
 	//flag, err := s.FindDeploymentEnvironmentByName(ctx, resourceID)
 	//if err != nil {
 	//	return ctx, false, err
@@ -264,7 +264,7 @@ func (ctrl DeploymentEnvironmentController) Update(w http.ResponseWriter, r *htt
 		return
 	}
 
-	if ctrl.handleValidationError(w, ctrl.UseCases.Storage.Update(r.Context(), &env)) {
+	if ctrl.handleValidationError(w, ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).Update(r.Context(), &env)) {
 		return
 	}
 

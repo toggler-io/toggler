@@ -133,7 +133,7 @@ func (ctrl ReleaseRolloutController) Create(w http.ResponseWriter, r *http.Reque
 	p.Rollout.FlagID = p.FlagID
 	p.Rollout.DeploymentEnvironmentID = p.EnvironmentID
 
-	if ctrl.handleFlagValidationError(w, ctrl.UseCases.Storage.Create(r.Context(), &p.Rollout)) {
+	if ctrl.handleFlagValidationError(w, ctrl.UseCases.Storage.ReleaseRollout(r.Context()).Create(r.Context(), &p.Rollout)) {
 		return
 	}
 
@@ -184,10 +184,8 @@ func (ctrl ReleaseRolloutController) List(w http.ResponseWriter, r *http.Request
 
 	var resp ListReleaseRolloutResponse
 
-	// TODO: replace with Storage Contract
-	// TODO:DEBT
 	err := iterators.ForEach(
-		ctrl.UseCases.Storage.FindAll(ctx, release.Rollout{}),
+		ctrl.UseCases.Storage.ReleaseRollout(ctx).FindAll(ctx),
 		func(r release.Rollout) error {
 			resp.Body.Rollouts = append(resp.Body.Rollouts, Rollout{
 				ID:            r.ID,
@@ -212,7 +210,7 @@ func (ctrl ReleaseRolloutController) List(w http.ResponseWriter, r *http.Request
 type ReleaseRolloutContextKey struct{}
 
 func (ctrl ReleaseRolloutController) ContextWithResource(ctx context.Context, resourceID string) (context.Context, bool, error) {
-	s := ctrl.UseCases.Storage
+	s := ctrl.UseCases.Storage.ReleaseRollout(ctx)
 	var r release.Rollout
 	found, err := s.FindByID(ctx, &r, resourceID)
 	if err != nil {
@@ -297,7 +295,7 @@ func (ctrl ReleaseRolloutController) Update(w http.ResponseWriter, r *http.Reque
 	rollout := ctx.Value(ReleaseRolloutContextKey{}).(release.Rollout)
 	rollout.Plan = p.Rollout.Plan.Definition
 
-	if ctrl.handleFlagValidationError(w, ctrl.UseCases.Storage.Update(r.Context(), &rollout)) {
+	if ctrl.handleFlagValidationError(w, ctrl.UseCases.Storage.ReleaseRollout(r.Context()).Update(r.Context(), &rollout)) {
 		return
 	}
 

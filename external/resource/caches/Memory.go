@@ -2,95 +2,148 @@ package caches
 
 import (
 	"context"
-	"fmt"
-	"reflect"
-
-	"github.com/adamluzsi/frameless/iterators"
-	"github.com/adamluzsi/frameless/reflects"
-	"github.com/adamluzsi/frameless/resources"
-	"github.com/adamluzsi/frameless/resources/storages/inmemory"
+	"github.com/adamluzsi/frameless"
+	"github.com/adamluzsi/frameless/cache"
+	"github.com/adamluzsi/frameless/inmemory"
+	"github.com/toggler-io/toggler/domains/deployment"
+	"github.com/toggler-io/toggler/domains/release"
+	"github.com/toggler-io/toggler/domains/security"
+	"github.com/toggler-io/toggler/domains/toggler"
+	"sync"
 )
 
-func NewInMemoryCacheStorage() *InMemoryCacheStorage {
-	s := inmemory.New()
-	s.Options.DisableEventLogging = true
-	s.Options.DisableAsyncSubscriptionHandling = true
-	s.Options.DisableRelativePathResolvingForTrace = true
-	return &InMemoryCacheStorage{Storage: s}
+func NewMemory(s toggler.Storage) (*Memory, error) {
+	m := &Memory{Source: s, Memory: inmemory.NewMemory()}
+	return m, m.Init(context.Background())
 }
 
-type InMemoryCacheStorage struct {
-	*inmemory.Storage
+type Memory struct {
+	Source toggler.Storage
+	Memory *inmemory.Memory
+
+	init                  sync.Once
+	releaseFlag           *cache.Manager
+	releaseRollout        *cache.Manager
+	releasePilot          *cache.Manager
+	deploymentEnvironment *cache.Manager
+	securityToken         *cache.Manager
 }
 
-func (c InMemoryCacheStorage) Close() error {
-	return nil
+func (m *Memory) Init(ctx context.Context) error {
+	var err error
+	m.init.Do(func() {
+		newManager := func(T frameless.T, s cache.Source) (*cache.Manager, error) {
+			return cache.NewManager(T, newMemoryStorage(T, m.Memory), s)
+		}
+
+		m.releaseFlag, err = newManager(release.Flag{}, m.Source.ReleaseFlag(ctx))
+		if err != nil {
+			return
+		}
+		m.releaseRollout, err = newManager(release.Rollout{}, m.Source.ReleaseRollout(ctx))
+		if err != nil {
+			return
+		}
+		m.releasePilot, err = newManager(release.ManualPilot{}, m.Source.ReleasePilot(ctx))
+		if err != nil {
+			return
+		}
+		m.deploymentEnvironment, err = newManager(deployment.Environment{}, m.Source.DeploymentEnvironment(ctx))
+		if err != nil {
+			return
+		}
+		m.securityToken, err = newManager(security.Token{}, m.Source.SecurityToken(ctx))
+		if err != nil {
+			return
+		}
+	})
+	return err
 }
 
-func (c *InMemoryCacheStorage) UpsertMany(ctx context.Context, ptrs ...interface{}) (rErr error) {
-	tx, err := c.Storage.BeginTx(ctx)
+func (m *Memory) BeginTx(ctx context.Context) (context.Context, error) {
+	ctx, err := m.Source.BeginTx(ctx)
 	if err != nil {
+		return ctx, err
+	}
+	return m.Memory.BeginTx(ctx)
+}
+
+func (m *Memory) CommitTx(ctx context.Context) error {
+	if err := m.Source.CommitTx(ctx); err != nil {
 		return err
 	}
-	defer func() {
-		if rErr != nil {
-			_ = c.Storage.RollbackTx(tx)
-		}
-	}()
-
-	for _, ptr := range ptrs {
-		id, _ := resources.LookupID(ptr)
-		n := reflect.New(reflects.BaseTypeOf(ptr)).Interface()
-		if found, err := c.Storage.FindByID(ctx, n, id); err != nil {
-			return err
-		} else if found {
-			if err := c.Storage.Update(tx, ptr); err != nil {
-				return err
-			}
-			continue
-		}
-
-		if err := c.Storage.Create(tx, ptr); err != nil {
-			return err
-		}
-	}
-	return c.Storage.CommitTx(tx)
+	return m.Memory.CommitTx(ctx)
 }
 
-func (c *InMemoryCacheStorage) FindByIDs(ctx context.Context, T resources.T, ids ...interface{}) iterators.Interface {
-	index := make(index)
-	for _, id := range ids {
-		index.Add(id)
+func (m *Memory) RollbackTx(ctx context.Context) error {
+	if err := m.Source.RollbackTx(ctx); err != nil {
+		return err
 	}
+	return m.Memory.RollbackTx(ctx)
+}
 
-	pipe, sender := iterators.NewPipe()
-	go func() {
-		defer sender.Close()
+func (m *Memory) ReleaseFlag(ctx context.Context) release.FlagStorage {
+	return &FlagStorage{
+		Manager: m.releaseFlag,
+		Source:  m.Source,
+	}
+}
 
-		iter := iterators.Filter(c.Storage.FindAll(ctx, T), func(ent interface{}) bool {
-			id, _ := resources.LookupID(ent)
-			return index.Has(id)
-		})
+func (m *Memory) ReleasePilot(ctx context.Context) release.PilotStorage {
+	return &PilotStorage{
+		Manager: m.releasePilot,
+		Source:  m.Source,
+	}
+}
 
-		var total int
-		rT := reflect.TypeOf(T)
-		for iter.Next() {
-			total++
-			ptr := reflect.New(rT)
+func (m *Memory) ReleaseRollout(ctx context.Context) release.RolloutStorage {
+	return &RolloutStorage{
+		Manager: m.releaseRollout,
+		Source:  m.Source,
+	}
+}
 
-			if err := iter.Decode(ptr.Interface()); err != nil {
-				sender.Error(err)
-				return
-			}
+func (m *Memory) DeploymentEnvironment(ctx context.Context) deployment.EnvironmentStorage {
+	return &EnvironmentStorage{
+		Manager: m.deploymentEnvironment,
+		Source:  m.Source,
+	}
+}
 
-			if err := sender.Encode(ptr.Elem().Interface()); err != nil {
-				return
-			}
-		}
+func (m *Memory) SecurityToken(ctx context.Context) security.TokenStorage {
+	return &TokenStorage{
+		Manager: m.securityToken,
+		Source:  m.Source,
+	}
+}
 
-		if total != len(index) {
-			sender.Error(fmt.Errorf(`not all %T was found by id: %d/%d`, T, total, len(index)))
-		}
-	}()
-	return pipe
+func (m *Memory) Close() error {
+	_ = m.releaseFlag.Close()
+	_ = m.releaseRollout.Close()
+	_ = m.releasePilot.Close()
+	_ = m.deploymentEnvironment.Close()
+	_ = m.securityToken.Close()
+	return m.Source.Close()
+}
+
+func newMemoryStorage(T frameless.T, m *inmemory.Memory) *storage {
+	return &storage{
+		OnePhaseCommitProtocol: m,
+		HitStorage:             inmemory.NewStorage(cache.Hit{}, m),
+		EntityStorage:          inmemory.NewStorage(T, m),
+	}
+}
+
+type storage struct {
+	frameless.OnePhaseCommitProtocol
+	HitStorage    cache.HitStorage
+	EntityStorage cache.EntityStorage
+}
+
+func (s *storage) CacheEntity(ctx context.Context) cache.EntityStorage {
+	return s.EntityStorage
+}
+
+func (s *storage) CacheHit(ctx context.Context) cache.HitStorage {
+	return s.HitStorage
 }

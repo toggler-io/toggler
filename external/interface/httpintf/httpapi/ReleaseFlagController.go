@@ -175,7 +175,7 @@ func (ctrl ReleaseFlagController) List(w http.ResponseWriter, r *http.Request) {
 type ReleaseFlagContextKey struct{}
 
 func (ctrl ReleaseFlagController) ContextWithResource(ctx context.Context, resourceID string) (context.Context, bool, error) {
-	s := ctrl.UseCases.Storage
+	s := ctrl.UseCases.Storage.ReleaseFlag(ctx)
 	//flag, err := s.FindReleaseFlagByName(ctx, resourceID)
 	//if err != nil {
 	//	return ctx, false, err

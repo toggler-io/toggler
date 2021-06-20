@@ -25,23 +25,24 @@ func (spec Storage) Spec(tb testing.TB) {
 	testcase.NewSpec(tb).Describe(`releases#Storage`, func(s *testcase.Spec) {
 		testcase.RunContract(s,
 			RolloutStorage{
-				Subject: func(tb testing.TB) RolloutStorageSubject {
+				Subject: func(tb testing.TB) release.Storage {
 					return spec.Subject(tb)
 				},
 				FixtureFactory: spec.FixtureFactory,
 			},
 			FlagStorage{
-				Subject: func(tb testing.TB) FlagStorageSubject {
+				Subject: func(tb testing.TB) release.Storage {
 					return spec.Subject(tb)
 				},
 				FixtureFactory: spec.FixtureFactory,
 			},
-			ManualPilotStorage{
-				Subject: func(tb testing.TB) ManualPilotStorageSubject {
+			PilotStorage{
+				Subject: func(tb testing.TB) release.Storage {
 					return spec.Subject(tb)
 				},
 				FixtureFactory: spec.FixtureFactory,
 			},
+
 		)
 
 	})

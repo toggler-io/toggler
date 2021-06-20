@@ -2,13 +2,13 @@ package contracts
 
 import (
 	"context"
+	"github.com/adamluzsi/frameless"
 	"math/rand"
 	"strconv"
 	"testing"
 
+	"github.com/adamluzsi/frameless/contracts"
 	"github.com/adamluzsi/frameless/iterators"
-	"github.com/adamluzsi/frameless/resources"
-	"github.com/adamluzsi/frameless/resources/contracts"
 	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/testcase/fixtures"
 	"github.com/google/uuid"
@@ -18,168 +18,103 @@ import (
 	sh "github.com/toggler-io/toggler/spechelper"
 )
 
-type ManualPilotStorage struct {
-	Subject        func(testing.TB) ManualPilotStorageSubject
+type PilotStorage struct {
+	Subject        func(testing.TB) release.Storage
 	FixtureFactory sh.FixtureFactory
 }
 
-type ManualPilotStorageSubject interface {
-	resources.Creator
-	resources.Finder
-	resources.Updater
-	resources.Deleter
-	resources.OnePhaseCommitProtocol
-	resources.CreatorPublisher
-	resources.UpdaterPublisher
-	resources.DeleterPublisher
-	release.PilotFinder
-}
-
-func (spec ManualPilotStorage) storage() testcase.Var {
+func (spec PilotStorage) storage() testcase.Var {
 	return testcase.Var{
 		Name: "release pilot storage",
 		Init: func(t *testcase.T) interface{} {
-			return spec.Subject(t)
+			return sh.StorageGet(t).ReleasePilot(sh.ContextGet(t))
 		},
 	}
 }
 
-func (spec ManualPilotStorage) storageGet(t *testcase.T) ManualPilotStorageSubject {
-	return spec.storage().Get(t).(ManualPilotStorageSubject)
+func (spec PilotStorage) storageGet(t *testcase.T) release.PilotStorage {
+	return spec.storage().Get(t).(release.PilotStorage)
 }
 
-func (spec ManualPilotStorage) Test(t *testing.T) {
+func (spec PilotStorage) context() context.Context {
+	return spec.FixtureFactory.Context()
+}
+
+func (spec PilotStorage) Test(t *testing.T) {
 	spec.Spec(t)
 }
 
-func (spec ManualPilotStorage) Benchmark(b *testing.B) {
+func (spec PilotStorage) Benchmark(b *testing.B) {
 	spec.Spec(b)
 }
 
-func (spec ManualPilotStorage) setUp(s *testcase.Spec) {
-	sh.SetUp(s)
+func (spec PilotStorage) Spec(tb testing.TB) {
+	testcase.NewSpec(tb).Describe(`PilotStorage`, func(s *testcase.Spec) {
+		sh.SetUp(s)
 
-	sh.Storage.Let(s, func(t *testcase.T) interface{} {
-		return spec.storageGet(t)
-	})
+		// required for FixtureFactory.Dynamic
+		sh.Storage.Let(s, func(t *testcase.T) interface{} {
+			return spec.Subject(t)
+		})
 
-	s.After(func(t *testcase.T) {
-		// TODO: delete this?
-		require.Nil(t, spec.storageGet(t).DeleteAll(spec.FixtureFactory.Context(), release.Flag{}))
-		require.Nil(t, spec.storageGet(t).DeleteAll(spec.FixtureFactory.Context(), release.ManualPilot{}))
-	})
-}
-
-func (spec ManualPilotStorage) Spec(tb testing.TB) {
-	testcase.NewSpec(tb).Describe(`ManualPilotStorage`, func(s *testcase.Spec) {
-		spec.setUp(s)
+		releasePilotStorage := func(tb testing.TB) release.PilotStorage {
+			return spec.Subject(tb).ReleasePilot(spec.FixtureFactory.Context())
+		}
 
 		s.Test(`contracts`, func(t *testcase.T) {
 			T := release.ManualPilot{}
 			testcase.RunContract(t.TB,
-				contracts.OnePhaseCommitProtocol{T: T,
-					FixtureFactory: spec.FixtureFactory.Dynamic(t),
-					Subject: func(tb testing.TB) contracts.OnePhaseCommitProtocolSubject {
-						return spec.Subject(tb)
-					},
-				},
 				contracts.Creator{T: T,
 					Subject: func(tb testing.TB) contracts.CRD {
-						return spec.Subject(tb)
+						return releasePilotStorage(tb)
 					},
 					FixtureFactory: spec.FixtureFactory.Dynamic(t),
 				},
 				contracts.Finder{T: T,
 					Subject: func(tb testing.TB) contracts.CRD {
-						return spec.Subject(tb)
+						return releasePilotStorage(tb)
 					},
 					FixtureFactory: spec.FixtureFactory.Dynamic(t),
 				},
 				contracts.Updater{T: T,
 					Subject: func(tb testing.TB) contracts.UpdaterSubject {
-						return spec.Subject(tb)
+						return releasePilotStorage(tb)
 					},
 					FixtureFactory: spec.FixtureFactory.Dynamic(t),
 				},
 				contracts.Deleter{T: T,
 					Subject: func(tb testing.TB) contracts.CRD {
-						return spec.Subject(tb)
+						return releasePilotStorage(tb)
 					},
 					FixtureFactory: spec.FixtureFactory.Dynamic(t),
 				},
-				ManualPilotFinder{
-					FixtureFactory: spec.FixtureFactory,
-					Subject: func(tb testing.TB) ManualPilotFinderSubject {
-						return spec.Subject(tb)
-					},
-				},
-				contracts.CreatorPublisher{T: T,
-					Subject: func(tb testing.TB) contracts.CreatorPublisherSubject {
-						return spec.Subject(tb)
+				contracts.Publisher{T: T,
+					Subject: func(tb testing.TB) contracts.PublisherSubject {
+						return releasePilotStorage(tb)
 					},
 					FixtureFactory: spec.FixtureFactory.Dynamic(t),
 				},
-				contracts.UpdaterPublisher{T: T,
-					Subject: func(tb testing.TB) contracts.UpdaterPublisherSubject {
-						return spec.Subject(tb)
-					},
-					FixtureFactory: spec.FixtureFactory.Dynamic(t),
-				},
-				contracts.DeleterPublisher{T: T,
-					Subject: func(tb testing.TB) contracts.DeleterPublisherSubject {
-						return spec.Subject(tb)
+				contracts.OnePhaseCommitProtocol{T: release.ManualPilot{},
+					Subject: func(tb testing.TB) (frameless.OnePhaseCommitProtocol, contracts.CRD) {
+						storage := spec.Subject(tb)
+						return storage, storage.ReleasePilot(spec.FixtureFactory.Context())
 					},
 					FixtureFactory: spec.FixtureFactory.Dynamic(t),
 				},
 			)
 		})
+
+		s.Describe(`custom Find queries`, spec.specPilotFinder)
 	})
 }
 
-///////////////////////////////////////////////////////- query -////////////////////////////////////////////////////////
-
-type ManualPilotFinder struct {
-	Subject        func(testing.TB) ManualPilotFinderSubject
-	FixtureFactory sh.FixtureFactory
-}
-
-type ManualPilotFinderSubject interface {
-	release.PilotFinder
-	resources.Creator
-	resources.Updater
-	resources.Finder
-	resources.Deleter
-	resources.OnePhaseCommitProtocol
-}
-
-func (spec ManualPilotFinder) storage() testcase.Var {
-	return testcase.Var{
-		Name: "release pilot storage",
-		Init: func(t *testcase.T) interface{} {
-			return spec.Subject(t)
-		},
-	}
-}
-
-func (spec ManualPilotFinder) storageGet(t *testcase.T) ManualPilotFinderSubject {
-	return spec.storage().Get(t).(ManualPilotFinderSubject)
-}
-
-func (spec ManualPilotFinder) Test(t *testing.T) {
-	s := testcase.NewSpec(t)
-
-	sh.SetUp(s)
-
-	sh.Storage.Let(s, func(t *testcase.T) interface{} {
-		return spec.storageGet(t)
-	})
-
+func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 	s.Describe(`ManualPilotFinder`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			contracts.DeleteAllEntity(t, spec.storageGet(t), spec.context(), release.ManualPilot{})
+			contracts.DeleteAllEntity(t, spec.storageGet(t), spec.context())
 		})
 		s.After(func(t *testcase.T) {
-			contracts.DeleteAllEntity(t, spec.storageGet(t), spec.context(), release.ManualPilot{})
+			contracts.DeleteAllEntity(t, spec.storageGet(t), spec.context())
 		})
 
 		s.Describe(`FindReleasePilotsByReleaseFlag`, func(s *testcase.Spec) {
@@ -256,12 +191,12 @@ func (spec ManualPilotFinder) Test(t *testing.T) {
 					spec.context(),
 					sh.ExampleReleaseFlag(t).ID,
 					sh.ExampleDeploymentEnvironment(t).ID,
-					sh.ExampleID(t),
+					sh.ExampleIDGet(t),
 				)
 			}
 
 			s.Before(func(t *testcase.T) {
-				contracts.DeleteAllEntity(t, spec.storageGet(t), spec.context(), release.ManualPilot{})
+				contracts.DeleteAllEntity(t, spec.storageGet(t), spec.context())
 			})
 
 			ThenNoPilotsFound := func(s *testcase.Spec) {
@@ -292,7 +227,7 @@ func (spec ManualPilotFinder) Test(t *testing.T) {
 						pilot := &release.ManualPilot{
 							FlagID:                  sh.ExampleReleaseFlag(t).ID,
 							DeploymentEnvironmentID: sh.ExampleDeploymentEnvironment(t).ID,
-							ExternalID:              sh.ExampleID(t),
+							ExternalID:              sh.ExampleIDGet(t),
 						}
 						contracts.CreateEntity(t, spec.storageGet(t), spec.context(), pilot)
 					})
@@ -302,7 +237,7 @@ func (spec ManualPilotFinder) Test(t *testing.T) {
 						require.Nil(t, err)
 						require.NotNil(t, pilot)
 
-						require.Equal(t, sh.ExampleID(t), pilot.ExternalID)
+						require.Equal(t, sh.ExampleIDGet(t), pilot.ExternalID)
 						require.Equal(t, sh.ExampleReleaseFlag(t).ID, pilot.FlagID)
 						require.Equal(t, sh.ExampleDeploymentEnvironment(t).ID, pilot.DeploymentEnvironmentID)
 					})
@@ -323,7 +258,7 @@ func (spec ManualPilotFinder) Test(t *testing.T) {
 
 			s.When(`there is no pilot records`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					contracts.DeleteAllEntity(t, spec.storageGet(t), spec.context(), release.ManualPilot{})
+					contracts.DeleteAllEntity(t, spec.storageGet(t), spec.context())
 				})
 
 				s.Then(`it will return an empty result set`, func(t *testcase.T) {
@@ -384,14 +319,4 @@ func (spec ManualPilotFinder) Test(t *testing.T) {
 			})
 		})
 	})
-}
-
-func (spec ManualPilotFinder) Benchmark(b *testing.B) {
-	b.Run(`ManualPilotFinder`, func(b *testing.B) {
-		b.Skip(`TODO`)
-	})
-}
-
-func (spec ManualPilotFinder) context() context.Context {
-	return spec.FixtureFactory.Context()
 }

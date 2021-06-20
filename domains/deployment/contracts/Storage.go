@@ -1,6 +1,8 @@
 package contracts
 
 import (
+	"github.com/adamluzsi/frameless"
+	"github.com/adamluzsi/frameless/contracts"
 	"testing"
 
 	"github.com/adamluzsi/testcase"
@@ -28,7 +30,14 @@ func (spec Storage) Spec(tb testing.TB) {
 		testcase.RunContract(s,
 			EnvironmentStorage{
 				Subject: func(tb testing.TB) EnvironmentStorageSubject {
-					return spec.Subject(tb)
+					return spec.Subject(tb).DeploymentEnvironment(spec.FixtureFactory.Context())
+				},
+				FixtureFactory: spec.FixtureFactory,
+			},
+			contracts.OnePhaseCommitProtocol{T: deployment.Environment{},
+				Subject: func(tb testing.TB) (frameless.OnePhaseCommitProtocol, contracts.CRD) {
+					storage := spec.Subject(tb)
+					return storage, storage.DeploymentEnvironment(spec.FixtureFactory.Context())
 				},
 				FixtureFactory: spec.FixtureFactory,
 			},

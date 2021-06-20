@@ -1,21 +1,26 @@
 package storages
 
 import (
-	"github.com/adamluzsi/frameless/resources"
+	"context"
+	"github.com/adamluzsi/frameless/extid"
 	"github.com/google/uuid"
 )
 
 func EnsureID(ptr interface{}) error {
-	if currentID, _ := resources.LookupID(ptr); currentID == `` {
+	if currentID, _ := extid.Lookup(ptr); currentID == `` {
 		uuidV4, err := newV4UUID()
 		if err != nil {
 			return err
 		}
-		if err := resources.SetID(ptr, uuidV4); err != nil {
+		if err := extid.Set(ptr, uuidV4); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func newIDFn(ctx context.Context) (interface{}, error) {
+	return newV4UUID()
 }
 
 func newV4UUID() (string, error) {

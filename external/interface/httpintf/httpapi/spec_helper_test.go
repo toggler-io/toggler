@@ -15,7 +15,7 @@ import (
 )
 
 func CreateSecurityTokenString(t *testcase.T) string {
-	textToken, token, err := security.NewIssuer(sh.StorageGet(t)).CreateNewToken(sh.GetContext(t), sh.ExampleUniqueUserID(t), nil, nil)
+	textToken, token, err := security.NewIssuer(sh.StorageGet(t)).CreateNewToken(sh.ContextGet(t), sh.ExampleUniqueUserID(t), nil, nil)
 	require.Nil(t, err)
 	require.NotNil(t, token)
 	require.NotEmpty(t, token.SHA512)

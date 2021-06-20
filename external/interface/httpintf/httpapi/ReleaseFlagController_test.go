@@ -34,7 +34,7 @@ func TestReleaseFlagController(t *testing.T) {
 	ContentTypeIsJSON(s)
 
 	Context.Let(s, func(t *testcase.T) interface{} {
-		return sh.GetContext(t)
+		return sh.ContextGet(t)
 	})
 
 	s.Describe(`POST / - create release flag`, SpecReleaseFlagControllerCreate)
@@ -83,7 +83,7 @@ func SpecReleaseFlagControllerCreate(s *testcase.Spec) {
 	}
 
 	s.After(func(t *testcase.T) {
-		require.Nil(t, sh.StorageGet(t).DeleteAll(sh.GetContext(t), release.Flag{}))
+		require.Nil(t, sh.StorageGet(t).ReleaseFlag(sh.ContextGet(t)).DeleteAll(sh.ContextGet(t)))
 	})
 
 	s.Let(`release-flag`, func(t *testcase.T) interface{} {

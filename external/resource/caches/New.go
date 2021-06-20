@@ -18,19 +18,11 @@ func New(connstr string, src toggler.Storage) (toggler.Storage, error) {
 		driver = u.Scheme
 	}
 
-	var cache Storage
 	switch driver {
-	case `redis`:
-		s, err := NewRedisCacheStorage(connstr)
-		if err != nil {
-			return nil, err
-		}
-		cache = s
-	case `memory`:
-		cache = NewInMemoryCacheStorage()
+	case "memory":
+		return NewMemory(src)
+
 	default:
 		return src, nil
 	}
-
-	return NewManager(src, cache)
 }

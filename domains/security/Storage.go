@@ -2,24 +2,19 @@ package security
 
 import (
 	"context"
-
-	"github.com/adamluzsi/frameless/resources"
+	"github.com/adamluzsi/frameless"
 )
 
 type Storage interface {
-	resources.Creator
-	resources.Finder
-	resources.Updater
-	resources.Deleter
-	TokenFinder
-
-	resources.OnePhaseCommitProtocol
-
-	resources.CreatorPublisher
-	resources.UpdaterPublisher
-	resources.DeleterPublisher
+	frameless.OnePhaseCommitProtocol
+	SecurityToken(context.Context) TokenStorage
 }
 
-type TokenFinder interface {
+type TokenStorage interface {
+	frameless.Creator
+	frameless.Finder
+	frameless.Updater
+	frameless.Deleter
+	frameless.Publisher
 	FindTokenBySHA512Hex(ctx context.Context, sha512hex string) (*Token, error)
 }

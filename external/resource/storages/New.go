@@ -1,7 +1,6 @@
 package storages
 
 import (
-	"database/sql"
 	"fmt"
 	"net/url"
 
@@ -22,14 +21,10 @@ func New(connstr string) (toggler.Storage, error) {
 
 	switch driver {
 	case `postgres`:
-		db, err := sql.Open(u.Scheme, connstr)
-		if err != nil {
-			return nil, err
-		}
-		return NewPostgres(db, connstr)
+		return NewPostgres(connstr)
 
 	case `memory`:
-		return NewMemory(), nil
+		return NewEventLogMemoryStorage(), nil
 
 	default:
 		return nil, fmt.Errorf(`ErrNotImplemented`)

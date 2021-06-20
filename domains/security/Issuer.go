@@ -4,10 +4,9 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 	"strings"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 func NewIssuer(s Storage) *Issuer {
@@ -48,12 +47,12 @@ func (i *Issuer) CreateNewToken(ctx context.Context, ownerUID string, issueAt *t
 		return textToken, token, err
 	}
 
-	return textToken, token, i.Storage.Create(ctx, token)
+	return textToken, token, i.Storage.SecurityToken(ctx).Create(ctx, token)
 
 }
 
 func (i *Issuer) RevokeToken(ctx context.Context, token *Token) error {
-	return i.Storage.DeleteByID(ctx, Token{}, token.ID)
+	return i.Storage.SecurityToken(ctx).DeleteByID(ctx, token.ID)
 }
 
 const tokenRawLength = 128

@@ -34,7 +34,7 @@ func TestDeploymentEnvironmentController(t *testing.T) {
 	ContentTypeIsJSON(s)
 
 	Context.Let(s, func(t *testcase.T) interface{} {
-		return sh.GetContext(t)
+		return sh.ContextGet(t)
 	})
 
 	s.Describe(`POST / - create deployment environment`, SpecDeploymentEnvironmentControllerCreate)
@@ -83,7 +83,7 @@ func SpecDeploymentEnvironmentControllerCreate(s *testcase.Spec) {
 	}
 
 	s.After(func(t *testcase.T) {
-		require.Nil(t, sh.StorageGet(t).DeleteAll(sh.GetContext(t), deployment.Environment{}))
+		require.Nil(t, sh.StorageGet(t).DeploymentEnvironment(sh.ContextGet(t)).DeleteAll(sh.ContextGet(t)))
 	})
 
 	s.Let(`deployment-environment`, func(t *testcase.T) interface{} {
@@ -105,7 +105,7 @@ func SpecDeploymentEnvironmentControllerCreate(s *testcase.Spec) {
 		rfv := t.I(`deployment-environment`).(*deployment.Environment)
 
 		var actualDeploymentEnvironment deployment.Environment
-		found, err := sh.StorageGet(t).FindDeploymentEnvironmentByAlias(sh.GetContext(t), t.I(`deployment-environment`).(*deployment.Environment).Name, &actualDeploymentEnvironment)
+		found, err := sh.StorageGet(t).DeploymentEnvironment(sh.ContextGet(t)).FindDeploymentEnvironmentByAlias(sh.ContextGet(t), t.I(`deployment-environment`).(*deployment.Environment).Name, &actualDeploymentEnvironment)
 		require.Nil(t, err)
 		require.True(t, found)
 		require.Equal(t, rfv.Name, actualDeploymentEnvironment.Name)
@@ -115,7 +115,7 @@ func SpecDeploymentEnvironmentControllerCreate(s *testcase.Spec) {
 		resp := onSuccess(t)
 
 		var env deployment.Environment
-		found, err := sh.StorageGet(t).FindDeploymentEnvironmentByAlias(sh.GetContext(t), t.I(`deployment-environment`).(*deployment.Environment).Name, &env)
+		found, err := sh.StorageGet(t).DeploymentEnvironment(sh.ContextGet(t)).FindDeploymentEnvironmentByAlias(sh.ContextGet(t), t.I(`deployment-environment`).(*deployment.Environment).Name, &env)
 		require.Nil(t, err)
 		require.True(t, found)
 		require.Equal(t, resp.Body.Environment, env)
@@ -248,7 +248,7 @@ func SpecDeploymentEnvironmentControllerUpdate(s *testcase.Spec) {
 		updatedDeploymentEnvironmentView := t.I(`updated-deployment-environment`).(*deployment.Environment)
 
 		var stored deployment.Environment
-		found, err := sh.StorageGet(t).FindDeploymentEnvironmentByAlias(sh.GetContext(t), updatedDeploymentEnvironmentView.Name, &stored)
+		found, err := sh.StorageGet(t).DeploymentEnvironment(sh.ContextGet(t)).FindDeploymentEnvironmentByAlias(sh.ContextGet(t), updatedDeploymentEnvironmentView.Name, &stored)
 		require.Nil(t, err)
 		require.True(t, found)
 		require.Equal(t, resp.Body.Environment, stored)

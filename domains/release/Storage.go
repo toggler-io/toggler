@@ -3,24 +3,17 @@ package release
 import (
 	"context"
 
+	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
-	"github.com/adamluzsi/frameless/resources"
 
 	"github.com/toggler-io/toggler/domains/deployment"
 )
 
 type Storage interface {
-	resources.Creator
-	resources.Finder
-	resources.Updater
-	resources.Deleter
-	resources.OnePhaseCommitProtocol
-	resources.CreatorPublisher
-	resources.UpdaterPublisher
-	resources.DeleterPublisher
-	FlagFinder
-	PilotFinder
-	RolloutFinder
+	frameless.OnePhaseCommitProtocol
+	ReleaseFlag(context.Context) FlagStorage
+	ReleasePilot(context.Context) PilotStorage
+	ReleaseRollout(context.Context) RolloutStorage
 }
 
 type (
@@ -29,19 +22,33 @@ type (
 	RolloutEntries = iterators.Interface
 )
 
-type FlagFinder interface {
+type FlagStorage interface {
+	frameless.Creator
+	frameless.Finder
+	frameless.Updater
+	frameless.Deleter
+	frameless.Publisher
 	FindReleaseFlagByName(ctx context.Context, name string) (*Flag, error)
 	FindReleaseFlagsByName(ctx context.Context, names ...string) FlagEntries
 }
 
-type PilotFinder interface {
+type PilotStorage interface {
+	frameless.Creator
+	frameless.Finder
+	frameless.Updater
+	frameless.Deleter
+	frameless.Publisher
 	FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID interface{}, pilotExtID string) (*ManualPilot, error)
-	// deployment.Environment independent queries
 	FindReleasePilotsByReleaseFlag(ctx context.Context, flag Flag) PilotEntries
 	FindReleasePilotsByExternalID(ctx context.Context, externalID string) PilotEntries
 }
 
-type RolloutFinder interface {
+type RolloutStorage interface {
+	frameless.Creator
+	frameless.Finder
+	frameless.Updater
+	frameless.Deleter
+	frameless.Publisher
 	FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(context.Context, Flag, deployment.Environment, *Rollout) (bool, error)
 
 	// TODO:

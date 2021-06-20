@@ -2,12 +2,12 @@ package contracts
 
 import (
 	"context"
+	"github.com/adamluzsi/frameless"
 	"sync"
 	"testing"
 
+	"github.com/adamluzsi/frameless/contracts"
 	"github.com/adamluzsi/frameless/iterators"
-	"github.com/adamluzsi/frameless/resources"
-	"github.com/adamluzsi/frameless/resources/contracts"
 	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/testcase/fixtures"
 	"github.com/stretchr/testify/require"
@@ -17,33 +17,21 @@ import (
 )
 
 type FlagStorage struct {
-	Subject        func(testing.TB) FlagStorageSubject
+	Subject        func(testing.TB) release.Storage
 	FixtureFactory sh.FixtureFactory
-}
-
-type FlagStorageSubject interface {
-	resources.Creator
-	resources.Finder
-	resources.Updater
-	resources.Deleter
-	resources.OnePhaseCommitProtocol
-	resources.CreatorPublisher
-	resources.UpdaterPublisher
-	resources.DeleterPublisher
-	release.FlagFinder
 }
 
 func (spec FlagStorage) storage() testcase.Var {
 	return testcase.Var{
 		Name: "release flag storage",
 		Init: func(t *testcase.T) interface{} {
-			return spec.Subject(t)
+			return spec.Subject(t).ReleaseFlag(sh.ContextGet(t))
 		},
 	}
 }
 
-func (spec FlagStorage) storageGet(t *testcase.T) FlagStorageSubject {
-	return spec.storage().Get(t).(FlagStorageSubject)
+func (spec FlagStorage) storageGet(t *testcase.T) release.FlagStorage {
+	return spec.storage().Get(t).(release.FlagStorage)
 }
 
 func (spec FlagStorage) Test(t *testing.T) {
@@ -57,59 +45,52 @@ func (spec FlagStorage) Benchmark(b *testing.B) {
 func (spec FlagStorage) Spec(tb testing.TB) {
 	testcase.NewSpec(tb).Describe(`FlagStorage`, func(s *testcase.Spec) {
 
+		newStorage := func(tb testing.TB) release.FlagStorage {
+			return spec.Subject(tb).ReleaseFlag(spec.FixtureFactory.Context())
+		}
+
 		T := release.Flag{}
 		testcase.RunContract(s,
 			contracts.Creator{T: T,
 				Subject: func(tb testing.TB) contracts.CRD {
-					return spec.Subject(tb)
+					return newStorage(tb)
 				},
 				FixtureFactory: spec.FixtureFactory,
 			},
 			contracts.Finder{T: T,
 				Subject: func(tb testing.TB) contracts.CRD {
-					return spec.Subject(tb)
+					return newStorage(tb)
 				},
 				FixtureFactory: spec.FixtureFactory,
 			},
 			FlagFinder{
-				Subject: func(tb testing.TB) FlagFinderSubject {
-					return spec.Subject(tb)
+				Subject: func(tb testing.TB) release.FlagStorage {
+					return newStorage(tb)
 				},
 				FixtureFactory: spec.FixtureFactory,
 			},
 			contracts.Updater{T: T,
 				Subject: func(tb testing.TB) contracts.UpdaterSubject {
-					return spec.Subject(tb)
+					return newStorage(tb)
 				},
 				FixtureFactory: spec.FixtureFactory,
 			},
 			contracts.Deleter{T: T,
 				Subject: func(tb testing.TB) contracts.CRD {
-					return spec.Subject(tb)
+					return newStorage(tb)
 				},
 				FixtureFactory: spec.FixtureFactory,
 			},
-			contracts.OnePhaseCommitProtocol{T: T,
-				Subject: func(tb testing.TB) contracts.OnePhaseCommitProtocolSubject {
-					return spec.Subject(tb)
+			contracts.Publisher{T: T,
+				Subject: func(tb testing.TB) contracts.PublisherSubject {
+					return newStorage(tb)
 				},
 				FixtureFactory: spec.FixtureFactory,
 			},
-			contracts.CreatorPublisher{T: T,
-				Subject: func(tb testing.TB) contracts.CreatorPublisherSubject {
-					return spec.Subject(tb)
-				},
-				FixtureFactory: spec.FixtureFactory,
-			},
-			contracts.UpdaterPublisher{T: T,
-				Subject: func(tb testing.TB) contracts.UpdaterPublisherSubject {
-					return spec.Subject(tb)
-				},
-				FixtureFactory: spec.FixtureFactory,
-			},
-			contracts.DeleterPublisher{T: T,
-				Subject: func(tb testing.TB) contracts.DeleterPublisherSubject {
-					return spec.Subject(tb)
+			contracts.OnePhaseCommitProtocol{T: release.Flag{},
+				Subject: func(tb testing.TB) (frameless.OnePhaseCommitProtocol, contracts.CRD) {
+					storage := spec.Subject(tb)
+					return storage, storage.ReleaseFlag(spec.FixtureFactory.Context())
 				},
 				FixtureFactory: spec.FixtureFactory,
 			},
@@ -125,7 +106,7 @@ func (spec FlagStorage) specFlagIsUniq(s *testcase.Spec) {
 	}
 
 	s.Before(func(t *testcase.T) {
-		contracts.DeleteAllEntity(t, spec.storageGet(t), spec.FixtureFactory.Context(), release.Flag{})
+		contracts.DeleteAllEntity(t, spec.storageGet(t), spec.FixtureFactory.Context())
 	})
 
 	flag := s.Let(`flag`, func(t *testcase.T) interface{} {
@@ -147,16 +128,9 @@ func (spec FlagStorage) specFlagIsUniq(s *testcase.Spec) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type FlagFinder struct {
-	Subject func(testing.TB) FlagFinderSubject
+	Subject func(testing.TB) release.FlagStorage
 
 	contracts.FixtureFactory
-}
-
-type FlagFinderSubject interface {
-	release.FlagFinder
-	resources.Creator
-	resources.Finder
-	resources.Deleter
 }
 
 func (spec FlagFinder) storage() testcase.Var {
@@ -168,8 +142,8 @@ func (spec FlagFinder) storage() testcase.Var {
 	}
 }
 
-func (spec FlagFinder) storageGet(t *testcase.T) FlagFinderSubject {
-	return spec.storage().Get(t).(FlagFinderSubject)
+func (spec FlagFinder) storageGet(t *testcase.T) release.FlagStorage {
+	return spec.storage().Get(t).(release.FlagStorage)
 }
 
 func (spec FlagFinder) Test(t *testing.T) {
@@ -184,7 +158,7 @@ func (spec FlagFinder) cleanup(s *testcase.Spec) {
 	once := &sync.Once{}
 	s.Before(func(t *testcase.T) {
 		once.Do(func() {
-			contracts.DeleteAllEntity(t, spec.storageGet(t), spec.Context(), release.Flag{})
+			contracts.DeleteAllEntity(t, spec.storageGet(t), spec.Context())
 		})
 	})
 }

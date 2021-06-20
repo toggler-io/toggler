@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/adamluzsi/frameless/resources"
-	"github.com/adamluzsi/frameless/resources/contracts"
+	"github.com/adamluzsi/frameless"
+	"github.com/adamluzsi/frameless/contracts"
 	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/testcase/fixtures"
 	"github.com/stretchr/testify/require"
@@ -21,14 +21,11 @@ type EnvironmentStorage struct {
 }
 
 type EnvironmentStorageSubject interface {
-	resources.Creator
-	resources.Finder
-	resources.Updater
-	resources.Deleter
-	resources.CreatorPublisher
-	resources.UpdaterPublisher
-	resources.DeleterPublisher
-	resources.OnePhaseCommitProtocol
+	frameless.Creator
+	frameless.Finder
+	frameless.Updater
+	frameless.Deleter
+	frameless.Publisher
 	deployment.EnvironmentFinder
 }
 
@@ -81,26 +78,8 @@ func (spec EnvironmentStorage) Spec(tb testing.TB) {
 				},
 				FixtureFactory: spec.FixtureFactory,
 			},
-			contracts.OnePhaseCommitProtocol{T: T,
-				Subject: func(tb testing.TB) contracts.OnePhaseCommitProtocolSubject {
-					return spec.Subject(tb)
-				},
-				FixtureFactory: spec.FixtureFactory,
-			},
-			contracts.CreatorPublisher{T: T,
-				Subject: func(tb testing.TB) contracts.CreatorPublisherSubject {
-					return spec.Subject(tb)
-				},
-				FixtureFactory: spec.FixtureFactory,
-			},
-			contracts.UpdaterPublisher{T: T,
-				Subject: func(tb testing.TB) contracts.UpdaterPublisherSubject {
-					return spec.Subject(tb)
-				},
-				FixtureFactory: spec.FixtureFactory,
-			},
-			contracts.DeleterPublisher{T: T,
-				Subject: func(tb testing.TB) contracts.DeleterPublisherSubject {
+			contracts.Publisher{T: T,
+				Subject: func(tb testing.TB) contracts.PublisherSubject {
 					return spec.Subject(tb)
 				},
 				FixtureFactory: spec.FixtureFactory,
@@ -148,7 +127,7 @@ func (spec EnvironmentStorage) specFindDeploymentEnvironmentByAlias(s *testcase.
 
 	s.When(`no environment stored`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			contracts.DeleteAllEntity(t, spec.storageGet(t), spec.FixtureFactory.Context(), deployment.Environment{})
+			contracts.DeleteAllEntity(t, spec.storageGet(t), spec.FixtureFactory.Context())
 		})
 
 		alias.LetValue(s, `some-fake-value`)

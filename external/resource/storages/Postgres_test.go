@@ -1,7 +1,9 @@
 package storages_test
 
 import (
+	"context"
 	"database/sql"
+	"github.com/toggler-io/toggler/external/resource/storages/migrations"
 	"os"
 	"testing"
 	"time"
@@ -24,11 +26,9 @@ func BenchmarkPostgres(b *testing.B) {
 		b.Skip()
 	}
 
-	db, dsn := MustOpenDB(b)
-	defer db.Close()
-
-	storage, err := storages.NewPostgres(db, dsn)
+	storage, err := storages.NewPostgres(getDatabaseConnectionString(b))
 	require.Nil(b, err)
+	defer storage.Close()
 
 	contracts.Storage{
 		Subject: func(tb testing.TB) toggler.Storage {
@@ -43,11 +43,9 @@ func TestPostgres(t *testing.T) {
 		t.Skip()
 	}
 
-	db, dsn := MustOpenDB(t)
-	defer db.Close()
-
-	storage, err := storages.NewPostgres(db, dsn)
+	storage, err := storages.NewPostgres(getDatabaseConnectionString(t))
 	require.Nil(t, err)
+	defer storage.Close()
 
 	contracts.Storage{
 		Subject: func(tb testing.TB) toggler.Storage {
@@ -89,28 +87,29 @@ func TestPostgres_Close(t *testing.T) {
 
 	s := testcase.NewSpec(t)
 
-	pg := func(t *testcase.T) *storages.Postgres {
-		return &storages.Postgres{DB: t.I(`DB`).(*sql.DB)}
+	pg := s.Let(`*storages.Postgres`, func(t *testcase.T) interface{} {
+		pg, err := storages.NewPostgres(getDatabaseConnectionString(t))
+		require.Nil(t, err)
+		return pg
+	})
+	pgGet := func(t *testcase.T) *storages.Postgres {
+		return pg.Get(t).(*storages.Postgres)
 	}
 
 	subject := func(t *testcase.T) error {
-		return pg(t).Close()
+		return pgGet(t).Close()
 	}
 
-	s.Let(`DB`, func(t *testcase.T) interface{} {
-		db, _ := MustOpenDB(t)
-		t.Defer(db.Close)
-		return db
-	})
-
 	s.Then(`it will close the DB object`, func(t *testcase.T) {
+		c, err := pgGet(t).ConnectionManager.GetConnection(sh.ContextGet(t))
+		require.Nil(t, err)
 		require.Nil(t, subject(t))
-
-		sqlDB := t.I(`DB`).(*sql.DB)
-		row := sqlDB.QueryRow(`SELECT 1=1`)
-		var v sql.NullBool
-		err := row.Scan(&v)
+		_, err = c.ExecContext(context.Background(), `SELECT 1`)
 		require.Error(t, err)
 		require.Contains(t, err.Error(), `closed`)
 	})
+}
+
+func TestPostgres_migration(t *testing.T) {
+	require.Nil(t, migrations.MigratePostgres(getDatabaseConnectionString(t)))
 }

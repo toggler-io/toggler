@@ -21,8 +21,8 @@ func TestDoorkeeper(t *testing.T) {
 
 	s.Let(`token`, func(t *testcase.T) interface{} {
 		issuer := security.NewIssuer(sh.StorageGet(t))
-		textToken, token, err := issuer.CreateNewToken(sh.GetContext(t), sh.ExampleUniqueUserID(t), nil, nil)
-		t.Let(`text token`, textToken)
+		textToken, token, err := issuer.CreateNewToken(sh.ContextGet(t), sh.ExampleUniqueUserID(t), nil, nil)
+		t.Set(`text token`, textToken)
 		require.Nil(t, err)
 		return token
 	})
@@ -42,7 +42,7 @@ func SpecDoorkeeperVerifyTextToken(s *testcase.Spec) {
 
 	s.Describe(`VerifyTextToken`, func(s *testcase.Spec) {
 		subject := func(t *testcase.T) (bool, error) {
-			return doorkeeper(t).VerifyTextToken(sh.GetContext(t), getTextToken(t))
+			return doorkeeper(t).VerifyTextToken(sh.ContextGet(t), getTextToken(t))
 		}
 
 		onSuccess := func(t *testcase.T) bool {
@@ -53,7 +53,7 @@ func SpecDoorkeeperVerifyTextToken(s *testcase.Spec) {
 
 		s.When(`token is a known resource`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				persisted, err := sh.StorageGet(t).FindByID(sh.GetContext(t), &security.Token{}, getToken(t).ID)
+				persisted, err := sh.StorageGet(t).SecurityToken(sh.ContextGet(t)).FindByID(sh.ContextGet(t), &security.Token{}, getToken(t).ID)
 				require.Nil(t, err)
 				require.True(t, persisted)
 			})
@@ -65,7 +65,7 @@ func SpecDoorkeeperVerifyTextToken(s *testcase.Spec) {
 
 		s.When(`token is unknown`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, sh.StorageGet(t).DeleteByID(sh.GetContext(t), security.Token{}, getToken(t).ID))
+				require.Nil(t, sh.StorageGet(t).SecurityToken(sh.ContextGet(t)).DeleteByID(sh.ContextGet(t), getToken(t).ID))
 			})
 
 			s.Then(`it will reject it`, func(t *testcase.T) {

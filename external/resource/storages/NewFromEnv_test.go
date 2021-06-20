@@ -91,9 +91,8 @@ func TestNewFromEnv(t *testing.T) {
 
 			shouldBePostgresStorage := func(t *testcase.T, s toggler.Storage) {
 				require.NotNil(t, s)
-				pg, ok := s.(*storages.Postgres)
+				_, ok := s.(*storages.Postgres)
 				require.True(t, ok)
-				require.Nil(t, pg.DB.Ping())
 			}
 
 			s.And(`RDS_ENGINE_OPTS also set`, func(s *testcase.Spec) {

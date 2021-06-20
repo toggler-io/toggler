@@ -7,25 +7,32 @@ import (
 	"github.com/adamluzsi/testcase"
 )
 
-const LetVarContext = `common testing context`
-const LetVarExampleID = `example unique ID`
-
 func init() {
 	setups = append(setups, func(s *testcase.Spec) {
-		s.Let(LetVarContext, func(t *testcase.T) interface{} {
-			return context.Background()
-		})
-
-		s.Let(LetVarExampleID, func(t *testcase.T) interface{} {
-			return fixtures.Random.String()
-		})
+		Context.Let(s, nil)
+		ExampleID.Let(s, nil)
 	})
 }
 
-func GetContext(t *testcase.T) context.Context {
-	return t.I(LetVarContext).(context.Context)
+var (
+	Context = testcase.Var{
+		Name: `common testing context`,
+		Init: func(t *testcase.T) interface{} {
+			return context.Background()
+		},
+	}
+	ExampleID = testcase.Var{
+		Name: `example unique ID`,
+		Init: func(t *testcase.T) interface{} {
+			return fixtures.Random.String()
+		},
+	}
+)
+
+func ContextGet(t *testcase.T) context.Context {
+	return Context.Get(t).(context.Context)
 }
 
-func ExampleID(t *testcase.T) string {
-	return t.I(LetVarExampleID).(string)
+func ExampleIDGet(t *testcase.T) string {
+	return ExampleID.Get(t).(string)
 }

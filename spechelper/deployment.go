@@ -26,8 +26,9 @@ func ExampleDeploymentEnvironment(t *testcase.T) *deployment.Environment {
 func GivenWeHaveDeploymentEnvironment(s *testcase.Spec, vn string) {
 	s.Let(vn, func(t *testcase.T) interface{} {
 		de := FixtureFactory{}.Create(deployment.Environment{}).(*deployment.Environment)
-		require.Nil(t, StorageGet(t).Create(GetContext(t), de))
-		t.Defer(StorageGet(t).DeleteByID, GetContext(t), *de, de.ID)
+		storage := StorageGet(t).DeploymentEnvironment(ContextGet(t))
+		require.Nil(t, storage.Create(ContextGet(t), de))
+		t.Defer(storage.DeleteByID, ContextGet(t), de.ID)
 		t.Logf(`%#v`, de)
 		return de
 	})
@@ -35,6 +36,6 @@ func GivenWeHaveDeploymentEnvironment(s *testcase.Spec, vn string) {
 
 func NoDeploymentEnvironmentPresentInTheStorage(s *testcase.Spec) {
 	s.Before(func(t *testcase.T) {
-		require.Nil(t, StorageGet(t).DeleteAll(GetContext(t), deployment.Environment{}))
+		require.Nil(t, StorageGet(t).DeploymentEnvironment(ContextGet(t)).DeleteAll(ContextGet(t)))
 	})
 }

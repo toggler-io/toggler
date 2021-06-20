@@ -41,7 +41,7 @@ func (ctrl *Controller) rolloutLandingPage(w http.ResponseWriter, r *http.Reques
 			Environments []deployment.Environment
 		}
 		var content Content
-		if ctrl.handleError(w, r, iterators.Collect(ctrl.UseCases.Storage.FindAll(r.Context(), deployment.Environment{}), &content.Environments)) {
+		if ctrl.handleError(w, r, iterators.Collect(ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).FindAll(r.Context()), &content.Environments)) {
 			return
 		}
 		ctrl.Render(w, `/rollout/landing.html`, content)
@@ -74,7 +74,7 @@ func (ctrl *Controller) rolloutIndexPage(w http.ResponseWriter, r *http.Request)
 	}
 
 	var env deployment.Environment
-	found, err := ctrl.UseCases.Storage.FindByID(r.Context(), &env, envID)
+	found, err := ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).FindByID(r.Context(), &env, envID)
 	if httputils.HandleError(w, err, http.StatusNotFound) {
 		log.Println(`ERROR`, err.Error())
 		return
@@ -111,7 +111,7 @@ func (ctrl *Controller) rolloutIndexPage(w http.ResponseWriter, r *http.Request)
 
 		var rollout release.Rollout
 		var byPercentage = release.NewRolloutDecisionByPercentage()
-		if found, err := ctrl.Storage.FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(r.Context(), ff, env, &rollout); ctrl.handleError(w, r, err) {
+		if found, err := ctrl.Storage.ReleaseRollout(r.Context()).FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(r.Context(), ff, env, &rollout); ctrl.handleError(w, r, err) {
 			return
 		} else if found {
 			if bp, ok := rollout.Plan.(release.RolloutDecisionByPercentage); ok {
@@ -142,7 +142,7 @@ func (ctrl *Controller) rolloutEditPage(w http.ResponseWriter, r *http.Request) 
 	log.Println(`flagID:`, flagID, `envID:`, envID)
 
 	var env deployment.Environment
-	if found, err := ctrl.UseCases.Storage.FindByID(r.Context(), &env, envID); ctrl.handleError(w, r, err) {
+	if found, err := ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).FindByID(r.Context(), &env, envID); ctrl.handleError(w, r, err) {
 		return
 	} else if !found {
 		http.Redirect(w, r, `/rollout`, http.StatusFound)
@@ -158,7 +158,7 @@ func (ctrl *Controller) rolloutEditPage(w http.ResponseWriter, r *http.Request) 
 	}
 
 	var flag release.Flag
-	if found, err := ctrl.UseCases.Storage.FindByID(r.Context(), &flag, flagID); ctrl.handleError(w, r, err) {
+	if found, err := ctrl.UseCases.Storage.ReleaseFlag(r.Context()).FindByID(r.Context(), &flag, flagID); ctrl.handleError(w, r, err) {
 		return
 	} else if !found {
 		redirectToIndexPage()
@@ -168,7 +168,7 @@ func (ctrl *Controller) rolloutEditPage(w http.ResponseWriter, r *http.Request) 
 	var byPercentage = release.NewRolloutDecisionByPercentage()
 
 	var rollout release.Rollout
-	if found, err := ctrl.Storage.FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(r.Context(), flag, env, &rollout); ctrl.handleError(w, r, err) {
+	if found, err := ctrl.Storage.ReleaseRollout(r.Context()).FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(r.Context(), flag, env, &rollout); ctrl.handleError(w, r, err) {
 		return
 	} else if found {
 		if bp, ok := rollout.Plan.(release.RolloutDecisionByPercentage); ok {
@@ -229,11 +229,11 @@ func (ctrl *Controller) rolloutUpdateAction(w http.ResponseWriter, r *http.Reque
 	rollout.Plan = byPercentage
 
 	if rollout.ID == `` {
-		if ctrl.handleError(w, r, ctrl.UseCases.Storage.Create(r.Context(), &rollout)) {
+		if ctrl.handleError(w, r, ctrl.UseCases.Storage.ReleaseRollout(r.Context()).Create(r.Context(), &rollout)) {
 			return
 		}
 	} else {
-		if ctrl.handleError(w, r, ctrl.UseCases.Storage.Update(r.Context(), &rollout)) {
+		if ctrl.handleError(w, r, ctrl.UseCases.Storage.ReleaseRollout(r.Context()).Update(r.Context(), &rollout)) {
 			return
 		}
 	}
@@ -250,21 +250,21 @@ func (ctrl *Controller) lookupRollout(ctx context.Context, flagID, envID string)
 	s := ctrl.UseCases.Storage
 
 	var flag release.Flag
-	if found, err := s.FindByID(ctx, &flag, flagID); err != nil {
+	if found, err := s.ReleaseFlag(ctx).FindByID(ctx, &flag, flagID); err != nil {
 		return release.Rollout{}, false, err
 	} else if !found {
 		return release.Rollout{}, false, errors.New(`flag not found`)
 	}
 
 	var env deployment.Environment
-	if found, err := s.FindByID(ctx, &env, envID); err != nil {
+	if found, err := s.DeploymentEnvironment(ctx).FindByID(ctx, &env, envID); err != nil {
 		return release.Rollout{}, false, err
 	} else if !found {
 		return release.Rollout{}, false, errors.New(`env not found`)
 	}
 
 	var rollout release.Rollout
-	found, err := s.FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx, flag, env, &rollout)
+	found, err := s.ReleaseRollout(ctx).FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx, flag, env, &rollout)
 	if err != nil {
 		return release.Rollout{}, false, err
 	}

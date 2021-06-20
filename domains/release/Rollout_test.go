@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/adamluzsi/frameless/consterror"
+	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
@@ -49,7 +49,7 @@ func TestRolloutDecisionByPercentage(t *testing.T) {
 
 	s.Describe(`IsParticipating`, func(s *testcase.Spec) {
 		var subject = func(t *testcase.T) (bool, error) {
-			return rolloutDefinition(t).IsParticipating(sh.GetContext(t), sh.ExampleExternalPilotID(t))
+			return rolloutDefinition(t).IsParticipating(sh.ContextGet(t), sh.ExampleExternalPilotID(t))
 		}
 
 		var onSuccess = func(t *testcase.T) bool {
@@ -60,7 +60,7 @@ func TestRolloutDecisionByPercentage(t *testing.T) {
 
 		var andRandGeneratorEncounterAnError = func(s *testcase.Spec) {
 			s.And(`rand generator encounter an error`, func(s *testcase.Spec) {
-				const expectedError consterror.Error = `boom`
+				const expectedError frameless.Error = `boom`
 				s.LetValue(`pseudo rand error`, expectedError)
 
 				s.Then(`it will propagate back the error`, func(t *testcase.T) {
@@ -154,7 +154,7 @@ func TestRolloutDecisionByAPI(t *testing.T) {
 
 	s.Describe(`IsParticipating`, func(s *testcase.Spec) {
 		var subject = func(t *testcase.T) (bool, error) {
-			return rolloutDefinition(t).IsParticipating(sh.GetContext(t), sh.ExampleExternalPilotID(t))
+			return rolloutDefinition(t).IsParticipating(sh.ContextGet(t), sh.ExampleExternalPilotID(t))
 		}
 
 		const testServerLetVar = `httptest.NewServer`

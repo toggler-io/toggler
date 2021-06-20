@@ -39,6 +39,7 @@ func (r Rollout) Validate() error {
 	return r.Plan.Validate()
 }
 
+// RolloutDefinition is the common interface to all rollout type.
 // Rollout expects to determines the behavior of the rollout process.
 // the actual behavior implementation is with the RolloutManager,
 // but the configuration data is located here

@@ -71,8 +71,8 @@ func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
 	}
 
 	s.After(func(t *testcase.T) {
-		require.Nil(t, sh.StorageGet(t).DeleteAll(sh.GetContext(t), release.Rollout{}))
-		require.Nil(t, sh.StorageGet(t).DeleteAll(sh.GetContext(t), release.Flag{}))
+		require.Nil(t, sh.StorageGet(t).ReleaseRollout(sh.ContextGet(t)).DeleteAll(sh.ContextGet(t)))
+		require.Nil(t, sh.StorageGet(t).ReleaseFlag(sh.ContextGet(t)).DeleteAll(sh.ContextGet(t)))
 	})
 
 	s.Let(`rollout`, func(t *testcase.T) interface{} {
@@ -323,7 +323,7 @@ func FindStoredReleaseRollout(t *testcase.T) release.Rollout {
 	flag := *sh.ExampleReleaseFlag(t)
 	env := *sh.ExampleDeploymentEnvironment(t)
 	var r release.Rollout
-	found, err := sh.StorageGet(t).FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(sh.GetContext(t), flag, env, &r)
+	found, err := sh.StorageGet(t).ReleaseRollout(sh.ContextGet(t)).FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(sh.ContextGet(t), flag, env, &r)
 	require.Nil(t, err)
 	require.True(t, found)
 	return r

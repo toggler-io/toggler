@@ -31,16 +31,16 @@ func SpecIssuerRevokeToken(s *testcase.Spec) {
 	var subject = func(t *testcase.T) error {
 		token, _ := t.I(`token`).(*security.Token)
 		issuer := t.I(`issuer`).(*security.Issuer)
-		return issuer.RevokeToken(sh.GetContext(t), token)
+		return issuer.RevokeToken(sh.ContextGet(t), token)
 	}
 
 	s.When(`token exists`, func(s *testcase.Spec) {
 		s.Let(`token`, func(t *testcase.T) interface{} {
 			issuer := t.I(`issuer`).(*security.Issuer)
-			_, token, err := issuer.CreateNewToken(sh.GetContext(t), sh.ExampleUniqueUserID(t), nil, nil)
+			_, token, err := issuer.CreateNewToken(sh.ContextGet(t), sh.ExampleUniqueUserID(t), nil, nil)
 			require.Nil(t, err)
 
-			t.Defer(sh.StorageGet(t).DeleteByID, sh.GetContext(t), security.Token{}, token.ID)
+			t.Defer(sh.StorageGet(t).SecurityToken(sh.ContextGet(t)).DeleteByID, sh.ContextGet(t), token.ID)
 			return token
 		})
 
@@ -53,7 +53,7 @@ func SpecIssuerRevokeToken(s *testcase.Spec) {
 			token := t.I(`token`).(*security.Token)
 
 			dk := security.NewDoorkeeper(sh.StorageGet(t))
-			valid, err := dk.VerifyTextToken(sh.GetContext(t), token.SHA512)
+			valid, err := dk.VerifyTextToken(sh.ContextGet(t), token.SHA512)
 			require.Nil(t, err)
 			require.False(t, valid)
 		})
@@ -66,13 +66,13 @@ func SpecIssuerCreateNewToken(s *testcase.Spec) {
 		userUID := t.I(`userUID`).(string)
 		issueAt, _ := t.I(`issueAt`).(*time.Time)
 		duration, _ := t.I(`duration`).(*time.Duration)
-		return issuer.CreateNewToken(sh.GetContext(t), userUID, issueAt, duration)
+		return issuer.CreateNewToken(sh.ContextGet(t), userUID, issueAt, duration)
 	}
 	onSuccess := func(t *testcase.T) *security.Token {
 		textToken, token, err := subject(t)
 		require.Nil(t, err)
 		require.NotNil(t, token)
-		t.Defer(sh.StorageGet(t).DeleteByID, sh.GetContext(t), *token, token.ID)
+		t.Defer(sh.StorageGet(t).SecurityToken(sh.ContextGet(t)).DeleteByID, sh.ContextGet(t), token.ID)
 		hashed, err := security.ToSHA512Hex(textToken)
 		require.Nil(t, err)
 		require.Equal(t, hashed, token.SHA512)
@@ -117,7 +117,7 @@ func SpecIssuerCreateNewToken(s *testcase.Spec) {
 			t1 := onSuccess(t)
 			t2 := security.Token{}
 
-			found, err := sh.StorageGet(t).FindByID(sh.GetContext(t), &t2, t1.ID)
+			found, err := sh.StorageGet(t).SecurityToken(sh.ContextGet(t)).FindByID(sh.ContextGet(t), &t2, t1.ID)
 			require.Nil(t, err)
 			require.True(t, found)
 			require.Equal(t, t1, &t2)
@@ -130,7 +130,7 @@ func SpecIssuerCreateNewToken(s *testcase.Spec) {
 
 			var last string
 			for i := 0; i < 1024; i++ {
-				_, token, err := issuer.CreateNewToken(sh.GetContext(t), strconv.Itoa(i), issueAt, duration)
+				_, token, err := issuer.CreateNewToken(sh.ContextGet(t), strconv.Itoa(i), issueAt, duration)
 				require.Nil(t, err)
 				require.NotNil(t, token)
 

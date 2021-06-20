@@ -18,7 +18,7 @@ func init() {
 	setups = append(setups, func(s *testcase.Spec) {
 		s.Let(LetVarExampleToken, func(t *testcase.T) interface{} {
 			textToken, objectToken := CreateToken(t, ExampleUniqueUserID(t))
-			t.Let(LetVarTokenText, textToken)
+			t.Set(LetVarTokenText, textToken)
 			return objectToken
 		})
 
@@ -38,13 +38,14 @@ func ExampleToken(t *testcase.T) *security.Token {
 }
 
 func CreateToken(t *testcase.T, tokenOwner string) (string, *security.Token) {
-	textToken, token, err := ExampleUseCases(t).Issuer.CreateNewToken(GetContext(t), tokenOwner, nil, nil)
+	textToken, token, err := ExampleUseCases(t).Issuer.CreateNewToken(ContextGet(t), tokenOwner, nil, nil)
 	require.Nil(t, err)
-	t.Defer(StorageGet(t).DeleteByID, GetContext(t), *token, token.ID)
 
-	found, err := StorageGet(t).FindByID(GetContext(t), &security.Token{}, token.ID)
+	storage := StorageGet(t).SecurityToken(ContextGet(t))
+	found, err := storage.FindByID(ContextGet(t), &security.Token{}, token.ID)
 	require.Nil(t, err)
 	require.True(t, found)
+	t.Defer(storage.DeleteByID, ContextGet(t), token.ID)
 
 	t.Logf(`%#v - %s`, token, textToken)
 	return textToken, token

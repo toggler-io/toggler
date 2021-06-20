@@ -3,18 +3,20 @@ package deployment
 import (
 	"context"
 
-	"github.com/adamluzsi/frameless/resources"
+	"github.com/adamluzsi/frameless"
 )
 
 type Storage interface {
-	resources.Creator
-	resources.Finder
-	resources.Updater
-	resources.Deleter
-	resources.CreatorPublisher
-	resources.UpdaterPublisher
-	resources.DeleterPublisher
-	resources.OnePhaseCommitProtocol
+	frameless.OnePhaseCommitProtocol
+	DeploymentEnvironment(context.Context) EnvironmentStorage
+}
+
+type EnvironmentStorage /* Environment */ interface {
+	frameless.Creator
+	frameless.Finder
+	frameless.Updater
+	frameless.Deleter
+	frameless.Publisher
 	EnvironmentFinder
 }
 

@@ -27,7 +27,7 @@ func TestViewsController(t *testing.T) {
 	sh.SetUp(s)
 
 	HandlerLet(s, func(t *testcase.T) http.Handler { return NewHandler(t) })
-	Context.Let(s, func(t *testcase.T) interface{} { return sh.GetContext(t) })
+	Context.Let(s, func(t *testcase.T) interface{} { return sh.ContextGet(t) })
 
 	s.Describe(`GET /v/config - GetPilotConfig`, SpecViewsControllerClientConfig)
 }

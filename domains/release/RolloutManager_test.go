@@ -35,14 +35,14 @@ func TestRolloutManager(t *testing.T) {
 
 func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 	var subject = func(t *testcase.T) error {
-		return manager(t).CreateFeatureFlag(sh.GetContext(t), sh.GetReleaseFlag(t, `flag`))
+		return manager(t).CreateFeatureFlag(sh.ContextGet(t), sh.GetReleaseFlag(t, `flag`))
 	}
 
 	s.Let(`flag`, func(t *testcase.T) interface{} {
 		flag := sh.Create(release.Flag{}).(*release.Flag)
 		// pass by func used to ensure that flag.ID is populated by the time delete by id is called
 		sh.StorageGet(t) // eager load storage to ensure storage teardown is not after the defer
-		t.Defer(func() { sh.StorageGet(t).DeleteByID(sh.GetContext(t), release.Flag{}, flag.ID) })
+		t.Defer(func() { sh.StorageGet(t).ReleaseFlag(sh.ContextGet(t)).DeleteByID(sh.ContextGet(t), flag.ID) })
 		return flag
 	})
 
@@ -86,7 +86,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 				s.Around(func(t *testcase.T) func() {
 					ogID := sh.GetReleaseFlag(t, `flag`).ID
 					sh.GetReleaseFlag(t, `flag`).ID = ``
-					return func() { sh.StorageGet(t).DeleteByID(sh.GetContext(t), release.Flag{}, ogID) }
+					return func() { sh.StorageGet(t).ReleaseFlag(sh.ContextGet(t)).DeleteByID(sh.ContextGet(t), ogID) }
 				})
 
 				s.Then(`it will report feature flag already exists error`, func(t *testcase.T) {
@@ -100,7 +100,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 					require.NotEmpty(t, flag.ID)
 
 					var stored release.Flag
-					found, err := sh.StorageGet(t).FindByID(sh.GetContext(t), &stored, flag.ID)
+					found, err := sh.StorageGet(t).ReleaseFlag(sh.ContextGet(t)).FindByID(sh.ContextGet(t), &stored, flag.ID)
 					require.Nil(t, err)
 					require.True(t, found)
 				})
@@ -115,7 +115,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 
 func SpecRolloutManagerUpdateFeatureFlag(s *testcase.Spec) {
 	var subject = func(t *testcase.T) error {
-		return manager(t).UpdateFeatureFlag(sh.GetContext(t), sh.ExampleReleaseFlag(t))
+		return manager(t).UpdateFeatureFlag(sh.ContextGet(t), sh.ExampleReleaseFlag(t))
 	}
 
 	s.When(`flag content is invalid`, func(s *testcase.Spec) {
@@ -135,7 +135,7 @@ func SpecRolloutManagerUpdateFeatureFlag(s *testcase.Spec) {
 			require.Nil(t, subject(t))
 
 			var f release.Flag
-			found, err := sh.StorageGet(t).FindByID(sh.GetContext(t), &f, sh.ExampleReleaseFlag(t).ID)
+			found, err := sh.StorageGet(t).ReleaseFlag(sh.ContextGet(t)).FindByID(sh.ContextGet(t), &f, sh.ExampleReleaseFlag(t).ID)
 			require.Nil(t, err)
 			require.True(t, found)
 			require.Equal(t, sh.ExampleReleaseFlag(t), &f)
@@ -147,7 +147,7 @@ func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
 	var subject = func(t *testcase.T) error {
 		flagID := t.I(`flag ID`).(string)
 		t.Log(`flagID:`, flagID)
-		return manager(t).DeleteFeatureFlag(sh.GetContext(t), flagID)
+		return manager(t).DeleteFeatureFlag(sh.ContextGet(t), flagID)
 	}
 
 	s.When(`feature flag id is empty`, func(s *testcase.Spec) {
@@ -163,7 +163,7 @@ func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
 			// real id
 			id := sh.ExampleReleaseFlag(t).ID
 			// but no longer present in the storage
-			require.Nil(t, sh.StorageGet(t).DeleteByID(sh.GetContext(t), release.Flag{}, id))
+			require.Nil(t, sh.StorageGet(t).ReleaseFlag(sh.ContextGet(t)).DeleteByID(sh.ContextGet(t), id))
 			return id
 		})
 
@@ -182,7 +182,7 @@ func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
 			require.Nil(t, subject(t))
 
 			var flag release.Flag
-			found, err := manager(t).Storage.FindByID(sh.GetContext(t), &flag, id)
+			found, err := manager(t).Storage.ReleaseFlag(sh.ContextGet(t)).FindByID(sh.ContextGet(t), &flag, id)
 			require.Nil(t, err)
 			require.False(t, found)
 		})
@@ -191,7 +191,7 @@ func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) { sh.ExampleReleaseManualPilotEnrollment(t) })
 
 			var getPilotCount = func(t *testcase.T) int {
-				count, err := iterators.Count(sh.StorageGet(t).FindAll(sh.GetContext(t), release.ManualPilot{}))
+				count, err := iterators.Count(sh.StorageGet(t).ReleasePilot(sh.ContextGet(t)).FindAll(sh.ContextGet(t)))
 				require.Nil(t, err)
 				return count
 			}
@@ -207,10 +207,10 @@ func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
 				s.Around(func(t *testcase.T) func() {
 					env := sh.ExampleDeploymentEnvironment(t)
 					othFlag := sh.GetReleaseFlag(t, `oth-flag`)
-					require.Nil(t, manager(t).SetPilotEnrollmentForFeature(sh.GetContext(t), othFlag.ID, env.ID, fixtures.Random.String(), true))
-					require.Nil(t, manager(t).SetPilotEnrollmentForFeature(sh.GetContext(t), othFlag.ID, env.ID, fixtures.Random.String(), false))
+					require.Nil(t, manager(t).SetPilotEnrollmentForFeature(sh.ContextGet(t), othFlag.ID, env.ID, fixtures.Random.String(), true))
+					require.Nil(t, manager(t).SetPilotEnrollmentForFeature(sh.ContextGet(t), othFlag.ID, env.ID, fixtures.Random.String(), false))
 					return func() {
-						require.Nil(t, sh.StorageGet(t).DeleteAll(sh.GetContext(t), release.ManualPilot{}))
+						require.Nil(t, sh.StorageGet(t).ReleasePilot(sh.ContextGet(t)).DeleteAll(sh.ContextGet(t)))
 					}
 				})
 
@@ -225,7 +225,7 @@ func SpecRolloutManagerDeleteFeatureFlag(s *testcase.Spec) {
 
 func SpecRolloutManagerListFeatureFlags(s *testcase.Spec) {
 	var subject = func(t *testcase.T) ([]release.Flag, error) {
-		return manager(t).ListFeatureFlags(sh.GetContext(t))
+		return manager(t).ListFeatureFlags(sh.ContextGet(t))
 	}
 
 	onSuccess := func(t *testcase.T) []release.Flag {
@@ -244,7 +244,7 @@ func SpecRolloutManagerListFeatureFlags(s *testcase.Spec) {
 			flags = append(flags, *sh.GetReleaseFlag(t, `flag-1`))
 			flags = append(flags, *sh.GetReleaseFlag(t, `flag-2`))
 			flags = append(flags, *sh.GetReleaseFlag(t, `flag-3`))
-			t.Let(`expected-flags`, flags)
+			t.Set(`expected-flags`, flags)
 		})
 
 		s.Then(`feature flags are returned`, func(t *testcase.T) {
@@ -253,7 +253,7 @@ func SpecRolloutManagerListFeatureFlags(s *testcase.Spec) {
 	})
 
 	s.When(`no feature present in the system`, func(s *testcase.Spec) {
-		s.Before(func(t *testcase.T) { require.Nil(t, sh.StorageGet(t).DeleteAll(sh.GetContext(t), release.Flag{})) })
+		s.Before(func(t *testcase.T) { require.Nil(t, sh.StorageGet(t).ReleaseFlag(sh.ContextGet(t)).DeleteAll(sh.ContextGet(t))) })
 
 		s.Then(`empty list returned`, func(t *testcase.T) {
 			require.Empty(t, onSuccess(t))
@@ -267,7 +267,7 @@ func SpecSetPilotEnrollmentForFeature(s *testcase.Spec) {
 	}
 
 	var subject = func(t *testcase.T) error {
-		return manager(t).SetPilotEnrollmentForFeature(sh.GetContext(t),
+		return manager(t).SetPilotEnrollmentForFeature(sh.ContextGet(t),
 			sh.ExampleReleaseFlag(t).ID,
 			sh.ExampleDeploymentEnvironment(t).ID,
 			sh.ExampleExternalPilotID(t),
@@ -281,7 +281,7 @@ func SpecSetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 	s.When(`no feature flag is seen ever before`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			require.Nil(t, sh.StorageGet(t).DeleteByID(sh.GetContext(t), release.Flag{}, sh.ExampleReleaseFlag(t).ID))
+			require.Nil(t, sh.StorageGet(t).ReleaseFlag(sh.ContextGet(t)).DeleteByID(sh.ContextGet(t), sh.ExampleReleaseFlag(t).ID))
 		})
 
 		s.Then(`error returned`, func(t *testcase.T) {
@@ -301,8 +301,8 @@ func SpecSetPilotEnrollmentForFeature(s *testcase.Spec) {
 				flag := sh.ExampleReleaseFlag(t)
 				env := sh.ExampleDeploymentEnvironment(t)
 
-				pilot, err := sh.StorageGet(t).FindReleaseManualPilotByExternalID(
-					sh.GetContext(t), flag.ID, env.ID, sh.ExampleExternalPilotID(t))
+				pilot, err := sh.StorageGet(t).ReleasePilot(sh.ContextGet(t)).FindReleaseManualPilotByExternalID(
+					sh.ContextGet(t), flag.ID, env.ID, sh.ExampleExternalPilotID(t))
 
 				require.Nil(t, err)
 
@@ -322,7 +322,7 @@ func SpecSetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 				require.Equal(t, expectedPilot, actualPilot)
 
-				count, err := iterators.Count(sh.StorageGet(t).FindAll(sh.GetContext(t), release.ManualPilot{}))
+				count, err := iterators.Count(sh.StorageGet(t).ReleasePilot(sh.ContextGet(t)).FindAll(sh.ContextGet(t)))
 				require.Nil(t, err)
 				require.Equal(t, 1, count)
 			})
@@ -338,14 +338,14 @@ func SpecSetPilotEnrollmentForFeature(s *testcase.Spec) {
 				require.Nil(t, subject(t))
 				ff := sh.ExampleReleaseFlag(t)
 
-				pilot, err := sh.StorageGet(t).FindReleaseManualPilotByExternalID(sh.GetContext(t), ff.ID, sh.ExampleDeploymentEnvironment(t).ID, sh.ExampleExternalPilotID(t))
+				pilot, err := sh.StorageGet(t).ReleasePilot(sh.ContextGet(t)).FindReleaseManualPilotByExternalID(sh.ContextGet(t), ff.ID, sh.ExampleDeploymentEnvironment(t).ID, sh.ExampleExternalPilotID(t))
 				require.Nil(t, err)
 
 				require.NotNil(t, pilot)
 				require.Equal(t, getNewEnrollment(t), pilot.IsParticipating)
 				require.Equal(t, sh.ExampleExternalPilotID(t), pilot.ExternalID)
 
-				count, err := iterators.Count(sh.StorageGet(t).FindAll(sh.GetContext(t), release.ManualPilot{}))
+				count, err := iterators.Count(sh.StorageGet(t).ReleasePilot(sh.ContextGet(t)).FindAll(sh.ContextGet(t)))
 				require.Nil(t, err)
 				require.Equal(t, 1, count)
 
@@ -356,7 +356,7 @@ func SpecSetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 func SpecUnsetPilotEnrollmentForFeature(s *testcase.Spec) {
 	var subject = func(t *testcase.T) error {
-		return manager(t).UnsetPilotEnrollmentForFeature(sh.GetContext(t),
+		return manager(t).UnsetPilotEnrollmentForFeature(sh.ContextGet(t),
 			sh.ExampleReleaseFlag(t).ID,
 			sh.ExampleDeploymentEnvironment(t).ID,
 			sh.ExampleExternalPilotID(t),
@@ -378,7 +378,7 @@ func SpecUnsetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 		s.And(`pilot doesn't exist for the flag`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				require.Nil(t, sh.StorageGet(t).DeleteAll(sh.GetContext(t), release.ManualPilot{}))
+				require.Nil(t, sh.StorageGet(t).ReleasePilot(sh.ContextGet(t)).DeleteAll(sh.ContextGet(t)))
 			})
 
 			s.Then(`it will return without any error`, func(t *testcase.T) {
@@ -391,8 +391,8 @@ func SpecUnsetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 			s.Then(`pilot manual enrollment will be removed`, func(t *testcase.T) {
 				require.Nil(t, subject(t))
-				pilot, err := sh.StorageGet(t).FindReleaseManualPilotByExternalID(
-					sh.GetContext(t),
+				pilot, err := sh.StorageGet(t).ReleasePilot(sh.ContextGet(t)).FindReleaseManualPilotByExternalID(
+					sh.ContextGet(t),
 					sh.ExampleReleaseFlag(t).ID,
 					sh.ExampleDeploymentEnvironment(t).ID,
 					sh.ExampleExternalPilotID(t),
@@ -406,7 +406,7 @@ func SpecUnsetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 func SpecRolloutManagerGetAllReleaseFlagStatesOfThePilot(s *testcase.Spec) {
 	var subject = func(t *testcase.T) (bool, error) {
-		states, err := manager(t).GetAllReleaseFlagStatesOfThePilot(sh.GetContext(t),
+		states, err := manager(t).GetAllReleaseFlagStatesOfThePilot(sh.ContextGet(t),
 			sh.ExampleExternalPilotID(t),
 			*sh.ExampleDeploymentEnvironment(t),
 			sh.ExampleReleaseFlag(t).Name,
@@ -420,7 +420,7 @@ func SpecRolloutManagerGetAllReleaseFlagStatesOfThePilot(s *testcase.Spec) {
 	s.When(`feature was never enabled before`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
 			flag := sh.ExampleReleaseFlag(t)
-			require.Nil(t, sh.StorageGet(t).DeleteByID(sh.GetContext(t), *flag, flag.ID))
+			require.Nil(t, sh.StorageGet(t).ReleaseFlag(sh.ContextGet(t)).DeleteByID(sh.ContextGet(t), flag.ID))
 		})
 
 		s.Then(`it will tell that feature flag is not enabled`, func(t *testcase.T) {
@@ -511,8 +511,8 @@ func SpecRolloutManagerGetAllReleaseFlagStatesOfThePilot(s *testcase.Spec) {
 			DeploymentEnvironmentID: env.ID,
 			Plan:                    byPercentage,
 		}
-		require.Nil(t, sh.StorageGet(t).Create(sh.GetContext(t), &rollout))
-		t.Defer(func() { require.Nil(t, sh.StorageGet(t).DeleteByID(sh.GetContext(t), rollout, rollout.ID)) })
+		require.Nil(t, sh.StorageGet(t).ReleaseRollout(sh.ContextGet(t)).Create(sh.ContextGet(t), &rollout))
+		t.Defer(func() { require.Nil(t, sh.StorageGet(t).ReleaseRollout(sh.ContextGet(t)).DeleteByID(sh.ContextGet(t), rollout.ID)) })
 
 		/* start E2E test */
 
@@ -522,7 +522,7 @@ func SpecRolloutManagerGetAllReleaseFlagStatesOfThePilot(s *testcase.Spec) {
 		rolloutManager := manager(t)
 
 		for _, extID := range extIDS {
-			releaseEnrollmentStates, err := rolloutManager.GetAllReleaseFlagStatesOfThePilot(sh.GetContext(t), extID, *env, flag.Name)
+			releaseEnrollmentStates, err := rolloutManager.GetAllReleaseFlagStatesOfThePilot(sh.ContextGet(t), extID, *env, flag.Name)
 			require.Nil(t, err)
 
 			isIn, ok := releaseEnrollmentStates[flag.Name]

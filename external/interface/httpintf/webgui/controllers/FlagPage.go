@@ -51,7 +51,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 		id := r.Form.Get(`id`)
 
 		var ff release.Flag
-		found, err := ctrl.UseCases.RolloutManager.Storage.FindByID(r.Context(), &ff, id)
+		found, err := ctrl.UseCases.RolloutManager.Storage.ReleaseFlag(r.Context()).FindByID(r.Context(), &ff, id)
 
 		if ctrl.handleError(w, r, err) {
 			return
@@ -63,7 +63,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var pilots []release.ManualPilot
-		pilotsIter := ctrl.UseCases.Storage.FindReleasePilotsByReleaseFlag(r.Context(), ff)
+		pilotsIter := ctrl.UseCases.Storage.ReleasePilot(r.Context()).FindReleasePilotsByReleaseFlag(r.Context(), ff)
 		if ctrl.handleError(w, r, iterators.Collect(pilotsIter, &pilots)) {
 			return
 		}

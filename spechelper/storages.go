@@ -1,14 +1,12 @@
 package spechelper
 
 import (
+	"github.com/adamluzsi/frameless/inmemory"
 	"os"
 
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 
-	"github.com/toggler-io/toggler/domains/deployment"
-	"github.com/toggler-io/toggler/domains/release"
-	"github.com/toggler-io/toggler/domains/security"
 	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/resource/storages"
 )
@@ -34,17 +32,11 @@ func storageOnLet(s *testcase.Spec) {
 func storageInit(t *testcase.T) interface{} {
 	connstr, ok := os.LookupEnv(`TEST_DATABASE_URL`)
 	if !ok { // use fake implementation
-		s := storages.NewMemory()
-		s.Options.DisableEventLogging = false
-		s.Options.DisableAsyncSubscriptionHandling = true
-
+		s := storages.NewEventLogMemoryStorage()
+		s.Options.EventLogging = true
+		s.EventLog.Options.DisableAsyncSubscriptionHandling = true
+		inmemory.LogHistoryOnFailure(t, s.EventLog)
 		t.Defer(s.Close)
-		t.Defer(func() {
-			if t.Failed() {
-				s.LogContextHistory(t, GetContext(t))
-			}
-		})
-
 		return s
 	}
 
@@ -52,27 +44,28 @@ func storageInit(t *testcase.T) interface{} {
 	require.Nil(t, err)
 	t.Defer(storage.Close)
 
+	var cleanup = func() {
+		require.Nil(t, storage.SecurityToken(ContextGet(t)).DeleteAll(ContextGet(t)))
+		require.Nil(t, storage.ReleasePilot(ContextGet(t)).DeleteAll(ContextGet(t)))
+		require.Nil(t, storage.ReleaseRollout(ContextGet(t)).DeleteAll(ContextGet(t)))
+		require.Nil(t, storage.ReleaseFlag(ContextGet(t)).DeleteAll(ContextGet(t)))
+		require.Nil(t, storage.DeploymentEnvironment(ContextGet(t)).DeleteAll(ContextGet(t)))
+	}
+
 	// TODO: replace this solution for external interface testing with middleware approach where tx is injected to the request context.
 	// 	go runs each package tests in parallel, and as soon there would be multiple external interface tests, it would cause side effects between the two package testing suite.
 	if !t.HasTag(TagBlackBox) {
-		ctx, err := storage.BeginTx(GetContext(t))
+		ctx, err := storage.BeginTx(ContextGet(t))
 		require.Nil(t, err)
-		t.Let(LetVarContext, ctx)
+		Context.Set(t, ctx)
 		t.Defer(storage.RollbackTx, ctx)
-	}
-
-	{ // TODO: check if this can be removed
-		var cleanup = func() {
-			require.Nil(t, storage.DeleteAll(GetContext(t), security.Token{}))
-			require.Nil(t, storage.DeleteAll(GetContext(t), release.ManualPilot{}))
-			require.Nil(t, storage.DeleteAll(GetContext(t), release.Rollout{}))
-			require.Nil(t, storage.DeleteAll(GetContext(t), release.Flag{}))
-			require.Nil(t, storage.DeleteAll(GetContext(t), deployment.Environment{}))
-		}
-
-		cleanup()
+	} else {
+		// cleanup
 		t.Defer(cleanup)
 	}
+
+	// clean ahead
+	cleanup()
 
 	return storage
 }

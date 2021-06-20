@@ -154,7 +154,7 @@ func createFixtures(s toggler.Storage) {
 	ff := release.Flag{Name: `test`}
 	ctx := context.Background()
 	devEnv := deployment.Environment{Name: "development"}
-	_ = uc.Storage.Create(ctx, &devEnv)
+	_ = uc.Storage.DeploymentEnvironment(ctx).Create(ctx, &devEnv)
 	_ = uc.RolloutManager.CreateFeatureFlag(ctx, &ff)
 	_ = uc.RolloutManager.SetPilotEnrollmentForFeature(context.Background(), ff.ID, devEnv.ID, `test-public-pilot-id-1`, true)
 	_ = uc.RolloutManager.SetPilotEnrollmentForFeature(context.Background(), ff.ID, devEnv.ID, `test-public-pilot-id-2`, false)
@@ -244,7 +244,7 @@ func createDevelopmentToken(s toggler.Storage, tokenSTR string) {
 
 	t.SHA512 = sha512hex
 
-	if err := s.Update(ctx, t); err != nil {
+	if err := s.SecurityToken(ctx).Update(ctx, t); err != nil {
 		panic(err)
 	}
 }

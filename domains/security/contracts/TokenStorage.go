@@ -5,9 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/adamluzsi/frameless/contracts"
 	"github.com/adamluzsi/frameless/iterators"
-	"github.com/adamluzsi/frameless/resources"
-	"github.com/adamluzsi/frameless/resources/contracts"
 	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/testcase/fixtures"
 	"github.com/stretchr/testify/require"
@@ -15,7 +14,7 @@ import (
 )
 
 type TokenStorage struct {
-	Subject func(testing.TB) security.Storage
+	Subject func(testing.TB) security.TokenStorage
 	contracts.FixtureFactory
 }
 
@@ -52,29 +51,11 @@ func (spec TokenStorage) Spec(tb testing.TB) {
 				FixtureFactory: spec.FixtureFactory,
 			},
 			TokenFinder{
-				Subject:        func(tb testing.TB) TokenFinderSubject { return spec.Subject(tb) },
+				Subject:        func(tb testing.TB) security.TokenStorage { return spec.Subject(tb) },
 				FixtureFactory: spec.FixtureFactory,
 			},
-			contracts.OnePhaseCommitProtocol{T: T,
-				Subject: func(tb testing.TB) contracts.OnePhaseCommitProtocolSubject {
-					return spec.Subject(tb)
-				},
-				FixtureFactory: spec.FixtureFactory,
-			},
-			contracts.CreatorPublisher{T: T,
-				Subject: func(tb testing.TB) contracts.CreatorPublisherSubject {
-					return spec.Subject(tb)
-				},
-				FixtureFactory: spec.FixtureFactory,
-			},
-			contracts.UpdaterPublisher{T: T,
-				Subject: func(tb testing.TB) contracts.UpdaterPublisherSubject {
-					return spec.Subject(tb)
-				},
-				FixtureFactory: spec.FixtureFactory,
-			},
-			contracts.DeleterPublisher{T: T,
-				Subject: func(tb testing.TB) contracts.DeleterPublisherSubject {
+			contracts.Publisher{T: T,
+				Subject: func(tb testing.TB) contracts.PublisherSubject {
 					return spec.Subject(tb)
 				},
 				FixtureFactory: spec.FixtureFactory,
@@ -84,15 +65,8 @@ func (spec TokenStorage) Spec(tb testing.TB) {
 }
 
 type TokenFinder struct {
-	Subject func(testing.TB) TokenFinderSubject
+	Subject func(testing.TB) security.TokenStorage
 	contracts.FixtureFactory
-}
-
-type TokenFinderSubject interface {
-	security.TokenFinder
-	resources.Creator
-	resources.Deleter
-	resources.Finder
 }
 
 func (spec TokenFinder) Test(t *testing.T) {
@@ -124,14 +98,14 @@ func (spec TokenFinder) Spec(tb testing.TB) {
 		storage := s.Let(`storage`, func(t *testcase.T) interface{} {
 			return spec.Subject(t)
 		})
-		storageGet := func(t *testcase.T) TokenFinderSubject {
-			return storage.Get(t).(TokenFinderSubject)
+		storageGet := func(t *testcase.T) security.TokenStorage {
+			return storage.Get(t).(security.TokenStorage)
 		}
 
 		deleteAllTokenOnce := &sync.Once{}
 		s.Before(func(t *testcase.T) {
 			deleteAllTokenOnce.Do(func() {
-				contracts.DeleteAllEntity(t, storageGet(t), spec.Context(), security.Token{})
+				contracts.DeleteAllEntity(t, storageGet(t), spec.Context())
 			})
 		})
 
@@ -142,7 +116,7 @@ func (spec TokenFinder) Spec(tb testing.TB) {
 
 			s.When(`no token stored in the storage yet`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					count, err := iterators.Count(storageGet(t).FindAll(spec.Context(), security.Token{}))
+					count, err := iterators.Count(storageGet(t).FindAll(spec.Context()))
 					require.Nil(t, err)
 					require.Equal(t, 0, count)
 				})
