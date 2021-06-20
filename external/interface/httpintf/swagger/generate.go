@@ -11,8 +11,11 @@ package swagger
 //go:generate swagger generate client --quiet --spec swagger.json --target lib
 
 //= Embed generated documentation
+//go:generate mkdir -p ./specfs
 //go:generate rm -f ./specfs/fs.go
 //go:generate esc -o ./specfs/fs.go -pkg specfs swagger.json
+//
+//go:generate mkdir -p ./uifs
 //go:generate rm -f ./uifs/fs.go
 //go:generate esc -o ./uifs/fs.go -pkg uifs -prefix assets/swagger-ui ./assets
 //
