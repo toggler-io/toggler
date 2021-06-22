@@ -34,7 +34,6 @@ func TestReleaseRolloutController(t *testing.T) {
 
 	s.Describe(`POST / - create release rollout`, SpecReleaseRolloutControllerCreate)
 	s.Describe(`GET / - list release rollout`, SpecReleaseRolloutControllerList)
-	s.Describe(`DELETE / - delete release rollout`, SpecReleaseRolloutControllerDelete)
 
 	s.Context(`given we have a release rollout in the system`, func(s *testcase.Spec) {
 		sh.GivenWeHaveReleaseRollout(s, `rollout`, sh.LetVarExampleReleaseFlag, sh.LetVarExampleDeploymentEnvironment)
@@ -46,16 +45,60 @@ func TestReleaseRolloutController(t *testing.T) {
 
 			s.Describe(`PUT|PATCH /{id} - update a release rollout`,
 				SpecReleaseRolloutControllerUpdate)
+			s.Describe(`DELETE /{id} - delete a release rollout`,
+				SpecReleaseRolloutControllerDelete)
 		})
 	})
 }
 
 func SpecReleaseRolloutControllerDelete(s *testcase.Spec) {
-	Method.LetValue(s, http.MethodDelete)
-	Path.LetValue(s, `/`)
 	sh.GivenHTTPRequestHasAppToken(s)
+	Method.LetValue(s, http.MethodDelete)
 
-	s.Test(`TODO: add the ability to delete rollout`, func(t *testcase.T) { t.Skip() })
+	Path.Let(s, func(t *testcase.T) interface{} {
+		return fmt.Sprintf(`/%s`, t.I(`id`))
+	})
+
+	var onSuccess = func(t *testcase.T) {
+		rr := ServeHTTP(t)
+		require.Equal(t, http.StatusOK, rr.Code)
+	}
+	s.Then(`rollout is deleted from the system`, func(t *testcase.T) {
+		onSuccess(t)
+
+		deletedRollout := sh.GetReleaseRollout(t, `rollout`)
+
+		var stored release.Rollout
+		found, err := sh.StorageGet(t).ReleaseRollout(sh.ContextGet(t)).FindByID(sh.ContextGet(t), deletedRollout.ID, &stored)
+		require.Nil(t, err)
+		require.False(t, found)
+		require.Equal(t, release.Rollout{}, stored)
+	})
+
+	s.Context(`E2E`, func(s *testcase.Spec) {
+		s.Tag(sh.TagBlackBox)
+
+		s.Test(`swagger`, func(t *testcase.T) {
+			sm, err := httpintf.NewServeMux(sh.ExampleUseCases(t))
+			require.Nil(t, err)
+
+			s := httptest.NewServer(sm)
+			defer s.Close()
+
+			p := swagger.NewDeleteReleaseRolloutParams()
+			p.RolloutID = sh.GetReleaseRollout(t, `rollout`).ID
+
+			tc := client.DefaultTransportConfig()
+			u, _ := url.Parse(s.URL)
+			tc.Host = u.Host
+			tc.Schemes = []string{`http`}
+
+			c := client.NewHTTPClientWithConfig(nil, tc)
+
+			_, err = c.Rollout.DeleteReleaseRollout(p, protectedAuth(t))
+			require.Nil(t, err)
+		})
+	})
 }
 
 func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {

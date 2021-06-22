@@ -13,19 +13,10 @@ import (
 	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
 )
 
-func NewReleasePilotHandler(uc *toggler.UseCases) *gorest.Handler {
+func NewReleasePilotHandler(uc *toggler.UseCases) http.Handler {
 	c := ReleasePilotController{UseCases: uc}
-	h := gorest.NewHandler(struct {
-		gorest.ContextHandler
-		gorest.CreateController
-		gorest.ListController
-		gorest.UpdateController
-	}{
-		ContextHandler:   c,
-		CreateController: gorest.AsCreateController(httputils.AuthMiddleware(http.HandlerFunc(c.Create), uc, ErrorWriterFunc)),
-		ListController:   gorest.AsListController(httputils.AuthMiddleware(http.HandlerFunc(c.List), uc, ErrorWriterFunc)),
-		UpdateController: gorest.AsUpdateController(httputils.AuthMiddleware(http.HandlerFunc(c.Update), uc, ErrorWriterFunc)),
-	})
+	h := gorest.NewHandler(c)
+	httputils.AuthMiddleware(h, uc, ErrorWriterFunc)
 	return h
 }
 
@@ -296,4 +287,56 @@ func (ctrl ReleasePilotController) Update(w http.ResponseWriter, r *http.Request
 	var resp CreateReleasePilotResponse
 	resp.Body.Pilot = resp.Body.Pilot.FromReleasePilot(*p)
 	serveJSON(w, resp.Body)
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+
+// DeleteReleasePilotRequest
+// swagger:parameters deleteReleasePilot
+type DeleteReleasePilotRequest struct {
+	// PilotID is the pilot id.
+	//
+	// in: path
+	// required: true
+	PilotID string `json:"pilotID"`
+}
+
+// DeleteReleasePilotResponse
+// swagger:response deleteReleasePilotResponse
+type DeleteReleasePilotResponse struct {
+}
+
+/*
+
+	Delete
+	swagger:route DELETE /release-pilots/{pilotID} pilot deleteReleasePilot
+
+	Delete a release pilot.
+
+		Consumes:
+		- application/json
+
+		Produces:
+		- application/json
+
+		Schemes: http, https
+
+		Security:
+		  AppToken: []
+
+		Responses:
+		  200: deleteReleasePilotResponse
+		  400: errorResponse
+		  500: errorResponse
+
+*/
+func (ctrl ReleasePilotController) Delete(w http.ResponseWriter, r *http.Request) {
+	ID := r.Context().Value(ReleasePilotContextKey{}).(release.ManualPilot).ID
+
+	err := ctrl.UseCases.Storage.ReleasePilot(r.Context()).DeleteByID(r.Context(), ID)
+	if handleError(w, err, http.StatusBadRequest) {
+		return
+	}
+
+	w.WriteHeader(200)
 }

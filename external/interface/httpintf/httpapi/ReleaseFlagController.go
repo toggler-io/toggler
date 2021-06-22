@@ -12,19 +12,10 @@ import (
 	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
 )
 
-func NewReleaseFlagHandler(uc *toggler.UseCases) *gorest.Handler {
+func NewReleaseFlagHandler(uc *toggler.UseCases) http.Handler {
 	c := ReleaseFlagController{UseCases: uc}
-	h := gorest.NewHandler(struct {
-		gorest.ContextHandler
-		gorest.CreateController
-		gorest.ListController
-		gorest.UpdateController
-	}{
-		ContextHandler:   c,
-		CreateController: gorest.AsCreateController(httputils.AuthMiddleware(http.HandlerFunc(c.Create), uc, ErrorWriterFunc)),
-		ListController:   gorest.AsListController(httputils.AuthMiddleware(http.HandlerFunc(c.List), uc, ErrorWriterFunc)),
-		UpdateController: gorest.AsUpdateController(httputils.AuthMiddleware(http.HandlerFunc(c.Update), uc, ErrorWriterFunc)),
-	})
+	h := gorest.NewHandler(c)
+	httputils.AuthMiddleware(h, uc, ErrorWriterFunc)
 	return h
 }
 
@@ -265,4 +256,56 @@ func (ctrl ReleaseFlagController) Update(w http.ResponseWriter, r *http.Request)
 	var resp UpdateReleaseFlagResponse
 	resp.Body.Flag = flag
 	serveJSON(w, resp.Body)
+}
+
+//--------------------------------------------------------------------------------------------------------------------//
+
+// DeleteReleaseFlagRequest
+// swagger:parameters deleteReleaseFlag
+type DeleteReleaseFlagRequest struct {
+	// FlagID is the release flag id or the alias name.
+	//
+	// in: path
+	// required: true
+	FlagID string `json:"flagID"`
+}
+
+// DeleteReleaseFlagResponse
+// swagger:response deleteReleaseFlagResponse
+type DeleteReleaseFlagResponse struct {
+}
+
+/*
+
+	Delete
+	swagger:route DELETE /release-flags/{flagID} flag deleteReleaseFlag
+
+	Delete a release flag.
+
+		Consumes:
+		- application/json
+
+		Produces:
+		- application/json
+
+		Schemes: http, https
+
+		Security:
+		  AppToken: []
+
+		Responses:
+		  200: deleteReleaseFlagResponse
+		  400: errorResponse
+		  500: errorResponse
+
+*/
+func (ctrl ReleaseFlagController) Delete(w http.ResponseWriter, r *http.Request) {
+	ID := r.Context().Value(ReleaseFlagContextKey{}).(release.Flag).ID
+
+	err := ctrl.UseCases.Storage.ReleaseFlag(r.Context()).DeleteByID(r.Context(), ID)
+	if handleError(w, err, http.StatusBadRequest) {
+		return
+	}
+
+	w.WriteHeader(200)
 }
