@@ -1,4 +1,4 @@
-FROM golang:1.14-alpine as build
+FROM golang:1.16.5-alpine as build
 EXPOSE 8080
 
 WORKDIR /src/

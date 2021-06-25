@@ -1044,22 +1044,7 @@
       "description": "DeleteReleasePilotResponse"
     },
     "deleteReleaseRolloutResponse": {
-      "description": "DeleteReleaseRolloutResponse",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "rollout": {
-            "type": "object",
-            "properties": {
-              "plan": {
-                "type": "object",
-                "x-go-name": "Plan"
-              }
-            },
-            "x-go-name": "Rollout"
-          }
-        }
-      }
+      "description": "DeleteReleaseRolloutResponse"
     },
     "errorResponse": {
       "description": "ErrorResponse will contains a response about request that had some kind of problem.\nThe details will be included in the body.",

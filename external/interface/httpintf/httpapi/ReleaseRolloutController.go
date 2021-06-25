@@ -127,6 +127,7 @@ func (ctrl ReleaseRolloutController) Create(w http.ResponseWriter, r *http.Reque
 	}
 
 	var resp CreateReleaseRolloutResponse
+	resp.Body.Rollout.ID = p.Rollout.ID
 	resp.Body.Rollout.FlagID = p.Rollout.FlagID
 	resp.Body.Rollout.EnvironmentID = p.Rollout.DeploymentEnvironmentID
 	resp.Body.Rollout.Plan = release.RolloutDefinitionView{Definition: p.Rollout.Plan}
@@ -308,12 +309,6 @@ type DeleteReleaseRolloutRequest struct {
 // DeleteReleaseRolloutResponse
 // swagger:response deleteReleaseRolloutResponse
 type DeleteReleaseRolloutResponse struct {
-	// in: body
-	Body struct {
-		Rollout struct {
-			Plan interface{} `json:"plan"`
-		} `json:"rollout"`
-	}
 }
 
 /*
