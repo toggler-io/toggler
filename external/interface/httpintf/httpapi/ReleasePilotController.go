@@ -122,7 +122,7 @@ func (ctrl ReleasePilotController) Create(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	p, err := ctrl.UseCases.RolloutManager.Storage.ReleasePilot(r.Context()).FindReleaseManualPilotByExternalID(r.Context(), pilot.FlagID, pilot.EnvironmentID, pilot.PublicID)
+	p, err := ctrl.UseCases.RolloutManager.Storage.ReleasePilot(r.Context()).FindByFlagEnvPublicID(r.Context(), pilot.FlagID, pilot.EnvironmentID, pilot.PublicID)
 	if handleError(w, err, http.StatusInternalServerError) {
 		return
 	}
@@ -276,7 +276,7 @@ func (ctrl ReleasePilotController) Update(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	p, err := ctrl.UseCases.Storage.ReleasePilot(r.Context()).FindReleaseManualPilotByExternalID(r.Context(), pilot.FlagID, pilot.EnvironmentID, pilot.PublicID)
+	p, err := ctrl.UseCases.Storage.ReleasePilot(r.Context()).FindByFlagEnvPublicID(r.Context(), pilot.FlagID, pilot.EnvironmentID, pilot.PublicID)
 	if handleError(w, err, http.StatusInternalServerError) {
 		return
 	}

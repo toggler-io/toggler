@@ -108,7 +108,7 @@ func (spec RolloutStorage) Spec(tb testing.TB) {
 // TODO replace with FindOne contract
 func (spec RolloutStorage) specFindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(s *testcase.Spec) {
 	var subject = func(t *testcase.T, rollout *release.Rollout) (bool, error) {
-		return spec.storageGet(t).FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(
+		return spec.storageGet(t).FindByFlagEnvironment(
 			sh.ContextGet(t),
 			*sh.ExampleReleaseFlag(t),
 			*sh.ExampleDeploymentEnvironment(t),

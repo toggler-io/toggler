@@ -110,7 +110,7 @@ func (ctrl *Controller) rolloutIndexPage(w http.ResponseWriter, r *http.Request)
 
 		var rollout release.Rollout
 		var byPercentage = release.NewRolloutDecisionByPercentage()
-		if found, err := ctrl.Storage.ReleaseRollout(r.Context()).FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(r.Context(), ff, env, &rollout); ctrl.handleError(w, r, err) {
+		if found, err := ctrl.Storage.ReleaseRollout(r.Context()).FindByFlagEnvironment(r.Context(), ff, env, &rollout); ctrl.handleError(w, r, err) {
 			return
 		} else if found {
 			if bp, ok := rollout.Plan.(release.RolloutDecisionByPercentage); ok {
@@ -167,7 +167,7 @@ func (ctrl *Controller) rolloutEditPage(w http.ResponseWriter, r *http.Request) 
 	var byPercentage = release.NewRolloutDecisionByPercentage()
 
 	var rollout release.Rollout
-	if found, err := ctrl.Storage.ReleaseRollout(r.Context()).FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(r.Context(), flag, env, &rollout); ctrl.handleError(w, r, err) {
+	if found, err := ctrl.Storage.ReleaseRollout(r.Context()).FindByFlagEnvironment(r.Context(), flag, env, &rollout); ctrl.handleError(w, r, err) {
 		return
 	} else if found {
 		if bp, ok := rollout.Plan.(release.RolloutDecisionByPercentage); ok {
@@ -263,7 +263,7 @@ func (ctrl *Controller) lookupRollout(ctx context.Context, flagID, envID string)
 	}
 
 	var rollout release.Rollout
-	found, err := s.ReleaseRollout(ctx).FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx, flag, env, &rollout)
+	found, err := s.ReleaseRollout(ctx).FindByFlagEnvironment(ctx, flag, env, &rollout)
 	if err != nil {
 		return release.Rollout{}, false, err
 	}

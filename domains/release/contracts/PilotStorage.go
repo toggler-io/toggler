@@ -119,7 +119,7 @@ func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 
 		s.Describe(`FindReleasePilotsByReleaseFlag`, func(s *testcase.Spec) {
 			subject := func(t *testcase.T) iterators.Interface {
-				pilotEntriesIter := spec.storageGet(t).FindReleasePilotsByReleaseFlag(spec.context(), *sh.ExampleReleaseFlag(t))
+				pilotEntriesIter := spec.storageGet(t).FindByFlag(spec.context(), *sh.ExampleReleaseFlag(t))
 				t.Defer(pilotEntriesIter.Close)
 				return pilotEntriesIter
 			}
@@ -187,7 +187,7 @@ func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 
 		s.Describe(`FindReleaseManualPilotByExternalID`, func(s *testcase.Spec) {
 			var subject = func(t *testcase.T) (*release.Pilot, error) {
-				return spec.storageGet(t).FindReleaseManualPilotByExternalID(
+				return spec.storageGet(t).FindByFlagEnvPublicID(
 					spec.context(),
 					sh.ExampleReleaseFlag(t).ID,
 					sh.ExampleDeploymentEnvironment(t).ID,
@@ -247,7 +247,7 @@ func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 
 		s.Describe(`FindReleasePilotsByExternalID`, func(s *testcase.Spec) {
 			subject := func(t *testcase.T) iterators.Interface {
-				pilotEntriesIter := spec.storageGet(t).FindReleasePilotsByExternalID(spec.context(), sh.ExampleExternalPilotID(t))
+				pilotEntriesIter := spec.storageGet(t).FindByPublicID(spec.context(), sh.ExampleExternalPilotID(t))
 				t.Defer(pilotEntriesIter.Close)
 				return pilotEntriesIter
 			}

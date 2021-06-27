@@ -65,7 +65,7 @@ type ReleaseFlagPgStorage struct {
 	*postgresql.Storage
 }
 
-func (s ReleaseFlagPgStorage) FindReleaseFlagByName(ctx context.Context, name string) (*release.Flag, error) {
+func (s ReleaseFlagPgStorage) FindByName(ctx context.Context, name string) (*release.Flag, error) {
 	m := s.Mapping
 	query := fmt.Sprintf(`SELECT %s FROM %s WHERE "name" = $1`, toSelectClause(m), m.TableName())
 
@@ -86,7 +86,7 @@ func (s ReleaseFlagPgStorage) FindReleaseFlagByName(ctx context.Context, name st
 	return &ff, nil
 }
 
-func (s ReleaseFlagPgStorage) FindReleaseFlagsByName(ctx context.Context, names ...string) release.FlagEntries {
+func (s ReleaseFlagPgStorage) FindByNames(ctx context.Context, names ...string) release.FlagEntries {
 	var namesInClause []string
 	var args []interface{}
 
@@ -160,7 +160,7 @@ type ReleasePilotPgStorage struct {
 	*postgresql.Storage
 }
 
-func (s ReleasePilotPgStorage) FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID interface{}, pilotExtID string) (*release.Pilot, error) {
+func (s ReleasePilotPgStorage) FindByFlagEnvPublicID(ctx context.Context, flagID, envID interface{}, pilotExtID string) (*release.Pilot, error) {
 	if !isUUIDValid(flagID) {
 		return nil, nil
 	}
@@ -190,7 +190,7 @@ func (s ReleasePilotPgStorage) FindReleaseManualPilotByExternalID(ctx context.Co
 	return &p, nil
 }
 
-func (s ReleasePilotPgStorage) FindReleasePilotsByReleaseFlag(ctx context.Context, flag release.Flag) release.PilotEntries {
+func (s ReleasePilotPgStorage) FindByFlag(ctx context.Context, flag release.Flag) release.PilotEntries {
 	if flag.ID == `` {
 		return iterators.NewEmpty()
 	}
@@ -220,7 +220,7 @@ func (s ReleasePilotPgStorage) FindReleasePilotsByReleaseFlag(ctx context.Contex
 	return iterators.NewSQLRows(rows, m)
 }
 
-func (s ReleasePilotPgStorage) FindReleasePilotsByExternalID(ctx context.Context, externalID string) release.PilotEntries {
+func (s ReleasePilotPgStorage) FindByPublicID(ctx context.Context, externalID string) release.PilotEntries {
 	m := s.Mapping
 	q := fmt.Sprintf(`SELECT %s FROM %s WHERE "public_id" = $1`, toSelectClause(m), m.TableName())
 	c, err := s.ConnectionManager.GetConnection(ctx)
@@ -300,7 +300,7 @@ func (rp *releaseRolloutPlanValue) Scan(iSRC interface{}) error {
 	return nil
 }
 
-func (s ReleaseRolloutPgStorage) FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx context.Context, flag release.Flag, env release.Environment, rollout *release.Rollout) (bool, error) {
+func (s ReleaseRolloutPgStorage) FindByFlagEnvironment(ctx context.Context, flag release.Flag, env release.Environment, rollout *release.Rollout) (bool, error) {
 	m := s.Mapping
 	tmpl := `SELECT %s FROM %s WHERE flag_id = $1 AND env_id = $2`
 	query := fmt.Sprintf(tmpl, toSelectClause(m), m.TableName())
@@ -346,7 +346,7 @@ type ReleaseEnvironmentPgStorage struct {
 	*postgresql.Storage
 }
 
-func (s ReleaseEnvironmentPgStorage) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrName string, env *release.Environment) (bool, error) {
+func (s ReleaseEnvironmentPgStorage) FindByAlias(ctx context.Context, idOrName string, env *release.Environment) (bool, error) {
 	var (
 		format string
 		query  string

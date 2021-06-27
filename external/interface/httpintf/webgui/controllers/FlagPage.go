@@ -63,7 +63,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var pilots []release.Pilot
-		pilotsIter := ctrl.UseCases.Storage.ReleasePilot(r.Context()).FindReleasePilotsByReleaseFlag(r.Context(), ff)
+		pilotsIter := ctrl.UseCases.Storage.ReleasePilot(r.Context()).FindByFlag(r.Context(), ff)
 		if ctrl.handleError(w, r, iterators.Collect(pilotsIter, &pilots)) {
 			return
 		}

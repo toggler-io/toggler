@@ -366,7 +366,7 @@ func FindStoredReleaseRollout(t *testcase.T) release.Rollout {
 	flag := *sh.ExampleReleaseFlag(t)
 	env := *sh.ExampleDeploymentEnvironment(t)
 	var r release.Rollout
-	found, err := sh.StorageGet(t).ReleaseRollout(sh.ContextGet(t)).FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(sh.ContextGet(t), flag, env, &r)
+	found, err := sh.StorageGet(t).ReleaseRollout(sh.ContextGet(t)).FindByFlagEnvironment(sh.ContextGet(t), flag, env, &r)
 	require.Nil(t, err)
 	require.True(t, found)
 	return r

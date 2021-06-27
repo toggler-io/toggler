@@ -15,7 +15,15 @@ import (
 	"testing"
 )
 
-var _ release.Storage = &caches.Memory{}
+var (
+	_ toggler.Storage            = &caches.Memory{}
+	_ release.Storage            = &caches.Memory{}
+	_ security.Storage           = &caches.Memory{}
+	_ release.EnvironmentStorage = &caches.EnvironmentStorage{}
+	_ release.FlagStorage        = &caches.FlagStorage{}
+	_ release.RolloutStorage     = &caches.RolloutStorage{}
+	_ release.PilotStorage       = &caches.PilotStorage{}
+)
 
 func TestMemory_smoke(t *testing.T) {
 	storage := storages.NewEventLogMemoryStorage()

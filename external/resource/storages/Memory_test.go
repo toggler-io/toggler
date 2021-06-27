@@ -20,9 +20,13 @@ import (
 )
 
 var (
-	_ toggler.Storage    = &storages.Memory{}
-	_ release.Storage    = &storages.Memory{}
-	_ security.Storage   = &storages.Memory{}
+	_ toggler.Storage            = &storages.Memory{}
+	_ release.Storage            = &storages.Memory{}
+	_ security.Storage           = &storages.Memory{}
+	_ release.EnvironmentStorage = &storages.MemoryReleaseEnvironmentStorage{}
+	_ release.FlagStorage        = &storages.MemoryReleaseFlagStorage{}
+	_ release.RolloutStorage     = &storages.MemoryReleaseRolloutStorage{}
+	_ release.PilotStorage       = &storages.MemoryReleasePilotStorage{}
 )
 
 func TestMemory(t *testing.T) {

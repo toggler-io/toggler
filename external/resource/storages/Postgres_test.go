@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"github.com/toggler-io/toggler/domains/release"
+	"github.com/toggler-io/toggler/domains/security"
 	"github.com/toggler-io/toggler/external/resource/storages/migrations"
 	"os"
 	"testing"
@@ -22,7 +23,15 @@ import (
 	"github.com/toggler-io/toggler/domains/toggler/contracts"
 )
 
-var _ release.Storage = &storages.Postgres{}
+var (
+	_ toggler.Storage            = &storages.Postgres{}
+	_ release.Storage            = &storages.Postgres{}
+	_ security.Storage           = &storages.Postgres{}
+	_ release.EnvironmentStorage = &storages.ReleaseEnvironmentPgStorage{}
+	_ release.FlagStorage        = &storages.ReleaseFlagPgStorage{}
+	_ release.RolloutStorage     = &storages.ReleaseRolloutPgStorage{}
+	_ release.PilotStorage       = &storages.ReleasePilotPgStorage{}
+)
 
 func BenchmarkPostgres(b *testing.B) {
 	if testing.Short() {

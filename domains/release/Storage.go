@@ -27,8 +27,8 @@ type FlagStorage interface {
 	frameless.Updater
 	frameless.Deleter
 	frameless.Publisher
-	FindReleaseFlagByName(ctx context.Context, name string) (*Flag, error)
-	FindReleaseFlagsByName(ctx context.Context, names ...string) FlagEntries
+	FindByName(ctx context.Context, name string) (*Flag, error)
+	FindByNames(ctx context.Context, names ...string) FlagEntries
 }
 
 type PilotStorage interface {
@@ -37,9 +37,9 @@ type PilotStorage interface {
 	frameless.Updater
 	frameless.Deleter
 	frameless.Publisher
-	FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID interface{}, pilotExtID string) (*Pilot, error)
-	FindReleasePilotsByReleaseFlag(ctx context.Context, flag Flag) PilotEntries
-	FindReleasePilotsByExternalID(ctx context.Context, externalID string) PilotEntries
+	FindByFlagEnvPublicID(ctx context.Context, flagID, envID interface{}, publicID string) (*Pilot, error)
+	FindByFlag(ctx context.Context, flag Flag) PilotEntries
+	FindByPublicID(ctx context.Context, publicID string) PilotEntries
 }
 
 type RolloutStorage interface {
@@ -48,7 +48,7 @@ type RolloutStorage interface {
 	frameless.Updater
 	frameless.Deleter
 	frameless.Publisher
-	FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(context.Context, Flag, Environment, *Rollout) (bool, error)
+	FindByFlagEnvironment(context.Context, Flag, Environment, *Rollout) (bool, error)
 
 	// TODO:
 	//FindReleaseRolloutsByDeploymentEnvironment(context.Context, deployment.Environment, *Rollout) (bool, error)
@@ -60,5 +60,5 @@ type EnvironmentStorage /* Environment */ interface {
 	frameless.Updater
 	frameless.Deleter
 	frameless.Publisher
-	FindDeploymentEnvironmentByAlias(ctx context.Context, idOrName string, env *Environment) (bool, error)
+	FindByAlias(ctx context.Context, idOrName string, env *Environment) (bool, error)
 }

@@ -96,7 +96,7 @@ func (spec EnvironmentStorage) specFindDeploymentEnvironmentByAlias(s *testcase.
 		env     = s.Let(`env`, func(t *testcase.T) interface{} { return &release.Environment{} })
 		alias   = testcase.Var{Name: `alias`}
 		subject = func(t *testcase.T) (bool, error) {
-			return spec.storageGet(t).ReleaseEnvironment(spec.FixtureFactory.Context()).FindDeploymentEnvironmentByAlias(
+			return spec.storageGet(t).ReleaseEnvironment(spec.FixtureFactory.Context()).FindByAlias(
 				spec.FixtureFactory.Context(),
 				alias.Get(t).(string),
 				env.Get(t).(*release.Environment),
@@ -121,7 +121,7 @@ func (spec EnvironmentStorage) specFindDeploymentEnvironmentByAlias(s *testcase.
 				idOrAlias = env.Name
 			}
 			return func(tb testing.TB, ctx context.Context, ptr contracts.T) (found bool, err error) {
-				return storage.FindDeploymentEnvironmentByAlias(ctx, idOrAlias, ptr.(*release.Environment))
+				return storage.FindByAlias(ctx, idOrAlias, ptr.(*release.Environment))
 			}
 		},
 	})

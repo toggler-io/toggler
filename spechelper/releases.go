@@ -70,7 +70,7 @@ func ExampleExternalPilotID(t *testcase.T) string {
 }
 
 func FindStoredReleaseFlagByName(t *testcase.T, name string) *release.Flag {
-	f, err := StorageGet(t).ReleaseFlag(ContextGet(t)).FindReleaseFlagByName(ContextGet(t), name)
+	f, err := StorageGet(t).ReleaseFlag(ContextGet(t)).FindByName(ContextGet(t), name)
 	require.Nil(t, err)
 	require.NotNil(t, f)
 	return f

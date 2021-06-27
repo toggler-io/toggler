@@ -66,7 +66,7 @@ func (ctrl *Controller) pilotEditPage(w http.ResponseWriter, r *http.Request) {
 	pilotExtID := query.Get(`ext-id`)
 	envID := query.Get(`env-id`)
 
-	pilots := ctrl.UseCases.Storage.ReleasePilot(r.Context()).FindReleasePilotsByExternalID(r.Context(), pilotExtID)
+	pilots := ctrl.UseCases.Storage.ReleasePilot(r.Context()).FindByPublicID(r.Context(), pilotExtID)
 	defer pilots.Close()
 	pilots = iterators.Filter(pilots, func(p release.Pilot) bool { return p.EnvironmentID == envID })
 

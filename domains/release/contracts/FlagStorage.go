@@ -177,7 +177,7 @@ func (spec FlagFinder) specFindReleaseFlagsByName(s *testcase.Spec) {
 		flagNames    = testcase.Var{Name: `flag names`}
 		flagNamesGet = func(t *testcase.T) []string { return flagNames.Get(t).([]string) }
 		subject      = func(t *testcase.T) iterators.Interface {
-			flagEntriesIter := spec.storageGet(t).FindReleaseFlagsByName(spec.context(), flagNamesGet(t)...)
+			flagEntriesIter := spec.storageGet(t).FindByNames(spec.context(), flagNamesGet(t)...)
 			t.Defer(flagEntriesIter.Close)
 			return flagEntriesIter
 		}
@@ -257,7 +257,7 @@ func (spec FlagFinder) specFindReleaseFlagByName(s *testcase.Spec) {
 		flagName    = s.LetValue(`flag name`, fixtures.Random.String())
 		flagNameGet = func(t *testcase.T) string { return flagName.Get(t).(string) }
 		subject     = func(t *testcase.T) *release.Flag {
-			ff, err := spec.storageGet(t).FindReleaseFlagByName(spec.context(), flagNameGet(t))
+			ff, err := spec.storageGet(t).FindByName(spec.context(), flagNameGet(t))
 			require.Nil(t, err)
 			return ff
 		}
@@ -276,7 +276,7 @@ func (spec FlagFinder) specFindReleaseFlagByName(s *testcase.Spec) {
 
 		s.Then(`searching for it returns the flag entity`, func(t *testcase.T) {
 			ff := flag.Get(t).(*release.Flag)
-			actually, err := spec.storageGet(t).FindReleaseFlagByName(spec.context(), ff.Name)
+			actually, err := spec.storageGet(t).FindByName(spec.context(), ff.Name)
 			require.Nil(t, err)
 			require.Equal(t, ff, actually)
 		})

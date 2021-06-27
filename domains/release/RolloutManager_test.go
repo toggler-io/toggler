@@ -301,7 +301,7 @@ func SpecSetPilotEnrollmentForFeature(s *testcase.Spec) {
 				flag := sh.ExampleReleaseFlag(t)
 				env := sh.ExampleDeploymentEnvironment(t)
 
-				pilot, err := sh.StorageGet(t).ReleasePilot(sh.ContextGet(t)).FindReleaseManualPilotByExternalID(
+				pilot, err := sh.StorageGet(t).ReleasePilot(sh.ContextGet(t)).FindByFlagEnvPublicID(
 					sh.ContextGet(t), flag.ID, env.ID, sh.ExampleExternalPilotID(t))
 
 				require.Nil(t, err)
@@ -338,7 +338,7 @@ func SpecSetPilotEnrollmentForFeature(s *testcase.Spec) {
 				require.Nil(t, subject(t))
 				ff := sh.ExampleReleaseFlag(t)
 
-				pilot, err := sh.StorageGet(t).ReleasePilot(sh.ContextGet(t)).FindReleaseManualPilotByExternalID(sh.ContextGet(t), ff.ID, sh.ExampleDeploymentEnvironment(t).ID, sh.ExampleExternalPilotID(t))
+				pilot, err := sh.StorageGet(t).ReleasePilot(sh.ContextGet(t)).FindByFlagEnvPublicID(sh.ContextGet(t), ff.ID, sh.ExampleDeploymentEnvironment(t).ID, sh.ExampleExternalPilotID(t))
 				require.Nil(t, err)
 
 				require.NotNil(t, pilot)
@@ -391,7 +391,7 @@ func SpecUnsetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 			s.Then(`pilot manual enrollment will be removed`, func(t *testcase.T) {
 				require.Nil(t, subject(t))
-				pilot, err := sh.StorageGet(t).ReleasePilot(sh.ContextGet(t)).FindReleaseManualPilotByExternalID(
+				pilot, err := sh.StorageGet(t).ReleasePilot(sh.ContextGet(t)).FindByFlagEnvPublicID(
 					sh.ContextGet(t),
 					sh.ExampleReleaseFlag(t).ID,
 					sh.ExampleDeploymentEnvironment(t).ID,

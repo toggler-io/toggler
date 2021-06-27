@@ -108,7 +108,7 @@ func SpecDeploymentEnvironmentControllerCreate(s *testcase.Spec) {
 		rfv := t.I(`deployment-environment`).(*release.Environment)
 
 		var actualDeploymentEnvironment release.Environment
-		found, err := sh.StorageGet(t).ReleaseEnvironment(sh.ContextGet(t)).FindDeploymentEnvironmentByAlias(sh.ContextGet(t), t.I(`deployment-environment`).(*release.Environment).Name, &actualDeploymentEnvironment)
+		found, err := sh.StorageGet(t).ReleaseEnvironment(sh.ContextGet(t)).FindByAlias(sh.ContextGet(t), t.I(`deployment-environment`).(*release.Environment).Name, &actualDeploymentEnvironment)
 		require.Nil(t, err)
 		require.True(t, found)
 		require.Equal(t, rfv.Name, actualDeploymentEnvironment.Name)
@@ -118,7 +118,7 @@ func SpecDeploymentEnvironmentControllerCreate(s *testcase.Spec) {
 		resp := onSuccess(t)
 
 		var env release.Environment
-		found, err := sh.StorageGet(t).ReleaseEnvironment(sh.ContextGet(t)).FindDeploymentEnvironmentByAlias(sh.ContextGet(t), t.I(`deployment-environment`).(*release.Environment).Name, &env)
+		found, err := sh.StorageGet(t).ReleaseEnvironment(sh.ContextGet(t)).FindByAlias(sh.ContextGet(t), t.I(`deployment-environment`).(*release.Environment).Name, &env)
 		require.Nil(t, err)
 		require.True(t, found)
 		require.Equal(t, resp.Body.Environment, env)
@@ -251,7 +251,7 @@ func SpecDeploymentEnvironmentControllerUpdate(s *testcase.Spec) {
 		updatedDeploymentEnvironmentView := t.I(`updated-deployment-environment`).(*release.Environment)
 
 		var stored release.Environment
-		found, err := sh.StorageGet(t).ReleaseEnvironment(sh.ContextGet(t)).FindDeploymentEnvironmentByAlias(sh.ContextGet(t), updatedDeploymentEnvironmentView.Name, &stored)
+		found, err := sh.StorageGet(t).ReleaseEnvironment(sh.ContextGet(t)).FindByAlias(sh.ContextGet(t), updatedDeploymentEnvironmentView.Name, &stored)
 		require.Nil(t, err)
 		require.True(t, found)
 		require.Equal(t, resp.Body.Environment, stored)
@@ -327,7 +327,7 @@ func SpecDeploymentEnvironmentControllerDelete(s *testcase.Spec) {
 		deletedDeploymentEnvironment := t.I(`deployment-environment`).(*release.Environment)
 
 		var stored release.Environment
-		found, err := sh.StorageGet(t).ReleaseEnvironment(sh.ContextGet(t)).FindDeploymentEnvironmentByAlias(sh.ContextGet(t), deletedDeploymentEnvironment.Name, &stored)
+		found, err := sh.StorageGet(t).ReleaseEnvironment(sh.ContextGet(t)).FindByAlias(sh.ContextGet(t), deletedDeploymentEnvironment.Name, &stored)
 		require.Nil(t, err)
 		require.False(t, found)
 		require.Equal(t, release.Environment{}, stored)

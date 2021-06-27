@@ -55,7 +55,7 @@ type MemoryReleaseFlagStorage struct {
 	*inmemory.EventLogStorage
 }
 
-func (s *MemoryReleaseFlagStorage) FindReleaseFlagByName(ctx context.Context, name string) (*release.Flag, error) {
+func (s *MemoryReleaseFlagStorage) FindByName(ctx context.Context, name string) (*release.Flag, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (s *MemoryReleaseFlagStorage) FindReleaseFlagByName(ctx context.Context, na
 	return flag, nil
 }
 
-func (s *MemoryReleaseFlagStorage) FindReleaseFlagsByName(ctx context.Context, names ...string) release.FlagEntries {
+func (s *MemoryReleaseFlagStorage) FindByNames(ctx context.Context, names ...string) release.FlagEntries {
 	if err := ctx.Err(); err != nil {
 		return iterators.NewError(err)
 	}
@@ -108,7 +108,7 @@ type MemoryReleasePilotStorage struct {
 	*inmemory.EventLogStorage
 }
 
-func (s *MemoryReleasePilotStorage) FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID interface{}, pilotExtID string) (*release.Pilot, error) {
+func (s *MemoryReleasePilotStorage) FindByFlagEnvPublicID(ctx context.Context, flagID, envID interface{}, pilotExtID string) (*release.Pilot, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -126,7 +126,7 @@ func (s *MemoryReleasePilotStorage) FindReleaseManualPilotByExternalID(ctx conte
 	return p, nil
 }
 
-func (s *MemoryReleasePilotStorage) FindReleasePilotsByReleaseFlag(ctx context.Context, flag release.Flag) release.PilotEntries {
+func (s *MemoryReleasePilotStorage) FindByFlag(ctx context.Context, flag release.Flag) release.PilotEntries {
 	if err := ctx.Err(); err != nil {
 		return iterators.NewError(err)
 	}
@@ -143,7 +143,7 @@ func (s *MemoryReleasePilotStorage) FindReleasePilotsByReleaseFlag(ctx context.C
 	return iterators.NewSlice(pilots)
 }
 
-func (s *MemoryReleasePilotStorage) FindReleasePilotsByExternalID(ctx context.Context, pilotPublicID string) release.PilotEntries {
+func (s *MemoryReleasePilotStorage) FindByPublicID(ctx context.Context, pilotPublicID string) release.PilotEntries {
 	if err := ctx.Err(); err != nil {
 		return iterators.NewError(err)
 	}
@@ -170,7 +170,7 @@ type MemoryReleaseRolloutStorage struct {
 	*inmemory.EventLogStorage
 }
 
-func (s *MemoryReleaseRolloutStorage) FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx context.Context, flag release.Flag, env release.Environment, ptr *release.Rollout) (bool, error) {
+func (s *MemoryReleaseRolloutStorage) FindByFlagEnvironment(ctx context.Context, flag release.Flag, env release.Environment, ptr *release.Rollout) (bool, error) {
 	if err := ctx.Err(); err != nil {
 		return false, err
 	}
@@ -199,7 +199,7 @@ type MemoryReleaseEnvironmentStorage struct {
 	*inmemory.EventLogStorage
 }
 
-func (s *MemoryReleaseEnvironmentStorage) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrName string, env *release.Environment) (bool, error) {
+func (s *MemoryReleaseEnvironmentStorage) FindByAlias(ctx context.Context, idOrName string, env *release.Environment) (bool, error) {
 	if err := ctx.Err(); err != nil {
 		return false, err
 	}
