@@ -317,7 +317,7 @@ func SpecReleaseFlagControllerDelete(s *testcase.Spec) {
 		deletedFlag := sh.GetReleaseFlag(t, `release-flag`)
 
 		var stored release.Flag
-		found, err := sh.StorageGet(t).ReleaseFlag(sh.ContextGet(t)).FindByID(sh.ContextGet(t), deletedFlag.ID, &stored)
+		found, err := sh.StorageGet(t).ReleaseFlag(sh.ContextGet(t)).FindByID(sh.ContextGet(t), &stored, deletedFlag.ID)
 		require.Nil(t, err)
 		require.False(t, found)
 		require.Equal(t, release.Flag{}, stored)
