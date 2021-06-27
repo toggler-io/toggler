@@ -5,6 +5,7 @@ import (
 	"github.com/adamluzsi/testcase"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
+	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/security"
 	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/domains/toggler/contracts"
@@ -13,6 +14,8 @@ import (
 	sh "github.com/toggler-io/toggler/spechelper"
 	"testing"
 )
+
+var _ release.Storage = &caches.Memory{}
 
 func TestMemory_smoke(t *testing.T) {
 	storage := storages.NewEventLogMemoryStorage()

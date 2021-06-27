@@ -3,6 +3,7 @@ package storages_test
 import (
 	"context"
 	"database/sql"
+	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/external/resource/storages/migrations"
 	"os"
 	"testing"
@@ -20,6 +21,8 @@ import (
 
 	"github.com/toggler-io/toggler/domains/toggler/contracts"
 )
+
+var _ release.Storage = &storages.Postgres{}
 
 func BenchmarkPostgres(b *testing.B) {
 	if testing.Short() {

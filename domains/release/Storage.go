@@ -5,8 +5,6 @@ import (
 
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
-
-	"github.com/toggler-io/toggler/domains/deployment"
 )
 
 type Storage interface {
@@ -14,6 +12,7 @@ type Storage interface {
 	ReleaseFlag(context.Context) FlagStorage
 	ReleasePilot(context.Context) PilotStorage
 	ReleaseRollout(context.Context) RolloutStorage
+	ReleaseEnvironment(context.Context) EnvironmentStorage
 }
 
 type (
@@ -38,7 +37,7 @@ type PilotStorage interface {
 	frameless.Updater
 	frameless.Deleter
 	frameless.Publisher
-	FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID interface{}, pilotExtID string) (*ManualPilot, error)
+	FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID interface{}, pilotExtID string) (*Pilot, error)
 	FindReleasePilotsByReleaseFlag(ctx context.Context, flag Flag) PilotEntries
 	FindReleasePilotsByExternalID(ctx context.Context, externalID string) PilotEntries
 }
@@ -49,8 +48,17 @@ type RolloutStorage interface {
 	frameless.Updater
 	frameless.Deleter
 	frameless.Publisher
-	FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(context.Context, Flag, deployment.Environment, *Rollout) (bool, error)
+	FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(context.Context, Flag, Environment, *Rollout) (bool, error)
 
 	// TODO:
 	//FindReleaseRolloutsByDeploymentEnvironment(context.Context, deployment.Environment, *Rollout) (bool, error)
+}
+
+type EnvironmentStorage /* Environment */ interface {
+	frameless.Creator
+	frameless.Finder
+	frameless.Updater
+	frameless.Deleter
+	frameless.Publisher
+	FindDeploymentEnvironmentByAlias(ctx context.Context, idOrName string, env *Environment) (bool, error)
 }

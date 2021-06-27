@@ -49,7 +49,7 @@ func storageInit(t *testcase.T) interface{} {
 		require.Nil(t, storage.ReleasePilot(ContextGet(t)).DeleteAll(ContextGet(t)))
 		require.Nil(t, storage.ReleaseRollout(ContextGet(t)).DeleteAll(ContextGet(t)))
 		require.Nil(t, storage.ReleaseFlag(ContextGet(t)).DeleteAll(ContextGet(t)))
-		require.Nil(t, storage.DeploymentEnvironment(ContextGet(t)).DeleteAll(ContextGet(t)))
+		require.Nil(t, storage.ReleaseEnvironment(ContextGet(t)).DeleteAll(ContextGet(t)))
 	}
 
 	// TODO: replace this solution for external interface testing with middleware approach where tx is injected to the request context.

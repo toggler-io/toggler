@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/toggler-io/toggler/domains/release"
 	"net/http"
 
-	"github.com/toggler-io/toggler/domains/deployment"
 	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
 )
@@ -102,8 +102,8 @@ func (ctrl ViewsController) GetPilotConfig(w http.ResponseWriter, r *http.Reques
 
 	ctx := context.WithValue(r.Context(), `pilot-ip-addr`, httputils.GetClientIP(r))
 
-	var env deployment.Environment
-	found, err := ctrl.UseCases.Storage.DeploymentEnvironment(ctx).FindDeploymentEnvironmentByAlias(ctx, request.Body.DeploymentEnvironmentAlias, &env)
+	var env release.Environment
+	found, err := ctrl.UseCases.Storage.ReleaseEnvironment(ctx).FindDeploymentEnvironmentByAlias(ctx, request.Body.DeploymentEnvironmentAlias, &env)
 	if handleError(w, err, http.StatusInternalServerError) {
 		return
 	}

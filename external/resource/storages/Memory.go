@@ -8,7 +8,7 @@ import (
 	"github.com/adamluzsi/frameless/inmemory"
 	"github.com/adamluzsi/frameless/iterators"
 
-	"github.com/toggler-io/toggler/domains/deployment"
+
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/security"
 )
@@ -101,23 +101,23 @@ func (s *MemoryReleaseFlagStorage) FindReleaseFlagsByName(ctx context.Context, n
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func (s *Memory) ReleasePilot(ctx context.Context) release.PilotStorage {
-	return &MemoryReleasePilotStorage{EventLogStorage: s.storageFor(release.ManualPilot{})}
+	return &MemoryReleasePilotStorage{EventLogStorage: s.storageFor(release.Pilot{})}
 }
 
 type MemoryReleasePilotStorage struct {
 	*inmemory.EventLogStorage
 }
 
-func (s *MemoryReleasePilotStorage) FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID interface{}, pilotExtID string) (*release.ManualPilot, error) {
+func (s *MemoryReleasePilotStorage) FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID interface{}, pilotExtID string) (*release.Pilot, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 
-	var p *release.ManualPilot
+	var p *release.Pilot
 	for _, v := range s.View(ctx) {
-		pilot := v.(release.ManualPilot)
+		pilot := v.(release.Pilot)
 
-		if pilot.FlagID == flagID && pilot.DeploymentEnvironmentID == envID && pilot.ExternalID == pilotExtID {
+		if pilot.FlagID == flagID && pilot.EnvironmentID == envID && pilot.PublicID == pilotExtID {
 			p = &pilot
 			break
 		}
@@ -131,9 +131,9 @@ func (s *MemoryReleasePilotStorage) FindReleasePilotsByReleaseFlag(ctx context.C
 		return iterators.NewError(err)
 	}
 
-	var pilots []release.ManualPilot
+	var pilots []release.Pilot
 	for _, v := range s.View(ctx) {
-		pilot := v.(release.ManualPilot)
+		pilot := v.(release.Pilot)
 
 		if pilot.FlagID == flag.ID {
 			pilots = append(pilots, pilot)
@@ -148,11 +148,11 @@ func (s *MemoryReleasePilotStorage) FindReleasePilotsByExternalID(ctx context.Co
 		return iterators.NewError(err)
 	}
 
-	var pilots []release.ManualPilot
+	var pilots []release.Pilot
 	for _, v := range s.View(ctx) {
-		p := v.(release.ManualPilot)
+		p := v.(release.Pilot)
 
-		if p.ExternalID == pilotPublicID {
+		if p.PublicID == pilotPublicID {
 			pilots = append(pilots, p)
 		}
 	}
@@ -170,7 +170,7 @@ type MemoryReleaseRolloutStorage struct {
 	*inmemory.EventLogStorage
 }
 
-func (s *MemoryReleaseRolloutStorage) FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx context.Context, flag release.Flag, env deployment.Environment, ptr *release.Rollout) (bool, error) {
+func (s *MemoryReleaseRolloutStorage) FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx context.Context, flag release.Flag, env release.Environment, ptr *release.Rollout) (bool, error) {
 	if err := ctx.Err(); err != nil {
 		return false, err
 	}
@@ -191,22 +191,22 @@ func (s *MemoryReleaseRolloutStorage) FindReleaseRolloutByReleaseFlagAndDeployme
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func (s *Memory) DeploymentEnvironment(ctx context.Context) deployment.EnvironmentStorage {
-	return &MemoryDeploymentEnvironmentStorage{EventLogStorage: s.storageFor(deployment.Environment{})}
+func (s *Memory) ReleaseEnvironment(ctx context.Context) release.EnvironmentStorage {
+	return &MemoryReleaseEnvironmentStorage{EventLogStorage: s.storageFor(release.Environment{})}
 }
 
-type MemoryDeploymentEnvironmentStorage struct {
+type MemoryReleaseEnvironmentStorage struct {
 	*inmemory.EventLogStorage
 }
 
-func (s *MemoryDeploymentEnvironmentStorage) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrName string, env *deployment.Environment) (bool, error) {
+func (s *MemoryReleaseEnvironmentStorage) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrName string, env *release.Environment) (bool, error) {
 	if err := ctx.Err(); err != nil {
 		return false, err
 	}
 
 	var found bool
 	for _, v := range s.View(ctx) {
-		e := v.(deployment.Environment)
+		e := v.(release.Environment)
 
 		if e.ID == idOrName || e.Name == idOrName {
 			*env = e

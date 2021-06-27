@@ -24,7 +24,7 @@ type ReleasePilotController struct {
 	UseCases *toggler.UseCases
 }
 
-var _ release.ManualPilot
+var _ release.Pilot
 
 type ReleasePilotView struct {
 	// ID represent the fact that this object will be persistent in the Subject
@@ -38,20 +38,20 @@ type ReleasePilotView struct {
 	Enrolled bool `json:"enrolled"`
 }
 
-func (ReleasePilotView) FromReleasePilot(pilot release.ManualPilot) ReleasePilotView {
+func (ReleasePilotView) FromReleasePilot(pilot release.Pilot) ReleasePilotView {
 	var v ReleasePilotView
 	v.ID = pilot.ID
 	v.ReleasePilotID = pilot.FlagID
-	v.ExternalID = pilot.ExternalID
+	v.ExternalID = pilot.PublicID
 	v.Enrolled = pilot.IsParticipating
 	return v
 }
 
-func (v ReleasePilotView) ToReleasePilot() release.ManualPilot {
-	var pilot release.ManualPilot
+func (v ReleasePilotView) ToReleasePilot() release.Pilot {
+	var pilot release.Pilot
 	pilot.ID = v.ID
 	pilot.FlagID = v.ReleasePilotID
-	pilot.ExternalID = v.ExternalID
+	pilot.PublicID = v.ExternalID
 	pilot.IsParticipating = v.Enrolled
 	return pilot
 }
@@ -118,11 +118,11 @@ func (ctrl ReleasePilotController) Create(w http.ResponseWriter, r *http.Request
 	req.Body.Pilot.ID = `` // ignore id if given
 	pilot := req.Body.Pilot.ToReleasePilot()
 
-	if err := ctrl.UseCases.SetPilotEnrollmentForFeature(r.Context(), pilot.FlagID, pilot.DeploymentEnvironmentID, pilot.ExternalID, pilot.IsParticipating); handleError(w, err, http.StatusInternalServerError) {
+	if err := ctrl.UseCases.SetPilotEnrollmentForFeature(r.Context(), pilot.FlagID, pilot.EnvironmentID, pilot.PublicID, pilot.IsParticipating); handleError(w, err, http.StatusInternalServerError) {
 		return
 	}
 
-	p, err := ctrl.UseCases.RolloutManager.Storage.ReleasePilot(r.Context()).FindReleaseManualPilotByExternalID(r.Context(), pilot.FlagID, pilot.DeploymentEnvironmentID, pilot.ExternalID)
+	p, err := ctrl.UseCases.RolloutManager.Storage.ReleasePilot(r.Context()).FindReleaseManualPilotByExternalID(r.Context(), pilot.FlagID, pilot.EnvironmentID, pilot.PublicID)
 	if handleError(w, err, http.StatusInternalServerError) {
 		return
 	}
@@ -177,7 +177,7 @@ func (ctrl ReleasePilotController) List(w http.ResponseWriter, r *http.Request) 
 
 	var resp ListReleasePilotResponse
 	for pilotsIter.Next() {
-		var p release.ManualPilot
+		var p release.Pilot
 
 		if handleError(w, pilotsIter.Decode(&p), http.StatusInternalServerError) {
 			return
@@ -198,7 +198,7 @@ func (ctrl ReleasePilotController) List(w http.ResponseWriter, r *http.Request) 
 type ReleasePilotContextKey struct{}
 
 func (ctrl ReleasePilotController) ContextWithResource(ctx context.Context, pilotID string) (context.Context, bool, error) {
-	var p release.ManualPilot
+	var p release.Pilot
 	found, err := ctrl.UseCases.RolloutManager.Storage.ReleasePilot(ctx).FindByID(ctx, &p, pilotID)
 	if err != nil {
 		return ctx, false, err
@@ -269,14 +269,14 @@ func (ctrl ReleasePilotController) Update(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	req.Body.Pilot.ID = r.Context().Value(ReleasePilotContextKey{}).(release.ManualPilot).ID
+	req.Body.Pilot.ID = r.Context().Value(ReleasePilotContextKey{}).(release.Pilot).ID
 	pilot := req.Body.Pilot.ToReleasePilot()
 
-	if err := ctrl.UseCases.SetPilotEnrollmentForFeature(r.Context(), pilot.FlagID, pilot.DeploymentEnvironmentID, pilot.ExternalID, pilot.IsParticipating); handleError(w, err, http.StatusInternalServerError) {
+	if err := ctrl.UseCases.SetPilotEnrollmentForFeature(r.Context(), pilot.FlagID, pilot.EnvironmentID, pilot.PublicID, pilot.IsParticipating); handleError(w, err, http.StatusInternalServerError) {
 		return
 	}
 
-	p, err := ctrl.UseCases.Storage.ReleasePilot(r.Context()).FindReleaseManualPilotByExternalID(r.Context(), pilot.FlagID, pilot.DeploymentEnvironmentID, pilot.ExternalID)
+	p, err := ctrl.UseCases.Storage.ReleasePilot(r.Context()).FindReleaseManualPilotByExternalID(r.Context(), pilot.FlagID, pilot.EnvironmentID, pilot.PublicID)
 	if handleError(w, err, http.StatusInternalServerError) {
 		return
 	}
@@ -331,7 +331,7 @@ type DeleteReleasePilotResponse struct {
 
 */
 func (ctrl ReleasePilotController) Delete(w http.ResponseWriter, r *http.Request) {
-	ID := r.Context().Value(ReleasePilotContextKey{}).(release.ManualPilot).ID
+	ID := r.Context().Value(ReleasePilotContextKey{}).(release.Pilot).ID
 
 	err := ctrl.UseCases.Storage.ReleasePilot(r.Context()).DeleteByID(r.Context(), ID)
 	if handleError(w, err, http.StatusBadRequest) {

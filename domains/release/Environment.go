@@ -1,4 +1,4 @@
-package deployment
+package release
 
 type Environment struct {
 	ID   string `ext:"ID" json:"id"`

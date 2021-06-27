@@ -10,7 +10,6 @@ import (
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/pkg/errors"
 
-	"github.com/toggler-io/toggler/domains/deployment"
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
 )
@@ -38,10 +37,10 @@ func (ctrl *Controller) rolloutLandingPage(w http.ResponseWriter, r *http.Reques
 	switch r.Method {
 	case http.MethodGet:
 		type Content struct {
-			Environments []deployment.Environment
+			Environments []release.Environment
 		}
 		var content Content
-		if ctrl.handleError(w, r, iterators.Collect(ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).FindAll(r.Context()), &content.Environments)) {
+		if ctrl.handleError(w, r, iterators.Collect(ctrl.UseCases.Storage.ReleaseEnvironment(r.Context()).FindAll(r.Context()), &content.Environments)) {
 			return
 		}
 		ctrl.Render(w, `/rollout/landing.html`, content)
@@ -73,8 +72,8 @@ func (ctrl *Controller) rolloutIndexPage(w http.ResponseWriter, r *http.Request)
 		envID = r.URL.Query().Get(`env-id`)
 	}
 
-	var env deployment.Environment
-	found, err := ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).FindByID(r.Context(), &env, envID)
+	var env release.Environment
+	found, err := ctrl.UseCases.Storage.ReleaseEnvironment(r.Context()).FindByID(r.Context(), &env, envID)
 	if httputils.HandleError(w, err, http.StatusNotFound) {
 		log.Println(`ERROR`, err.Error())
 		return
@@ -141,8 +140,8 @@ func (ctrl *Controller) rolloutEditPage(w http.ResponseWriter, r *http.Request) 
 
 	log.Println(`flagID:`, flagID, `envID:`, envID)
 
-	var env deployment.Environment
-	if found, err := ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).FindByID(r.Context(), &env, envID); ctrl.handleError(w, r, err) {
+	var env release.Environment
+	if found, err := ctrl.UseCases.Storage.ReleaseEnvironment(r.Context()).FindByID(r.Context(), &env, envID); ctrl.handleError(w, r, err) {
 		return
 	} else if !found {
 		http.Redirect(w, r, `/rollout`, http.StatusFound)
@@ -256,8 +255,8 @@ func (ctrl *Controller) lookupRollout(ctx context.Context, flagID, envID string)
 		return release.Rollout{}, false, errors.New(`flag not found`)
 	}
 
-	var env deployment.Environment
-	if found, err := s.DeploymentEnvironment(ctx).FindByID(ctx, &env, envID); err != nil {
+	var env release.Environment
+	if found, err := s.ReleaseEnvironment(ctx).FindByID(ctx, &env, envID); err != nil {
 		return release.Rollout{}, false, err
 	} else if !found {
 		return release.Rollout{}, false, errors.New(`env not found`)

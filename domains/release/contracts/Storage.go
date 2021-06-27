@@ -42,7 +42,12 @@ func (spec Storage) Spec(tb testing.TB) {
 				},
 				FixtureFactory: spec.FixtureFactory,
 			},
-
+			EnvironmentStorage{
+				Subject: func(tb testing.TB) release.Storage {
+					return spec.Subject(tb)
+				},
+				FixtureFactory: spec.FixtureFactory,
+			},
 		)
 
 	})

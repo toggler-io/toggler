@@ -12,7 +12,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/toggler-io/toggler/domains/deployment"
 	"github.com/toggler-io/toggler/external/resource/caches"
 	"github.com/toggler-io/toggler/external/resource/storages"
 
@@ -153,8 +152,8 @@ func createFixtures(s toggler.Storage) {
 	uc := toggler.NewUseCases(s)
 	ff := release.Flag{Name: `test`}
 	ctx := context.Background()
-	devEnv := deployment.Environment{Name: "development"}
-	_ = uc.Storage.DeploymentEnvironment(ctx).Create(ctx, &devEnv)
+	devEnv := release.Environment{Name: "development"}
+	_ = uc.Storage.ReleaseEnvironment(ctx).Create(ctx, &devEnv)
 	_ = uc.RolloutManager.CreateFeatureFlag(ctx, &ff)
 	_ = uc.RolloutManager.SetPilotEnrollmentForFeature(context.Background(), ff.ID, devEnv.ID, `test-public-pilot-id-1`, true)
 	_ = uc.RolloutManager.SetPilotEnrollmentForFeature(context.Background(), ff.ID, devEnv.ID, `test-public-pilot-id-2`, false)

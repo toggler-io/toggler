@@ -10,7 +10,7 @@ import (
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/frameless/postgresql"
 	"github.com/adamluzsi/frameless/reflects"
-	"github.com/toggler-io/toggler/domains/deployment"
+
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/security"
 	"strings"
@@ -121,7 +121,7 @@ func (s ReleaseFlagPgStorage) FindReleaseFlagsByName(ctx context.Context, names 
 
 func (p *Postgres) ReleasePilot(ctx context.Context) release.PilotStorage {
 	return ReleasePilotPgStorage{
-		Storage: postgresql.NewStorage(release.ManualPilot{}, p.ConnectionManager, postgresql.Mapper{
+		Storage: postgresql.NewStorage(release.Pilot{}, p.ConnectionManager, postgresql.Mapper{
 			Table:   "release_pilots",
 			ID:      "id",
 			NewIDFn: newIDFn,
@@ -129,26 +129,26 @@ func (p *Postgres) ReleasePilot(ctx context.Context) release.PilotStorage {
 				`id`,
 				`flag_id`,
 				`env_id`,
-				`external_id`,
+				`public_id`,
 				`is_participating`,
 			},
 			ToArgsFn: func(ptr interface{}) ([]interface{}, error) {
-				e := ptr.(*release.ManualPilot)
+				e := ptr.(*release.Pilot)
 				return []interface{}{
 					e.ID,
 					e.FlagID,
-					e.DeploymentEnvironmentID,
-					e.ExternalID,
+					e.EnvironmentID,
+					e.PublicID,
 					e.IsParticipating,
 				}, nil
 			},
 			MapFn: func(s iterators.SQLRowScanner, ptr interface{}) error {
-				e := ptr.(*release.ManualPilot)
+				e := ptr.(*release.Pilot)
 				return s.Scan(
 					&e.ID,
 					&e.FlagID,
-					&e.DeploymentEnvironmentID,
-					&e.ExternalID,
+					&e.EnvironmentID,
+					&e.PublicID,
 					&e.IsParticipating,
 				)
 			},
@@ -160,13 +160,13 @@ type ReleasePilotPgStorage struct {
 	*postgresql.Storage
 }
 
-func (s ReleasePilotPgStorage) FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID interface{}, pilotExtID string) (*release.ManualPilot, error) {
+func (s ReleasePilotPgStorage) FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID interface{}, pilotExtID string) (*release.Pilot, error) {
 	if !isUUIDValid(flagID) {
 		return nil, nil
 	}
 
 	m := s.Mapping
-	q := fmt.Sprintf(`SELECT %s FROM %s WHERE "flag_id" = $1 AND "env_id" = $2 AND "external_id" = $3`,
+	q := fmt.Sprintf(`SELECT %s FROM %s WHERE "flag_id" = $1 AND "env_id" = $2 AND "public_id" = $3`,
 		toSelectClause(m),
 		m.TableName(),
 	)
@@ -178,7 +178,7 @@ func (s ReleasePilotPgStorage) FindReleaseManualPilotByExternalID(ctx context.Co
 
 	row := c.QueryRowContext(ctx, q, flagID, envID, pilotExtID)
 
-	var p release.ManualPilot
+	var p release.Pilot
 	err = m.Map(row, &p)
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -222,7 +222,7 @@ func (s ReleasePilotPgStorage) FindReleasePilotsByReleaseFlag(ctx context.Contex
 
 func (s ReleasePilotPgStorage) FindReleasePilotsByExternalID(ctx context.Context, externalID string) release.PilotEntries {
 	m := s.Mapping
-	q := fmt.Sprintf(`SELECT %s FROM %s WHERE "external_id" = $1`, toSelectClause(m), m.TableName())
+	q := fmt.Sprintf(`SELECT %s FROM %s WHERE "public_id" = $1`, toSelectClause(m), m.TableName())
 	c, err := s.ConnectionManager.GetConnection(ctx)
 	if err != nil {
 		return iterators.NewError(err)
@@ -300,7 +300,7 @@ func (rp *releaseRolloutPlanValue) Scan(iSRC interface{}) error {
 	return nil
 }
 
-func (s ReleaseRolloutPgStorage) FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx context.Context, flag release.Flag, env deployment.Environment, rollout *release.Rollout) (bool, error) {
+func (s ReleaseRolloutPgStorage) FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx context.Context, flag release.Flag, env release.Environment, rollout *release.Rollout) (bool, error) {
 	m := s.Mapping
 	tmpl := `SELECT %s FROM %s WHERE flag_id = $1 AND env_id = $2`
 	query := fmt.Sprintf(tmpl, toSelectClause(m), m.TableName())
@@ -323,30 +323,30 @@ func (s ReleaseRolloutPgStorage) FindReleaseRolloutByReleaseFlagAndDeploymentEnv
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func (p *Postgres) DeploymentEnvironment(ctx context.Context) deployment.EnvironmentStorage {
-	return DeploymentEnvironmentPgStorage{
-		Storage: postgresql.NewStorage(deployment.Environment{}, p.ConnectionManager, postgresql.Mapper{
-			Table:   "deployment_environments",
+func (p *Postgres) ReleaseEnvironment(ctx context.Context) release.EnvironmentStorage {
+	return ReleaseEnvironmentPgStorage{
+		Storage: postgresql.NewStorage(release.Environment{}, p.ConnectionManager, postgresql.Mapper{
+			Table:   "release_environments",
 			ID:      "id",
 			NewIDFn: newIDFn,
 			Columns: []string{`id`, `name`},
 			ToArgsFn: func(ptr interface{}) ([]interface{}, error) {
-				e := ptr.(*deployment.Environment)
+				e := ptr.(*release.Environment)
 				return []interface{}{e.ID, e.Name}, nil
 			},
 			MapFn: func(s iterators.SQLRowScanner, ptr interface{}) error {
-				e := ptr.(*deployment.Environment)
+				e := ptr.(*release.Environment)
 				return s.Scan(&e.ID, &e.Name)
 			},
 		}),
 	}
 }
 
-type DeploymentEnvironmentPgStorage struct {
+type ReleaseEnvironmentPgStorage struct {
 	*postgresql.Storage
 }
 
-func (s DeploymentEnvironmentPgStorage) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrName string, env *deployment.Environment) (bool, error) {
+func (s ReleaseEnvironmentPgStorage) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrName string, env *release.Environment) (bool, error) {
 	var (
 		format string
 		query  string

@@ -12,3 +12,7 @@ const (
 	ErrInvalidPercentage  frameless.Error = `percentage value not acceptable`
 	ErrMissingRolloutPlan frameless.Error = `release rollout plan is not provided`
 )
+
+const (
+	ErrEnvironmentNameIsEmpty frameless.Error = `deployment environment name can't be empty`
+)

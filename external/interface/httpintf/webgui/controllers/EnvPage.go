@@ -2,14 +2,13 @@ package controllers
 
 import (
 	"fmt"
+	"github.com/toggler-io/toggler/domains/release"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/adamluzsi/frameless/iterators"
-
-	"github.com/toggler-io/toggler/domains/deployment"
 )
 
 func (ctrl *Controller) EnvPage(w http.ResponseWriter, r *http.Request) {
@@ -26,9 +25,9 @@ func (ctrl *Controller) EnvPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ctrl *Controller) envListAction(w http.ResponseWriter, r *http.Request) {
-	envsIter := ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).FindAll(r.Context())
+	envsIter := ctrl.UseCases.Storage.ReleaseEnvironment(r.Context()).FindAll(r.Context())
 
-	var envs []deployment.Environment
+	var envs []release.Environment
 	if err := iterators.Collect(envsIter, &envs); err != nil {
 		log.Println(`ERROR`, err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -47,7 +46,7 @@ func (ctrl *Controller) envAction(w http.ResponseWriter, r *http.Request) {
 
 		id := r.Form.Get(`id`)
 
-		var env deployment.Environment
+		var env release.Environment
 		found, err := ctrl.UseCases.Storage.ReleaseRollout(r.Context()).FindByID(r.Context(), &env, id)
 
 		if ctrl.handleError(w, r, err) {
@@ -60,7 +59,7 @@ func (ctrl *Controller) envAction(w http.ResponseWriter, r *http.Request) {
 		}
 
 		type content struct {
-			Env deployment.Environment
+			Env release.Environment
 		}
 		ctrl.Render(w, `/env/show.html`, content{Env: env})
 
@@ -73,7 +72,7 @@ func (ctrl *Controller) envAction(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			if ctrl.handleError(w, r, ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).Update(r.Context(), &env)) {
+			if ctrl.handleError(w, r, ctrl.UseCases.Storage.ReleaseEnvironment(r.Context()).Update(r.Context(), &env)) {
 				return
 			}
 
@@ -96,7 +95,7 @@ func (ctrl *Controller) envAction(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			if ctrl.handleError(w, r, ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).Create(r.Context(), &env)) {
+			if ctrl.handleError(w, r, ctrl.UseCases.Storage.ReleaseEnvironment(r.Context()).Create(r.Context(), &env)) {
 				return
 			}
 
@@ -114,7 +113,7 @@ func (ctrl *Controller) envAction(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			if ctrl.handleError(w, r, ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).DeleteByID(r.Context(), envID)) {
+			if ctrl.handleError(w, r, ctrl.UseCases.Storage.ReleaseEnvironment(r.Context()).DeleteByID(r.Context(), envID)) {
 				return
 			}
 
@@ -143,7 +142,7 @@ func (ctrl *Controller) envSetPilotAction(w http.ResponseWriter, r *http.Request
 			return
 		}
 
-		if ctrl.handleError(w, r, ctrl.UseCases.RolloutManager.SetPilotEnrollmentForFeature(r.Context(), p.FlagID, "", p.ExternalID, p.IsParticipating)) {
+		if ctrl.handleError(w, r, ctrl.UseCases.RolloutManager.SetPilotEnrollmentForFeature(r.Context(), p.FlagID, "", p.PublicID, p.IsParticipating)) {
 			return
 		}
 
@@ -185,7 +184,7 @@ func (ctrl *Controller) envCreateNewAction(w http.ResponseWriter, r *http.Reques
 			return
 		}
 
-		err = ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).Create(r.Context(), &env)
+		err = ctrl.UseCases.Storage.ReleaseEnvironment(r.Context()).Create(r.Context(), &env)
 
 		if err != nil {
 			log.Println(err)
@@ -199,11 +198,11 @@ func (ctrl *Controller) envCreateNewAction(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-func ParseEnvForm(r *http.Request) (deployment.Environment, error) {
+func ParseEnvForm(r *http.Request) (release.Environment, error) {
 	if err := r.ParseForm(); err != nil {
-		return deployment.Environment{}, err
+		return release.Environment{}, err
 	}
-	var env deployment.Environment
+	var env release.Environment
 	env.ID = r.Form.Get(`env.id`)
 	env.Name = r.Form.Get(`env.name`)
 	return env, nil

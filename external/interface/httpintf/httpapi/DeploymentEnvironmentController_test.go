@@ -3,6 +3,7 @@ package httpapi_test
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/toggler-io/toggler/domains/release"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -13,7 +14,6 @@ import (
 	. "github.com/adamluzsi/testcase/httpspec"
 	"github.com/stretchr/testify/require"
 
-	"github.com/toggler-io/toggler/domains/deployment"
 	"github.com/toggler-io/toggler/external/interface/httpintf"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
 	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client"
@@ -86,16 +86,16 @@ func SpecDeploymentEnvironmentControllerCreate(s *testcase.Spec) {
 	}
 
 	s.After(func(t *testcase.T) {
-		require.Nil(t, sh.StorageGet(t).DeploymentEnvironment(sh.ContextGet(t)).DeleteAll(sh.ContextGet(t)))
+		require.Nil(t, sh.StorageGet(t).ReleaseEnvironment(sh.ContextGet(t)).DeleteAll(sh.ContextGet(t)))
 	})
 
 	s.Let(`deployment-environment`, func(t *testcase.T) interface{} {
-		return sh.FixtureFactory{}.Create(deployment.Environment{}).(*deployment.Environment)
+		return sh.FixtureFactory{}.Create(release.Environment{}).(*release.Environment)
 	})
 
 	Body.Let(s, func(t *testcase.T) interface{} {
 		var req httpapi.CreateDeploymentEnvironmentRequest
-		req.Body.Environment = *t.I(`deployment-environment`).(*deployment.Environment)
+		req.Body.Environment = *t.I(`deployment-environment`).(*release.Environment)
 		return req.Body
 	})
 
@@ -105,10 +105,10 @@ func SpecDeploymentEnvironmentControllerCreate(s *testcase.Spec) {
 
 	s.Then(`env stored in the system`, func(t *testcase.T) {
 		onSuccess(t)
-		rfv := t.I(`deployment-environment`).(*deployment.Environment)
+		rfv := t.I(`deployment-environment`).(*release.Environment)
 
-		var actualDeploymentEnvironment deployment.Environment
-		found, err := sh.StorageGet(t).DeploymentEnvironment(sh.ContextGet(t)).FindDeploymentEnvironmentByAlias(sh.ContextGet(t), t.I(`deployment-environment`).(*deployment.Environment).Name, &actualDeploymentEnvironment)
+		var actualDeploymentEnvironment release.Environment
+		found, err := sh.StorageGet(t).ReleaseEnvironment(sh.ContextGet(t)).FindDeploymentEnvironmentByAlias(sh.ContextGet(t), t.I(`deployment-environment`).(*release.Environment).Name, &actualDeploymentEnvironment)
 		require.Nil(t, err)
 		require.True(t, found)
 		require.Equal(t, rfv.Name, actualDeploymentEnvironment.Name)
@@ -117,8 +117,8 @@ func SpecDeploymentEnvironmentControllerCreate(s *testcase.Spec) {
 	s.Then(`it returns env in the response`, func(t *testcase.T) {
 		resp := onSuccess(t)
 
-		var env deployment.Environment
-		found, err := sh.StorageGet(t).DeploymentEnvironment(sh.ContextGet(t)).FindDeploymentEnvironmentByAlias(sh.ContextGet(t), t.I(`deployment-environment`).(*deployment.Environment).Name, &env)
+		var env release.Environment
+		found, err := sh.StorageGet(t).ReleaseEnvironment(sh.ContextGet(t)).FindDeploymentEnvironmentByAlias(sh.ContextGet(t), t.I(`deployment-environment`).(*release.Environment).Name, &env)
 		require.Nil(t, err)
 		require.True(t, found)
 		require.Equal(t, resp.Body.Environment, env)
@@ -127,7 +127,7 @@ func SpecDeploymentEnvironmentControllerCreate(s *testcase.Spec) {
 	s.And(`if input contains invalid values`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
 			t.Log(`for example name is empty`)
-			t.I(`deployment-environment`).(*deployment.Environment).Name = ``
+			t.I(`deployment-environment`).(*release.Environment).Name = ``
 		})
 
 		s.Then(`it will return with failure`, func(t *testcase.T) {
@@ -226,14 +226,14 @@ func SpecDeploymentEnvironmentControllerUpdate(s *testcase.Spec) {
 	})
 
 	s.Let(`updated-deployment-environment`, func(t *testcase.T) interface{} {
-		rf := sh.FixtureFactory{}.Create(deployment.Environment{}).(*deployment.Environment)
+		rf := sh.FixtureFactory{}.Create(release.Environment{}).(*release.Environment)
 		rf.ID = sh.GetDeploymentEnvironment(t, `deployment-environment`).ID
 		return rf
 	})
 
 	Body.Let(s, func(t *testcase.T) interface{} {
 		var req httpapi.CreateDeploymentEnvironmentRequest
-		req.Body.Environment = *t.I(`updated-deployment-environment`).(*deployment.Environment)
+		req.Body.Environment = *t.I(`updated-deployment-environment`).(*release.Environment)
 		return req.Body
 	})
 
@@ -248,10 +248,10 @@ func SpecDeploymentEnvironmentControllerUpdate(s *testcase.Spec) {
 	s.Then(`env is updated in the system`, func(t *testcase.T) {
 		resp := onSuccess(t)
 
-		updatedDeploymentEnvironmentView := t.I(`updated-deployment-environment`).(*deployment.Environment)
+		updatedDeploymentEnvironmentView := t.I(`updated-deployment-environment`).(*release.Environment)
 
-		var stored deployment.Environment
-		found, err := sh.StorageGet(t).DeploymentEnvironment(sh.ContextGet(t)).FindDeploymentEnvironmentByAlias(sh.ContextGet(t), updatedDeploymentEnvironmentView.Name, &stored)
+		var stored release.Environment
+		found, err := sh.StorageGet(t).ReleaseEnvironment(sh.ContextGet(t)).FindDeploymentEnvironmentByAlias(sh.ContextGet(t), updatedDeploymentEnvironmentView.Name, &stored)
 		require.Nil(t, err)
 		require.True(t, found)
 		require.Equal(t, resp.Body.Environment, stored)
@@ -260,7 +260,7 @@ func SpecDeploymentEnvironmentControllerUpdate(s *testcase.Spec) {
 	s.And(`if input contains invalid values`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
 			t.Log(`for example the name is empty`)
-			t.I(`updated-deployment-environment`).(*deployment.Environment).Name = ``
+			t.I(`updated-deployment-environment`).(*release.Environment).Name = ``
 		})
 
 		s.Then(`it will return with failure`, func(t *testcase.T) {
@@ -324,13 +324,13 @@ func SpecDeploymentEnvironmentControllerDelete(s *testcase.Spec) {
 	s.Then(`env is deleted from the system`, func(t *testcase.T) {
 		onSuccess(t)
 
-		deletedDeploymentEnvironment := t.I(`deployment-environment`).(*deployment.Environment)
+		deletedDeploymentEnvironment := t.I(`deployment-environment`).(*release.Environment)
 
-		var stored deployment.Environment
-		found, err := sh.StorageGet(t).DeploymentEnvironment(sh.ContextGet(t)).FindDeploymentEnvironmentByAlias(sh.ContextGet(t), deletedDeploymentEnvironment.Name, &stored)
+		var stored release.Environment
+		found, err := sh.StorageGet(t).ReleaseEnvironment(sh.ContextGet(t)).FindDeploymentEnvironmentByAlias(sh.ContextGet(t), deletedDeploymentEnvironment.Name, &stored)
 		require.Nil(t, err)
 		require.False(t, found)
-		require.Equal(t, deployment.Environment{}, stored)
+		require.Equal(t, release.Environment{}, stored)
 	})
 
 	s.Context(`E2E`, func(s *testcase.Spec) {

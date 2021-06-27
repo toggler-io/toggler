@@ -124,7 +124,7 @@ func SpecViewsControllerClientConfig(s *testcase.Spec) {
 			defer s.Close()
 
 			p := pilot.NewGetPilotConfigParams()
-			p.Body.PilotExtID = &sh.ExampleReleaseManualPilotEnrollment(t).ExternalID
+			p.Body.PilotExtID = &sh.ExampleReleaseManualPilotEnrollment(t).PublicID
 			p.Body.ReleaseFlags = []string{sh.ExampleReleaseFlag(t).Name}
 			p.Body.DeploymentEnvironmentAlias = &sh.ExampleDeploymentEnvironment(t).ID
 

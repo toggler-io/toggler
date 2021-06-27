@@ -62,7 +62,7 @@ func (spec PilotStorage) Spec(tb testing.TB) {
 		}
 
 		s.Test(`contracts`, func(t *testcase.T) {
-			T := release.ManualPilot{}
+			T := release.Pilot{}
 			testcase.RunContract(t.TB,
 				contracts.Creator{T: T,
 					Subject: func(tb testing.TB) contracts.CRD {
@@ -94,7 +94,7 @@ func (spec PilotStorage) Spec(tb testing.TB) {
 					},
 					FixtureFactory: spec.FixtureFactory.Dynamic(t),
 				},
-				contracts.OnePhaseCommitProtocol{T: release.ManualPilot{},
+				contracts.OnePhaseCommitProtocol{T: release.Pilot{},
 					Subject: func(tb testing.TB) (frameless.OnePhaseCommitProtocol, contracts.CRD) {
 						storage := spec.Subject(tb)
 						return storage, storage.ReleasePilot(spec.FixtureFactory.Context())
@@ -147,12 +147,12 @@ func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 
 				s.And(`there are manual pilot configs for the release flag`, func(s *testcase.Spec) {
 					expectedPilots := s.Let(`expectedPilots`, func(t *testcase.T) interface{} {
-						var expectedPilots []*release.ManualPilot
+						var expectedPilots []*release.Pilot
 						for i := 0; i < 5; i++ {
-							pilot := &release.ManualPilot{
-								FlagID:                  sh.ExampleReleaseFlag(t).ID,
-								DeploymentEnvironmentID: sh.ExampleDeploymentEnvironment(t).ID,
-								ExternalID:              strconv.Itoa(i),
+							pilot := &release.Pilot{
+								FlagID:        sh.ExampleReleaseFlag(t).ID,
+								EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID,
+								PublicID:      strconv.Itoa(i),
 							}
 
 							contracts.CreateEntity(t, spec.storageGet(t), spec.context(), pilot)
@@ -161,17 +161,17 @@ func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 						return expectedPilots
 					}).EagerLoading(s)
 
-					expectedPilotsGet := func(t *testcase.T) []*release.ManualPilot {
-						return expectedPilots.Get(t).([]*release.ManualPilot)
+					expectedPilotsGet := func(t *testcase.T) []*release.Pilot {
+						return expectedPilots.Get(t).([]*release.Pilot)
 					}
 
 					s.Then(`it will return all of them`, func(t *testcase.T) {
 						iter := subject(t)
 						defer iter.Close()
 						require.NotNil(t, iter)
-						var actualPilots []*release.ManualPilot
+						var actualPilots []*release.Pilot
 						for iter.Next() {
-							var actually release.ManualPilot
+							var actually release.Pilot
 							require.Nil(t, iter.Decode(&actually))
 							actualPilots = append(actualPilots, &actually)
 						}
@@ -186,7 +186,7 @@ func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 		})
 
 		s.Describe(`FindReleaseManualPilotByExternalID`, func(s *testcase.Spec) {
-			var subject = func(t *testcase.T) (*release.ManualPilot, error) {
+			var subject = func(t *testcase.T) (*release.Pilot, error) {
 				return spec.storageGet(t).FindReleaseManualPilotByExternalID(
 					spec.context(),
 					sh.ExampleReleaseFlag(t).ID,
@@ -224,10 +224,10 @@ func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 
 				s.And(`the given there is a registered pilot for the feature`, func(s *testcase.Spec) {
 					s.Before(func(t *testcase.T) {
-						pilot := &release.ManualPilot{
-							FlagID:                  sh.ExampleReleaseFlag(t).ID,
-							DeploymentEnvironmentID: sh.ExampleDeploymentEnvironment(t).ID,
-							ExternalID:              sh.ExampleIDGet(t),
+						pilot := &release.Pilot{
+							FlagID:        sh.ExampleReleaseFlag(t).ID,
+							EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID,
+							PublicID:      sh.ExampleIDGet(t),
 						}
 						contracts.CreateEntity(t, spec.storageGet(t), spec.context(), pilot)
 					})
@@ -237,9 +237,9 @@ func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 						require.Nil(t, err)
 						require.NotNil(t, pilot)
 
-						require.Equal(t, sh.ExampleIDGet(t), pilot.ExternalID)
+						require.Equal(t, sh.ExampleIDGet(t), pilot.PublicID)
 						require.Equal(t, sh.ExampleReleaseFlag(t).ID, pilot.FlagID)
-						require.Equal(t, sh.ExampleDeploymentEnvironment(t).ID, pilot.DeploymentEnvironmentID)
+						require.Equal(t, sh.ExampleDeploymentEnvironment(t).ID, pilot.EnvironmentID)
 					})
 				})
 			})
@@ -277,9 +277,9 @@ func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 						return uuidV4.String()
 					}
 
-					contracts.CreateEntity(t, spec.storageGet(t), spec.context(), &release.ManualPilot{FlagID: newUUID(), DeploymentEnvironmentID: sh.ExampleDeploymentEnvironment(t).ID, ExternalID: extID, IsParticipating: true})
-					contracts.CreateEntity(t, spec.storageGet(t), spec.context(), &release.ManualPilot{FlagID: newUUID(), DeploymentEnvironmentID: sh.ExampleDeploymentEnvironment(t).ID, ExternalID: extID, IsParticipating: true})
-					contracts.CreateEntity(t, spec.storageGet(t), spec.context(), &release.ManualPilot{FlagID: newUUID(), DeploymentEnvironmentID: sh.ExampleDeploymentEnvironment(t).ID, ExternalID: extID, IsParticipating: false})
+					contracts.CreateEntity(t, spec.storageGet(t), spec.context(), &release.Pilot{FlagID: newUUID(), EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID, PublicID: extID, IsParticipating: true})
+					contracts.CreateEntity(t, spec.storageGet(t), spec.context(), &release.Pilot{FlagID: newUUID(), EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID, PublicID: extID, IsParticipating: true})
+					contracts.CreateEntity(t, spec.storageGet(t), spec.context(), &release.Pilot{FlagID: newUUID(), EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID, PublicID: extID, IsParticipating: false})
 				})
 
 				s.Then(`it will return an empty result set`, func(t *testcase.T) {
@@ -291,17 +291,17 @@ func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 
 			s.When(`pilot ext id has multiple records`, func(s *testcase.Spec) {
 				expectedPilots := s.Let(`expected pilots`, func(t *testcase.T) interface{} {
-					var pilots []release.ManualPilot
+					var pilots []release.Pilot
 
 					for i := 0; i < rand.Intn(5)+5; i++ {
 						uuidV4, err := uuid.NewRandom()
 						require.Nil(t, err)
 
-						pilot := release.ManualPilot{
-							FlagID:                  uuidV4.String(),
-							DeploymentEnvironmentID: sh.ExampleDeploymentEnvironment(t).ID,
-							ExternalID:              sh.ExampleExternalPilotID(t),
-							IsParticipating:         rand.Intn(1) == 0,
+						pilot := release.Pilot{
+							FlagID:          uuidV4.String(),
+							EnvironmentID:   sh.ExampleDeploymentEnvironment(t).ID,
+							PublicID:        sh.ExampleExternalPilotID(t),
+							IsParticipating: rand.Intn(1) == 0,
 						}
 
 						contracts.CreateEntity(t, spec.storageGet(t), spec.context(), &pilot)
@@ -312,9 +312,9 @@ func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 				}).EagerLoading(s)
 
 				s.Then(`it will return all of them`, func(t *testcase.T) {
-					var pilots []release.ManualPilot
+					var pilots []release.Pilot
 					require.Nil(t, iterators.Collect(subject(t), &pilots))
-					require.ElementsMatch(t, expectedPilots.Get(t).([]release.ManualPilot), pilots)
+					require.ElementsMatch(t, expectedPilots.Get(t).([]release.Pilot), pilots)
 				})
 			})
 		})

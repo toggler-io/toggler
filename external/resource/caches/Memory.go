@@ -5,7 +5,7 @@ import (
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/cache"
 	"github.com/adamluzsi/frameless/inmemory"
-	"github.com/toggler-io/toggler/domains/deployment"
+
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/security"
 	"github.com/toggler-io/toggler/domains/toggler"
@@ -21,12 +21,12 @@ type Memory struct {
 	Source toggler.Storage
 	Memory *inmemory.Memory
 
-	init                  sync.Once
-	releaseFlag           *cache.Manager
-	releaseRollout        *cache.Manager
-	releasePilot          *cache.Manager
-	deploymentEnvironment *cache.Manager
-	securityToken         *cache.Manager
+	init               sync.Once
+	releaseFlag        *cache.Manager
+	releaseRollout     *cache.Manager
+	releasePilot       *cache.Manager
+	releaseEnvironment *cache.Manager
+	securityToken      *cache.Manager
 }
 
 func (m *Memory) Init(ctx context.Context) error {
@@ -44,11 +44,11 @@ func (m *Memory) Init(ctx context.Context) error {
 		if err != nil {
 			return
 		}
-		m.releasePilot, err = newManager(release.ManualPilot{}, m.Source.ReleasePilot(ctx))
+		m.releasePilot, err = newManager(release.Pilot{}, m.Source.ReleasePilot(ctx))
 		if err != nil {
 			return
 		}
-		m.deploymentEnvironment, err = newManager(deployment.Environment{}, m.Source.DeploymentEnvironment(ctx))
+		m.releaseEnvironment, err = newManager(release.Environment{}, m.Source.ReleaseEnvironment(ctx))
 		if err != nil {
 			return
 		}
@@ -103,9 +103,9 @@ func (m *Memory) ReleaseRollout(ctx context.Context) release.RolloutStorage {
 	}
 }
 
-func (m *Memory) DeploymentEnvironment(ctx context.Context) deployment.EnvironmentStorage {
+func (m *Memory) ReleaseEnvironment(ctx context.Context) release.EnvironmentStorage {
 	return &EnvironmentStorage{
-		Manager: m.deploymentEnvironment,
+		Manager: m.releaseEnvironment,
 		Source:  m.Source,
 	}
 }
@@ -121,7 +121,7 @@ func (m *Memory) Close() error {
 	_ = m.releaseFlag.Close()
 	_ = m.releaseRollout.Close()
 	_ = m.releasePilot.Close()
-	_ = m.deploymentEnvironment.Close()
+	_ = m.releaseEnvironment.Close()
 	_ = m.securityToken.Close()
 	return m.Source.Close()
 }

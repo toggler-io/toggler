@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"github.com/adamluzsi/frameless/iterators"
-
-	"github.com/toggler-io/toggler/domains/deployment"
 )
 
 func NewRolloutManager(s Storage) *RolloutManager {
@@ -26,7 +24,7 @@ type RolloutManager struct{ Storage Storage }
 // Also this help if a flag is not cleaned up from the clients, the worst thing will be a disabled feature,
 // instead of a breaking client.
 // This also makes it harder to figure out `private` release flags
-func (manager *RolloutManager) GetAllReleaseFlagStatesOfThePilot(ctx context.Context, pilotExternalID string, env deployment.Environment, flagNames ...string) (map[string]bool, error) {
+func (manager *RolloutManager) GetAllReleaseFlagStatesOfThePilot(ctx context.Context, pilotExternalID string, env Environment, flagNames ...string) (map[string]bool, error) {
 	states := make(map[string]bool)
 
 	for _, flagName := range flagNames {
@@ -35,12 +33,12 @@ func (manager *RolloutManager) GetAllReleaseFlagStatesOfThePilot(ctx context.Con
 
 	flagIndexByID := make(map[string]*Flag)
 
-	var pilotsIndex = make(map[string]*ManualPilot)
+	var pilotsIndex = make(map[string]*Pilot)
 	pilotsByExternalID := manager.Storage.ReleasePilot(ctx).FindReleasePilotsByExternalID(ctx, pilotExternalID)
-	pilotsByExternalIDFilteredByEnv := iterators.Filter(pilotsByExternalID, func(p ManualPilot) bool {
-		return p.DeploymentEnvironmentID == env.ID
+	pilotsByExternalIDFilteredByEnv := iterators.Filter(pilotsByExternalID, func(p Pilot) bool {
+		return p.EnvironmentID == env.ID
 	})
-	if err := iterators.ForEach(pilotsByExternalIDFilteredByEnv, func(p ManualPilot) error {
+	if err := iterators.ForEach(pilotsByExternalIDFilteredByEnv, func(p Pilot) error {
 		pilotsIndex[p.FlagID] = &p
 		return nil
 	}); err != nil {
@@ -71,7 +69,7 @@ func (manager *RolloutManager) GetAllReleaseFlagStatesOfThePilot(ctx context.Con
 	return states, nil
 }
 
-func (manager *RolloutManager) checkEnrollment(ctx context.Context, env deployment.Environment, flag Flag, pilotExternalID string, manualPilotEnrollmentIndex map[string]*ManualPilot) (bool, error) {
+func (manager *RolloutManager) checkEnrollment(ctx context.Context, env Environment, flag Flag, pilotExternalID string, manualPilotEnrollmentIndex map[string]*Pilot) (bool, error) {
 	if p, ok := manualPilotEnrollmentIndex[flag.ID]; ok {
 		return p.IsParticipating, nil
 	}
@@ -190,11 +188,11 @@ func (manager *RolloutManager) SetPilotEnrollmentForFeature(ctx context.Context,
 		return manager.Storage.ReleasePilot(ctx).Update(ctx, pilot)
 	}
 
-	return manager.Storage.ReleasePilot(ctx).Create(ctx, &ManualPilot{
-		FlagID:                  ff.ID,
-		DeploymentEnvironmentID: envID,
-		ExternalID:              externalPilotID,
-		IsParticipating:         isParticipating,
+	return manager.Storage.ReleasePilot(ctx).Create(ctx, &Pilot{
+		FlagID:          ff.ID,
+		EnvironmentID:   envID,
+		PublicID:        externalPilotID,
+		IsParticipating: isParticipating,
 	})
 
 }
@@ -237,7 +235,7 @@ func (manager *RolloutManager) DeleteFeatureFlag(ctx context.Context, id string)
 		return fmt.Errorf(`ErrNotFound`)
 	}
 
-	var pilots []ManualPilot
+	var pilots []Pilot
 	if err := iterators.Collect(manager.Storage.ReleasePilot(ctx).FindReleasePilotsByReleaseFlag(ctx, ff), &pilots); err != nil {
 		return err
 	}

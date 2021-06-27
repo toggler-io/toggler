@@ -8,7 +8,6 @@ import (
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/gorest"
 
-	"github.com/toggler-io/toggler/domains/deployment"
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
@@ -26,8 +25,8 @@ type ReleaseRolloutController struct {
 
 //--------------------------------------------------------------------------------------------------------------------//
 
-func (ctrl ReleaseRolloutController) getDeploymentEnvironment(ctx context.Context) deployment.Environment {
-	return ctx.Value(DeploymentEnvironmentContextKey{}).(deployment.Environment)
+func (ctrl ReleaseRolloutController) getDeploymentEnvironment(ctx context.Context) release.Environment {
+	return ctx.Value(DeploymentEnvironmentContextKey{}).(release.Environment)
 }
 
 func (ctrl ReleaseRolloutController) getReleaseFlag(ctx context.Context) release.Flag {

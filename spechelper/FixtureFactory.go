@@ -63,11 +63,11 @@ type DynamicFixtureFactory struct {
 
 func (ff DynamicFixtureFactory) Create(T interface{}) interface{} {
 	switch reflects.BaseValueOf(T).Interface().(type) {
-	case release.ManualPilot:
-		pilot := ff.FixtureFactory.Create(T).(*release.ManualPilot)
-		pilot.ExternalID = uuid.New().String()
+	case release.Pilot:
+		pilot := ff.FixtureFactory.Create(T).(*release.Pilot)
+		pilot.PublicID = uuid.New().String()
 		pilot.FlagID = ExampleReleaseFlag(ff.T).ID
-		pilot.DeploymentEnvironmentID = ExampleDeploymentEnvironment(ff.T).ID
+		pilot.EnvironmentID = ExampleDeploymentEnvironment(ff.T).ID
 		return pilot
 
 	case release.Rollout:

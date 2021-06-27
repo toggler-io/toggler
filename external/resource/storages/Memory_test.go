@@ -10,7 +10,7 @@ import (
 	"time"
 
 	fc "github.com/adamluzsi/frameless/contracts"
-	"github.com/toggler-io/toggler/domains/deployment"
+
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/security"
 	"github.com/toggler-io/toggler/domains/toggler"
@@ -23,7 +23,6 @@ var (
 	_ toggler.Storage    = &storages.Memory{}
 	_ release.Storage    = &storages.Memory{}
 	_ security.Storage   = &storages.Memory{}
-	_ deployment.Storage = &storages.Memory{}
 )
 
 func TestMemory(t *testing.T) {
@@ -52,19 +51,19 @@ func TestMemoryReleasePilotStorage_smokeTest(t *testing.T) {
 	var (
 		ctx                  = context.Background()
 		releaseFlagStorage   = storage.ReleaseFlag(ctx)
-		deploymentEnvStorage = storage.DeploymentEnvironment(ctx)
+		deploymentEnvStorage = storage.ReleaseEnvironment(ctx)
 		releasePilotStorage  = storage.ReleasePilot(ctx)
-		env                  = &deployment.Environment{Name: fixtures.Random.String()}
+		env                  = &release.Environment{Name: fixtures.Random.String()}
 		flag                 = &release.Flag{Name: fixtures.Random.String()}
 	)
 
-	var pilotCreateEvents []release.ManualPilot
+	var pilotCreateEvents []release.Pilot
 
 	sub, err := releasePilotStorage.Subscribe(ctx, StubSub{
 		HandleFunc: func(ctx context.Context, event interface{}) error {
 			switch event := event.(type) {
 			case frameless.EventCreate:
-				ent := event.Entity.(release.ManualPilot)
+				ent := event.Entity.(release.Pilot)
 				pilotCreateEvents = append(pilotCreateEvents, ent)
 			}
 			return nil
@@ -81,11 +80,11 @@ func TestMemoryReleasePilotStorage_smokeTest(t *testing.T) {
 	fc.CreateEntity(t, releaseFlagStorage, ctx, flag)
 	require.Empty(t, pilotCreateEvents)
 
-	pilot := &release.ManualPilot{
-		FlagID:                  flag.ID,
-		DeploymentEnvironmentID: env.ID,
-		ExternalID:              "42",
-		IsParticipating:         true,
+	pilot := &release.Pilot{
+		FlagID:          flag.ID,
+		EnvironmentID:   env.ID,
+		PublicID:        "42",
+		IsParticipating: true,
 	}
 
 	require.Nil(t, releasePilotStorage.Create(ctx, pilot))

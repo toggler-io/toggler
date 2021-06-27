@@ -6,7 +6,6 @@ import (
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/cache"
 	"github.com/adamluzsi/frameless/reflects"
-	"github.com/toggler-io/toggler/domains/deployment"
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/security"
 	"github.com/toggler-io/toggler/domains/toggler"
@@ -54,8 +53,8 @@ type PilotStorage struct {
 	Source toggler.Storage
 }
 
-func (s *PilotStorage) FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID interface{}, pilotExtID string) (*release.ManualPilot, error) {
-	var pilot release.ManualPilot
+func (s *PilotStorage) FindReleaseManualPilotByExternalID(ctx context.Context, flagID, envID interface{}, pilotExtID string) (*release.Pilot, error) {
+	var pilot release.Pilot
 	queryID := fmt.Sprintf("FindReleaseManualPilotByExternalID/flag:%v/env:%v/pilotExtID:%s", flagID, envID, pilotExtID)
 	found, err := s.Manager.CacheQueryOne(ctx, queryID, &pilot, func(ptr interface{}) (found bool, err error) {
 		p, err := s.Source.ReleasePilot(ctx).FindReleaseManualPilotByExternalID(ctx, flagID, envID, pilotExtID)
@@ -93,7 +92,7 @@ type RolloutStorage struct {
 	Source toggler.Storage
 }
 
-func (s *RolloutStorage) FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx context.Context, flag release.Flag, environment deployment.Environment, rollout *release.Rollout) (bool, error) {
+func (s *RolloutStorage) FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(ctx context.Context, flag release.Flag, environment release.Environment, rollout *release.Rollout) (bool, error) {
 	queryID := fmt.Sprintf("FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment/flag:%s/env:%s", flag.ID, environment.ID)
 	return s.CacheQueryOne(ctx, queryID, rollout, func(ptr interface{}) (found bool, err error) {
 		return s.Source.ReleaseRollout(ctx).
@@ -106,12 +105,12 @@ type EnvironmentStorage struct {
 	Source toggler.Storage
 }
 
-func (s *EnvironmentStorage) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrName string, env *deployment.Environment) (bool, error) {
-	s.Source.DeploymentEnvironment(ctx)
+func (s *EnvironmentStorage) FindDeploymentEnvironmentByAlias(ctx context.Context, idOrName string, env *release.Environment) (bool, error) {
+	s.Source.ReleaseEnvironment(ctx)
 
 	queryID := fmt.Sprintf("FindDeploymentEnvironmentByAlias/%s", idOrName)
 	return s.Manager.CacheQueryOne(ctx, queryID, env, func(ptr interface{}) (found bool, err error) {
-		return s.Source.DeploymentEnvironment(ctx).FindDeploymentEnvironmentByAlias(ctx, idOrName, ptr.(*deployment.Environment))
+		return s.Source.ReleaseEnvironment(ctx).FindDeploymentEnvironmentByAlias(ctx, idOrName, ptr.(*release.Environment))
 	})
 }
 

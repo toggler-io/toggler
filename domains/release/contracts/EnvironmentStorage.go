@@ -2,6 +2,7 @@ package contracts
 
 import (
 	"context"
+	"github.com/toggler-io/toggler/domains/release"
 	"testing"
 
 	"github.com/adamluzsi/frameless"
@@ -10,23 +11,12 @@ import (
 	"github.com/adamluzsi/testcase/fixtures"
 	"github.com/stretchr/testify/require"
 
-	"github.com/toggler-io/toggler/domains/deployment"
-
 	sh "github.com/toggler-io/toggler/spechelper"
 )
 
 type EnvironmentStorage struct {
-	Subject        func(testing.TB) EnvironmentStorageSubject
+	Subject        func(testing.TB) release.Storage
 	FixtureFactory sh.FixtureFactory
-}
-
-type EnvironmentStorageSubject interface {
-	frameless.Creator
-	frameless.Finder
-	frameless.Updater
-	frameless.Deleter
-	frameless.Publisher
-	deployment.EnvironmentFinder
 }
 
 func (spec EnvironmentStorage) storage() testcase.Var {
@@ -38,8 +28,8 @@ func (spec EnvironmentStorage) storage() testcase.Var {
 	}
 }
 
-func (spec EnvironmentStorage) storageGet(t *testcase.T) EnvironmentStorageSubject {
-	return spec.storage().Get(t).(EnvironmentStorageSubject)
+func (spec EnvironmentStorage) storageGet(t *testcase.T) release.Storage {
+	return spec.storage().Get(t).(release.Storage)
 }
 
 func (spec EnvironmentStorage) Test(t *testing.T) {
@@ -52,35 +42,46 @@ func (spec EnvironmentStorage) Benchmark(b *testing.B) {
 
 func (spec EnvironmentStorage) Spec(tb testing.TB) {
 	testcase.NewSpec(tb).Describe(`EnvironmentStorage`, func(s *testcase.Spec) {
-		T := deployment.Environment{}
+		T := release.Environment{}
+		getEnvironmentStorage := func(tb testing.TB) release.EnvironmentStorage {
+			return spec.Subject(tb).ReleaseEnvironment(spec.FixtureFactory.Context())
+		}
+
 		testcase.RunContract(s,
 			contracts.Creator{T: T,
 				Subject: func(tb testing.TB) contracts.CRD {
-					return spec.Subject(tb)
+					return getEnvironmentStorage(tb)
 				},
 				FixtureFactory: spec.FixtureFactory,
 			},
 			contracts.Finder{T: T,
 				Subject: func(tb testing.TB) contracts.CRD {
-					return spec.Subject(tb)
+					return getEnvironmentStorage(tb)
 				},
 				FixtureFactory: spec.FixtureFactory,
 			},
 			contracts.Updater{T: T,
 				Subject: func(tb testing.TB) contracts.UpdaterSubject {
-					return spec.Subject(tb)
+					return getEnvironmentStorage(tb)
 				},
 				FixtureFactory: spec.FixtureFactory,
 			},
 			contracts.Deleter{T: T,
 				Subject: func(tb testing.TB) contracts.CRD {
-					return spec.Subject(tb)
+					return getEnvironmentStorage(tb)
 				},
 				FixtureFactory: spec.FixtureFactory,
 			},
 			contracts.Publisher{T: T,
 				Subject: func(tb testing.TB) contracts.PublisherSubject {
-					return spec.Subject(tb)
+					return getEnvironmentStorage(tb)
+				},
+				FixtureFactory: spec.FixtureFactory,
+			},
+			contracts.OnePhaseCommitProtocol{T: release.Environment{},
+				Subject: func(tb testing.TB) (frameless.OnePhaseCommitProtocol, contracts.CRD) {
+					storage := spec.Subject(tb)
+					return storage, storage.ReleaseEnvironment(spec.FixtureFactory.Context())
 				},
 				FixtureFactory: spec.FixtureFactory,
 			},
@@ -92,24 +93,24 @@ func (spec EnvironmentStorage) Spec(tb testing.TB) {
 
 func (spec EnvironmentStorage) specFindDeploymentEnvironmentByAlias(s *testcase.Spec) {
 	var (
-		env     = s.Let(`env`, func(t *testcase.T) interface{} { return &deployment.Environment{} })
+		env     = s.Let(`env`, func(t *testcase.T) interface{} { return &release.Environment{} })
 		alias   = testcase.Var{Name: `alias`}
 		subject = func(t *testcase.T) (bool, error) {
-			return spec.storageGet(t).FindDeploymentEnvironmentByAlias(
+			return spec.storageGet(t).ReleaseEnvironment(spec.FixtureFactory.Context()).FindDeploymentEnvironmentByAlias(
 				spec.FixtureFactory.Context(),
 				alias.Get(t).(string),
-				env.Get(t).(*deployment.Environment),
+				env.Get(t).(*release.Environment),
 			)
 		}
 	)
 
-	testcase.RunContract(s, contracts.FindOne{T: deployment.Environment{},
-		Subject:        func(tb testing.TB) contracts.CRD { return spec.Subject(tb) },
+	testcase.RunContract(s, contracts.FindOne{T: release.Environment{},
+		Subject:        func(tb testing.TB) contracts.CRD { return spec.Subject(tb).ReleaseEnvironment(spec.FixtureFactory.Context()) },
 		FixtureFactory: spec.FixtureFactory,
 		ToQuery: func(tb testing.TB, resource interface{}, ent contracts.T) contracts.QueryOne {
 			var (
-				storage   = resource.(EnvironmentStorageSubject)
-				env       = ent.(*deployment.Environment)
+				storage   = resource.(release.EnvironmentStorage)
+				env       = ent.(*release.Environment)
 				idOrAlias string
 			)
 			if fixtures.Random.Bool() {
@@ -120,14 +121,15 @@ func (spec EnvironmentStorage) specFindDeploymentEnvironmentByAlias(s *testcase.
 				idOrAlias = env.Name
 			}
 			return func(tb testing.TB, ctx context.Context, ptr contracts.T) (found bool, err error) {
-				return storage.FindDeploymentEnvironmentByAlias(ctx, idOrAlias, ptr.(*deployment.Environment))
+				return storage.FindDeploymentEnvironmentByAlias(ctx, idOrAlias, ptr.(*release.Environment))
 			}
 		},
 	})
 
 	s.When(`no environment stored`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			contracts.DeleteAllEntity(t, spec.storageGet(t), spec.FixtureFactory.Context())
+			ctx := spec.FixtureFactory.Context()
+			contracts.DeleteAllEntity(t, spec.storageGet(t).ReleaseEnvironment(ctx), ctx)
 		})
 
 		alias.LetValue(s, `some-fake-value`)
@@ -141,12 +143,13 @@ func (spec EnvironmentStorage) specFindDeploymentEnvironmentByAlias(s *testcase.
 
 	s.When(`environment stored in the system`, func(s *testcase.Spec) {
 		storedEnv := s.Let(`stored-env`, func(t *testcase.T) interface{} {
-			env := spec.FixtureFactory.Create(deployment.Environment{}).(*deployment.Environment)
-			contracts.CreateEntity(t, spec.storageGet(t), spec.FixtureFactory.Context(), env)
+			env := spec.FixtureFactory.Create(release.Environment{}).(*release.Environment)
+			ctx := spec.FixtureFactory.Context()
+			contracts.CreateEntity(t, spec.storageGet(t).ReleaseEnvironment(ctx), ctx, env)
 			return env
 		}).EagerLoading(s)
-		storedEnvGet := func(t *testcase.T) *deployment.Environment {
-			return storedEnv.Get(t).(*deployment.Environment)
+		storedEnvGet := func(t *testcase.T) *release.Environment {
+			return storedEnv.Get(t).(*release.Environment)
 		}
 
 		s.And(`alias defined as id`, func(s *testcase.Spec) {

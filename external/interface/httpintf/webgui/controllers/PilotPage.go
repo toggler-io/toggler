@@ -10,7 +10,6 @@ import (
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/pkg/errors"
 
-	"github.com/toggler-io/toggler/domains/deployment"
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
 )
@@ -35,10 +34,10 @@ func (ctrl *Controller) pilotFindPage(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		type Content struct {
-			Environments []deployment.Environment
+			Environments []release.Environment
 		}
 		var content Content
-		iterators.Collect(ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).FindAll(r.Context()), &content.Environments)
+		iterators.Collect(ctrl.UseCases.Storage.ReleaseEnvironment(r.Context()).FindAll(r.Context()), &content.Environments)
 		ctrl.Render(w, `/pilot/find.html`, content)
 
 	case http.MethodPost:
@@ -69,12 +68,12 @@ func (ctrl *Controller) pilotEditPage(w http.ResponseWriter, r *http.Request) {
 
 	pilots := ctrl.UseCases.Storage.ReleasePilot(r.Context()).FindReleasePilotsByExternalID(r.Context(), pilotExtID)
 	defer pilots.Close()
-	pilots = iterators.Filter(pilots, func(p release.ManualPilot) bool { return p.DeploymentEnvironmentID == envID })
+	pilots = iterators.Filter(pilots, func(p release.Pilot) bool { return p.EnvironmentID == envID })
 
-	pilotsIndex := make(map[string]release.ManualPilot) // FlagID => ManualPilot
+	pilotsIndex := make(map[string]release.Pilot) // FlagID => ManualPilot
 
 	for pilots.Next() {
-		var p release.ManualPilot
+		var p release.Pilot
 
 		if httputils.HandleError(w, pilots.Decode(&p), http.StatusInternalServerError) {
 			return
@@ -128,18 +127,18 @@ func (ctrl *Controller) pilotEditPage(w http.ResponseWriter, r *http.Request) {
 
 func (ctrl *Controller) pilotFlagSetRollout(w http.ResponseWriter, r *http.Request) {
 
-	var pilot release.ManualPilot
+	var pilot release.Pilot
 	pilot.FlagID = r.FormValue(`pilot.flag_id`)
-	pilot.DeploymentEnvironmentID = r.FormValue(`pilot.env_id`)
-	pilot.ExternalID = r.FormValue(`pilot.ext_id`)
+	pilot.EnvironmentID = r.FormValue(`pilot.env_id`)
+	pilot.PublicID = r.FormValue(`pilot.ext_id`)
 	newEnrollmentStatus := r.FormValue(`pilot.is_participating`)
 
 	log.Println(`flag:`, pilot.FlagID,
-		`env:`, pilot.DeploymentEnvironmentID,
-		`ext:`, pilot.ExternalID,
+		`env:`, pilot.EnvironmentID,
+		`ext:`, pilot.PublicID,
 		`is_participating`, newEnrollmentStatus)
 
-	err := ctrl.setPilotManualEnrollmentForFlag(r.Context(), newEnrollmentStatus, pilot.FlagID, pilot.DeploymentEnvironmentID, pilot.ExternalID)
+	err := ctrl.setPilotManualEnrollmentForFlag(r.Context(), newEnrollmentStatus, pilot.FlagID, pilot.EnvironmentID, pilot.PublicID)
 
 	if httputils.HandleError(w, err, http.StatusInternalServerError) {
 		log.Println(err.Error())
@@ -147,8 +146,8 @@ func (ctrl *Controller) pilotFlagSetRollout(w http.ResponseWriter, r *http.Reque
 
 	u, _ := url.Parse(`/pilot/edit`)
 	q := u.Query()
-	q.Set(`ext-id`, pilot.ExternalID)
-	q.Set(`env-id`, pilot.DeploymentEnvironmentID)
+	q.Set(`ext-id`, pilot.PublicID)
+	q.Set(`env-id`, pilot.EnvironmentID)
 	u.RawQuery = q.Encode()
 	http.Redirect(w, r, u.String(), http.StatusFound)
 
@@ -172,16 +171,16 @@ func (ctrl *Controller) setPilotManualEnrollmentForFlag(ctx context.Context, new
 	}
 }
 
-func ParseReleasePilotForm(r *http.Request) (*release.ManualPilot, error) {
+func ParseReleasePilotForm(r *http.Request) (*release.Pilot, error) {
 	if err := r.ParseForm(); err != nil {
 		return nil, err
 	}
 
-	var pilot release.ManualPilot
+	var pilot release.Pilot
 	pilot.ID = r.FormValue(`pilot.id`)
 	pilot.FlagID = r.FormValue(`pilot.flag_id`)
-	pilot.DeploymentEnvironmentID = r.FormValue(`pilot.env_id`)
-	pilot.ExternalID = r.FormValue(`pilot.ext_id`)
+	pilot.EnvironmentID = r.FormValue(`pilot.env_id`)
+	pilot.PublicID = r.FormValue(`pilot.ext_id`)
 
 	switch strings.ToLower(r.FormValue(`pilot.is_participating`)) {
 	case `true`, `on`:

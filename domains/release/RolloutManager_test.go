@@ -308,13 +308,13 @@ func SpecSetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 				require.NotNil(t, pilot)
 				require.Equal(t, getNewEnrollment(t), pilot.IsParticipating)
-				require.Equal(t, sh.ExampleExternalPilotID(t), pilot.ExternalID)
+				require.Equal(t, sh.ExampleExternalPilotID(t), pilot.PublicID)
 
-				expectedPilot := release.ManualPilot{
-					FlagID:                  sh.ExampleReleaseFlag(t).ID,
-					DeploymentEnvironmentID: sh.ExampleDeploymentEnvironment(t).ID,
-					ExternalID:              sh.ExampleExternalPilotID(t),
-					IsParticipating:         getNewEnrollment(t),
+				expectedPilot := release.Pilot{
+					FlagID:          sh.ExampleReleaseFlag(t).ID,
+					EnvironmentID:   sh.ExampleDeploymentEnvironment(t).ID,
+					PublicID:        sh.ExampleExternalPilotID(t),
+					IsParticipating: getNewEnrollment(t),
 				}
 
 				actualPilot := *pilot
@@ -343,7 +343,7 @@ func SpecSetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 				require.NotNil(t, pilot)
 				require.Equal(t, getNewEnrollment(t), pilot.IsParticipating)
-				require.Equal(t, sh.ExampleExternalPilotID(t), pilot.ExternalID)
+				require.Equal(t, sh.ExampleExternalPilotID(t), pilot.PublicID)
 
 				count, err := iterators.Count(sh.StorageGet(t).ReleasePilot(sh.ContextGet(t)).FindAll(sh.ContextGet(t)))
 				require.Nil(t, err)

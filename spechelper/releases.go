@@ -23,10 +23,10 @@ const (
 func init() {
 	setups = append(setups, func(s *testcase.Spec) {
 		s.Let(LetVarExampleReleaseManualPilotEnrollment, func(t *testcase.T) interface{} {
-			mpe := Create(release.ManualPilot{}).(*release.ManualPilot)
+			mpe := Create(release.Pilot{}).(*release.Pilot)
 			mpe.FlagID = ExampleReleaseFlag(t).ID
-			mpe.DeploymentEnvironmentID = ExampleDeploymentEnvironment(t).ID
-			mpe.ExternalID = ExampleExternalPilotID(t)
+			mpe.EnvironmentID = ExampleDeploymentEnvironment(t).ID
+			mpe.PublicID = ExampleExternalPilotID(t)
 			storae := StorageGet(t).ReleasePilot(ContextGet(t))
 			require.Nil(t, storae.Create(ContextGet(t), mpe))
 			t.Defer(storae.DeleteByID, ContextGet(t), mpe.ID)
@@ -43,11 +43,11 @@ func init() {
 
 		s.Let(LetVarExamplePilot, func(t *testcase.T) interface{} {
 			// domains/release/specs/FlagFinder.go:53:1: DEPRECATED, clean it up
-			return &release.ManualPilot{
-				FlagID:                  ExampleReleaseFlag(t).ID,
-				DeploymentEnvironmentID: ExampleDeploymentEnvironment(t).ID,
-				ExternalID:              t.I(LetVarExamplePilotExternalID).(string),
-				IsParticipating:         t.I(LetVarExamplePilotEnrollment).(bool),
+			return &release.Pilot{
+				FlagID:          ExampleReleaseFlag(t).ID,
+				EnvironmentID:   ExampleDeploymentEnvironment(t).ID,
+				PublicID:        t.I(LetVarExamplePilotExternalID).(string),
+				IsParticipating: t.I(LetVarExamplePilotEnrollment).(bool),
 			}
 		})
 
@@ -61,8 +61,8 @@ func init() {
 	})
 }
 
-func ExampleReleaseManualPilotEnrollment(t *testcase.T) *release.ManualPilot {
-	return t.I(LetVarExampleReleaseManualPilotEnrollment).(*release.ManualPilot)
+func ExampleReleaseManualPilotEnrollment(t *testcase.T) *release.Pilot {
+	return t.I(LetVarExampleReleaseManualPilotEnrollment).(*release.Pilot)
 }
 
 func ExampleExternalPilotID(t *testcase.T) string {

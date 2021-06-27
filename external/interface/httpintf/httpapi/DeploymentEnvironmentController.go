@@ -3,12 +3,12 @@ package httpapi
 import (
 	"context"
 	"encoding/json"
+	"github.com/toggler-io/toggler/domains/release"
 	"net/http"
 
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/gorest"
 
-	"github.com/toggler-io/toggler/domains/deployment"
 	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/interface/httpintf/httputils"
 )
@@ -27,7 +27,7 @@ type DeploymentEnvironmentController struct {
 
 func (ctrl DeploymentEnvironmentController) handleValidationError(w http.ResponseWriter, err error) bool {
 	switch err {
-	case deployment.ErrEnvironmentNameIsEmpty:
+	case release.ErrEnvironmentNameIsEmpty:
 		return handleError(w, err, http.StatusBadRequest)
 
 	default:
@@ -42,7 +42,7 @@ func (ctrl DeploymentEnvironmentController) handleValidationError(w http.Respons
 type CreateDeploymentEnvironmentRequest struct {
 	// in: body
 	Body struct {
-		Environment deployment.Environment `json:"environment"`
+		Environment release.Environment `json:"environment"`
 	}
 }
 
@@ -51,7 +51,7 @@ type CreateDeploymentEnvironmentRequest struct {
 type CreateDeploymentEnvironmentResponse struct {
 	// in: body
 	Body struct {
-		Environment deployment.Environment `json:"environment"`
+		Environment release.Environment `json:"environment"`
 	}
 }
 
@@ -99,7 +99,7 @@ func (ctrl DeploymentEnvironmentController) Create(w http.ResponseWriter, r *htt
 		return
 	}
 
-	if ctrl.handleValidationError(w, ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).Create(r.Context(), &env)) {
+	if ctrl.handleValidationError(w, ctrl.UseCases.Storage.ReleaseEnvironment(r.Context()).Create(r.Context(), &env)) {
 		return
 	}
 
@@ -120,7 +120,7 @@ type ListDeploymentEnvironmentRequest struct {
 type ListDeploymentEnvironmentResponse struct {
 	// in: body
 	Body struct {
-		Environments []deployment.Environment `json:"environments"`
+		Environments []release.Environment `json:"environments"`
 	}
 }
 
@@ -152,7 +152,7 @@ func (ctrl DeploymentEnvironmentController) List(w http.ResponseWriter, r *http.
 	var resp ListDeploymentEnvironmentResponse
 
 	if handleError(w,
-		iterators.Collect(ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).FindAll(r.Context()), &resp.Body.Environments),
+		iterators.Collect(ctrl.UseCases.Storage.ReleaseEnvironment(r.Context()).FindAll(r.Context()), &resp.Body.Environments),
 		http.StatusInternalServerError,
 	) {
 		return
@@ -166,9 +166,9 @@ func (ctrl DeploymentEnvironmentController) List(w http.ResponseWriter, r *http.
 type DeploymentEnvironmentContextKey struct{}
 
 func (ctrl DeploymentEnvironmentController) ContextWithResource(ctx context.Context, resourceID string) (context.Context, bool, error) {
-	s := ctrl.UseCases.Storage.DeploymentEnvironment(ctx)
+	s := ctrl.UseCases.Storage.ReleaseEnvironment(ctx)
 
-	var f deployment.Environment
+	var f release.Environment
 	found, err := s.FindByID(ctx, &f, resourceID)
 	if err != nil {
 		return ctx, false, err
@@ -191,7 +191,7 @@ type UpdateDeploymentEnvironmentRequest struct {
 	EnvironmentID string `json:"envID"`
 	// in: body
 	Body struct {
-		Environment deployment.Environment `json:"environment"`
+		Environment release.Environment `json:"environment"`
 	}
 }
 
@@ -200,7 +200,7 @@ type UpdateDeploymentEnvironmentRequest struct {
 type UpdateDeploymentEnvironmentResponse struct {
 	// in: body
 	Body struct {
-		Environment deployment.Environment `json:"environment"`
+		Environment release.Environment `json:"environment"`
 	}
 }
 
@@ -240,13 +240,13 @@ func (ctrl DeploymentEnvironmentController) Update(w http.ResponseWriter, r *htt
 	}
 
 	env := req.Body.Environment
-	env.ID = r.Context().Value(DeploymentEnvironmentContextKey{}).(deployment.Environment).ID
+	env.ID = r.Context().Value(DeploymentEnvironmentContextKey{}).(release.Environment).ID
 
 	if ctrl.handleValidationError(w, env.Validate()) {
 		return
 	}
 
-	if ctrl.handleValidationError(w, ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).Update(r.Context(), &env)) {
+	if ctrl.handleValidationError(w, ctrl.UseCases.Storage.ReleaseEnvironment(r.Context()).Update(r.Context(), &env)) {
 		return
 	}
 
@@ -298,9 +298,9 @@ type DeleteDeploymentEnvironmentResponse struct {
 */
 
 func (ctrl DeploymentEnvironmentController) Delete(w http.ResponseWriter, r *http.Request) {
-	ID := r.Context().Value(DeploymentEnvironmentContextKey{}).(deployment.Environment).ID
+	ID := r.Context().Value(DeploymentEnvironmentContextKey{}).(release.Environment).ID
 
-	err := ctrl.UseCases.Storage.DeploymentEnvironment(r.Context()).DeleteByID(r.Context(), ID)
+	err := ctrl.UseCases.Storage.ReleaseEnvironment(r.Context()).DeleteByID(r.Context(), ID)
 	if handleError(w, err, http.StatusBadRequest) {
 		return
 	}

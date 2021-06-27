@@ -62,7 +62,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		var pilots []release.ManualPilot
+		var pilots []release.Pilot
 		pilotsIter := ctrl.UseCases.Storage.ReleasePilot(r.Context()).FindReleasePilotsByReleaseFlag(r.Context(), ff)
 		if ctrl.handleError(w, r, iterators.Collect(pilotsIter, &pilots)) {
 			return
@@ -70,7 +70,7 @@ func (ctrl *Controller) flagAction(w http.ResponseWriter, r *http.Request) {
 
 		type editFlagPageContent struct {
 			Flag   release.Flag
-			Pilots []release.ManualPilot
+			Pilots []release.Pilot
 		}
 
 		ctrl.Render(w, `/flag/show.html`, editFlagPageContent{Flag: ff, Pilots: pilots})
@@ -154,7 +154,7 @@ func (ctrl *Controller) flagSetPilotAction(w http.ResponseWriter, r *http.Reques
 			return
 		}
 
-		if ctrl.handleError(w, r, ctrl.UseCases.RolloutManager.SetPilotEnrollmentForFeature(r.Context(), p.FlagID, "", p.ExternalID, p.IsParticipating)) {
+		if ctrl.handleError(w, r, ctrl.UseCases.RolloutManager.SetPilotEnrollmentForFeature(r.Context(), p.FlagID, "", p.PublicID, p.IsParticipating)) {
 			return
 		}
 
