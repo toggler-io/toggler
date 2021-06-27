@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/adamluzsi/frameless v0.43.0
-	github.com/adamluzsi/frameless/postgresql v0.0.0-20210615210845-ca0b1fe281b0 // indirect
+	github.com/adamluzsi/frameless/postgresql v0.0.0-20210615210845-ca0b1fe281b0
 	github.com/adamluzsi/gorest v0.6.1
 	github.com/adamluzsi/testcase v0.44.3
 	github.com/apache/thrift v0.12.0 // indirect
