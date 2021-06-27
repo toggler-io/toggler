@@ -29,6 +29,9 @@ func TestReleaseRolloutController(t *testing.T) {
 	HandlerLet(s, func(t *testcase.T) http.Handler {
 		return httpapi.NewReleaseRolloutHandler(sh.ExampleUseCases(t))
 	})
+	Context.Let(s, func(t *testcase.T) interface{} {
+		return sh.ContextGet(t)
+	})
 
 	ContentTypeIsJSON(s)
 
