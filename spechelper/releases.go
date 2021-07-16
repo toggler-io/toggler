@@ -23,14 +23,14 @@ const (
 func init() {
 	setups = append(setups, func(s *testcase.Spec) {
 		s.Let(LetVarExampleReleaseManualPilotEnrollment, func(t *testcase.T) interface{} {
-			mpe := Create(release.Pilot{}).(*release.Pilot)
+			mpe := NewFixtureFactory(t).Create(release.Pilot{}).(release.Pilot)
 			mpe.FlagID = ExampleReleaseFlag(t).ID
 			mpe.EnvironmentID = ExampleDeploymentEnvironment(t).ID
 			mpe.PublicID = ExampleExternalPilotID(t)
-			storae := StorageGet(t).ReleasePilot(ContextGet(t))
-			require.Nil(t, storae.Create(ContextGet(t), mpe))
-			t.Defer(storae.DeleteByID, ContextGet(t), mpe.ID)
-			return mpe
+			storage := StorageGet(t).ReleasePilot(ContextGet(t))
+			require.Nil(t, storage.Create(ContextGet(t), &mpe))
+			t.Defer(storage.DeleteByID, ContextGet(t), mpe.ID)
+			return &mpe
 		})
 
 		s.Let(LetVarExamplePilotExternalID, func(t *testcase.T) interface{} {
@@ -94,14 +94,14 @@ func GetReleaseRollout(t *testcase.T, vn string) *release.Rollout {
 
 func GivenWeHaveReleaseRollout(s *testcase.Spec, vn, flagLVN, envLVN string) {
 	s.Let(getReleaseRolloutPlanLetVar(vn), func(t *testcase.T) interface{} {
-		return *Create(release.RolloutDecisionByPercentage{}).(*release.RolloutDecisionByPercentage)
+		return NewFixtureFactory(t).Create(release.RolloutDecisionByPercentage{}).(release.RolloutDecisionByPercentage)
 	})
 
 	s.Let(vn, func(t *testcase.T) interface{} {
 		rf := GetReleaseFlag(t, flagLVN)
 		de := GetDeploymentEnvironment(t, envLVN)
 
-		rollout := FixtureFactory{}.Create(release.Rollout{}).(*release.Rollout)
+		rollout := NewFixtureFactory(t).Create(release.Rollout{}).(release.Rollout)
 		rollout.FlagID = rf.ID
 		rollout.DeploymentEnvironmentID = de.ID
 		rollout.Plan = GetReleaseRolloutPlan(t, vn)
@@ -109,23 +109,23 @@ func GivenWeHaveReleaseRollout(s *testcase.Spec, vn, flagLVN, envLVN string) {
 
 		// TODO: replace when rollout manager has function for this
 		storage := StorageGet(t).ReleaseRollout(ContextGet(t))
-		require.Nil(t, storage.Create(ContextGet(t), rollout))
+		require.Nil(t, storage.Create(ContextGet(t), &rollout))
 		t.Defer(storage.DeleteByID, ContextGet(t), rollout.ID)
 		t.Logf(`%#v`, rollout)
-		return rollout
+		return &rollout
 	})
 }
 
 func GivenWeHaveReleaseFlag(s *testcase.Spec, vn string) {
 	s.Let(vn, func(t *testcase.T) interface{} {
-		rf := FixtureFactory{}.Create(release.Flag{}).(*release.Flag)
+		rf := NewFixtureFactory(t).Create(release.Flag{}).(release.Flag)
 		rf.Name = fmt.Sprintf(`%s - %s`, vn, rf.Name)
 		storage := StorageGet(t).ReleaseFlag(ContextGet(t))
-		require.Nil(t, storage.Create(ContextGet(t), rf))
+		require.Nil(t, storage.Create(ContextGet(t), &rf))
 		t.Defer(ExampleRolloutManager(t).DeleteFeatureFlag, ContextGet(t), rf.ID)
 		t.Defer(storage.DeleteByID, ContextGet(t), rf.ID)
 		t.Logf(`%#v`, rf)
-		return rf
+		return &rf
 	})
 }
 
@@ -149,6 +149,7 @@ func AndReleaseFlagRolloutPercentageIs(s *testcase.Spec, rolloutLVN string, perc
 }
 
 func GetReleaseFlag(t *testcase.T, lvn string) *release.Flag {
+	t.Helper()
 	ff := t.I(lvn)
 	if ff == nil {
 		return nil
@@ -157,6 +158,7 @@ func GetReleaseFlag(t *testcase.T, lvn string) *release.Flag {
 }
 
 func ExampleReleaseFlag(t *testcase.T) *release.Flag {
+	t.Helper()
 	return GetReleaseFlag(t, LetVarExampleReleaseFlag)
 }
 

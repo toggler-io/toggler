@@ -16,8 +16,7 @@ import (
 
 func TestWebsocket(t *testing.T) {
 	t.Skip(`TODO`)
-	s := testcase.NewSpec(t)
-	sh.SetUp(s)
+	s := sh.NewSpec(t)
 
 	server := func(t *testcase.T) *httptest.Server { return t.I(`server`).(*httptest.Server) }
 	s.Let(`server`, func(t *testcase.T) interface{} {

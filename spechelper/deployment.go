@@ -22,14 +22,14 @@ func ExampleDeploymentEnvironment(t *testcase.T) *release.Environment {
 	return GetDeploymentEnvironment(t, LetVarExampleDeploymentEnvironment)
 }
 
-func GivenWeHaveDeploymentEnvironment(s *testcase.Spec, vn string) {
-	s.Let(vn, func(t *testcase.T) interface{} {
-		de := FixtureFactory{}.Create(release.Environment{}).(*release.Environment)
+func GivenWeHaveDeploymentEnvironment(s *testcase.Spec, vn string) testcase.Var {
+	return s.Let(vn, func(t *testcase.T) interface{} {
+		de := NewFixtureFactory(t).Create(release.Environment{}).(release.Environment)
 		storage := StorageGet(t).ReleaseEnvironment(ContextGet(t))
-		require.Nil(t, storage.Create(ContextGet(t), de))
+		require.Nil(t, storage.Create(ContextGet(t), &de))
 		t.Defer(storage.DeleteByID, ContextGet(t), de.ID)
 		t.Logf(`%#v`, de)
-		return de
+		return &de
 	})
 }
 

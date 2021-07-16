@@ -26,25 +26,28 @@ var (
 )
 
 func TestMemory_smoke(t *testing.T) {
-	storage := storages.NewEventLogMemoryStorage()
-	storage.EventLog.Options.DisableAsyncSubscriptionHandling = true
-	m, err := caches.NewMemory(storage)
-	require.Nil(t, err)
-	t.Cleanup(func() { require.Nil(t, m.Close()) })
-	ff := sh.DefaultFixtureFactory
-	ctx := ff.Context()
-	ts := m.SecurityToken(ctx)
-	token := ff.Create(security.Token{}).(*security.Token)
-	csh.CreateEntity(t, ts, ctx, token)
-	token.OwnerUID = uuid.New().String()
-	csh.UpdateEntity(t, ts, ctx, token)
+	s := testcase.NewSpec(t)
+	s.Test(``, func(t *testcase.T) {
+		storage := storages.NewEventLogMemoryStorage()
+		storage.EventLog.Options.DisableAsyncSubscriptionHandling = true
+		m, err := caches.NewMemory(storage)
+		require.Nil(t, err)
+		t.Cleanup(func() { require.Nil(t, m.Close()) })
+		ff := sh.NewFixtureFactory(t)
+		ctx := ff.Context()
+		ts := m.SecurityToken(ctx)
+		token := ff.Create(security.Token{}).(security.Token)
+		csh.CreateEntity(t, ts, ctx, &token)
+		token.OwnerUID = uuid.New().String()
+		csh.UpdateEntity(t, ts, ctx, &token)
+	})
 }
 
 func TestMemory(t *testing.T)      { SpecMemory(t) }
 func BenchmarkMemory(b *testing.B) { SpecMemory(b) }
 
 func SpecMemory(tb testing.TB) {
-	testcase.RunContract(tb, contracts.Storage{
+	testcase.RunContract(sh.NewSpec(tb), contracts.Storage{
 		Subject: func(tb testing.TB) toggler.Storage {
 			storage := storages.NewEventLogMemoryStorage()
 			storage.EventLog.Options.DisableAsyncSubscriptionHandling = true
@@ -53,6 +56,8 @@ func SpecMemory(tb testing.TB) {
 			tb.Cleanup(func() { require.Nil(tb, m.Close()) })
 			return m
 		},
-		FixtureFactory: sh.DefaultFixtureFactory,
+		FixtureFactory: func(tb testing.TB) csh.FixtureFactory {
+			return sh.NewFixtureFactory(tb)
+		},
 	})
 }

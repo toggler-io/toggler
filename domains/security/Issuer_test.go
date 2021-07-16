@@ -15,8 +15,7 @@ import (
 )
 
 func TestIssuer(t *testing.T) {
-	s := testcase.NewSpec(t)
-	sh.SetUp(s)
+	s := sh.NewSpec(t)
 	s.Parallel()
 
 	s.Let(`issuer`, func(t *testcase.T) interface{} {

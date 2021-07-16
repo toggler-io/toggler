@@ -21,10 +21,11 @@ import (
 	sh "github.com/toggler-io/toggler/spechelper"
 )
 
+var rollout = testcase.Var{Name: "rollout"}
+
 func TestReleaseRolloutController(t *testing.T) {
-	s := testcase.NewSpec(t)
+	s := sh.NewSpec(t)
 	s.Parallel()
-	sh.SetUp(s)
 
 	HandlerLet(s, func(t *testcase.T) http.Handler {
 		return httpapi.NewReleaseRolloutHandler(sh.ExampleUseCases(t))
@@ -39,11 +40,11 @@ func TestReleaseRolloutController(t *testing.T) {
 	s.Describe(`GET / - list release rollout`, SpecReleaseRolloutControllerList)
 
 	s.Context(`given we have a release rollout in the system`, func(s *testcase.Spec) {
-		sh.GivenWeHaveReleaseRollout(s, `rollout`, sh.LetVarExampleReleaseFlag, sh.LetVarExampleDeploymentEnvironment)
+		sh.GivenWeHaveReleaseRollout(s, rollout.Name, sh.LetVarExampleReleaseFlag, sh.LetVarExampleDeploymentEnvironment)
 
 		s.And(`release rollout identifier provided as the external ID`, func(s *testcase.Spec) {
 			s.Let(`id`, func(t *testcase.T) interface{} {
-				return sh.GetReleaseRollout(t, `rollout`).ID
+				return sh.GetReleaseRollout(t, rollout.Name).ID
 			})
 
 			s.Describe(`PUT|PATCH /{id} - update a release rollout`,
@@ -69,7 +70,7 @@ func SpecReleaseRolloutControllerDelete(s *testcase.Spec) {
 	s.Then(`rollout is deleted from the system`, func(t *testcase.T) {
 		onSuccess(t)
 
-		deletedRollout := sh.GetReleaseRollout(t, `rollout`)
+		deletedRollout := sh.GetReleaseRollout(t, rollout.Name)
 
 		var stored release.Rollout
 		found, err := sh.StorageGet(t).ReleaseRollout(sh.ContextGet(t)).FindByID(sh.ContextGet(t), deletedRollout.ID, &stored)
@@ -89,7 +90,7 @@ func SpecReleaseRolloutControllerDelete(s *testcase.Spec) {
 			defer s.Close()
 
 			p := swagger.NewDeleteReleaseRolloutParams()
-			p.RolloutID = sh.GetReleaseRollout(t, `rollout`).ID
+			p.RolloutID = sh.GetReleaseRollout(t, rollout.Name).ID
 
 			tc := client.DefaultTransportConfig()
 			u, _ := url.Parse(s.URL)
@@ -121,16 +122,16 @@ func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
 		require.Nil(t, sh.StorageGet(t).ReleaseFlag(sh.ContextGet(t)).DeleteAll(sh.ContextGet(t)))
 	})
 
-	s.Let(`rollout`, func(t *testcase.T) interface{} {
-		r := sh.FixtureFactory{}.Create(release.Rollout{}).(*release.Rollout)
+	rollout.Let(s, func(t *testcase.T) interface{} {
+		r := sh.NewFixtureFactory(t).Create(release.Rollout{}).(release.Rollout)
 		r.FlagID = sh.ExampleReleaseFlag(t).ID
 		r.DeploymentEnvironmentID = sh.ExampleDeploymentEnvironment(t).ID
-		r.Plan = *sh.FixtureFactory{}.Create(release.RolloutDecisionByPercentage{}).(*release.RolloutDecisionByPercentage)
-		return r
+		r.Plan = sh.NewFixtureFactory(t).Create(release.RolloutDecisionByPercentage{}).(release.RolloutDecisionByPercentage)
+		return &r
 	})
 
 	Body.Let(s, func(t *testcase.T) interface{} {
-		r := sh.GetReleaseRollout(t, `rollout`)
+		r := sh.GetReleaseRollout(t, rollout.Name)
 		var req httpapi.CreateReleaseRolloutRequest
 		t.Log(r)
 		req.Body.Rollout.Plan = release.RolloutDefinitionView{Definition: r.Plan}
@@ -145,7 +146,7 @@ func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
 
 	s.Then(`rollout stored in the system`, func(t *testcase.T) {
 		onSuccess(t)
-		rfv := *sh.GetReleaseRollout(t, `rollout`)
+		rfv := *sh.GetReleaseRollout(t, rollout.Name)
 		actualReleaseRollout := FindStoredReleaseRollout(t)
 		actualReleaseRollout.ID = ``
 		require.Equal(t, rfv, actualReleaseRollout)
@@ -164,7 +165,7 @@ func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
 			p := release.NewRolloutDecisionByPercentage()
 			p.Percentage = 120
-			sh.GetReleaseRollout(t, `rollout`).Plan = p
+			sh.GetReleaseRollout(t, rollout.Name).Plan = p
 		})
 
 		s.Then(`it will return with failure`, func(t *testcase.T) {
@@ -284,13 +285,13 @@ func SpecReleaseRolloutControllerUpdate(s *testcase.Spec) {
 	})
 
 	s.Let(`updated-rollout`, func(t *testcase.T) interface{} {
-		rf := sh.Create(release.Rollout{}).(*release.Rollout)
-		rollout := sh.GetReleaseRollout(t, `rollout`)
+		rf := sh.NewFixtureFactory(t).Create(release.Rollout{}).(release.Rollout)
+		rollout := sh.GetReleaseRollout(t, rollout.Name)
 		rf.ID = rollout.ID
 		rf.FlagID = rollout.FlagID
 		rf.DeploymentEnvironmentID = rollout.DeploymentEnvironmentID
-		rf.Plan = *sh.Create(release.RolloutDecisionByPercentage{}).(*release.RolloutDecisionByPercentage)
-		return rf
+		rf.Plan = sh.NewFixtureFactory(t).Create(release.RolloutDecisionByPercentage{}).(release.RolloutDecisionByPercentage)
+		return &rf
 	})
 
 	Body.Let(s, func(t *testcase.T) interface{} {
@@ -342,7 +343,7 @@ func SpecReleaseRolloutControllerUpdate(s *testcase.Spec) {
 			s := httptest.NewServer(sm)
 			defer s.Close()
 
-			id := sh.GetReleaseRollout(t, `rollout`).ID
+			id := sh.GetReleaseRollout(t, rollout.Name).ID
 
 			tc := client.DefaultTransportConfig()
 			u, _ := url.Parse(s.URL)

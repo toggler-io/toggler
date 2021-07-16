@@ -20,10 +20,10 @@ import (
 
 type PilotStorage struct {
 	Subject        func(testing.TB) release.Storage
-	FixtureFactory sh.FixtureFactory
+	FixtureFactory func(testing.TB) contracts.FixtureFactory
 }
 
-func (spec PilotStorage) storage() testcase.Var {
+func (c PilotStorage) storage() testcase.Var {
 	return testcase.Var{
 		Name: "release pilot storage",
 		Init: func(t *testcase.T) interface{} {
@@ -32,94 +32,95 @@ func (spec PilotStorage) storage() testcase.Var {
 	}
 }
 
-func (spec PilotStorage) storageGet(t *testcase.T) release.PilotStorage {
-	return spec.storage().Get(t).(release.PilotStorage)
+func (c PilotStorage) storageGet(t *testcase.T) release.PilotStorage {
+	return c.storage().Get(t).(release.PilotStorage)
 }
 
-func (spec PilotStorage) context() context.Context {
-	return spec.FixtureFactory.Context()
+func (c PilotStorage) context(t *testcase.T) context.Context {
+	return sh.FixtureFactoryGet(t).Context()
 }
 
-func (spec PilotStorage) Test(t *testing.T) {
-	spec.Spec(t)
+func (c PilotStorage) String() string {
+	return "PilotStorage"
 }
 
-func (spec PilotStorage) Benchmark(b *testing.B) {
-	spec.Spec(b)
+func (c PilotStorage) Test(t *testing.T) {
+	c.Spec(testcase.NewSpec(t))
 }
 
-func (spec PilotStorage) Spec(tb testing.TB) {
-	testcase.NewSpec(tb).Describe(`PilotStorage`, func(s *testcase.Spec) {
-		sh.SetUp(s)
+func (c PilotStorage) Benchmark(b *testing.B) {
+	c.Spec(testcase.NewSpec(b))
+}
 
-		// required for FixtureFactory.Dynamic
-		sh.Storage.Let(s, func(t *testcase.T) interface{} {
-			return spec.Subject(t)
-		})
+func (c PilotStorage) Spec(s *testcase.Spec) {
+	sh.SetUp(s)
+	sh.FixtureFactoryLet(s, c.FixtureFactory)
 
-		releasePilotStorage := func(tb testing.TB) release.PilotStorage {
-			return spec.Subject(tb).ReleasePilot(spec.FixtureFactory.Context())
-		}
-
-		s.Test(`contracts`, func(t *testcase.T) {
-			T := release.Pilot{}
-			testcase.RunContract(t.TB,
-				contracts.Creator{T: T,
-					Subject: func(tb testing.TB) contracts.CRD {
-						return releasePilotStorage(tb)
-					},
-					FixtureFactory: spec.FixtureFactory.Dynamic(t),
-				},
-				contracts.Finder{T: T,
-					Subject: func(tb testing.TB) contracts.CRD {
-						return releasePilotStorage(tb)
-					},
-					FixtureFactory: spec.FixtureFactory.Dynamic(t),
-				},
-				contracts.Updater{T: T,
-					Subject: func(tb testing.TB) contracts.UpdaterSubject {
-						return releasePilotStorage(tb)
-					},
-					FixtureFactory: spec.FixtureFactory.Dynamic(t),
-				},
-				contracts.Deleter{T: T,
-					Subject: func(tb testing.TB) contracts.CRD {
-						return releasePilotStorage(tb)
-					},
-					FixtureFactory: spec.FixtureFactory.Dynamic(t),
-				},
-				contracts.Publisher{T: T,
-					Subject: func(tb testing.TB) contracts.PublisherSubject {
-						return releasePilotStorage(tb)
-					},
-					FixtureFactory: spec.FixtureFactory.Dynamic(t),
-				},
-				contracts.OnePhaseCommitProtocol{T: release.Pilot{},
-					Subject: func(tb testing.TB) (frameless.OnePhaseCommitProtocol, contracts.CRD) {
-						storage := spec.Subject(tb)
-						return storage, storage.ReleasePilot(spec.FixtureFactory.Context())
-					},
-					FixtureFactory: spec.FixtureFactory.Dynamic(t),
-				},
-			)
-		})
-
-		s.Describe(`custom Find queries`, spec.specPilotFinder)
+	// required for FixtureFactory.Dynamic
+	sh.Storage.Let(s, func(t *testcase.T) interface{} {
+		return c.Subject(t)
 	})
+
+	releasePilotStorage := func(tb testing.TB) release.PilotStorage {
+		return c.Subject(tb).ReleasePilot(c.FixtureFactory(tb).Context())
+	}
+
+	T := release.Pilot{}
+	testcase.RunContract(s,
+		contracts.Creator{T: T,
+			Subject: func(tb testing.TB) contracts.CRD {
+				return releasePilotStorage(tb)
+			},
+			FixtureFactory: c.FixtureFactory,
+		},
+		contracts.Finder{T: T,
+			Subject: func(tb testing.TB) contracts.CRD {
+				return releasePilotStorage(tb)
+			},
+			FixtureFactory: c.FixtureFactory,
+		},
+		contracts.Updater{T: T,
+			Subject: func(tb testing.TB) contracts.UpdaterSubject {
+				return releasePilotStorage(tb)
+			},
+			FixtureFactory: c.FixtureFactory,
+		},
+		contracts.Deleter{T: T,
+			Subject: func(tb testing.TB) contracts.CRD {
+				return releasePilotStorage(tb)
+			},
+			FixtureFactory: c.FixtureFactory,
+		},
+		contracts.Publisher{T: T,
+			Subject: func(tb testing.TB) contracts.PublisherSubject {
+				return releasePilotStorage(tb)
+			},
+			FixtureFactory: c.FixtureFactory,
+		},
+		contracts.OnePhaseCommitProtocol{T: release.Pilot{},
+			Subject: func(tb testing.TB) (frameless.OnePhaseCommitProtocol, contracts.CRD) {
+				storage := c.Subject(tb)
+				return storage, storage.ReleasePilot(c.FixtureFactory(tb).Context())
+			},
+			FixtureFactory: c.FixtureFactory,
+		},
+	)
+
+	s.Describe(`custom Find queries`, c.specPilotFinder)
 }
 
-func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
+func (c PilotStorage) specPilotFinder(s *testcase.Spec) {
 	s.Describe(`ManualPilotFinder`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			contracts.DeleteAllEntity(t, spec.storageGet(t), spec.context())
+			contracts.DeleteAllEntity(t, c.storageGet(t), c.context(t))
 		})
 		s.After(func(t *testcase.T) {
-			contracts.DeleteAllEntity(t, spec.storageGet(t), spec.context())
+			contracts.DeleteAllEntity(t, c.storageGet(t), c.context(t))
 		})
 
-		s.Describe(`FindReleasePilotsByReleaseFlag`, func(s *testcase.Spec) {
+		s.Describe(`.FindByFlag`, func(s *testcase.Spec) {
 			subject := func(t *testcase.T) iterators.Interface {
-				pilotEntriesIter := spec.storageGet(t).FindByFlag(spec.context(), *sh.ExampleReleaseFlag(t))
+				pilotEntriesIter := c.storageGet(t).FindByFlag(c.context(t), *sh.ExampleReleaseFlag(t))
 				t.Defer(pilotEntriesIter.Close)
 				return pilotEntriesIter
 			}
@@ -136,7 +137,8 @@ func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 
 			s.When(`flag was never persisted before`, func(s *testcase.Spec) {
 				s.Let(sh.LetVarExampleReleaseFlag, func(t *testcase.T) interface{} {
-					return spec.FixtureFactory.Create(release.Flag{})
+					rf := sh.FixtureFactoryGet(t).Create(release.Flag{}).(release.Flag)
+					return &rf
 				})
 
 				thenNoPilotsFound(s)
@@ -155,7 +157,7 @@ func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 								PublicID:      strconv.Itoa(i),
 							}
 
-							contracts.CreateEntity(t, spec.storageGet(t), spec.context(), pilot)
+							contracts.CreateEntity(t, c.storageGet(t), c.context(t), pilot)
 							expectedPilots = append(expectedPilots, pilot)
 						}
 						return expectedPilots
@@ -187,8 +189,8 @@ func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 
 		s.Describe(`FindReleaseManualPilotByExternalID`, func(s *testcase.Spec) {
 			var subject = func(t *testcase.T) (*release.Pilot, error) {
-				return spec.storageGet(t).FindByFlagEnvPublicID(
-					spec.context(),
+				return c.storageGet(t).FindByFlagEnvPublicID(
+					c.context(t),
 					sh.ExampleReleaseFlag(t).ID,
 					sh.ExampleDeploymentEnvironment(t).ID,
 					sh.ExampleIDGet(t),
@@ -196,7 +198,7 @@ func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 			}
 
 			s.Before(func(t *testcase.T) {
-				contracts.DeleteAllEntity(t, spec.storageGet(t), spec.context())
+				contracts.DeleteAllEntity(t, c.storageGet(t), c.context(t))
 			})
 
 			ThenNoPilotsFound := func(s *testcase.Spec) {
@@ -209,7 +211,8 @@ func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 
 			s.When(`flag is not persisted`, func(s *testcase.Spec) {
 				s.Let(sh.LetVarExampleReleaseFlag, func(t *testcase.T) interface{} {
-					return spec.FixtureFactory.Create(release.Flag{})
+					rf := sh.FixtureFactoryGet(t).Create(release.Flag{}).(release.Flag)
+					return &rf
 				})
 
 				ThenNoPilotsFound(s)
@@ -229,7 +232,7 @@ func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 							EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID,
 							PublicID:      sh.ExampleIDGet(t),
 						}
-						contracts.CreateEntity(t, spec.storageGet(t), spec.context(), pilot)
+						contracts.CreateEntity(t, c.storageGet(t), c.context(t), pilot)
 					})
 
 					s.Then(`then pilots will be retrieved`, func(t *testcase.T) {
@@ -247,7 +250,7 @@ func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 
 		s.Describe(`FindReleasePilotsByExternalID`, func(s *testcase.Spec) {
 			subject := func(t *testcase.T) iterators.Interface {
-				pilotEntriesIter := spec.storageGet(t).FindByPublicID(spec.context(), sh.ExampleExternalPilotID(t))
+				pilotEntriesIter := c.storageGet(t).FindByPublicID(c.context(t), sh.ExampleExternalPilotID(t))
 				t.Defer(pilotEntriesIter.Close)
 				return pilotEntriesIter
 			}
@@ -258,7 +261,7 @@ func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 
 			s.When(`there is no pilot records`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					contracts.DeleteAllEntity(t, spec.storageGet(t), spec.context())
+					contracts.DeleteAllEntity(t, c.storageGet(t), c.context(t))
 				})
 
 				s.Then(`it will return an empty result set`, func(t *testcase.T) {
@@ -277,9 +280,9 @@ func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 						return uuidV4.String()
 					}
 
-					contracts.CreateEntity(t, spec.storageGet(t), spec.context(), &release.Pilot{FlagID: newUUID(), EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID, PublicID: extID, IsParticipating: true})
-					contracts.CreateEntity(t, spec.storageGet(t), spec.context(), &release.Pilot{FlagID: newUUID(), EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID, PublicID: extID, IsParticipating: true})
-					contracts.CreateEntity(t, spec.storageGet(t), spec.context(), &release.Pilot{FlagID: newUUID(), EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID, PublicID: extID, IsParticipating: false})
+					contracts.CreateEntity(t, c.storageGet(t), c.context(t), &release.Pilot{FlagID: newUUID(), EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID, PublicID: extID, IsParticipating: true})
+					contracts.CreateEntity(t, c.storageGet(t), c.context(t), &release.Pilot{FlagID: newUUID(), EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID, PublicID: extID, IsParticipating: true})
+					contracts.CreateEntity(t, c.storageGet(t), c.context(t), &release.Pilot{FlagID: newUUID(), EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID, PublicID: extID, IsParticipating: false})
 				})
 
 				s.Then(`it will return an empty result set`, func(t *testcase.T) {
@@ -304,7 +307,7 @@ func (spec PilotStorage) specPilotFinder(s *testcase.Spec) {
 							IsParticipating: rand.Intn(1) == 0,
 						}
 
-						contracts.CreateEntity(t, spec.storageGet(t), spec.context(), &pilot)
+						contracts.CreateEntity(t, c.storageGet(t), c.context(t), &pilot)
 						pilots = append(pilots, pilot)
 					}
 

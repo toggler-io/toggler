@@ -14,10 +14,10 @@ import (
 
 type RolloutStorage struct {
 	Subject        func(testing.TB) release.Storage
-	FixtureFactory sh.FixtureFactory
+	FixtureFactory func(testing.TB) contracts.FixtureFactory
 }
 
-func (spec RolloutStorage) storage() testcase.Var {
+func (c RolloutStorage) storage() testcase.Var {
 	return testcase.Var{
 		Name: "release rollout storage",
 		Init: func(t *testcase.T) interface{} {
@@ -26,89 +26,81 @@ func (spec RolloutStorage) storage() testcase.Var {
 	}
 }
 
-func (spec RolloutStorage) storageGet(t *testcase.T) release.RolloutStorage {
-	return spec.storage().Get(t).(release.RolloutStorage)
+func (c RolloutStorage) storageGet(t *testcase.T) release.RolloutStorage {
+	return c.storage().Get(t).(release.RolloutStorage)
 }
 
-func (spec RolloutStorage) Test(t *testing.T) {
-	spec.Spec(t)
+func (c RolloutStorage) Test(t *testing.T) {
+	c.Spec(testcase.NewSpec(t))
 }
 
-func (spec RolloutStorage) Benchmark(b *testing.B) {
-	spec.Spec(b)
+func (c RolloutStorage) Benchmark(b *testing.B) {
+	c.Spec(testcase.NewSpec(b))
 }
 
-func (spec RolloutStorage) setUp(s *testcase.Spec) {
-	// because we use interactors from the spec_helper in this contract
-	// - FixtureFactory.Dynamic
-	// - Example...
-	sh.SetUp(s)
+func (c RolloutStorage) String() string {
+	return `RolloutStorage`
+}
 
+func (c RolloutStorage) Spec(s *testcase.Spec) {
 	sh.Storage.Let(s, func(t *testcase.T) interface{} {
-		return spec.Subject(t)
+		return c.Subject(t)
 	})
-}
+	sh.FixtureFactoryLet(s, c.FixtureFactory)
 
-func (spec RolloutStorage) Spec(tb testing.TB) {
-	testcase.NewSpec(tb).Describe(`RolloutStorage`, func(s *testcase.Spec) {
-		spec.setUp(s)
+	newRolloutStorage := func(tb testing.TB) release.RolloutStorage {
+		return c.Subject(tb).ReleaseRollout(c.FixtureFactory(tb).Context())
+	}
 
-		newRolloutStorage := func(tb testing.TB) release.RolloutStorage {
-			return  spec.Subject(tb).ReleaseRollout(spec.FixtureFactory.Context())
-		}
+	T := release.Rollout{}
+	testcase.RunContract(s,
+		contracts.Creator{T: T,
+			Subject: func(tb testing.TB) contracts.CRD {
+				return newRolloutStorage(tb)
+			},
+			FixtureFactory: c.FixtureFactory,
+		},
+		contracts.Finder{T: T,
+			Subject: func(tb testing.TB) contracts.CRD {
+				return newRolloutStorage(tb)
+			},
+			FixtureFactory: c.FixtureFactory,
+		},
+		contracts.Updater{T: T,
+			Subject: func(tb testing.TB) contracts.UpdaterSubject {
+				return newRolloutStorage(tb)
+			},
+			FixtureFactory: c.FixtureFactory,
+		},
+		contracts.Deleter{T: T,
+			Subject: func(tb testing.TB) contracts.CRD {
+				return newRolloutStorage(tb)
+			},
+			FixtureFactory: c.FixtureFactory,
+		},
+		contracts.Publisher{T: T,
+			Subject: func(tb testing.TB) contracts.PublisherSubject {
+				return newRolloutStorage(tb)
+			},
+			FixtureFactory: c.FixtureFactory,
+		},
+		contracts.OnePhaseCommitProtocol{T: release.Rollout{},
+			Subject: func(tb testing.TB) (frameless.OnePhaseCommitProtocol, contracts.CRD) {
+				storage := c.Subject(tb)
+				return storage, storage.ReleaseRollout(c.FixtureFactory(tb).Context())
+			},
+			FixtureFactory: c.FixtureFactory,
+		},
+	)
 
-		s.Test(`contracts`, func(t *testcase.T) {
-			T := release.Rollout{}
-			testcase.RunContract(t,
-				contracts.Creator{T: T,
-					Subject: func(tb testing.TB) contracts.CRD {
-						return newRolloutStorage(tb)
-					},
-					FixtureFactory: spec.FixtureFactory.Dynamic(t),
-				},
-				contracts.Finder{T: T,
-					Subject: func(tb testing.TB) contracts.CRD {
-						return newRolloutStorage(tb)
-					},
-					FixtureFactory: spec.FixtureFactory.Dynamic(t),
-				},
-				contracts.Updater{T: T,
-					Subject: func(tb testing.TB) contracts.UpdaterSubject {
-						return newRolloutStorage(tb)
-					},
-					FixtureFactory: spec.FixtureFactory.Dynamic(t),
-				},
-				contracts.Deleter{T: T,
-					Subject: func(tb testing.TB) contracts.CRD {
-						return newRolloutStorage(tb)
-					},
-					FixtureFactory: spec.FixtureFactory.Dynamic(t),
-				},
-				contracts.Publisher{T: T,
-					Subject: func(tb testing.TB) contracts.PublisherSubject {
-						return newRolloutStorage(tb)
-					},
-					FixtureFactory: spec.FixtureFactory.Dynamic(t),
-				},
-				contracts.OnePhaseCommitProtocol{T: release.Rollout{},
-					Subject: func(tb testing.TB) (frameless.OnePhaseCommitProtocol, contracts.CRD) {
-						storage := spec.Subject(tb)
-						return storage, storage.ReleaseRollout(spec.FixtureFactory.Context())
-					},
-					FixtureFactory: spec.FixtureFactory.Dynamic(t),
-				},
-			)
-		})
-
-		s.Describe(`.FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment`,
-			spec.specFindReleaseRolloutByReleaseFlagAndDeploymentEnvironment)
-	})
+	s.Describe(`.FindReleaseRolloutByReleaseFlagAndDeploymentEnvironment`,
+		c.specFindReleaseRolloutByReleaseFlagAndDeploymentEnvironment)
 }
 
 // TODO replace with FindOne contract
-func (spec RolloutStorage) specFindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(s *testcase.Spec) {
+func (c RolloutStorage) specFindReleaseRolloutByReleaseFlagAndDeploymentEnvironment(s *testcase.Spec) {
 	var subject = func(t *testcase.T, rollout *release.Rollout) (bool, error) {
-		return spec.storageGet(t).FindByFlagEnvironment(
+		return c.storageGet(t).FindByFlagEnvironment(
 			sh.ContextGet(t),
 			*sh.ExampleReleaseFlag(t),
 			*sh.ExampleDeploymentEnvironment(t),
@@ -137,7 +129,7 @@ func (spec RolloutStorage) specFindReleaseRolloutByReleaseFlagAndDeploymentEnvir
 
 	s.When(`rollout is not in the storage`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			contracts.DeleteAllEntity(t, spec.storageGet(t), spec.FixtureFactory.Context())
+			contracts.DeleteAllEntity(t, c.storageGet(t), sh.FixtureFactoryGet(t).Context())
 		})
 
 		s.Then(`it will yield no result`, func(t *testcase.T) {

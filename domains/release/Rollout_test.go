@@ -30,8 +30,7 @@ var (
 //--------------------------------------------------------------------------------------------------------------------//
 
 func TestRolloutDecisionByPercentage(t *testing.T) {
-	s := testcase.NewSpec(t)
-	sh.SetUp(s)
+	s := sh.NewSpec(t)
 
 	var rolloutDefinition = func(t *testcase.T) release.RolloutDecisionByPercentage {
 		r := release.NewRolloutDecisionByPercentage()
@@ -143,8 +142,7 @@ func TestRolloutDecisionByPercentage(t *testing.T) {
 //--------------------------------------------------------------------------------------------------------------------//
 
 func TestRolloutDecisionByAPI(t *testing.T) {
-	s := testcase.NewSpec(t)
-	sh.SetUp(s)
+	s := sh.NewSpec(t)
 
 	var rolloutDefinition = func(t *testcase.T) release.RolloutDecisionByAPI {
 		r := release.NewRolloutDecisionByAPI()
@@ -380,7 +378,7 @@ func TestPseudoRandPercentageGenerator_FNV1a64(t *testing.T) {
 		var randomExternalPilotID = func() string {
 			blocks := make([]string, 0, 6)
 			for i := 0; i < 6; i++ {
-				number := fmt.Sprintf("%02x", fixtures.SecureRandom.IntN(255))
+				number := fmt.Sprintf("%02x", fixtures.Random.IntN(255))
 				blocks = append(blocks, number)
 			}
 			return strings.Join(blocks, ":")
@@ -424,8 +422,7 @@ func TestPseudoRandPercentageGenerator_FNV1a64(t *testing.T) {
 //--------------------------------------------------------------------------------------------------------------------//
 
 func TestRollout(t *testing.T) {
-	s := testcase.NewSpec(t)
-	sh.SetUp(s)
+	s := sh.NewSpec(t)
 
 	var rollout = func(t *testcase.T) *release.Rollout { return t.I(`rollout`).(*release.Rollout) }
 	s.Let(`rollout`, func(t *testcase.T) interface{} {

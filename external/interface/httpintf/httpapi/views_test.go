@@ -21,10 +21,8 @@ import (
 )
 
 func TestViewsController(t *testing.T) {
-	s := testcase.NewSpec(t)
+	s := sh.NewSpec(t)
 	s.Parallel()
-
-	sh.SetUp(s)
 
 	HandlerLet(s, func(t *testcase.T) http.Handler { return NewHandler(t) })
 	Context.Let(s, func(t *testcase.T) interface{} { return sh.ContextGet(t) })

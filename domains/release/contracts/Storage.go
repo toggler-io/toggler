@@ -1,54 +1,56 @@
 package contracts
 
 import (
+	"github.com/adamluzsi/frameless/contracts"
 	"testing"
 
 	"github.com/adamluzsi/testcase"
 	"github.com/toggler-io/toggler/domains/release"
-	sh "github.com/toggler-io/toggler/spechelper"
 )
 
 type Storage struct {
 	Subject        func(testing.TB) release.Storage
-	FixtureFactory sh.FixtureFactory
+	FixtureFactory func(testing.TB) contracts.FixtureFactory
 }
 
-func (spec Storage) Test(t *testing.T) {
-	spec.Spec(t)
+func (c Storage) String() string {
+	return `releases#Storage`
 }
 
-func (spec Storage) Benchmark(b *testing.B) {
-	spec.Spec(b)
+func (c Storage) Test(t *testing.T) {
+	c.Spec(testcase.NewSpec(t))
 }
 
-func (spec Storage) Spec(tb testing.TB) {
-	testcase.NewSpec(tb).Describe(`releases#Storage`, func(s *testcase.Spec) {
-		testcase.RunContract(s,
-			RolloutStorage{
-				Subject: func(tb testing.TB) release.Storage {
-					return spec.Subject(tb)
-				},
-				FixtureFactory: spec.FixtureFactory,
-			},
-			FlagStorage{
-				Subject: func(tb testing.TB) release.Storage {
-					return spec.Subject(tb)
-				},
-				FixtureFactory: spec.FixtureFactory,
-			},
-			PilotStorage{
-				Subject: func(tb testing.TB) release.Storage {
-					return spec.Subject(tb)
-				},
-				FixtureFactory: spec.FixtureFactory,
-			},
-			EnvironmentStorage{
-				Subject: func(tb testing.TB) release.Storage {
-					return spec.Subject(tb)
-				},
-				FixtureFactory: spec.FixtureFactory,
-			},
-		)
+func (c Storage) Benchmark(b *testing.B) {
+	c.Spec(testcase.NewSpec(b))
+}
 
-	})
+func (c Storage) Spec(s *testcase.Spec) {
+
+	testcase.RunContract(s,
+		RolloutStorage{
+			Subject: func(tb testing.TB) release.Storage {
+				return c.Subject(tb)
+			},
+			FixtureFactory: c.FixtureFactory,
+		},
+		FlagStorage{
+			Subject: func(tb testing.TB) release.Storage {
+				return c.Subject(tb)
+			},
+			FixtureFactory: c.FixtureFactory,
+		},
+		PilotStorage{
+			Subject: func(tb testing.TB) release.Storage {
+				return c.Subject(tb)
+			},
+			FixtureFactory: c.FixtureFactory,
+		},
+		EnvironmentStorage{
+			Subject: func(tb testing.TB) release.Storage {
+				return c.Subject(tb)
+			},
+			FixtureFactory: c.FixtureFactory,
+		},
+	)
 }

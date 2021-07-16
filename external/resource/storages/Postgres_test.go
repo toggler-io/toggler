@@ -2,16 +2,14 @@ package storages_test
 
 import (
 	"context"
-	"database/sql"
+	csh "github.com/adamluzsi/frameless/contracts"
+	"github.com/adamluzsi/testcase"
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/security"
+	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/resource/storages/migrations"
 	"os"
 	"testing"
-	"time"
-
-	"github.com/adamluzsi/testcase"
-	"github.com/toggler-io/toggler/domains/toggler"
 
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/require"
@@ -33,62 +31,36 @@ var (
 	_ release.PilotStorage       = &storages.ReleasePilotPgStorage{}
 )
 
-func BenchmarkPostgres(b *testing.B) {
+func TestPostgres(t *testing.T)      { SpecPostgres(t) }
+func BenchmarkPostgres(b *testing.B) { SpecPostgres(b) }
+
+func SpecPostgres(tb testing.TB) {
 	if testing.Short() {
-		b.Skip()
+		tb.Skip()
 	}
 
-	storage, err := storages.NewPostgres(getDatabaseConnectionString(b))
-	require.Nil(b, err)
-	defer storage.Close()
-
-	contracts.Storage{
-		Subject: func(tb testing.TB) toggler.Storage {
-			return storage
-		},
-		FixtureFactory: sh.DefaultFixtureFactory,
-	}.Benchmark(b)
-}
-
-func TestPostgres(t *testing.T) {
-	if testing.Short() {
-		t.Skip()
-	}
-
-	storage, err := storages.NewPostgres(getDatabaseConnectionString(t))
-	require.Nil(t, err)
-	defer storage.Close()
-
-	contracts.Storage{
-		Subject: func(tb testing.TB) toggler.Storage {
-			return storage
-		},
-		FixtureFactory: sh.DefaultFixtureFactory,
-	}.Test(t)
-}
-
-func MustOpenDB(tb testing.TB) (*sql.DB, string) {
-	// I don't know exactly how but somehow `DELETE` queries from different connections made in the past
-	// might affect the results in this connection,
-	// resulting that some of the data goes missing during tests.
-	// To reproduce this, please execute full project testing suite with E2E mode, while removing this sleep.
-	//
-	// TODO: TECH-DEBT
-	time.Sleep(time.Second)
-	databaseConnectionString := getDatabaseConnectionString(tb)
-	db, err := sql.Open("postgres", databaseConnectionString)
+	storage, err := storages.NewPostgres(getDatabaseConnectionString(tb))
 	require.Nil(tb, err)
-	require.Nil(tb, db.Ping())
-	return db, databaseConnectionString
+	defer storage.Close()
+
+	testcase.RunContract(sh.NewSpec(tb), contracts.Storage{
+		Subject: func(tb testing.TB) toggler.Storage {
+			return storage
+		},
+		FixtureFactory: func(tb testing.TB) csh.FixtureFactory {
+			return sh.NewFixtureFactory(tb)
+		},
+	})
 }
 
 func getDatabaseConnectionString(tb testing.TB) string {
 	databaseURL, isSet := os.LookupEnv("TEST_DATABASE_URL_POSTGRES")
-
 	if !isSet {
 		tb.Skip(`"TEST_DATABASE_URL_POSTGRES" env var is not set, therefore skipping this test`)
 	}
-
+	// Hack, to ensure that fixture factory creates entities in the same database as this test
+	// instead of the inmemory variant.
+	testcase.SetEnv(tb, `TEST_DATABASE_URL`, databaseURL)
 	return databaseURL
 }
 

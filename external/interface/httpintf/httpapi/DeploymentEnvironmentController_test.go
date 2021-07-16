@@ -22,10 +22,21 @@ import (
 	sh "github.com/toggler-io/toggler/spechelper"
 )
 
+var env = testcase.Var{
+	Name: `deployment-environment`,
+	Init: func(t *testcase.T) interface{} {
+		e := sh.NewFixtureFactory(t).Create(release.Environment{}).(release.Environment)
+		return &e
+	},
+}
+
+func envGet(t *testcase.T) *release.Environment {
+	return env.Get(t).(*release.Environment)
+}
+
 func TestDeploymentEnvironmentController(t *testing.T) {
-	s := testcase.NewSpec(t)
+	s := sh.NewSpec(t)
 	s.Parallel()
-	sh.SetUp(s)
 
 	Handler.Let(s, func(t *testcase.T) interface{} {
 		return httpapi.NewDeploymentEnvironmentHandler(sh.ExampleUseCases(t))
@@ -41,12 +52,12 @@ func TestDeploymentEnvironmentController(t *testing.T) {
 	s.Describe(`GET / - list deployment environment`, SpecDeploymentEnvironmentControllerList)
 
 	s.Context(`given we have a deployment environment in the system`, func(s *testcase.Spec) {
-		sh.GivenWeHaveDeploymentEnvironment(s, `deployment-environment`)
+		sh.GivenWeHaveDeploymentEnvironment(s, env.Name)
 
 		var andDeploymentIdentifierProvided = func(s *testcase.Spec, context func(s *testcase.Spec)) {
 			s.And(`deployment environment identifier provided as the external ID`, func(s *testcase.Spec) {
 				s.Let(`id`, func(t *testcase.T) interface{} {
-					return sh.GetDeploymentEnvironment(t, `deployment-environment`).ID
+					return envGet(t).ID
 				})
 
 				context(s)
@@ -89,13 +100,9 @@ func SpecDeploymentEnvironmentControllerCreate(s *testcase.Spec) {
 		require.Nil(t, sh.StorageGet(t).ReleaseEnvironment(sh.ContextGet(t)).DeleteAll(sh.ContextGet(t)))
 	})
 
-	s.Let(`deployment-environment`, func(t *testcase.T) interface{} {
-		return sh.FixtureFactory{}.Create(release.Environment{}).(*release.Environment)
-	})
-
 	Body.Let(s, func(t *testcase.T) interface{} {
 		var req httpapi.CreateDeploymentEnvironmentRequest
-		req.Body.Environment = *t.I(`deployment-environment`).(*release.Environment)
+		req.Body.Environment = *envGet(t)
 		return req.Body
 	})
 
@@ -105,10 +112,10 @@ func SpecDeploymentEnvironmentControllerCreate(s *testcase.Spec) {
 
 	s.Then(`env stored in the system`, func(t *testcase.T) {
 		onSuccess(t)
-		rfv := t.I(`deployment-environment`).(*release.Environment)
+		rfv := envGet(t)
 
 		var actualDeploymentEnvironment release.Environment
-		found, err := sh.StorageGet(t).ReleaseEnvironment(sh.ContextGet(t)).FindByAlias(sh.ContextGet(t), t.I(`deployment-environment`).(*release.Environment).Name, &actualDeploymentEnvironment)
+		found, err := sh.StorageGet(t).ReleaseEnvironment(sh.ContextGet(t)).FindByAlias(sh.ContextGet(t), envGet(t).Name, &actualDeploymentEnvironment)
 		require.Nil(t, err)
 		require.True(t, found)
 		require.Equal(t, rfv.Name, actualDeploymentEnvironment.Name)
@@ -118,7 +125,7 @@ func SpecDeploymentEnvironmentControllerCreate(s *testcase.Spec) {
 		resp := onSuccess(t)
 
 		var env release.Environment
-		found, err := sh.StorageGet(t).ReleaseEnvironment(sh.ContextGet(t)).FindByAlias(sh.ContextGet(t), t.I(`deployment-environment`).(*release.Environment).Name, &env)
+		found, err := sh.StorageGet(t).ReleaseEnvironment(sh.ContextGet(t)).FindByAlias(sh.ContextGet(t), envGet(t).Name, &env)
 		require.Nil(t, err)
 		require.True(t, found)
 		require.Equal(t, resp.Body.Environment, env)
@@ -127,7 +134,7 @@ func SpecDeploymentEnvironmentControllerCreate(s *testcase.Spec) {
 	s.And(`if input contains invalid values`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
 			t.Log(`for example name is empty`)
-			t.I(`deployment-environment`).(*release.Environment).Name = ``
+			envGet(t).Name = ``
 		})
 
 		s.Then(`it will return with failure`, func(t *testcase.T) {
@@ -194,8 +201,7 @@ func SpecDeploymentEnvironmentControllerList(s *testcase.Spec) {
 	})
 
 	s.And(`deployment environment is present in the system`, func(s *testcase.Spec) {
-		sh.GivenWeHaveDeploymentEnvironment(s, `feature-1`)
-		s.Before(func(t *testcase.T) { sh.GetDeploymentEnvironment(t, `feature-1`) }) // eager load
+		sh.GivenWeHaveDeploymentEnvironment(s, `feature-1`).EagerLoading(s)
 
 		s.Then(`env received back`, func(t *testcase.T) {
 			resp := onSuccess(t)
@@ -204,8 +210,7 @@ func SpecDeploymentEnvironmentControllerList(s *testcase.Spec) {
 		})
 
 		s.And(`even multiple flag in the system`, func(s *testcase.Spec) {
-			sh.GivenWeHaveDeploymentEnvironment(s, `feature-2`)
-			s.Before(func(t *testcase.T) { sh.GetDeploymentEnvironment(t, `feature-2`) }) // eager load
+			sh.GivenWeHaveDeploymentEnvironment(s, `feature-2`).EagerLoading(s)
 
 			s.Then(`the flags will be received back`, func(t *testcase.T) {
 				resp := onSuccess(t)
@@ -225,15 +230,18 @@ func SpecDeploymentEnvironmentControllerUpdate(s *testcase.Spec) {
 		return fmt.Sprintf(`/%s`, t.I(`id`))
 	})
 
-	s.Let(`updated-deployment-environment`, func(t *testcase.T) interface{} {
-		rf := sh.FixtureFactory{}.Create(release.Environment{}).(*release.Environment)
-		rf.ID = sh.GetDeploymentEnvironment(t, `deployment-environment`).ID
-		return rf
+	updatedEnv := s.Let(`updated-deployment-environment`, func(t *testcase.T) interface{} {
+		rf := sh.NewFixtureFactory(t).Create(release.Environment{}).(release.Environment)
+		rf.ID = envGet(t).ID
+		return &rf
 	})
+	updatedEnvGet := func(t *testcase.T) *release.Environment {
+		return updatedEnv.Get(t).(*release.Environment)
+	}
 
 	Body.Let(s, func(t *testcase.T) interface{} {
 		var req httpapi.CreateDeploymentEnvironmentRequest
-		req.Body.Environment = *t.I(`updated-deployment-environment`).(*release.Environment)
+		req.Body.Environment = *updatedEnvGet(t)
 		return req.Body
 	})
 
@@ -248,7 +256,7 @@ func SpecDeploymentEnvironmentControllerUpdate(s *testcase.Spec) {
 	s.Then(`env is updated in the system`, func(t *testcase.T) {
 		resp := onSuccess(t)
 
-		updatedDeploymentEnvironmentView := t.I(`updated-deployment-environment`).(*release.Environment)
+		updatedDeploymentEnvironmentView := updatedEnvGet(t)
 
 		var stored release.Environment
 		found, err := sh.StorageGet(t).ReleaseEnvironment(sh.ContextGet(t)).FindByAlias(sh.ContextGet(t), updatedDeploymentEnvironmentView.Name, &stored)
@@ -260,7 +268,7 @@ func SpecDeploymentEnvironmentControllerUpdate(s *testcase.Spec) {
 	s.And(`if input contains invalid values`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
 			t.Log(`for example the name is empty`)
-			t.I(`updated-deployment-environment`).(*release.Environment).Name = ``
+			updatedEnvGet(t).Name = ``
 		})
 
 		s.Then(`it will return with failure`, func(t *testcase.T) {
@@ -283,7 +291,7 @@ func SpecDeploymentEnvironmentControllerUpdate(s *testcase.Spec) {
 			s := httptest.NewServer(sm)
 			defer s.Close()
 
-			id := sh.GetDeploymentEnvironment(t, `deployment-environment`).ID
+			id := envGet(t).ID
 
 			// TODO: ensure validation
 			p := swagger.NewUpdateDeploymentEnvironmentParams()
@@ -324,7 +332,7 @@ func SpecDeploymentEnvironmentControllerDelete(s *testcase.Spec) {
 	s.Then(`env is deleted from the system`, func(t *testcase.T) {
 		onSuccess(t)
 
-		deletedDeploymentEnvironment := t.I(`deployment-environment`).(*release.Environment)
+		deletedDeploymentEnvironment := envGet(t)
 
 		var stored release.Environment
 		found, err := sh.StorageGet(t).ReleaseEnvironment(sh.ContextGet(t)).FindByAlias(sh.ContextGet(t), deletedDeploymentEnvironment.Name, &stored)
@@ -343,7 +351,7 @@ func SpecDeploymentEnvironmentControllerDelete(s *testcase.Spec) {
 			s := httptest.NewServer(sm)
 			defer s.Close()
 
-			id := sh.GetDeploymentEnvironment(t, `deployment-environment`).ID
+			id := envGet(t).ID
 
 			// TODO: ensure validation
 			p := swagger.NewDeleteDeploymentEnvironmentParams()

@@ -14,13 +14,14 @@ import (
 func TestFlag(t *testing.T) {
 	s := testcase.NewSpec(t)
 
-	s.Let(`flag`, func(t *testcase.T) interface{} {
-		return sh.Create(release.Flag{})
+	flag := s.Let(`flag`, func(t *testcase.T) interface{} {
+		rf := sh.NewFixtureFactory(t).Create(release.Flag{}).(release.Flag)
+		return &rf
 	})
 
 	s.Describe(`Validate`, func(s *testcase.Spec) {
 		var subject = func(t *testcase.T) error {
-			return t.I(`flag`).(*release.Flag).Validate()
+			return flag.Get(t).(*release.Flag).Validate()
 		}
 
 		s.When(`values are correct`, func(s *testcase.Spec) {
@@ -30,7 +31,7 @@ func TestFlag(t *testing.T) {
 		})
 
 		s.When(`name is empty`, func(s *testcase.Spec) {
-			s.Before(func(t *testcase.T) { sh.GetReleaseFlag(t, `flag`).Name = `` })
+			s.Before(func(t *testcase.T) { flag.Get(t).(*release.Flag).Name = `` })
 
 			s.Then(`error reported`, func(t *testcase.T) {
 				require.Equal(t, release.ErrNameIsEmpty, subject(t))

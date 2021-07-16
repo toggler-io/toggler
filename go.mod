@@ -4,10 +4,10 @@ go 1.16
 
 require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
-	github.com/adamluzsi/frameless v0.43.0
-	github.com/adamluzsi/frameless/postgresql v0.0.0-20210615210845-ca0b1fe281b0
+	github.com/adamluzsi/frameless v0.47.2
+	github.com/adamluzsi/frameless/postgresql v0.0.0-20210715212705-58e8f3c31b2b
 	github.com/adamluzsi/gorest v0.6.1
-	github.com/adamluzsi/testcase v0.44.3
+	github.com/adamluzsi/testcase v0.50.0
 	github.com/apache/thrift v0.12.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535 // indirect
 	github.com/go-openapi/errors v0.19.4
@@ -33,8 +33,8 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/unrolled/logger v0.0.0-20190327162521-be1a2406c7c9 // test
 	go.mongodb.org/mongo-driver v1.3.3 // indirect
-	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22 // indirect
-	golang.org/x/tools v0.1.3 // indirect
+	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
+	golang.org/x/tools v0.1.5 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	gotest.tools/v3 v3.0.2 // indirect
 )

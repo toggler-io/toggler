@@ -905,7 +905,7 @@
           "x-go-name": "Name"
         }
       },
-      "x-go-package": "github.com/toggler-io/toggler/domains/deployment"
+      "x-go-package": "github.com/toggler-io/toggler/domains/release"
     },
     "Error": {
       "description": "Error contains the details of the error",

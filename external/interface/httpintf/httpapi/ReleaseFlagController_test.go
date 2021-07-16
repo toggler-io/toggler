@@ -23,9 +23,8 @@ import (
 )
 
 func TestReleaseFlagController(t *testing.T) {
-	s := testcase.NewSpec(t)
+	s := sh.NewSpec(t)
 	s.Parallel()
-	sh.SetUp(s)
 
 	HandlerLet(s, func(t *testcase.T) http.Handler {
 		return httpapi.NewReleaseFlagHandler(sh.ExampleUseCases(t))
@@ -91,7 +90,8 @@ func SpecReleaseFlagControllerCreate(s *testcase.Spec) {
 	})
 
 	s.Let(`release-flag`, func(t *testcase.T) interface{} {
-		return sh.FixtureFactory{}.Create(release.Flag{}).(*release.Flag)
+		rf := sh.NewFixtureFactory(t).Create(release.Flag{}).(release.Flag)
+		return &rf
 	})
 
 	Body.Let(s, func(t *testcase.T) interface{} {
@@ -220,9 +220,9 @@ func SpecReleaseFlagControllerUpdate(s *testcase.Spec) {
 	})
 
 	s.Let(`updated-release-flag`, func(t *testcase.T) interface{} {
-		rf := sh.FixtureFactory{}.Create(release.Flag{}).(*release.Flag)
+		rf := sh.NewFixtureFactory(t).Create(release.Flag{}).(release.Flag)
 		rf.ID = sh.GetReleaseFlag(t, `release-flag`).ID
-		return rf
+		return &rf
 	})
 
 	Body.Let(s, func(t *testcase.T) interface{} {

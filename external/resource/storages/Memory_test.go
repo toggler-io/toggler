@@ -30,21 +30,22 @@ var (
 )
 
 func TestMemory(t *testing.T) {
-	contracts.Storage{
-		Subject: func(tb testing.TB) toggler.Storage {
-			return storages.NewEventLogMemoryStorage()
-		},
-		FixtureFactory: sh.DefaultFixtureFactory,
-	}.Test(t)
+	SpecMemory(t)
 }
 
 func BenchmarkMemory(b *testing.B) {
-	contracts.Storage{
+	SpecMemory(b)
+}
+
+func SpecMemory(tb testing.TB) {
+	testcase.RunContract(sh.NewSpec(tb), contracts.Storage{
 		Subject: func(tb testing.TB) toggler.Storage {
 			return storages.NewEventLogMemoryStorage()
 		},
-		FixtureFactory: sh.DefaultFixtureFactory,
-	}.Benchmark(b)
+		FixtureFactory: func(tb testing.TB) fc.FixtureFactory {
+			return sh.NewFixtureFactory(tb)
+		},
+	})
 }
 
 func TestMemoryReleasePilotStorage_smokeTest(t *testing.T) {

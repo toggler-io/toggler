@@ -11,9 +11,8 @@ import (
 )
 
 func TestDoorkeeper(t *testing.T) {
-	s := testcase.NewSpec(t)
+	s := sh.NewSpec(t)
 	s.Parallel()
-	sh.SetUp(s)
 
 	s.Let(`doorkeeper`, func(t *testcase.T) interface{} {
 		return security.NewDoorkeeper(sh.StorageGet(t))

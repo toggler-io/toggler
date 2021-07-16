@@ -386,7 +386,7 @@ func (p *Postgres) SecurityToken(ctx context.Context) security.TokenStorage {
 					e.ID,
 					e.SHA512,
 					e.Duration,
-					e.IssuedAt,
+					e.IssuedAt.UTC(),
 					e.OwnerUID,
 				}, nil
 			},
@@ -401,7 +401,7 @@ func (p *Postgres) SecurityToken(ctx context.Context) security.TokenStorage {
 				); err != nil {
 					return err
 				}
-				src.IssuedAt = src.IssuedAt.In(timeLocation)
+				src.IssuedAt = src.IssuedAt.UTC()
 				return reflects.Link(src, ptr)
 			},
 		}),

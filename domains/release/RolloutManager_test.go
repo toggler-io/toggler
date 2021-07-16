@@ -15,9 +15,8 @@ import (
 )
 
 func TestRolloutManager(t *testing.T) {
-	s := testcase.NewSpec(t)
+	s := sh.NewSpec(t)
 	s.Parallel()
-	sh.SetUp(s)
 
 	s.Let(`manager`, func(t *testcase.T) interface{} {
 		return &release.RolloutManager{Storage: sh.StorageGet(t)}
@@ -39,11 +38,11 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 	}
 
 	s.Let(`flag`, func(t *testcase.T) interface{} {
-		flag := sh.Create(release.Flag{}).(*release.Flag)
-		// pass by func used to ensure that flag.ID is populated by the time delete by id is called
+		flag := sh.NewFixtureFactory(t).Create(release.Flag{}).(release.Flag)
 		sh.StorageGet(t) // eager load storage to ensure storage teardown is not after the defer
-		t.Defer(func() { sh.StorageGet(t).ReleaseFlag(sh.ContextGet(t)).DeleteByID(sh.ContextGet(t), flag.ID) })
-		return flag
+		// pass by func used to ensure that flag.ID is populated by the time delete by id is called
+		t.Cleanup(func() { _ = sh.StorageGet(t).ReleaseFlag(sh.ContextGet(t)).DeleteByID(sh.ContextGet(t), flag.ID) })
+		return &flag
 	})
 
 	s.Then(`on valid input the values persisted`, func(t *testcase.T) {
@@ -365,7 +364,8 @@ func SpecUnsetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 	s.When(`flag is not persisted`, func(s *testcase.Spec) {
 		s.Let(sh.LetVarExampleReleaseFlag, func(t *testcase.T) interface{} {
-			return sh.Create(release.Flag{})
+			rf := sh.NewFixtureFactory(t).Create(release.Flag{}).(release.Flag)
+			return &rf
 		})
 
 		s.Then(`error returned`, func(t *testcase.T) {
