@@ -663,20 +663,20 @@
             "schema": {
               "type": "object",
               "properties": {
-                "envID": {
-                  "type": "string",
-                  "x-go-name": "EnvironmentID"
-                },
-                "flagID": {
-                  "type": "string",
-                  "x-go-name": "FlagID"
-                },
                 "rollout": {
                   "type": "object",
                   "required": [
                     "plan"
                   ],
                   "properties": {
+                    "env_id": {
+                      "type": "string",
+                      "x-go-name": "EnvironmentID"
+                    },
+                    "flag_id": {
+                      "type": "string",
+                      "x-go-name": "FlagID"
+                    },
                     "plan": {
                       "description": "Plan holds the composited rule set about the pilot participation decision logic.",
                       "type": "object",

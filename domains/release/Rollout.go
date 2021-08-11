@@ -16,9 +16,9 @@ import (
 type Rollout struct {
 	ID string `ext:"ID"`
 	// FlagID is the release flag id to which the rolloutBase belongs
-	FlagID string
+	FlagID string `json:"flag_id"`
 	// EnvironmentID is the deployment environment id
-	DeploymentEnvironmentID string
+	DeploymentEnvironmentID string `json:"env_id"`
 	// Plan holds the composited rule set about the pilot participation decision logic.
 	Plan RolloutDefinition `json:"plan,omitempty"`
 }
@@ -538,7 +538,7 @@ type rolloutView struct {
 	// FlagID is the release flag id to which the rolloutBase belongs
 	FlagID string `json:"flag_id"`
 	// EnvironmentID is the deployment environment id
-	DeploymentEnvironmentID string `json:"deployment_environment_id"`
+	DeploymentEnvironmentID string `json:"env_id"`
 	// Plan holds the composited rule set about the pilot participation decision logic.
 	RolloutPlan RolloutDefinitionView `json:"plan"`
 }

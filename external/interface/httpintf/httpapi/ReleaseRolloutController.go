@@ -3,6 +3,7 @@ package httpapi
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/adamluzsi/frameless/iterators"
@@ -56,9 +57,9 @@ type CreateReleaseRolloutRequest struct {
 	// required: true
 	// in: body
 	Body struct {
-		EnvironmentID string `json:"envID"`
-		FlagID        string `json:"flagID"`
-		Rollout       struct {
+		Rollout struct {
+			EnvironmentID string `json:"env_id"`
+			FlagID        string `json:"flag_id"`
 			// Plan holds the composited rule set about the pilot participation decision logic.
 			//
 			// required: true
@@ -108,9 +109,7 @@ func (ctrl ReleaseRolloutController) Create(w http.ResponseWriter, r *http.Reque
 	defer r.Body.Close() // ignorable
 
 	type Payload struct {
-		Rollout       release.Rollout `json:"rollout"`
-		EnvironmentID string          `json:"envID"`
-		FlagID        string          `json:"flagID"`
+		Rollout release.Rollout `json:"rollout"`
 	}
 	var p Payload
 
@@ -118,10 +117,13 @@ func (ctrl ReleaseRolloutController) Create(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	p.Rollout.FlagID = p.FlagID
-	p.Rollout.DeploymentEnvironmentID = p.EnvironmentID
+	rr := p.Rollout
+	ctx := r.Context()
+	rrs := ctrl.UseCases.Storage.ReleaseRollout(ctx)
+	err := rrs.Create(ctx, &rr)
 
-	if ctrl.handleFlagValidationError(w, ctrl.UseCases.Storage.ReleaseRollout(r.Context()).Create(r.Context(), &p.Rollout)) {
+	if ctrl.handleFlagValidationError(w, err) {
+		fmt.Println(`????`, err, fmt.Sprintf("%#v", rr))
 		return
 	}
 

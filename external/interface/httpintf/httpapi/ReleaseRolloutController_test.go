@@ -130,13 +130,15 @@ func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
 		return &r
 	})
 
+	Debug(s)
+
 	Body.Let(s, func(t *testcase.T) interface{} {
 		r := sh.GetReleaseRollout(t, rollout.Name)
 		var req httpapi.CreateReleaseRolloutRequest
 		t.Log(r)
 		req.Body.Rollout.Plan = release.RolloutDefinitionView{Definition: r.Plan}
-		req.Body.EnvironmentID = sh.ExampleDeploymentEnvironment(t).ID
-		req.Body.FlagID = sh.ExampleReleaseFlag(t).ID
+		req.Body.Rollout.EnvironmentID = sh.ExampleDeploymentEnvironment(t).ID
+		req.Body.Rollout.FlagID = sh.ExampleReleaseFlag(t).ID
 		return req.Body
 	})
 
