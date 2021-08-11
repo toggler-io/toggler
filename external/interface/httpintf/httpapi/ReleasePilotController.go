@@ -4,6 +4,7 @@ package httpapi
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/adamluzsi/gorest"
@@ -24,40 +25,6 @@ type ReleasePilotController struct {
 	UseCases *toggler.UseCases
 }
 
-var _ release.Pilot
-
-type ReleasePilotView struct {
-	// ID represent the fact that this object will be persistent in the Subject
-	ID string `ext:"ID"`
-	// ReleasePilotID is the reference ID that can tell where this user record belongs to.
-	ReleasePilotID string `json:"release_flag_id"`
-	// ExternalID is the unique id that connect links a pilot with the caller services.
-	// The caller service is the service that use the release toggles for example and need A/B testing or Canary launch.
-	ExternalID string `json:"external_id"`
-	// IsParticipating states that whether the ManualPilot for the given feature is enrolled, or blacklisted
-	Enrolled bool `json:"enrolled"`
-}
-
-func (ReleasePilotView) FromReleasePilot(pilot release.Pilot) ReleasePilotView {
-	var v ReleasePilotView
-	v.ID = pilot.ID
-	v.ReleasePilotID = pilot.FlagID
-	v.ExternalID = pilot.PublicID
-	v.Enrolled = pilot.IsParticipating
-	return v
-}
-
-func (v ReleasePilotView) ToReleasePilot() release.Pilot {
-	var pilot release.Pilot
-	pilot.ID = v.ID
-	pilot.FlagID = v.ReleasePilotID
-	pilot.PublicID = v.ExternalID
-	pilot.IsParticipating = v.Enrolled
-	return pilot
-}
-
-//--------------------------------------------------------------------------------------------------------------------//
-
 //--------------------------------------------------------------------------------------------------------------------//
 
 // CreateReleasePilotRequest
@@ -65,7 +32,7 @@ func (v ReleasePilotView) ToReleasePilot() release.Pilot {
 type CreateReleasePilotRequest struct {
 	// in: body
 	Body struct {
-		Pilot ReleasePilotView `json:"pilot"`
+		Pilot release.Pilot `json:"pilot"`
 	}
 }
 
@@ -74,7 +41,7 @@ type CreateReleasePilotRequest struct {
 type CreateReleasePilotResponse struct {
 	// in: body
 	Body struct {
-		Pilot ReleasePilotView `json:"pilot"`
+		Pilot release.Pilot `json:"pilot"`
 	}
 }
 
@@ -105,9 +72,10 @@ type CreateReleasePilotResponse struct {
 
 */
 func (ctrl ReleasePilotController) Create(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
-	defer r.Body.Close() // ignorable
+	defer r.Body.Close()
 
 	var req CreateReleasePilotRequest
 
@@ -116,22 +84,20 @@ func (ctrl ReleasePilotController) Create(w http.ResponseWriter, r *http.Request
 	}
 
 	req.Body.Pilot.ID = `` // ignore id if given
-	pilot := req.Body.Pilot.ToReleasePilot()
+	pilot := req.Body.Pilot
 
-	if err := ctrl.UseCases.SetPilotEnrollmentForFeature(r.Context(), pilot.FlagID, pilot.EnvironmentID, pilot.PublicID, pilot.IsParticipating); handleError(w, err, http.StatusInternalServerError) {
+	if ctrl.validatePilot(w, pilot) {
 		return
 	}
 
-	p, err := ctrl.UseCases.RolloutManager.Storage.ReleasePilot(r.Context()).FindByFlagEnvPublicID(r.Context(), pilot.FlagID, pilot.EnvironmentID, pilot.PublicID)
-	if handleError(w, err, http.StatusInternalServerError) {
+	rps := ctrl.UseCases.Storage.ReleasePilot(ctx)
+
+	if handleError(w, rps.Create(ctx, &pilot), http.StatusBadRequest) {
 		return
-	}
-	if p == nil {
-		p = &pilot
 	}
 
 	var resp CreateReleasePilotResponse
-	resp.Body.Pilot = resp.Body.Pilot.FromReleasePilot(*p)
+	resp.Body.Pilot = pilot
 	serveJSON(w, resp.Body)
 }
 
@@ -142,7 +108,7 @@ func (ctrl ReleasePilotController) Create(w http.ResponseWriter, r *http.Request
 type ListReleasePilotResponse struct {
 	// in: body
 	Body struct {
-		Pilots []ReleasePilotView `json:"pilots"`
+		Pilots []release.Pilot `json:"pilots"`
 	}
 }
 
@@ -171,7 +137,6 @@ type ListReleasePilotResponse struct {
 
 */
 func (ctrl ReleasePilotController) List(w http.ResponseWriter, r *http.Request) {
-	//FIXME
 	pilotsIter := ctrl.UseCases.RolloutManager.Storage.ReleasePilot(r.Context()).FindAll(r.Context())
 	defer pilotsIter.Close()
 
@@ -183,7 +148,7 @@ func (ctrl ReleasePilotController) List(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 
-		resp.Body.Pilots = append(resp.Body.Pilots, ReleasePilotView{}.FromReleasePilot(p))
+		resp.Body.Pilots = append(resp.Body.Pilots, p)
 	}
 
 	if handleError(w, pilotsIter.Err(), http.StatusInternalServerError) {
@@ -221,7 +186,7 @@ type UpdateReleasePilotRequest struct {
 	PilotID string `json:"pilotID"`
 	// in: body
 	Body struct {
-		Pilot ReleasePilotView `json:"pilot"`
+		Pilot release.Pilot `json:"pilot"`
 	}
 }
 
@@ -230,7 +195,7 @@ type UpdateReleasePilotRequest struct {
 type UpdateReleasePilotResponse struct {
 	// in: body
 	Body struct {
-		Pilot ReleasePilotView `json:"pilot"`
+		Pilot release.Pilot `json:"pilot"`
 	}
 }
 
@@ -259,6 +224,7 @@ type UpdateReleasePilotResponse struct {
 
 */
 func (ctrl ReleasePilotController) Update(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 	defer r.Body.Close() // ignorable
@@ -269,24 +235,34 @@ func (ctrl ReleasePilotController) Update(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	req.Body.Pilot.ID = r.Context().Value(ReleasePilotContextKey{}).(release.Pilot).ID
-	pilot := req.Body.Pilot.ToReleasePilot()
+	req.Body.Pilot.ID = ctx.Value(ReleasePilotContextKey{}).(release.Pilot).ID
+	pilot := req.Body.Pilot
 
-	if err := ctrl.UseCases.SetPilotEnrollmentForFeature(r.Context(), pilot.FlagID, pilot.EnvironmentID, pilot.PublicID, pilot.IsParticipating); handleError(w, err, http.StatusInternalServerError) {
+	if ctrl.validatePilot(w, pilot) {
 		return
 	}
 
-	p, err := ctrl.UseCases.Storage.ReleasePilot(r.Context()).FindByFlagEnvPublicID(r.Context(), pilot.FlagID, pilot.EnvironmentID, pilot.PublicID)
-	if handleError(w, err, http.StatusInternalServerError) {
+	rps := ctrl.UseCases.Storage.ReleasePilot(ctx)
+
+	if handleError(w, rps.Update(ctx, &pilot), http.StatusBadRequest) {
 		return
-	}
-	if p == nil {
-		p = &pilot
 	}
 
 	var resp CreateReleasePilotResponse
-	resp.Body.Pilot = resp.Body.Pilot.FromReleasePilot(*p)
+	resp.Body.Pilot = pilot
 	serveJSON(w, resp.Body)
+}
+
+func (ctrl ReleasePilotController) validatePilot(w http.ResponseWriter, pilot release.Pilot) bool {
+	if pilot.FlagID == "" {
+		handleError(w, fmt.Errorf("missing flag_id"), http.StatusBadRequest)
+		return true
+	}
+	if pilot.EnvironmentID == "" {
+		handleError(w, fmt.Errorf("missing env_id"), http.StatusBadRequest)
+		return true
+	}
+	return false
 }
 
 //--------------------------------------------------------------------------------------------------------------------//

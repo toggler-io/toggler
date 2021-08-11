@@ -2,6 +2,8 @@ package httpapi_test
 
 import (
 	"encoding/json"
+	"github.com/toggler-io/toggler/external/interface/httpintf"
+	"net/http"
 	"net/http/httptest"
 
 	"github.com/adamluzsi/testcase"
@@ -41,4 +43,16 @@ func protectedAuth(t *testcase.T) runtime.ClientAuthInfoWriterFunc {
 
 		return request.SetHeaderParam(`X-APP-TOKEN`, sh.ExampleTextToken(t))
 	}
+}
+
+func NewHTTPServer(t *testcase.T) *httptest.Server {
+	uc := sh.ExampleUseCases(t)
+	mux, err := httpintf.NewServeMux(uc)
+	require.Nil(t, err)
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mux.ServeHTTP(w, r.WithContext(sh.ContextGet(t)))
+	})
+	server := httptest.NewServer(handler)
+	t.Cleanup(server.Close)
+	return server
 }

@@ -5,14 +5,14 @@ package release
 // even if the user itself is not aware of this role.
 type Pilot struct {
 	// ID represent the fact that this object will be persistent in the Subject
-	ID string `ext:"ID"`
+	ID string `ext:"ID",json:"id"`
 	// FlagID is the reference ID that can tell where this user record belongs to.
-	FlagID string
+	FlagID string `json:"flag_id"`
 	// EnvironmentID is the ID of the environment where the pilot should be enrolled
-	EnvironmentID string
+	EnvironmentID string `json:"env_id"`
 	// PublicID is the unique id that connects the entry to the caller services,
 	// with this service and able to use A-B/Percentage or Pilot based testings.
-	PublicID string
+	PublicID string `json:"public_id"`
 	// IsParticipating states that whether the pilot for the given flag in a given environment is enrolled, or blacklisted.
-	IsParticipating bool
+	IsParticipating bool `json:"is_participating"`
 }

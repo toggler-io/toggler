@@ -2,8 +2,8 @@ package spechelper
 
 import (
 	"fmt"
+	"github.com/adamluzsi/frameless/contracts"
 
-	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 
@@ -34,11 +34,11 @@ func init() {
 		})
 
 		s.Let(LetVarExamplePilotExternalID, func(t *testcase.T) interface{} {
-			return fixtures.Random.StringN(100)
+			return t.Random.StringN(100)
 		})
 
 		s.Let(LetVarExamplePilotEnrollment, func(t *testcase.T) interface{} {
-			return fixtures.Random.Bool()
+			return t.Random.Bool()
 		})
 
 		s.Let(LetVarExamplePilot, func(t *testcase.T) interface{} {
@@ -114,6 +114,19 @@ func GivenWeHaveReleaseRollout(s *testcase.Spec, vn, flagLVN, envLVN string) {
 		t.Logf(`%#v`, rollout)
 		return &rollout
 	})
+}
+
+func GivenWeHaveReleasePilot(s *testcase.Spec, vn string) testcase.Var {
+	return s.Let(vn, func(t *testcase.T) interface{} {
+		pilot := &release.Pilot{
+			FlagID:          ExampleReleaseFlag(t).ID,
+			EnvironmentID:   ExampleDeploymentEnvironment(t).ID,
+			PublicID:        t.Random.StringN(100),
+			IsParticipating: t.Random.Bool(),
+		}
+		contracts.CreateEntity(t, StorageGet(t).ReleasePilot(ContextGet(t)), ContextGet(t), pilot)
+		return pilot
+	}).EagerLoading(s)
 }
 
 func GivenWeHaveReleaseFlag(s *testcase.Spec, vn string) {
@@ -193,6 +206,12 @@ func NoReleaseRolloutPresentInTheStorage(s *testcase.Spec) {
 	})
 }
 
+func NoReleasePilotPresentInTheStorage(s *testcase.Spec) {
+	s.Before(func(t *testcase.T) {
+		require.Nil(t, StorageGet(t).ReleasePilot(ContextGet(t)).DeleteAll(ContextGet(t)))
+	})
+}
+
 func AndExamplePilotManualParticipatingIsSetTo(s *testcase.Spec, isParticipating bool) {
 	s.Before(func(t *testcase.T) {
 		require.Nil(t, ExampleRolloutManager(t).SetPilotEnrollmentForFeature(
@@ -210,4 +229,8 @@ func AndExamplePilotManualParticipatingIsSetTo(s *testcase.Spec, isParticipating
 			ExampleExternalPilotID(t),
 		)
 	})
+}
+
+func ReleasePilotGet(t *testcase.T, v testcase.Var) *release.Pilot {
+	return v.Get(t).(*release.Pilot)
 }

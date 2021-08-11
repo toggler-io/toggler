@@ -470,7 +470,7 @@
               "type": "object",
               "properties": {
                 "pilot": {
-                  "$ref": "#/definitions/ReleasePilotView"
+                  "$ref": "#/definitions/Pilot"
                 }
               }
             }
@@ -532,7 +532,7 @@
               "type": "object",
               "properties": {
                 "pilot": {
-                  "$ref": "#/definitions/ReleasePilotView"
+                  "$ref": "#/definitions/Pilot"
                 }
               }
             }
@@ -941,30 +941,37 @@
       },
       "x-go-package": "github.com/toggler-io/toggler/domains/release"
     },
-    "ReleasePilotView": {
+    "Pilot": {
+      "description": "The Pilot terminology itself means that the user is in charge to try out a given feature,\neven if the user itself is not aware of this role.",
       "type": "object",
+      "title": "Pilot is a data entity that represent relation between an external system's user and a feature flag.",
       "properties": {
         "ID": {
           "description": "ID represent the fact that this object will be persistent in the Subject",
           "type": "string"
         },
-        "enrolled": {
-          "description": "IsParticipating states that whether the ManualPilot for the given feature is enrolled, or blacklisted",
+        "env_id": {
+          "description": "EnvironmentID is the ID of the environment where the pilot should be enrolled",
+          "type": "string",
+          "x-go-name": "EnvironmentID"
+        },
+        "flag_id": {
+          "description": "FlagID is the reference ID that can tell where this user record belongs to.",
+          "type": "string",
+          "x-go-name": "FlagID"
+        },
+        "is_participating": {
+          "description": "IsParticipating states that whether the pilot for the given flag in a given environment is enrolled, or blacklisted.",
           "type": "boolean",
-          "x-go-name": "Enrolled"
+          "x-go-name": "IsParticipating"
         },
-        "external_id": {
-          "description": "ExternalID is the unique id that connect links a pilot with the caller services.\nThe caller service is the service that use the release toggles for example and need A/B testing or Canary launch.",
+        "public_id": {
+          "description": "PublicID is the unique id that connects the entry to the caller services,\nwith this service and able to use A-B/Percentage or Pilot based testings.",
           "type": "string",
-          "x-go-name": "ExternalID"
-        },
-        "release_flag_id": {
-          "description": "ReleasePilotID is the reference ID that can tell where this user record belongs to.",
-          "type": "string",
-          "x-go-name": "ReleasePilotID"
+          "x-go-name": "PublicID"
         }
       },
-      "x-go-package": "github.com/toggler-io/toggler/external/interface/httpintf/httpapi"
+      "x-go-package": "github.com/toggler-io/toggler/domains/release"
     },
     "Rollout": {
       "type": "object",
@@ -1018,7 +1025,7 @@
         "type": "object",
         "properties": {
           "pilot": {
-            "$ref": "#/definitions/ReleasePilotView"
+            "$ref": "#/definitions/Pilot"
           }
         }
       }
@@ -1118,7 +1125,7 @@
           "pilots": {
             "type": "array",
             "items": {
-              "$ref": "#/definitions/ReleasePilotView"
+              "$ref": "#/definitions/Pilot"
             },
             "x-go-name": "Pilots"
           }
@@ -1168,7 +1175,7 @@
         "type": "object",
         "properties": {
           "pilot": {
-            "$ref": "#/definitions/ReleasePilotView"
+            "$ref": "#/definitions/Pilot"
           }
         }
       }
