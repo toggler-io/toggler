@@ -82,7 +82,7 @@ func NewFixtureFactory(tb testing.TB) *fixtures.Factory {
 		return release.Rollout{
 			FlagID:                  ExampleReleaseFlag(t).ID,
 			DeploymentEnvironmentID: ExampleDeploymentEnvironment(t).ID,
-			Plan: func() release.RolloutDefinition {
+			Plan: func() release.RolloutPlan {
 				switch t.Random.IntN(3) {
 				case 0:
 					byPercentage := release.NewRolloutDecisionByPercentage()

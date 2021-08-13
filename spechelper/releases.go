@@ -84,8 +84,8 @@ func getReleaseRolloutPlanLetVar(vn string) string {
 	return fmt.Sprintf(`%s.plan`, vn)
 }
 
-func GetReleaseRolloutPlan(t *testcase.T, rolloutLVN string) release.RolloutDefinition {
-	return t.I(getReleaseRolloutPlanLetVar(rolloutLVN)).(release.RolloutDefinition)
+func GetReleaseRolloutPlan(t *testcase.T, rolloutLVN string) release.RolloutPlan {
+	return t.I(getReleaseRolloutPlanLetVar(rolloutLVN)).(release.RolloutPlan)
 }
 
 func GetReleaseRollout(t *testcase.T, vn string) *release.Rollout {

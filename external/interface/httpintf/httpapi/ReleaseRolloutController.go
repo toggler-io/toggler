@@ -272,7 +272,7 @@ func (ctrl ReleaseRolloutController) Update(w http.ResponseWriter, r *http.Reque
 	}
 
 	var resp UpdateReleaseRolloutResponse
-	resp.Body.Rollout.Plan = release.RolloutDefinitionView{Definition: rollout.Plan}
+	resp.Body.Rollout.Plan = release.RolloutPlanView{Plan: rollout.Plan}
 	serveJSON(w, resp.Body)
 }
 

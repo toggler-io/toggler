@@ -21,10 +21,10 @@ import (
 )
 
 var (
-	_ release.RolloutDefinition = release.RolloutDecisionByPercentage{}
-	_ release.RolloutDefinition = release.RolloutDecisionByAPI{}
-	_ release.RolloutDefinition = release.RolloutDecisionAND{}
-	_ release.RolloutDefinition = release.RolloutDecisionOR{}
+	_ release.RolloutPlan = release.RolloutDecisionByPercentage{}
+	_ release.RolloutPlan = release.RolloutDecisionByAPI{}
+	_ release.RolloutPlan = release.RolloutDecisionAND{}
+	_ release.RolloutPlan = release.RolloutDecisionOR{}
 )
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -426,7 +426,7 @@ func TestRollout(t *testing.T) {
 
 	var rollout = func(t *testcase.T) *release.Rollout { return t.I(`rollout`).(*release.Rollout) }
 	s.Let(`rollout`, func(t *testcase.T) interface{} {
-		plan, _ := t.I(`plan`).(release.RolloutDefinition)
+		plan, _ := t.I(`plan`).(release.RolloutPlan)
 		return &release.Rollout{
 			FlagID:                  sh.ExampleReleaseFlag(t).ID,
 			DeploymentEnvironmentID: sh.ExampleDeploymentEnvironment(t).ID,

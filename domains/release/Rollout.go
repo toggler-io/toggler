@@ -20,7 +20,7 @@ type Rollout struct {
 	// EnvironmentID is the deployment environment id
 	DeploymentEnvironmentID string `json:"env_id"`
 	// Plan holds the composited rule set about the pilot participation decision logic.
-	Plan RolloutDefinition `json:"plan"`
+	Plan RolloutPlan `json:"plan"`
 }
 
 func (r Rollout) Validate() error {
@@ -39,11 +39,11 @@ func (r Rollout) Validate() error {
 	return r.Plan.Validate()
 }
 
-// RolloutDefinition is the common interface to all rollout type.
+// RolloutPlan is the common interface to all rollout type.
 // Rollout expects to determines the behavior of the rollout process.
 // the actual behavior implementation is with the RolloutManager,
 // but the configuration data is located here
-type RolloutDefinition interface {
+type RolloutPlan interface {
 	IsParticipating(ctx context.Context, pilotExternalID string) (bool, error)
 	Validate() error
 }
@@ -126,7 +126,7 @@ func (s RolloutDecisionByPercentage) pseudoRandPercentage(pilotExternalID string
 	}
 }
 
-// PseudoRandPercentageFunc implements pseudo random percentage calculations with different algorithms.
+// PseudoRandPercentageAlgorithms implements pseudo random percentage calculations with different algorithms.
 // This is mainly used for pilot enrollments when percentage strategy is used for rolloutBase.
 type PseudoRandPercentageAlgorithms struct{}
 
@@ -248,8 +248,8 @@ func (s RolloutDecisionByAPI) Validate() error {
 //--------------------------------------------------------------------------------------------------------------------//
 
 type RolloutDecisionAND struct {
-	Left  RolloutDefinition `json:"left"`
-	Right RolloutDefinition `json:"right"`
+	Left  RolloutPlan `json:"left"`
+	Right RolloutPlan `json:"right"`
 }
 
 // TODO:SPEC
@@ -285,8 +285,8 @@ func (r RolloutDecisionAND) Validate() error {
 //--------------------------------------------------------------------------------------------------------------------//
 
 type RolloutDecisionOR struct {
-	Left  RolloutDefinition `json:"left"`
-	Right RolloutDefinition `json:"right"`
+	Left  RolloutPlan `json:"left"`
+	Right RolloutPlan `json:"right"`
 }
 
 // TODO:SPEC
@@ -322,7 +322,7 @@ func (r RolloutDecisionOR) Validate() error {
 //--------------------------------------------------------------------------------------------------------------------//
 
 type RolloutDecisionNOT struct {
-	Definition RolloutDefinition `json:"def"`
+	Definition RolloutPlan `json:"def"`
 }
 
 // TODO:SPEC
@@ -358,19 +358,19 @@ func (r RolloutDecisionNOT) Validate() error {
 //---------------------------------------------------- MARSHALING ----------------------------------------------------//
 //--------------------------------------------------------------------------------------------------------------------//
 
-type RolloutDefinitionView struct {
-	Definition RolloutDefinition `json:"def"`
+type RolloutPlanView struct {
+	Plan RolloutPlan `json:"plan"`
 }
 
-func (view RolloutDefinitionView) MarshalJSON() ([]byte, error) {
-	plan, err := view.MarshalMapping(view.Definition)
+func (view RolloutPlanView) MarshalJSON() ([]byte, error) {
+	plan, err := view.MarshalMapping(view.Plan)
 	if err != nil {
 		return nil, err
 	}
 	return json.Marshal(plan)
 }
 
-func (view *RolloutDefinitionView) UnmarshalJSON(bytes []byte) error {
+func (view *RolloutPlanView) UnmarshalJSON(bytes []byte) error {
 	plan, err := view.UnmarshalMapping(bytes)
 	if err != nil {
 		return err
@@ -382,11 +382,11 @@ func (view *RolloutDefinitionView) UnmarshalJSON(bytes []byte) error {
 		}
 	}
 
-	view.Definition = plan
+	view.Plan = plan
 	return nil
 }
 
-func (view RolloutDefinitionView) MarshalMapping(this RolloutDefinition) (map[string]interface{}, error) {
+func (view RolloutPlanView) MarshalMapping(this RolloutPlan) (map[string]interface{}, error) {
 	var m = make(map[string]interface{})
 	switch d := this.(type) {
 	case RolloutDecisionByGlobal:
@@ -452,7 +452,7 @@ func (view RolloutDefinitionView) MarshalMapping(this RolloutDefinition) (map[st
 	}
 }
 
-func (view RolloutDefinitionView) UnmarshalMapping(data []byte) (_def RolloutDefinition, rErr error) {
+func (view RolloutPlanView) UnmarshalMapping(data []byte) (_def RolloutPlan, rErr error) {
 	defer func() {
 		if r := recover(); r != nil {
 			rErr = fmt.Errorf(`%v`, r)
@@ -567,7 +567,7 @@ type rolloutView struct {
 	// EnvironmentID is the deployment environment id
 	DeploymentEnvironmentID string `json:"env_id"`
 	// Plan holds the composited rule set about the pilot participation decision logic.
-	RolloutPlan RolloutDefinitionView `json:"plan"`
+	RolloutPlan RolloutPlanView `json:"plan"`
 }
 
 func (r Rollout) MarshalJSON() ([]byte, error) {
@@ -575,7 +575,7 @@ func (r Rollout) MarshalJSON() ([]byte, error) {
 		ID:                      r.ID,
 		FlagID:                  r.FlagID,
 		DeploymentEnvironmentID: r.DeploymentEnvironmentID,
-		RolloutPlan:             RolloutDefinitionView{Definition: r.Plan},
+		RolloutPlan:             RolloutPlanView{Plan: r.Plan},
 	})
 }
 
@@ -589,6 +589,6 @@ func (r *Rollout) UnmarshalJSON(bs []byte) error {
 	r.ID = v.ID
 	r.FlagID = v.FlagID
 	r.DeploymentEnvironmentID = v.DeploymentEnvironmentID
-	r.Plan = v.RolloutPlan.Definition
+	r.Plan = v.RolloutPlan.Plan
 	return nil
 }

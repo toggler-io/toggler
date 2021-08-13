@@ -136,7 +136,7 @@ func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
 		r := sh.GetReleaseRollout(t, rollout.Name)
 		var req httpapi.CreateReleaseRolloutRequest
 		t.Log(r)
-		req.Body.Rollout.Plan = release.RolloutDefinitionView{Definition: r.Plan}
+		req.Body.Rollout.Plan = release.RolloutPlanView{Plan: r.Plan}
 		req.Body.Rollout.EnvironmentID = sh.ExampleDeploymentEnvironment(t).ID
 		req.Body.Rollout.FlagID = sh.ExampleReleaseFlag(t).ID
 		return req.Body
@@ -198,7 +198,7 @@ func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
 			p.Body.Rollout = &models.Rollout{
 				FlagID:        sh.ExampleReleaseFlag(t).ID,
 				EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID,
-				Plan:          release.RolloutDefinitionView{Definition: release.NewRolloutDecisionByPercentage()},
+				Plan:          release.RolloutPlanView{Plan: release.NewRolloutDecisionByPercentage()},
 			}
 
 			resp, err := c.Rollout.CreateReleaseRollout(p, protectedAuth(t))
@@ -350,7 +350,7 @@ func SpecReleaseRolloutControllerUpdate(s *testcase.Spec) {
 			p := swagger.NewUpdateReleaseRolloutParams()
 			p.RolloutID = id
 			p.Body.Rollout = &models.Rollout{
-				Plan: release.RolloutDefinitionView{Definition: release.NewRolloutDecisionByPercentage()},
+				Plan: release.RolloutPlanView{Plan: release.NewRolloutDecisionByPercentage()},
 			}
 
 			resp, err := c.Rollout.UpdateReleaseRollout(p, protectedAuth(t))

@@ -250,7 +250,7 @@ func (p *Postgres) ReleaseRollout(ctx context.Context) release.RolloutStorage {
 					e.ID,
 					e.FlagID,
 					e.DeploymentEnvironmentID,
-					releaseRolloutPlanValue{RolloutDefinition: e.Plan},
+					releaseRolloutPlanValue{RolloutPlan: e.Plan},
 				}, nil
 			},
 			MapFn: func(s iterators.SQLRowScanner, ptr interface{}) error {
@@ -265,7 +265,7 @@ func (p *Postgres) ReleaseRollout(ctx context.Context) release.RolloutStorage {
 					return err
 				}
 
-				rollout.Plan = rolloutPlanValue.RolloutDefinition
+				rollout.Plan = rolloutPlanValue.RolloutPlan
 				return reflects.Link(rollout, ptr)
 			},
 		}),
@@ -277,11 +277,11 @@ type ReleaseRolloutPgStorage struct {
 }
 
 type releaseRolloutPlanValue struct {
-	release.RolloutDefinition
+	release.RolloutPlan
 }
 
 func (rp releaseRolloutPlanValue) Value() (driver.Value, error) {
-	return json.Marshal(release.RolloutDefinitionView{Definition: rp.RolloutDefinition})
+	return json.Marshal(release.RolloutPlanView{Plan: rp.RolloutPlan})
 }
 
 func (rp *releaseRolloutPlanValue) Scan(iSRC interface{}) error {
@@ -291,12 +291,12 @@ func (rp *releaseRolloutPlanValue) Scan(iSRC interface{}) error {
 		return err
 	}
 
-	var rpv release.RolloutDefinitionView
+	var rpv release.RolloutPlanView
 	if err := json.Unmarshal(src, &rpv); err != nil {
 		return err
 	}
 
-	rp.RolloutDefinition = rpv.Definition
+	rp.RolloutPlan = rpv.Plan
 	return nil
 }
 
