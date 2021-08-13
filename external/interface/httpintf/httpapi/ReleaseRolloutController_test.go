@@ -73,7 +73,7 @@ func SpecReleaseRolloutControllerDelete(s *testcase.Spec) {
 		deletedRollout := sh.GetReleaseRollout(t, rollout.Name)
 
 		var stored release.Rollout
-		found, err := sh.StorageGet(t).ReleaseRollout(sh.ContextGet(t)).FindByID(sh.ContextGet(t), deletedRollout.ID, &stored)
+		found, err := sh.StorageGet(t).ReleaseRollout(sh.ContextGet(t)).FindByID(sh.ContextGet(t), &stored, deletedRollout.ID)
 		require.Nil(t, err)
 		require.False(t, found)
 		require.Equal(t, release.Rollout{}, stored)

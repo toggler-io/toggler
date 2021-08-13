@@ -123,7 +123,6 @@ func (ctrl ReleaseRolloutController) Create(w http.ResponseWriter, r *http.Reque
 	err := rrs.Create(ctx, &rr)
 
 	if ctrl.handleFlagValidationError(w, err) {
-		fmt.Println(`????`, err, fmt.Sprintf("%#v", rr))
 		return
 	}
 
