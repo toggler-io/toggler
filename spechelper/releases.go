@@ -103,7 +103,7 @@ func GivenWeHaveReleaseRollout(s *testcase.Spec, vn, flagLVN, envLVN string) {
 
 		rollout := NewFixtureFactory(t).Create(release.Rollout{}).(release.Rollout)
 		rollout.FlagID = rf.ID
-		rollout.DeploymentEnvironmentID = de.ID
+		rollout.EnvironmentID = de.ID
 		rollout.Plan = GetReleaseRolloutPlan(t, vn)
 		require.Nil(t, rollout.Plan.Validate())
 

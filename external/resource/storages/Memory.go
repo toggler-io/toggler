@@ -179,7 +179,7 @@ func (s *MemoryReleaseRolloutStorage) FindByFlagEnvironment(ctx context.Context,
 	for _, v := range s.View(ctx) {
 		r := v.(release.Rollout) // copy
 
-		if r.FlagID == flag.ID && r.DeploymentEnvironmentID == env.ID {
+		if r.FlagID == flag.ID && r.EnvironmentID == env.ID {
 			*ptr = r
 			found = true
 			break

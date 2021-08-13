@@ -16,11 +16,11 @@ import (
 type Rollout struct {
 	ID string `ext:"ID"`
 	// FlagID is the release flag id to which the rolloutBase belongs
-	FlagID string `json:"flag_id"`
+	FlagID string
 	// EnvironmentID is the deployment environment id
-	DeploymentEnvironmentID string `json:"env_id"`
+	EnvironmentID string
 	// Plan holds the composited rule set about the pilot participation decision logic.
-	Plan RolloutPlan `json:"plan"`
+	Plan RolloutPlan
 }
 
 func (r Rollout) Validate() error {
@@ -28,7 +28,7 @@ func (r Rollout) Validate() error {
 		return ErrMissingFlag
 	}
 
-	if r.DeploymentEnvironmentID == `` {
+	if r.EnvironmentID == `` {
 		return ErrMissingEnv
 	}
 
@@ -561,7 +561,7 @@ func (view RolloutPlanView) UnmarshalMapping(data []byte) (_def RolloutPlan, rEr
 }
 
 type rolloutView struct {
-	ID string `ext:"ID" json:"id"`
+	ID string `json:"id,omitempty"`
 	// FlagID is the release flag id to which the rolloutBase belongs
 	FlagID string `json:"flag_id"`
 	// EnvironmentID is the deployment environment id
@@ -574,7 +574,7 @@ func (r Rollout) MarshalJSON() ([]byte, error) {
 	return json.Marshal(rolloutView{
 		ID:                      r.ID,
 		FlagID:                  r.FlagID,
-		DeploymentEnvironmentID: r.DeploymentEnvironmentID,
+		DeploymentEnvironmentID: r.EnvironmentID,
 		RolloutPlan:             RolloutPlanView{Plan: r.Plan},
 	})
 }
@@ -588,7 +588,7 @@ func (r *Rollout) UnmarshalJSON(bs []byte) error {
 
 	r.ID = v.ID
 	r.FlagID = v.FlagID
-	r.DeploymentEnvironmentID = v.DeploymentEnvironmentID
+	r.EnvironmentID = v.DeploymentEnvironmentID
 	r.Plan = v.RolloutPlan.Plan
 	return nil
 }

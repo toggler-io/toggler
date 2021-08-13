@@ -204,9 +204,9 @@ func (ctrl *Controller) rolloutEditPage(w http.ResponseWriter, r *http.Request) 
 func (ctrl *Controller) rolloutUpdateAction(w http.ResponseWriter, r *http.Request) {
 	var rollout release.Rollout
 	rollout.FlagID = r.FormValue(`flag_id`)
-	rollout.DeploymentEnvironmentID = r.FormValue(`env_id`)
+	rollout.EnvironmentID = r.FormValue(`env_id`)
 
-	if storedRollout, found, err := ctrl.lookupRollout(r.Context(), rollout.FlagID, rollout.DeploymentEnvironmentID); ctrl.handleError(w, r, err) {
+	if storedRollout, found, err := ctrl.lookupRollout(r.Context(), rollout.FlagID, rollout.EnvironmentID); ctrl.handleError(w, r, err) {
 		return
 	} else if found {
 		rollout = storedRollout
@@ -239,7 +239,7 @@ func (ctrl *Controller) rolloutUpdateAction(w http.ResponseWriter, r *http.Reque
 
 	u, _ := url.Parse(`/rollout/index`)
 	q := u.Query()
-	q.Set(`env-id`, rollout.DeploymentEnvironmentID)
+	q.Set(`env-id`, rollout.EnvironmentID)
 	u.RawQuery = q.Encode()
 	http.Redirect(w, r, u.String(), http.StatusFound)
 

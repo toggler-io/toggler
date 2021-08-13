@@ -80,8 +80,8 @@ func NewFixtureFactory(tb testing.TB) *fixtures.Factory {
 	factory.RegisterType(release.Rollout{}, func() interface{} {
 		t.Helper()
 		return release.Rollout{
-			FlagID:                  ExampleReleaseFlag(t).ID,
-			DeploymentEnvironmentID: ExampleDeploymentEnvironment(t).ID,
+			FlagID:        ExampleReleaseFlag(t).ID,
+			EnvironmentID: ExampleDeploymentEnvironment(t).ID,
 			Plan: func() release.RolloutPlan {
 				switch t.Random.IntN(3) {
 				case 0:

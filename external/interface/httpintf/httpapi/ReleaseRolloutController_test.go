@@ -125,7 +125,7 @@ func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
 	rollout.Let(s, func(t *testcase.T) interface{} {
 		r := sh.NewFixtureFactory(t).Create(release.Rollout{}).(release.Rollout)
 		r.FlagID = sh.ExampleReleaseFlag(t).ID
-		r.DeploymentEnvironmentID = sh.ExampleDeploymentEnvironment(t).ID
+		r.EnvironmentID = sh.ExampleDeploymentEnvironment(t).ID
 		r.Plan = sh.NewFixtureFactory(t).Create(release.RolloutDecisionByPercentage{}).(release.RolloutDecisionByPercentage)
 		return &r
 	})
@@ -242,7 +242,7 @@ func SpecReleaseRolloutControllerList(s *testcase.Spec) {
 			ar := resp.Body.Rollouts[0]
 			require.Equal(t, rollout.ID, ar.ID)
 			require.Equal(t, rollout.FlagID, ar.FlagID)
-			require.Equal(t, rollout.DeploymentEnvironmentID, ar.DeploymentEnvironmentID)
+			require.Equal(t, rollout.EnvironmentID, ar.EnvironmentID)
 			require.Equal(t, rollout.Plan, ar.Plan)
 		})
 
@@ -265,7 +265,7 @@ func SpecReleaseRolloutControllerList(s *testcase.Spec) {
 
 				require.Equal(t, rollout.ID, ar.ID)
 				require.Equal(t, rollout.FlagID, ar.FlagID)
-				require.Equal(t, rollout.DeploymentEnvironmentID, ar.DeploymentEnvironmentID)
+				require.Equal(t, rollout.EnvironmentID, ar.EnvironmentID)
 				require.Equal(t, rollout.Plan, ar.Plan)
 			})
 		})
@@ -284,7 +284,7 @@ func SpecReleaseRolloutControllerUpdate(s *testcase.Spec) {
 		rollout := sh.GetReleaseRollout(t, rollout.Name)
 		rf.ID = rollout.ID
 		rf.FlagID = rollout.FlagID
-		rf.DeploymentEnvironmentID = rollout.DeploymentEnvironmentID
+		rf.EnvironmentID = rollout.EnvironmentID
 		rf.Plan = sh.NewFixtureFactory(t).Create(release.RolloutDecisionByPercentage{}).(release.RolloutDecisionByPercentage)
 		return &rf
 	})

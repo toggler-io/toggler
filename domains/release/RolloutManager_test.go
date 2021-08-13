@@ -507,9 +507,9 @@ func SpecRolloutManagerGetAllReleaseFlagStatesOfThePilot(s *testcase.Spec) {
 		byPercentage := release.NewRolloutDecisionByPercentage()
 		byPercentage.Percentage = expectedEnrollMaxPercentage
 		rollout := release.Rollout{
-			FlagID:                  flag.ID,
-			DeploymentEnvironmentID: env.ID,
-			Plan:                    byPercentage,
+			FlagID:        flag.ID,
+			EnvironmentID: env.ID,
+			Plan:          byPercentage,
 		}
 		require.Nil(t, sh.StorageGet(t).ReleaseRollout(sh.ContextGet(t)).Create(sh.ContextGet(t), &rollout))
 		t.Defer(func() { require.Nil(t, sh.StorageGet(t).ReleaseRollout(sh.ContextGet(t)).DeleteByID(sh.ContextGet(t), rollout.ID)) })

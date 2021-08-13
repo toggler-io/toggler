@@ -249,7 +249,7 @@ func (p *Postgres) ReleaseRollout(ctx context.Context) release.RolloutStorage {
 				return []interface{}{
 					e.ID,
 					e.FlagID,
-					e.DeploymentEnvironmentID,
+					e.EnvironmentID,
 					releaseRolloutPlanValue{RolloutPlan: e.Plan},
 				}, nil
 			},
@@ -259,7 +259,7 @@ func (p *Postgres) ReleaseRollout(ctx context.Context) release.RolloutStorage {
 				if err := s.Scan(
 					&rollout.ID,
 					&rollout.FlagID,
-					&rollout.DeploymentEnvironmentID,
+					&rollout.EnvironmentID,
 					&rolloutPlanValue,
 				); err != nil {
 					return err

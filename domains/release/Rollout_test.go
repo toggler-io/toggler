@@ -428,9 +428,9 @@ func TestRollout(t *testing.T) {
 	s.Let(`rollout`, func(t *testcase.T) interface{} {
 		plan, _ := t.I(`plan`).(release.RolloutPlan)
 		return &release.Rollout{
-			FlagID:                  sh.ExampleReleaseFlag(t).ID,
-			DeploymentEnvironmentID: sh.ExampleDeploymentEnvironment(t).ID,
-			Plan:                    plan,
+			FlagID:        sh.ExampleReleaseFlag(t).ID,
+			EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID,
+			Plan:          plan,
 		}
 	})
 
@@ -445,7 +445,7 @@ func TestRollout(t *testing.T) {
 
 		s.When(`env id is not set`, func(s *testcase.Spec) {
 			s.Before(func(t *testcase.T) {
-				rollout(t).DeploymentEnvironmentID = ``
+				rollout(t).EnvironmentID = ``
 			})
 
 			s.Then(`it will yield error about it`, func(t *testcase.T) {
@@ -558,9 +558,9 @@ func TestRollout_MarshalJSON_e2e(t *testing.T) {
 	tc := testcase.NewT(t, testcase.NewSpec(t))
 
 	expected := release.Rollout{
-		ID:                      tc.Random.String(),
-		FlagID:                  tc.Random.String(),
-		DeploymentEnvironmentID: tc.Random.String(),
+		ID:            tc.Random.String(),
+		FlagID:        tc.Random.String(),
+		EnvironmentID: tc.Random.String(),
 		Plan: release.RolloutDecisionAND{
 			Left: release.RolloutDecisionOR{
 				Left: release.RolloutDecisionNOT{
