@@ -145,7 +145,7 @@ func TestRolloutDecisionByAPI(t *testing.T) {
 	s := sh.NewSpec(t)
 
 	var rolloutDefinition = func(t *testcase.T) release.RolloutDecisionByAPI {
-		r := release.NewRolloutDecisionByAPI()
+		r := release.NewRolloutDecisionByAPIDeprecated()
 		r.URL, _ = t.I(`url`).(*url.URL)
 		return r
 	}
@@ -510,7 +510,7 @@ func TestRollout(t *testing.T) {
 
 			s.Context(`RolloutDecisionByAPI`, func(s *testcase.Spec) {
 				s.Let(`plan`, func(t *testcase.T) interface{} {
-					plan := release.NewRolloutDecisionByAPI()
+					plan := release.NewRolloutDecisionByAPIDeprecated()
 					u, err := url.Parse(`https://example.com`)
 					require.Nil(t, err)
 					plan.URL = u
@@ -552,4 +552,42 @@ func TestRollout(t *testing.T) {
 		})
 	})
 
+}
+
+func TestRollout_MarshalJSON_e2e(t *testing.T) {
+	tc := testcase.NewT(t, testcase.NewSpec(t))
+
+	expected := release.Rollout{
+		ID:                      tc.Random.String(),
+		FlagID:                  tc.Random.String(),
+		DeploymentEnvironmentID: tc.Random.String(),
+		Plan: release.RolloutDecisionAND{
+			Left: release.RolloutDecisionOR{
+				Left: release.RolloutDecisionNOT{
+					Definition: release.RolloutDecisionByGlobal{
+						State: tc.Random.Bool(),
+					},
+				},
+				Right: release.NewRolloutDecisionByAPI(&url.URL{
+					Scheme: "https",
+					User:   url.UserPassword("foo", "bar"),
+					Host:   "www.toggler.io",
+					Path:   "/ping",
+				}),
+			},
+			Right: release.RolloutDecisionByPercentage{
+				PseudoRandPercentageAlgorithm: "FNV1a64",
+				PseudoRandPercentageFunc:      nil,
+				Seed:                          int64(tc.Random.Int()),
+				Percentage:                    tc.Random.IntBetween(0, 100),
+			},
+		},
+	}
+
+	bs, err := json.MarshalIndent(expected, "", "\t")
+	require.Nil(t, err)
+	t.Log(string(bs))
+	var actual release.Rollout
+	require.Nil(t, json.Unmarshal(bs, &actual))
+	require.Equal(t, expected, actual)
 }

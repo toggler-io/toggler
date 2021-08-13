@@ -20,7 +20,7 @@ type Rollout struct {
 	// EnvironmentID is the deployment environment id
 	DeploymentEnvironmentID string `json:"env_id"`
 	// Plan holds the composited rule set about the pilot participation decision logic.
-	Plan RolloutDefinition `json:"plan,omitempty"`
+	Plan RolloutDefinition `json:"plan"`
 }
 
 func (r Rollout) Validate() error {
@@ -51,12 +51,12 @@ type RolloutDefinition interface {
 //--------------------------------------------------------------------------------------------------------------------//
 
 // TODO: add proper coverage
-func NewRolloutDecisionGlobal() RolloutDecisionByGlobal {
+func NewRolloutDecisionByGlobal() RolloutDecisionByGlobal {
 	return RolloutDecisionByGlobal{}
 }
 
 type RolloutDecisionByGlobal struct {
-	State bool
+	State bool `json:"state"`
 }
 
 func (r RolloutDecisionByGlobal) IsParticipating(ctx context.Context, pilotExternalID string) (bool, error) {
@@ -81,17 +81,17 @@ func NewRolloutDecisionByPercentage() RolloutDecisionByPercentage {
 type RolloutDecisionByPercentage struct {
 	// PseudoRandPercentageAlgorithm specifies the algorithm that is expected to be used in the percentage calculation.
 	// Currently it is only supports FNV1a64 and "func"
-	PseudoRandPercentageAlgorithm string
+	PseudoRandPercentageAlgorithm string `json:"algo"`
 	// PseudoRandPercentageFunc is a dependency that can be used if the Algorithm is not defined or defined to func.
 	// Ideal for testing.
-	PseudoRandPercentageFunc func(id string, seedSalt int64) (int, error)
+	PseudoRandPercentageFunc func(id string, seedSalt int64) (int, error) `json:"-"`
 	// Seed allows you to configure the randomness for the percentage based pilot enrollment selection.
 	// This value could have been neglected by using the flag name as random seed,
 	// but that would reduce the flexibility for edge cases where you want
 	// to use a similar pilot group as a successful flag rolloutBase before.
-	Seed int64
+	Seed int64 `json:"seed"`
 	// Percentage allows you to define how many of your user base should be enrolled pseudo randomly.
-	Percentage int
+	Percentage int `json:"percentage"`
 }
 
 func (s RolloutDecisionByPercentage) IsParticipating(ctx context.Context, pilotExternalID string) (bool, error) {
@@ -158,19 +158,41 @@ func (g PseudoRandPercentageAlgorithms) FNV1a64(id string, seedSalt int64) (int,
 
 //--------------------------------------------------------------------------------------------------------------------//
 
-func NewRolloutDecisionByAPI() RolloutDecisionByAPI {
-	return RolloutDecisionByAPI{
-		HTTPClient: http.Client{Timeout: 30 * time.Second},
-		URL:        nil,
-	}
+func NewRolloutDecisionByAPI(u *url.URL) RolloutDecisionByAPI {
+	return RolloutDecisionByAPI{URL: u}
+}
+
+// NewRolloutDecisionByAPIDeprecated
+// DEPRECATED
+func NewRolloutDecisionByAPIDeprecated() RolloutDecisionByAPI {
+	return NewRolloutDecisionByAPI(nil)
 }
 
 type RolloutDecisionByAPI struct {
-	HTTPClient http.Client
 	// URL allow you to do rolloutBase based on custom domain needs such as target groups,
 	// which decision logic is available trough an API endpoint call
-	URL *url.URL
+	URL *url.URL `json:"url"`
 }
+
+func (s *RolloutDecisionByAPI) UnmarshalJSON(bytes []byte) error {
+	type View struct {
+		Type string `json:"type"`
+		URL  string `json:"url"`
+	}
+	var v View
+	if err := json.Unmarshal(bytes, &v); err != nil {
+		return nil
+	}
+	u, err := url.Parse(v.URL)
+	if err != nil {
+		return fmt.Errorf("invalid url for RolloutDecisionByAPI: %w", err)
+	}
+
+	s.URL = u
+	return nil
+}
+
+var rolloutDecisionByAPIHTTPClient = http.Client{Timeout: 30 * time.Second}
 
 func (s RolloutDecisionByAPI) IsParticipating(ctx context.Context, pilotExternalID string) (bool, error) {
 	req, err := http.NewRequest(`GET`, s.URL.String(), nil)
@@ -183,7 +205,7 @@ func (s RolloutDecisionByAPI) IsParticipating(ctx context.Context, pilotExternal
 	query.Set(`pilot-external-id`, pilotExternalID)
 	req.URL.RawQuery = query.Encode()
 
-	resp, err := s.HTTPClient.Do(req)
+	resp, err := rolloutDecisionByAPIHTTPClient.Do(req)
 	if err != nil {
 		return false, err
 	}
@@ -226,8 +248,8 @@ func (s RolloutDecisionByAPI) Validate() error {
 //--------------------------------------------------------------------------------------------------------------------//
 
 type RolloutDecisionAND struct {
-	Left  RolloutDefinition
-	Right RolloutDefinition
+	Left  RolloutDefinition `json:"left"`
+	Right RolloutDefinition `json:"right"`
 }
 
 // TODO:SPEC
@@ -263,8 +285,8 @@ func (r RolloutDecisionAND) Validate() error {
 //--------------------------------------------------------------------------------------------------------------------//
 
 type RolloutDecisionOR struct {
-	Left  RolloutDefinition
-	Right RolloutDefinition
+	Left  RolloutDefinition `json:"left"`
+	Right RolloutDefinition `json:"right"`
 }
 
 // TODO:SPEC
@@ -300,7 +322,7 @@ func (r RolloutDecisionOR) Validate() error {
 //--------------------------------------------------------------------------------------------------------------------//
 
 type RolloutDecisionNOT struct {
-	Definition RolloutDefinition
+	Definition RolloutDefinition `json:"def"`
 }
 
 // TODO:SPEC
@@ -337,7 +359,7 @@ func (r RolloutDecisionNOT) Validate() error {
 //--------------------------------------------------------------------------------------------------------------------//
 
 type RolloutDefinitionView struct {
-	Definition RolloutDefinition
+	Definition RolloutDefinition `json:"def"`
 }
 
 func (view RolloutDefinitionView) MarshalJSON() ([]byte, error) {
@@ -349,12 +371,7 @@ func (view RolloutDefinitionView) MarshalJSON() ([]byte, error) {
 }
 
 func (view *RolloutDefinitionView) UnmarshalJSON(bytes []byte) error {
-	mapping := make(map[string]interface{})
-	if err := json.Unmarshal(bytes, &mapping); err != nil {
-		return err
-	}
-
-	plan, err := view.UnmarshalMapping(mapping)
+	plan, err := view.UnmarshalMapping(bytes)
 	if err != nil {
 		return err
 	}
@@ -380,7 +397,7 @@ func (view RolloutDefinitionView) MarshalMapping(this RolloutDefinition) (map[st
 	case RolloutDecisionByPercentage:
 		m[`type`] = `percentage`
 		m[`percentage`] = d.Percentage
-		m[`algorithm`] = d.PseudoRandPercentageAlgorithm
+		m[`algo`] = d.PseudoRandPercentageAlgorithm
 		m[`seed`] = d.Seed
 		return m, nil
 
@@ -435,101 +452,111 @@ func (view RolloutDefinitionView) MarshalMapping(this RolloutDefinition) (map[st
 	}
 }
 
-func (view RolloutDefinitionView) UnmarshalMapping(this map[string]interface{}) (_ RolloutDefinition, rErr error) {
+func (view RolloutDefinitionView) UnmarshalMapping(data []byte) (_def RolloutDefinition, rErr error) {
 	defer func() {
 		if r := recover(); r != nil {
 			rErr = fmt.Errorf(`%v`, r)
 		}
 	}()
 
-	if this == nil {
+	type TypeResolver struct {
+		Type string `json:"type"`
+	}
+
+	if data == nil {
 		return nil, nil
 	}
 
-	switch strings.ToLower(this[`type`].(string)) {
+	var tr TypeResolver
+	if err := json.Unmarshal(data, &tr); err != nil {
+		return nil, err
+	}
+
+	type LeftRight struct {
+		Left  json.RawMessage
+		Right json.RawMessage
+	}
+
+	switch strings.ToLower(tr.Type) {
 	case `global`:
-		d := NewRolloutDecisionGlobal()
-		if v, ok := this[`state`]; ok {
-			d.State = v.(bool)
+		d := NewRolloutDecisionByGlobal()
+		if err := json.Unmarshal(data, &d); err != nil {
+			return nil, err
 		}
 		return d, nil
 
 	case `percentage`:
 		d := NewRolloutDecisionByPercentage()
-		if v, ok := this[`percentage`]; ok {
-			d.Percentage = int(v.(float64))
+		if err := json.Unmarshal(data, &d); err != nil {
+			return nil, err
 		}
-
-		if v, ok := this[`algorithm`]; ok {
-			d.PseudoRandPercentageAlgorithm = v.(string)
-		}
-
-		if v, ok := this[`seed`]; ok {
-			d.Seed = int64(v.(float64))
-		}
-
 		return d, nil
 
 	case `api`:
-		d := NewRolloutDecisionByAPI()
-		raw, ok := this[`url`]
-		if !ok {
-			return d, fmt.Errorf(`missing url for rollout decision by API`)
+		d := NewRolloutDecisionByAPI(nil)
+		if err := json.Unmarshal(data, &d); err != nil {
+			return nil, err
 		}
-		u, err := url.Parse(raw.(string))
-		if err != nil {
-			return d, err
-		}
-		d.URL = u
 		return d, nil
 
 	case `and`:
 		var d RolloutDecisionAND
 
-		l, err := view.UnmarshalMapping(this[`left`].(map[string]interface{}))
-		if err != nil {
-			return d, err
+		var lr LeftRight
+		if err := json.Unmarshal(data, &lr); err != nil {
+			return nil, err
 		}
-		d.Left = l
-
-		r, err := view.UnmarshalMapping(this[`right`].(map[string]interface{}))
-		if err != nil {
-			return d, err
+		if def, err := view.UnmarshalMapping(lr.Left); err != nil {
+			return nil, err
+		} else {
+			d.Left = def
 		}
-		d.Right = r
-
+		if def, err := view.UnmarshalMapping(lr.Right); err != nil {
+			return nil, err
+		} else {
+			d.Right = def
+		}
 		return d, nil
 
 	case `or`:
 		var d RolloutDecisionOR
 
-		l, err := view.UnmarshalMapping(this[`left`].(map[string]interface{}))
-		if err != nil {
-			return d, err
+		var lr LeftRight
+		if err := json.Unmarshal(data, &lr); err != nil {
+			return nil, err
 		}
-		d.Left = l
-
-		r, err := view.UnmarshalMapping(this[`right`].(map[string]interface{}))
-		if err != nil {
-			return d, err
+		if def, err := view.UnmarshalMapping(lr.Left); err != nil {
+			return nil, err
+		} else {
+			d.Left = def
 		}
-		d.Right = r
-
+		if def, err := view.UnmarshalMapping(lr.Right); err != nil {
+			return nil, err
+		} else {
+			d.Right = def
+		}
 		return d, nil
 
 	case `not`:
 		var d RolloutDecisionNOT
+		type Envelop struct {
+			Definition json.RawMessage `json:"def"`
+		}
+		var e Envelop
+		if err := json.Unmarshal(data, &e); err != nil {
+			return nil, err
+		}
 
-		def, err := view.UnmarshalMapping(this[`def`].(map[string]interface{}))
+		def, err := view.UnmarshalMapping(e.Definition)
 		if err != nil {
-			return d, err
+			return nil, err
 		}
 		d.Definition = def
 
 		return d, nil
 
 	default:
-		return nil, fmt.Errorf(`unknown rollout definition type: %s`, this[`type`])
+		return nil, fmt.Errorf(`unknown rollout definition type: %s`, tr.Type)
 	}
 }
 

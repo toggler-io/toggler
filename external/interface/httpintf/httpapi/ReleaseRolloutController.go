@@ -3,7 +3,6 @@ package httpapi
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/adamluzsi/frameless/iterators"
@@ -74,7 +73,7 @@ type CreateReleaseRolloutRequest struct {
 type CreateReleaseRolloutResponse struct {
 	// in: body
 	Body struct {
-		Rollout Rollout `json:"rollout"`
+		Rollout release.Rollout `json:"rollout"`
 	}
 }
 
@@ -127,10 +126,7 @@ func (ctrl ReleaseRolloutController) Create(w http.ResponseWriter, r *http.Reque
 	}
 
 	var resp CreateReleaseRolloutResponse
-	resp.Body.Rollout.ID = p.Rollout.ID
-	resp.Body.Rollout.FlagID = p.Rollout.FlagID
-	resp.Body.Rollout.EnvironmentID = p.Rollout.DeploymentEnvironmentID
-	resp.Body.Rollout.Plan = release.RolloutDefinitionView{Definition: p.Rollout.Plan}
+	resp.Body.Rollout = rr
 	serveJSON(w, resp.Body)
 }
 
@@ -141,7 +137,7 @@ func (ctrl ReleaseRolloutController) Create(w http.ResponseWriter, r *http.Reque
 type ListReleaseRolloutResponse struct {
 	// in: body
 	Body struct {
-		Rollouts []Rollout `json:"rollouts"`
+		Rollouts []release.Rollout `json:"rollouts"`
 	}
 }
 
@@ -177,13 +173,7 @@ func (ctrl ReleaseRolloutController) List(w http.ResponseWriter, r *http.Request
 	err := iterators.ForEach(
 		ctrl.UseCases.Storage.ReleaseRollout(ctx).FindAll(ctx),
 		func(r release.Rollout) error {
-			resp.Body.Rollouts = append(resp.Body.Rollouts, Rollout{
-				ID:            r.ID,
-				FlagID:        r.FlagID,
-				EnvironmentID: r.DeploymentEnvironmentID,
-				Plan:          release.RolloutDefinitionView{Definition: r.Plan},
-			})
-
+			resp.Body.Rollouts = append(resp.Body.Rollouts, r)
 			return nil
 		},
 	)
@@ -224,9 +214,7 @@ type UpdateReleaseRolloutRequest struct {
 	RolloutID string `json:"rolloutID"`
 	// in: body
 	Body struct {
-		Rollout struct {
-			Plan interface{} `json:"plan"`
-		} `json:"rollout"`
+		Rollout release.Rollout `json:"rollout"`
 	}
 }
 
@@ -270,20 +258,14 @@ func (ctrl ReleaseRolloutController) Update(w http.ResponseWriter, r *http.Reque
 	decoder.DisallowUnknownFields()
 	defer r.Body.Close() // ignorable
 
-	type Payload struct {
-		Rollout struct {
-			Plan release.RolloutDefinitionView `json:"plan"`
-		} `json:"rollout"`
-	}
-	var p Payload
-
-	if handleError(w, decoder.Decode(&p), http.StatusBadRequest) {
+	var p UpdateReleaseRolloutRequest
+	if handleError(w, decoder.Decode(&p.Body), http.StatusBadRequest) {
 		return
 	}
 
 	ctx := r.Context()
 	rollout := ctx.Value(ReleaseRolloutContextKey{}).(release.Rollout)
-	rollout.Plan = p.Rollout.Plan.Definition
+	rollout.Plan = p.Body.Rollout.Plan
 
 	if ctrl.handleFlagValidationError(w, ctrl.UseCases.Storage.ReleaseRollout(r.Context()).Update(r.Context(), &rollout)) {
 		return
@@ -344,13 +326,4 @@ func (ctrl ReleaseRolloutController) Delete(w http.ResponseWriter, r *http.Reque
 	}
 
 	w.WriteHeader(200)
-}
-
-//--------------------------------------------------------------------------------------------------------------------//
-
-type Rollout struct {
-	ID            string      `json:"id"`
-	FlagID        string      `json:"flag_id"`
-	EnvironmentID string      `json:"env_id"`
-	Plan          interface{} `json:"plan"`
 }

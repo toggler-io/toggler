@@ -157,10 +157,7 @@ func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
 	s.Then(`it returns rollout in the response`, func(t *testcase.T) {
 		resp := onSuccess(t)
 		stored := FindStoredReleaseRollout(t)
-		planMap := getPlanMap(t, resp.Body.Rollout)
-		expectedPlanMap, err := release.RolloutDefinitionView{}.MarshalMapping(stored.Plan)
-		require.Nil(t, err)
-		require.Equal(t, expectedPlanMap, planMap)
+		require.Equal(t, stored.Plan, resp.Body.Rollout.Plan)
 	})
 
 	s.And(`if input contains invalid values`, func(s *testcase.Spec) {
@@ -241,14 +238,12 @@ func SpecReleaseRolloutControllerList(s *testcase.Spec) {
 			resp := onSuccess(t)
 			require.Len(t, resp.Body.Rollouts, 1)
 			rollout := sh.GetReleaseRollout(t, `rollout-1`)
-			plan, err := release.RolloutDefinitionView{}.MarshalMapping(rollout.Plan)
-			require.Nil(t, err)
 
 			ar := resp.Body.Rollouts[0]
 			require.Equal(t, rollout.ID, ar.ID)
 			require.Equal(t, rollout.FlagID, ar.FlagID)
-			require.Equal(t, rollout.DeploymentEnvironmentID, ar.EnvironmentID)
-			require.Equal(t, plan, getPlanMap(t, ar))
+			require.Equal(t, rollout.DeploymentEnvironmentID, ar.DeploymentEnvironmentID)
+			require.Equal(t, rollout.Plan, ar.Plan)
 		})
 
 		s.And(`even multiple rollout in the system`, func(s *testcase.Spec) {
@@ -259,10 +254,8 @@ func SpecReleaseRolloutControllerList(s *testcase.Spec) {
 				resp := onSuccess(t)
 				rollout := sh.GetReleaseRollout(t, `feature-2`)
 				require.Len(t, resp.Body.Rollouts, 2)
-				plan, err := release.RolloutDefinitionView{}.MarshalMapping(rollout.Plan)
-				require.Nil(t, err)
 
-				var ar httpapi.Rollout
+				var ar release.Rollout
 				for _, r := range resp.Body.Rollouts {
 					if r.ID == rollout.ID {
 						ar = r
@@ -272,8 +265,8 @@ func SpecReleaseRolloutControllerList(s *testcase.Spec) {
 
 				require.Equal(t, rollout.ID, ar.ID)
 				require.Equal(t, rollout.FlagID, ar.FlagID)
-				require.Equal(t, rollout.DeploymentEnvironmentID, ar.EnvironmentID)
-				require.Equal(t, plan, getPlanMap(t, ar))
+				require.Equal(t, rollout.DeploymentEnvironmentID, ar.DeploymentEnvironmentID)
+				require.Equal(t, rollout.Plan, ar.Plan)
 			})
 		})
 	})
@@ -299,7 +292,7 @@ func SpecReleaseRolloutControllerUpdate(s *testcase.Spec) {
 	Body.Let(s, func(t *testcase.T) interface{} {
 		rollout := sh.GetReleaseRollout(t, `updated-rollout`)
 		var req httpapi.UpdateReleaseRolloutRequest
-		req.Body.Rollout.Plan = release.RolloutDefinitionView{Definition: rollout.Plan}
+		req.Body.Rollout = *rollout
 		return req.Body
 	})
 
@@ -376,15 +369,4 @@ func FindStoredReleaseRollout(t *testcase.T) release.Rollout {
 	require.Nil(t, err)
 	require.True(t, found)
 	return r
-}
-
-func getPlanMap(t *testcase.T, rollout httpapi.Rollout) map[string]interface{} {
-	p := rollout.Plan.(map[string]interface{})
-	if s, ok := p[`seed`]; ok {
-		p[`seed`] = int64(s.(float64))
-	}
-	if percentage, ok := p[`percentage`]; ok {
-		p[`percentage`] = int(percentage.(float64))
-	}
-	return p
 }

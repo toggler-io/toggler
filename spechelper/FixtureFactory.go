@@ -43,7 +43,7 @@ func NewFixtureFactory(tb testing.TB) *fixtures.Factory {
 	})
 	factory.RegisterType(release.RolloutDecisionByAPI{}, func() interface{} {
 		var byAPI release.RolloutDecisionByAPI
-		byAPI = release.NewRolloutDecisionByAPI()
+		byAPI = release.NewRolloutDecisionByAPIDeprecated()
 		u, err := url.ParseRequestURI(fmt.Sprintf(`https://example.com/%s`, url.PathEscape(t.Random.String())))
 		if err != nil {
 			panic(err.Error())
@@ -90,7 +90,7 @@ func NewFixtureFactory(tb testing.TB) *fixtures.Factory {
 					return byPercentage
 
 				case 1:
-					byAPI := release.NewRolloutDecisionByAPI()
+					byAPI := release.NewRolloutDecisionByAPIDeprecated()
 					u, err := url.ParseRequestURI(fmt.Sprintf(`https://example.com/%s`, url.PathEscape(t.Random.String())))
 					if err != nil {
 						panic(err.Error())
@@ -102,7 +102,7 @@ func NewFixtureFactory(tb testing.TB) *fixtures.Factory {
 					byPercentage := release.NewRolloutDecisionByPercentage()
 					byPercentage.Percentage = t.Random.IntBetween(0, 100)
 
-					byAPI := release.NewRolloutDecisionByAPI()
+					byAPI := release.NewRolloutDecisionByAPIDeprecated()
 					u, err := url.ParseRequestURI(fmt.Sprintf(`https://example.com/%s`, url.PathEscape(t.Random.String())))
 					if err != nil {
 						panic(err.Error())
