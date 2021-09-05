@@ -3,11 +3,12 @@ package httpapi_test
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/toggler-io/toggler/domains/release"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	"github.com/toggler-io/toggler/domains/release"
 
 	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/testcase"
@@ -25,7 +26,7 @@ import (
 var env = testcase.Var{
 	Name: `deployment-environment`,
 	Init: func(t *testcase.T) interface{} {
-		e := sh.NewFixtureFactory(t).Create(release.Environment{}).(release.Environment)
+		e := sh.NewFixtureFactory(t).Fixture(release.Environment{}, sh.ContextGet(t)).(release.Environment)
 		return &e
 	},
 }
@@ -231,7 +232,7 @@ func SpecDeploymentEnvironmentControllerUpdate(s *testcase.Spec) {
 	})
 
 	updatedEnv := s.Let(`updated-deployment-environment`, func(t *testcase.T) interface{} {
-		rf := sh.NewFixtureFactory(t).Create(release.Environment{}).(release.Environment)
+		rf := sh.NewFixtureFactory(t).Fixture(release.Environment{}, sh.ContextGet(t)).(release.Environment)
 		rf.ID = envGet(t).ID
 		return &rf
 	})

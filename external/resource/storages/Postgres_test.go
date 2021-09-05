@@ -2,14 +2,15 @@ package storages_test
 
 import (
 	"context"
-	csh "github.com/adamluzsi/frameless/contracts"
+	"os"
+	"testing"
+
+	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/testcase"
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/security"
 	"github.com/toggler-io/toggler/domains/toggler"
 	"github.com/toggler-io/toggler/external/resource/storages/migrations"
-	"os"
-	"testing"
 
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/require"
@@ -47,8 +48,11 @@ func SpecPostgres(tb testing.TB) {
 		Subject: func(tb testing.TB) toggler.Storage {
 			return storage
 		},
-		FixtureFactory: func(tb testing.TB) csh.FixtureFactory {
+		FixtureFactory: func(tb testing.TB) frameless.FixtureFactory {
 			return sh.NewFixtureFactory(tb)
+		},
+		Context: func(tb testing.TB) context.Context {
+			return context.Background()
 		},
 	})
 }

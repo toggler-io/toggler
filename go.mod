@@ -3,7 +3,7 @@ module github.com/toggler-io/toggler
 go 1.16
 
 require (
-	github.com/adamluzsi/frameless v0.47.2
+	github.com/adamluzsi/frameless v0.52.0
 	github.com/adamluzsi/frameless/postgresql v0.0.0-20210715212705-58e8f3c31b2b
 	github.com/adamluzsi/gorest v0.6.1
 	github.com/adamluzsi/testcase v0.50.0
@@ -26,6 +26,8 @@ require (
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/unrolled/logger v0.0.0-20190327162521-be1a2406c7c9 // test
+	golang.org/x/mod v0.5.0 // indirect
+	golang.org/x/sys v0.0.0-20210903071746-97244b99971b // indirect
 	golang.org/x/tools v0.1.5 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 )

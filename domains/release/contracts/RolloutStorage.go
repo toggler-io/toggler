@@ -1,8 +1,10 @@
 package contracts
 
 import (
-	"github.com/adamluzsi/frameless"
+	"context"
 	"testing"
+
+	"github.com/adamluzsi/frameless"
 
 	"github.com/adamluzsi/frameless/contracts"
 	"github.com/adamluzsi/testcase"
@@ -14,7 +16,8 @@ import (
 
 type RolloutStorage struct {
 	Subject        func(testing.TB) release.Storage
-	FixtureFactory func(testing.TB) contracts.FixtureFactory
+	Context        func(testing.TB) context.Context
+	FixtureFactory func(testing.TB) frameless.FixtureFactory
 }
 
 func (c RolloutStorage) storage() testcase.Var {
@@ -49,7 +52,7 @@ func (c RolloutStorage) Spec(s *testcase.Spec) {
 	sh.FixtureFactoryLet(s, c.FixtureFactory)
 
 	newRolloutStorage := func(tb testing.TB) release.RolloutStorage {
-		return c.Subject(tb).ReleaseRollout(c.FixtureFactory(tb).Context())
+		return c.Subject(tb).ReleaseRollout(c.Context(tb))
 	}
 
 	T := release.Rollout{}
@@ -58,37 +61,43 @@ func (c RolloutStorage) Spec(s *testcase.Spec) {
 			Subject: func(tb testing.TB) contracts.CRD {
 				return newRolloutStorage(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		contracts.Finder{T: T,
 			Subject: func(tb testing.TB) contracts.CRD {
 				return newRolloutStorage(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		contracts.Updater{T: T,
 			Subject: func(tb testing.TB) contracts.UpdaterSubject {
 				return newRolloutStorage(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		contracts.Deleter{T: T,
 			Subject: func(tb testing.TB) contracts.CRD {
 				return newRolloutStorage(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		contracts.Publisher{T: T,
 			Subject: func(tb testing.TB) contracts.PublisherSubject {
 				return newRolloutStorage(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		contracts.OnePhaseCommitProtocol{T: release.Rollout{},
 			Subject: func(tb testing.TB) (frameless.OnePhaseCommitProtocol, contracts.CRD) {
 				storage := c.Subject(tb)
-				return storage, storage.ReleaseRollout(c.FixtureFactory(tb).Context())
+				return storage, storage.ReleaseRollout(c.Context(tb))
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 	)
@@ -129,7 +138,7 @@ func (c RolloutStorage) specFindReleaseRolloutByReleaseFlagAndDeploymentEnvironm
 
 	s.When(`rollout is not in the storage`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			contracts.DeleteAllEntity(t, c.storageGet(t), sh.FixtureFactoryGet(t).Context())
+			contracts.DeleteAllEntity(t, c.storageGet(t), c.Context(t))
 		})
 
 		s.Then(`it will yield no result`, func(t *testcase.T) {

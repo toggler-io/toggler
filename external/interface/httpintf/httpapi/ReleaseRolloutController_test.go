@@ -123,10 +123,10 @@ func SpecReleaseRolloutControllerCreate(s *testcase.Spec) {
 	})
 
 	rollout.Let(s, func(t *testcase.T) interface{} {
-		r := sh.NewFixtureFactory(t).Create(release.Rollout{}).(release.Rollout)
+		r := sh.NewFixtureFactory(t).Fixture(release.Rollout{}, sh.ContextGet(t)).(release.Rollout)
 		r.FlagID = sh.ExampleReleaseFlag(t).ID
 		r.EnvironmentID = sh.ExampleDeploymentEnvironment(t).ID
-		r.Plan = sh.NewFixtureFactory(t).Create(release.RolloutDecisionByPercentage{}).(release.RolloutDecisionByPercentage)
+		r.Plan = sh.NewFixtureFactory(t).Fixture(release.RolloutDecisionByPercentage{}, sh.ContextGet(t)).(release.RolloutDecisionByPercentage)
 		return &r
 	})
 
@@ -280,12 +280,12 @@ func SpecReleaseRolloutControllerUpdate(s *testcase.Spec) {
 	})
 
 	s.Let(`updated-rollout`, func(t *testcase.T) interface{} {
-		rf := sh.NewFixtureFactory(t).Create(release.Rollout{}).(release.Rollout)
+		rf := sh.NewFixtureFactory(t).Fixture(release.Rollout{}, sh.ContextGet(t)).(release.Rollout)
 		rollout := sh.GetReleaseRollout(t, rollout.Name)
 		rf.ID = rollout.ID
 		rf.FlagID = rollout.FlagID
 		rf.EnvironmentID = rollout.EnvironmentID
-		rf.Plan = sh.NewFixtureFactory(t).Create(release.RolloutDecisionByPercentage{}).(release.RolloutDecisionByPercentage)
+		rf.Plan = sh.NewFixtureFactory(t).Fixture(release.RolloutDecisionByPercentage{}, sh.ContextGet(t)).(release.RolloutDecisionByPercentage)
 		return &rf
 	})
 

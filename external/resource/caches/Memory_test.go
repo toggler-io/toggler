@@ -1,6 +1,10 @@
 package caches_test
 
 import (
+	"context"
+	"testing"
+
+	"github.com/adamluzsi/frameless"
 	csh "github.com/adamluzsi/frameless/contracts"
 	"github.com/adamluzsi/testcase"
 	"github.com/google/uuid"
@@ -12,7 +16,6 @@ import (
 	"github.com/toggler-io/toggler/external/resource/caches"
 	"github.com/toggler-io/toggler/external/resource/storages"
 	sh "github.com/toggler-io/toggler/spechelper"
-	"testing"
 )
 
 var (
@@ -34,9 +37,9 @@ func TestMemory_smoke(t *testing.T) {
 		require.Nil(t, err)
 		t.Cleanup(func() { require.Nil(t, m.Close()) })
 		ff := sh.NewFixtureFactory(t)
-		ctx := ff.Context()
+		ctx := context.Background()
 		ts := m.SecurityToken(ctx)
-		token := ff.Create(security.Token{}).(security.Token)
+		token := ff.Fixture(security.Token{}, ctx).(security.Token)
 		csh.CreateEntity(t, ts, ctx, &token)
 		token.OwnerUID = uuid.New().String()
 		csh.UpdateEntity(t, ts, ctx, &token)
@@ -56,8 +59,11 @@ func SpecMemory(tb testing.TB) {
 			tb.Cleanup(func() { require.Nil(tb, m.Close()) })
 			return m
 		},
-		FixtureFactory: func(tb testing.TB) csh.FixtureFactory {
+		FixtureFactory: func(tb testing.TB) frameless.FixtureFactory {
 			return sh.NewFixtureFactory(tb)
+		},
+		Context: func(tb testing.TB) context.Context {
+			return context.Background()
 		},
 	})
 }

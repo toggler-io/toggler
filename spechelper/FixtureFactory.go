@@ -4,11 +4,12 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"fmt"
-	"github.com/adamluzsi/frameless/contracts"
 	"net/url"
 	"testing"
 	"time"
 
+	"github.com/adamluzsi/frameless"
+	ff "github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/testcase"
 	"github.com/adamluzsi/testcase/fixtures"
 	"github.com/google/uuid"
@@ -19,15 +20,15 @@ import (
 
 var FixtureFactory = testcase.Var{Name: "contracts.FixtureFactory"}
 
-func FixtureFactoryGet(t *testcase.T) contracts.FixtureFactory {
-	return FixtureFactory.Get(t).(contracts.FixtureFactory)
+func FixtureFactoryGet(t *testcase.T) frameless.FixtureFactory {
+	return FixtureFactory.Get(t).(frameless.FixtureFactory)
 }
 
-func FixtureFactoryLet(s *testcase.Spec, blk func(testing.TB) contracts.FixtureFactory) {
+func FixtureFactoryLet(s *testcase.Spec, blk func(testing.TB) frameless.FixtureFactory) {
 	FixtureFactory.Let(s, func(t *testcase.T) interface{} { return blk(t) })
 }
 
-func NewFixtureFactory(tb testing.TB) *fixtures.Factory {
+func NewFixtureFactory(tb testing.TB) frameless.FixtureFactory {
 	t, ok := tb.(*testcase.T)
 	if !ok {
 		t = testcase.NewT(tb, NewSpec(tb))
@@ -120,5 +121,5 @@ func NewFixtureFactory(tb testing.TB) *fixtures.Factory {
 			}(),
 		}
 	})
-	return factory
+	return &ff.Factory{Factory: factory}
 }

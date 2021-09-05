@@ -90,7 +90,7 @@ func SpecReleaseFlagControllerCreate(s *testcase.Spec) {
 	})
 
 	s.Let(`release-flag`, func(t *testcase.T) interface{} {
-		rf := sh.NewFixtureFactory(t).Create(release.Flag{}).(release.Flag)
+		rf := sh.NewFixtureFactory(t).Fixture(release.Flag{}, sh.ContextGet(t)).(release.Flag)
 		return &rf
 	})
 
@@ -220,7 +220,7 @@ func SpecReleaseFlagControllerUpdate(s *testcase.Spec) {
 	})
 
 	s.Let(`updated-release-flag`, func(t *testcase.T) interface{} {
-		rf := sh.NewFixtureFactory(t).Create(release.Flag{}).(release.Flag)
+		rf := sh.NewFixtureFactory(t).Fixture(release.Flag{},sh.ContextGet(t)).(release.Flag)
 		rf.ID = sh.GetReleaseFlag(t, `release-flag`).ID
 		return &rf
 	})

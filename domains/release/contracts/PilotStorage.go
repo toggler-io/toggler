@@ -2,10 +2,11 @@ package contracts
 
 import (
 	"context"
-	"github.com/adamluzsi/frameless"
 	"math/rand"
 	"strconv"
 	"testing"
+
+	"github.com/adamluzsi/frameless"
 
 	"github.com/adamluzsi/frameless/contracts"
 	"github.com/adamluzsi/frameless/iterators"
@@ -20,7 +21,8 @@ import (
 
 type PilotStorage struct {
 	Subject        func(testing.TB) release.Storage
-	FixtureFactory func(testing.TB) contracts.FixtureFactory
+	Context        func(testing.TB) context.Context
+	FixtureFactory func(testing.TB) frameless.FixtureFactory
 }
 
 func (c PilotStorage) storage() testcase.Var {
@@ -34,10 +36,6 @@ func (c PilotStorage) storage() testcase.Var {
 
 func (c PilotStorage) storageGet(t *testcase.T) release.PilotStorage {
 	return c.storage().Get(t).(release.PilotStorage)
-}
-
-func (c PilotStorage) context(t *testcase.T) context.Context {
-	return sh.FixtureFactoryGet(t).Context()
 }
 
 func (c PilotStorage) String() string {
@@ -62,7 +60,7 @@ func (c PilotStorage) Spec(s *testcase.Spec) {
 	})
 
 	releasePilotStorage := func(tb testing.TB) release.PilotStorage {
-		return c.Subject(tb).ReleasePilot(c.FixtureFactory(tb).Context())
+		return c.Subject(tb).ReleasePilot(c.Context(tb))
 	}
 
 	T := release.Pilot{}
@@ -71,37 +69,43 @@ func (c PilotStorage) Spec(s *testcase.Spec) {
 			Subject: func(tb testing.TB) contracts.CRD {
 				return releasePilotStorage(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		contracts.Finder{T: T,
 			Subject: func(tb testing.TB) contracts.CRD {
 				return releasePilotStorage(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		contracts.Updater{T: T,
 			Subject: func(tb testing.TB) contracts.UpdaterSubject {
 				return releasePilotStorage(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		contracts.Deleter{T: T,
 			Subject: func(tb testing.TB) contracts.CRD {
 				return releasePilotStorage(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		contracts.Publisher{T: T,
 			Subject: func(tb testing.TB) contracts.PublisherSubject {
 				return releasePilotStorage(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		contracts.OnePhaseCommitProtocol{T: release.Pilot{},
 			Subject: func(tb testing.TB) (frameless.OnePhaseCommitProtocol, contracts.CRD) {
 				storage := c.Subject(tb)
-				return storage, storage.ReleasePilot(c.FixtureFactory(tb).Context())
+				return storage, storage.ReleasePilot(c.Context(tb))
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 	)
@@ -112,15 +116,15 @@ func (c PilotStorage) Spec(s *testcase.Spec) {
 func (c PilotStorage) specPilotFinder(s *testcase.Spec) {
 	s.Describe(`ManualPilotFinder`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			contracts.DeleteAllEntity(t, c.storageGet(t), c.context(t))
+			contracts.DeleteAllEntity(t, c.storageGet(t), c.Context(t))
 		})
 		s.After(func(t *testcase.T) {
-			contracts.DeleteAllEntity(t, c.storageGet(t), c.context(t))
+			contracts.DeleteAllEntity(t, c.storageGet(t), c.Context(t))
 		})
 
 		s.Describe(`.FindByFlag`, func(s *testcase.Spec) {
 			subject := func(t *testcase.T) iterators.Interface {
-				pilotEntriesIter := c.storageGet(t).FindByFlag(c.context(t), *sh.ExampleReleaseFlag(t))
+				pilotEntriesIter := c.storageGet(t).FindByFlag(c.Context(t), *sh.ExampleReleaseFlag(t))
 				t.Defer(pilotEntriesIter.Close)
 				return pilotEntriesIter
 			}
@@ -137,7 +141,7 @@ func (c PilotStorage) specPilotFinder(s *testcase.Spec) {
 
 			s.When(`flag was never persisted before`, func(s *testcase.Spec) {
 				s.Let(sh.LetVarExampleReleaseFlag, func(t *testcase.T) interface{} {
-					rf := sh.FixtureFactoryGet(t).Create(release.Flag{}).(release.Flag)
+					rf := sh.FixtureFactoryGet(t).Fixture(release.Flag{}, c.Context(t)).(release.Flag)
 					return &rf
 				})
 
@@ -157,7 +161,7 @@ func (c PilotStorage) specPilotFinder(s *testcase.Spec) {
 								PublicID:      strconv.Itoa(i),
 							}
 
-							contracts.CreateEntity(t, c.storageGet(t), c.context(t), pilot)
+							contracts.CreateEntity(t, c.storageGet(t), c.Context(t), pilot)
 							expectedPilots = append(expectedPilots, pilot)
 						}
 						return expectedPilots
@@ -190,7 +194,7 @@ func (c PilotStorage) specPilotFinder(s *testcase.Spec) {
 		s.Describe(`FindReleaseManualPilotByExternalID`, func(s *testcase.Spec) {
 			var subject = func(t *testcase.T) (*release.Pilot, error) {
 				return c.storageGet(t).FindByFlagEnvPublicID(
-					c.context(t),
+					c.Context(t),
 					sh.ExampleReleaseFlag(t).ID,
 					sh.ExampleDeploymentEnvironment(t).ID,
 					sh.ExampleIDGet(t),
@@ -198,7 +202,7 @@ func (c PilotStorage) specPilotFinder(s *testcase.Spec) {
 			}
 
 			s.Before(func(t *testcase.T) {
-				contracts.DeleteAllEntity(t, c.storageGet(t), c.context(t))
+				contracts.DeleteAllEntity(t, c.storageGet(t), c.Context(t))
 			})
 
 			ThenNoPilotsFound := func(s *testcase.Spec) {
@@ -211,7 +215,7 @@ func (c PilotStorage) specPilotFinder(s *testcase.Spec) {
 
 			s.When(`flag is not persisted`, func(s *testcase.Spec) {
 				s.Let(sh.LetVarExampleReleaseFlag, func(t *testcase.T) interface{} {
-					rf := sh.FixtureFactoryGet(t).Create(release.Flag{}).(release.Flag)
+					rf := sh.FixtureFactoryGet(t).Fixture(release.Flag{}, c.Context(t)).(release.Flag)
 					return &rf
 				})
 
@@ -232,7 +236,7 @@ func (c PilotStorage) specPilotFinder(s *testcase.Spec) {
 							EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID,
 							PublicID:      sh.ExampleIDGet(t),
 						}
-						contracts.CreateEntity(t, c.storageGet(t), c.context(t), pilot)
+						contracts.CreateEntity(t, c.storageGet(t), c.Context(t), pilot)
 					})
 
 					s.Then(`then pilots will be retrieved`, func(t *testcase.T) {
@@ -250,7 +254,7 @@ func (c PilotStorage) specPilotFinder(s *testcase.Spec) {
 
 		s.Describe(`FindReleasePilotsByExternalID`, func(s *testcase.Spec) {
 			subject := func(t *testcase.T) iterators.Interface {
-				pilotEntriesIter := c.storageGet(t).FindByPublicID(c.context(t), sh.ExampleExternalPilotID(t))
+				pilotEntriesIter := c.storageGet(t).FindByPublicID(c.Context(t), sh.ExampleExternalPilotID(t))
 				t.Defer(pilotEntriesIter.Close)
 				return pilotEntriesIter
 			}
@@ -261,7 +265,7 @@ func (c PilotStorage) specPilotFinder(s *testcase.Spec) {
 
 			s.When(`there is no pilot records`, func(s *testcase.Spec) {
 				s.Before(func(t *testcase.T) {
-					contracts.DeleteAllEntity(t, c.storageGet(t), c.context(t))
+					contracts.DeleteAllEntity(t, c.storageGet(t), c.Context(t))
 				})
 
 				s.Then(`it will return an empty result set`, func(t *testcase.T) {
@@ -280,9 +284,9 @@ func (c PilotStorage) specPilotFinder(s *testcase.Spec) {
 						return uuidV4.String()
 					}
 
-					contracts.CreateEntity(t, c.storageGet(t), c.context(t), &release.Pilot{FlagID: newUUID(), EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID, PublicID: extID, IsParticipating: true})
-					contracts.CreateEntity(t, c.storageGet(t), c.context(t), &release.Pilot{FlagID: newUUID(), EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID, PublicID: extID, IsParticipating: true})
-					contracts.CreateEntity(t, c.storageGet(t), c.context(t), &release.Pilot{FlagID: newUUID(), EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID, PublicID: extID, IsParticipating: false})
+					contracts.CreateEntity(t, c.storageGet(t), c.Context(t), &release.Pilot{FlagID: newUUID(), EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID, PublicID: extID, IsParticipating: true})
+					contracts.CreateEntity(t, c.storageGet(t), c.Context(t), &release.Pilot{FlagID: newUUID(), EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID, PublicID: extID, IsParticipating: true})
+					contracts.CreateEntity(t, c.storageGet(t), c.Context(t), &release.Pilot{FlagID: newUUID(), EnvironmentID: sh.ExampleDeploymentEnvironment(t).ID, PublicID: extID, IsParticipating: false})
 				})
 
 				s.Then(`it will return an empty result set`, func(t *testcase.T) {
@@ -307,7 +311,7 @@ func (c PilotStorage) specPilotFinder(s *testcase.Spec) {
 							IsParticipating: rand.Intn(1) == 0,
 						}
 
-						contracts.CreateEntity(t, c.storageGet(t), c.context(t), &pilot)
+						contracts.CreateEntity(t, c.storageGet(t), c.Context(t), &pilot)
 						pilots = append(pilots, pilot)
 					}
 

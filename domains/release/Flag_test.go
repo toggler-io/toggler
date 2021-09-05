@@ -15,7 +15,7 @@ func TestFlag(t *testing.T) {
 	s := testcase.NewSpec(t)
 
 	flag := s.Let(`flag`, func(t *testcase.T) interface{} {
-		rf := sh.NewFixtureFactory(t).Create(release.Flag{}).(release.Flag)
+		rf := sh.NewFixtureFactory(t).Fixture(release.Flag{}, sh.ContextGet(t)).(release.Flag)
 		return &rf
 	})
 

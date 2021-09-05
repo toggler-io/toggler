@@ -2,12 +2,13 @@ package storages_test
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 
 	fc "github.com/adamluzsi/frameless/contracts"
 
@@ -42,8 +43,11 @@ func SpecMemory(tb testing.TB) {
 		Subject: func(tb testing.TB) toggler.Storage {
 			return storages.NewEventLogMemoryStorage()
 		},
-		FixtureFactory: func(tb testing.TB) fc.FixtureFactory {
+		FixtureFactory: func(tb testing.TB) frameless.FixtureFactory {
 			return sh.NewFixtureFactory(tb)
+		},
+		Context: func(tb testing.TB) context.Context {
+			return context.Background()
 		},
 	})
 }

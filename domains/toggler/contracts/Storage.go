@@ -1,10 +1,12 @@
 package contracts
 
 import (
-	"github.com/adamluzsi/frameless/contracts"
-	sh "github.com/toggler-io/toggler/spechelper"
+	"context"
 	"testing"
 
+	sh "github.com/toggler-io/toggler/spechelper"
+
+	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/testcase"
 
 	"github.com/toggler-io/toggler/domains/release"
@@ -18,7 +20,8 @@ import (
 
 type Storage struct {
 	Subject        func(testing.TB) toggler.Storage
-	FixtureFactory func(testing.TB) contracts.FixtureFactory
+	Context        func(testing.TB) context.Context
+	FixtureFactory func(testing.TB) frameless.FixtureFactory
 }
 
 func (c Storage) Test(t *testing.T) {
@@ -42,12 +45,14 @@ func (c Storage) Spec(s *testcase.Spec) {
 			Subject: func(tb testing.TB) release.Storage {
 				return c.Subject(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		secspecs.Storage{
 			Subject: func(tb testing.TB) security.Storage {
 				return c.Subject(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 	)

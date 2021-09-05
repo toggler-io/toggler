@@ -38,7 +38,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 	}
 
 	s.Let(`flag`, func(t *testcase.T) interface{} {
-		flag := sh.NewFixtureFactory(t).Create(release.Flag{}).(release.Flag)
+		flag := sh.NewFixtureFactory(t).Fixture(release.Flag{}, sh.ContextGet(t)).(release.Flag)
 		sh.StorageGet(t) // eager load storage to ensure storage teardown is not after the defer
 		// pass by func used to ensure that flag.ID is populated by the time delete by id is called
 		t.Cleanup(func() { _ = sh.StorageGet(t).ReleaseFlag(sh.ContextGet(t)).DeleteByID(sh.ContextGet(t), flag.ID) })
@@ -85,7 +85,7 @@ func SpecRolloutManagerCreateFeatureFlag(s *testcase.Spec) {
 				s.Around(func(t *testcase.T) func() {
 					ogID := sh.GetReleaseFlag(t, `flag`).ID
 					sh.GetReleaseFlag(t, `flag`).ID = ``
-					return func() { sh.StorageGet(t).ReleaseFlag(sh.ContextGet(t)).DeleteByID(sh.ContextGet(t), ogID) }
+					return func() { _ = sh.StorageGet(t).ReleaseFlag(sh.ContextGet(t)).DeleteByID(sh.ContextGet(t), ogID) }
 				})
 
 				s.Then(`it will report feature flag already exists error`, func(t *testcase.T) {
@@ -252,7 +252,9 @@ func SpecRolloutManagerListFeatureFlags(s *testcase.Spec) {
 	})
 
 	s.When(`no feature present in the system`, func(s *testcase.Spec) {
-		s.Before(func(t *testcase.T) { require.Nil(t, sh.StorageGet(t).ReleaseFlag(sh.ContextGet(t)).DeleteAll(sh.ContextGet(t))) })
+		s.Before(func(t *testcase.T) {
+			require.Nil(t, sh.StorageGet(t).ReleaseFlag(sh.ContextGet(t)).DeleteAll(sh.ContextGet(t)))
+		})
 
 		s.Then(`empty list returned`, func(t *testcase.T) {
 			require.Empty(t, onSuccess(t))
@@ -364,7 +366,7 @@ func SpecUnsetPilotEnrollmentForFeature(s *testcase.Spec) {
 
 	s.When(`flag is not persisted`, func(s *testcase.Spec) {
 		s.Let(sh.LetVarExampleReleaseFlag, func(t *testcase.T) interface{} {
-			rf := sh.NewFixtureFactory(t).Create(release.Flag{}).(release.Flag)
+			rf := sh.NewFixtureFactory(t).Fixture(release.Flag{}, sh.ContextGet(t)).(release.Flag)
 			return &rf
 		})
 
@@ -512,7 +514,9 @@ func SpecRolloutManagerGetAllReleaseFlagStatesOfThePilot(s *testcase.Spec) {
 			Plan:          byPercentage,
 		}
 		require.Nil(t, sh.StorageGet(t).ReleaseRollout(sh.ContextGet(t)).Create(sh.ContextGet(t), &rollout))
-		t.Defer(func() { require.Nil(t, sh.StorageGet(t).ReleaseRollout(sh.ContextGet(t)).DeleteByID(sh.ContextGet(t), rollout.ID)) })
+		t.Defer(func() {
+			require.Nil(t, sh.StorageGet(t).ReleaseRollout(sh.ContextGet(t)).DeleteByID(sh.ContextGet(t), rollout.ID))
+		})
 
 		/* start E2E test */
 

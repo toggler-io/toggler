@@ -3,6 +3,10 @@ package httpapi_test
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/url"
+	"testing"
+
 	"github.com/adamluzsi/frameless/contracts"
 	"github.com/adamluzsi/frameless/iterators"
 	"github.com/adamluzsi/testcase"
@@ -14,9 +18,6 @@ import (
 	swagger "github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/client/pilot"
 	"github.com/toggler-io/toggler/external/interface/httpintf/swagger/lib/models"
 	sh "github.com/toggler-io/toggler/spechelper"
-	"net/http"
-	"net/url"
-	"testing"
 )
 
 func TestReleasePilotController(t *testing.T) {
@@ -50,7 +51,7 @@ func SpecReleasePilotControllerCreate(s *testcase.Spec) {
 	})
 
 	pilot := s.Let(`release-pilot`, func(t *testcase.T) interface{} {
-		rf := sh.NewFixtureFactory(t).Create(release.Pilot{}).(release.Pilot)
+		rf := sh.NewFixtureFactory(t).Fixture(release.Pilot{}, sh.ContextGet(t)).(release.Pilot)
 		return &rf
 	})
 	pilotGet := func(t *testcase.T) *release.Pilot {
@@ -189,7 +190,7 @@ func SpecReleasePilotControllerUpdate(s *testcase.Spec) {
 	})
 
 	updatedPilot := s.Let(`updated-release-pilot`, func(t *testcase.T) interface{} {
-		rf := sh.NewFixtureFactory(t).Create(release.Pilot{}).(release.Pilot)
+		rf := sh.NewFixtureFactory(t).Fixture(release.Pilot{}, sh.ContextGet(t)).(release.Pilot)
 		rf.ID = sh.ReleasePilotGet(t, pilot).ID
 		return &rf
 	})

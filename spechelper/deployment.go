@@ -24,7 +24,7 @@ func ExampleDeploymentEnvironment(t *testcase.T) *release.Environment {
 
 func GivenWeHaveDeploymentEnvironment(s *testcase.Spec, vn string) testcase.Var {
 	return s.Let(vn, func(t *testcase.T) interface{} {
-		de := NewFixtureFactory(t).Create(release.Environment{}).(release.Environment)
+		de := NewFixtureFactory(t).Fixture(release.Environment{}, ContextGet(t)).(release.Environment)
 		storage := StorageGet(t).ReleaseEnvironment(ContextGet(t))
 		require.Nil(t, storage.Create(ContextGet(t), &de))
 		t.Defer(storage.DeleteByID, ContextGet(t), de.ID)

@@ -1,8 +1,10 @@
 package contracts
 
 import (
-	"github.com/adamluzsi/frameless"
+	"context"
 	"testing"
+
+	"github.com/adamluzsi/frameless"
 
 	"github.com/adamluzsi/frameless/contracts"
 	"github.com/adamluzsi/testcase"
@@ -12,35 +14,38 @@ import (
 
 type Storage struct {
 	Subject        func(testing.TB) security.Storage
-	FixtureFactory func(testing.TB) contracts.FixtureFactory
+	Context        func(testing.TB) context.Context
+	FixtureFactory func(testing.TB) frameless.FixtureFactory
 }
 
-func (spec Storage) String() string {
+func (c Storage) String() string {
 	return `security#Storage`
 }
 
-func (spec Storage) Test(t *testing.T) {
-	spec.Spec(testcase.NewSpec(t))
+func (c Storage) Test(t *testing.T) {
+	c.Spec(testcase.NewSpec(t))
 }
 
-func (spec Storage) Benchmark(b *testing.B) {
-	spec.Spec(testcase.NewSpec(b))
+func (c Storage) Benchmark(b *testing.B) {
+	c.Spec(testcase.NewSpec(b))
 }
 
-func (spec Storage) Spec(s *testcase.Spec) {
+func (c Storage) Spec(s *testcase.Spec) {
 	testcase.RunContract(s,
 		TokenStorage{
 			Subject: func(tb testing.TB) security.TokenStorage {
-				return spec.Subject(tb).SecurityToken(spec.FixtureFactory(tb).Context())
+				return c.Subject(tb).SecurityToken(c.Context(tb))
 			},
-			FixtureFactory: spec.FixtureFactory,
+			Context:        c.Context,
+			FixtureFactory: c.FixtureFactory,
 		},
 		contracts.OnePhaseCommitProtocol{T: security.Token{},
 			Subject: func(tb testing.TB) (frameless.OnePhaseCommitProtocol, contracts.CRD) {
-				storage := spec.Subject(tb)
-				return storage, storage.SecurityToken(spec.FixtureFactory(tb).Context())
+				storage := c.Subject(tb)
+				return storage, storage.SecurityToken(c.Context(tb))
 			},
-			FixtureFactory: spec.FixtureFactory,
+			Context:        c.Context,
+			FixtureFactory: c.FixtureFactory,
 		},
 	)
 }

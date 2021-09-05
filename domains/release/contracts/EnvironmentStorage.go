@@ -2,8 +2,9 @@ package contracts
 
 import (
 	"context"
-	"github.com/toggler-io/toggler/domains/release"
 	"testing"
+
+	"github.com/toggler-io/toggler/domains/release"
 
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/contracts"
@@ -16,7 +17,8 @@ import (
 
 type EnvironmentStorage struct {
 	Subject        func(testing.TB) release.Storage
-	FixtureFactory func(testing.TB) contracts.FixtureFactory
+	Context        func(testing.TB) context.Context
+	FixtureFactory func(testing.TB) frameless.FixtureFactory
 }
 
 func (c EnvironmentStorage) storage() testcase.Var {
@@ -47,7 +49,7 @@ func (c EnvironmentStorage) Benchmark(b *testing.B) {
 func (c EnvironmentStorage) Spec(s *testcase.Spec) {
 	T := release.Environment{}
 	getEnvironmentStorage := func(tb testing.TB) release.EnvironmentStorage {
-		return c.Subject(tb).ReleaseEnvironment(c.FixtureFactory(tb).Context())
+		return c.Subject(tb).ReleaseEnvironment(c.Context(tb))
 	}
 
 	testcase.RunContract(s,
@@ -55,37 +57,43 @@ func (c EnvironmentStorage) Spec(s *testcase.Spec) {
 			Subject: func(tb testing.TB) contracts.CRD {
 				return getEnvironmentStorage(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		contracts.Finder{T: T,
 			Subject: func(tb testing.TB) contracts.CRD {
 				return getEnvironmentStorage(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		contracts.Updater{T: T,
 			Subject: func(tb testing.TB) contracts.UpdaterSubject {
 				return getEnvironmentStorage(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		contracts.Deleter{T: T,
 			Subject: func(tb testing.TB) contracts.CRD {
 				return getEnvironmentStorage(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		contracts.Publisher{T: T,
 			Subject: func(tb testing.TB) contracts.PublisherSubject {
 				return getEnvironmentStorage(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		contracts.OnePhaseCommitProtocol{T: release.Environment{},
 			Subject: func(tb testing.TB) (frameless.OnePhaseCommitProtocol, contracts.CRD) {
 				storage := c.Subject(tb)
-				return storage, storage.ReleaseEnvironment(c.FixtureFactory(tb).Context())
+				return storage, storage.ReleaseEnvironment(c.Context(tb))
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 	)
@@ -99,8 +107,8 @@ func (c EnvironmentStorage) specFindDeploymentEnvironmentByAlias(s *testcase.Spe
 		env     = s.Let(`env`, func(t *testcase.T) interface{} { return &release.Environment{} })
 		alias   = testcase.Var{Name: `alias`}
 		subject = func(t *testcase.T) (bool, error) {
-			return c.storageGet(t).ReleaseEnvironment(sh.FixtureFactoryGet(t).Context()).FindByAlias(
-				sh.FixtureFactoryGet(t).Context(),
+			return c.storageGet(t).ReleaseEnvironment(c.Context(t)).FindByAlias(
+				c.Context(t),
 				alias.Get(t).(string),
 				env.Get(t).(*release.Environment),
 			)
@@ -108,7 +116,10 @@ func (c EnvironmentStorage) specFindDeploymentEnvironmentByAlias(s *testcase.Spe
 	)
 
 	testcase.RunContract(s, contracts.FindOne{T: release.Environment{},
-		Subject:        func(tb testing.TB) contracts.CRD { return c.Subject(tb).ReleaseEnvironment(c.FixtureFactory(tb).Context()) },
+		Subject: func(tb testing.TB) contracts.CRD {
+			return c.Subject(tb).ReleaseEnvironment(c.Context(tb))
+		},
+		Context:        c.Context,
 		FixtureFactory: c.FixtureFactory,
 		ToQuery: func(tb testing.TB, resource interface{}, ent contracts.T) contracts.QueryOne {
 			var (
@@ -131,7 +142,7 @@ func (c EnvironmentStorage) specFindDeploymentEnvironmentByAlias(s *testcase.Spe
 
 	s.When(`no environment stored`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
-			ctx := sh.FixtureFactoryGet(t).Context()
+			ctx := c.Context(t)
 			contracts.DeleteAllEntity(t, c.storageGet(t).ReleaseEnvironment(ctx), ctx)
 		})
 
@@ -147,8 +158,8 @@ func (c EnvironmentStorage) specFindDeploymentEnvironmentByAlias(s *testcase.Spe
 	s.When(`environment stored in the system`, func(s *testcase.Spec) {
 		storedEnv := s.Let(`stored-env`, func(t *testcase.T) interface{} {
 			ff := sh.FixtureFactoryGet(t)
-			env := ff.Create(release.Environment{}).(release.Environment)
-			ctx := ff.Context()
+			ctx := c.Context(t)
+			env := ff.Fixture(release.Environment{}, ctx).(release.Environment)
 			contracts.CreateEntity(t, c.storageGet(t).ReleaseEnvironment(ctx), ctx, &env)
 			return &env
 		}).EagerLoading(s)

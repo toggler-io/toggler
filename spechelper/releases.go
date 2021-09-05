@@ -2,6 +2,7 @@ package spechelper
 
 import (
 	"fmt"
+
 	"github.com/adamluzsi/frameless/contracts"
 
 	"github.com/adamluzsi/testcase"
@@ -23,7 +24,7 @@ const (
 func init() {
 	setups = append(setups, func(s *testcase.Spec) {
 		s.Let(LetVarExampleReleaseManualPilotEnrollment, func(t *testcase.T) interface{} {
-			mpe := NewFixtureFactory(t).Create(release.Pilot{}).(release.Pilot)
+			mpe := NewFixtureFactory(t).Fixture(release.Pilot{}, ContextGet(t)).(release.Pilot)
 			mpe.FlagID = ExampleReleaseFlag(t).ID
 			mpe.EnvironmentID = ExampleDeploymentEnvironment(t).ID
 			mpe.PublicID = ExampleExternalPilotID(t)
@@ -94,14 +95,14 @@ func GetReleaseRollout(t *testcase.T, vn string) *release.Rollout {
 
 func GivenWeHaveReleaseRollout(s *testcase.Spec, vn, flagLVN, envLVN string) {
 	s.Let(getReleaseRolloutPlanLetVar(vn), func(t *testcase.T) interface{} {
-		return NewFixtureFactory(t).Create(release.RolloutDecisionByPercentage{}).(release.RolloutDecisionByPercentage)
+		return NewFixtureFactory(t).Fixture(release.RolloutDecisionByPercentage{}, ContextGet(t)).(release.RolloutDecisionByPercentage)
 	})
 
 	s.Let(vn, func(t *testcase.T) interface{} {
 		rf := GetReleaseFlag(t, flagLVN)
 		de := GetDeploymentEnvironment(t, envLVN)
 
-		rollout := NewFixtureFactory(t).Create(release.Rollout{}).(release.Rollout)
+		rollout := NewFixtureFactory(t).Fixture(release.Rollout{}, ContextGet(t)).(release.Rollout)
 		rollout.FlagID = rf.ID
 		rollout.EnvironmentID = de.ID
 		rollout.Plan = GetReleaseRolloutPlan(t, vn)
@@ -131,7 +132,7 @@ func GivenWeHaveReleasePilot(s *testcase.Spec, vn string) testcase.Var {
 
 func GivenWeHaveReleaseFlag(s *testcase.Spec, vn string) {
 	s.Let(vn, func(t *testcase.T) interface{} {
-		rf := NewFixtureFactory(t).Create(release.Flag{}).(release.Flag)
+		rf := NewFixtureFactory(t).Fixture(release.Flag{}, ContextGet(t)).(release.Flag)
 		rf.Name = fmt.Sprintf(`%s - %s`, vn, rf.Name)
 		storage := StorageGet(t).ReleaseFlag(ContextGet(t))
 		require.Nil(t, storage.Create(ContextGet(t), &rf))

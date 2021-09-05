@@ -1,9 +1,11 @@
 package contracts
 
 import (
-	"github.com/adamluzsi/frameless"
+	"context"
 	"sync"
 	"testing"
+
+	"github.com/adamluzsi/frameless"
 
 	"github.com/adamluzsi/frameless/contracts"
 	"github.com/adamluzsi/frameless/iterators"
@@ -17,7 +19,8 @@ import (
 
 type FlagStorage struct {
 	Subject        func(testing.TB) release.Storage
-	FixtureFactory func(testing.TB) contracts.FixtureFactory
+	Context        func(testing.TB) context.Context
+	FixtureFactory func(testing.TB) frameless.FixtureFactory
 }
 
 func (c FlagStorage) storage() testcase.Var {
@@ -49,7 +52,7 @@ func (c FlagStorage) Spec(s *testcase.Spec) {
 	sh.FixtureFactoryLet(s, c.FixtureFactory)
 
 	newStorage := func(tb testing.TB) release.FlagStorage {
-		return c.Subject(tb).ReleaseFlag(c.FixtureFactory(tb).Context())
+		return c.Subject(tb).ReleaseFlag(c.Context(tb))
 	}
 
 	T := release.Flag{}
@@ -58,43 +61,50 @@ func (c FlagStorage) Spec(s *testcase.Spec) {
 			Subject: func(tb testing.TB) contracts.CRD {
 				return newStorage(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		contracts.Finder{T: T,
 			Subject: func(tb testing.TB) contracts.CRD {
 				return newStorage(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		FlagFinder{
 			Subject: func(tb testing.TB) release.FlagStorage {
 				return newStorage(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		contracts.Updater{T: T,
 			Subject: func(tb testing.TB) contracts.UpdaterSubject {
 				return newStorage(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		contracts.Deleter{T: T,
 			Subject: func(tb testing.TB) contracts.CRD {
 				return newStorage(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		contracts.Publisher{T: T,
 			Subject: func(tb testing.TB) contracts.PublisherSubject {
 				return newStorage(tb)
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 		contracts.OnePhaseCommitProtocol{T: release.Flag{},
 			Subject: func(tb testing.TB) (frameless.OnePhaseCommitProtocol, contracts.CRD) {
 				storage := c.Subject(tb)
-				return storage, storage.ReleaseFlag(c.FixtureFactory(tb).Context())
+				return storage, storage.ReleaseFlag(c.Context(tb))
 			},
+			Context:        c.Context,
 			FixtureFactory: c.FixtureFactory,
 		},
 	)
@@ -104,11 +114,11 @@ func (c FlagStorage) Spec(s *testcase.Spec) {
 
 func (c FlagStorage) specFlagIsUniq(s *testcase.Spec) {
 	subject := func(t *testcase.T) error {
-		return c.storageGet(t).Create(sh.FixtureFactoryGet(t).Context(), t.I(`flag`).(*release.Flag))
+		return c.storageGet(t).Create(c.Context(t), t.I(`flag`).(*release.Flag))
 	}
 
 	s.Before(func(t *testcase.T) {
-		contracts.DeleteAllEntity(t, c.storageGet(t), sh.FixtureFactoryGet(t).Context())
+		contracts.DeleteAllEntity(t, c.storageGet(t), c.Context(t))
 	})
 
 	flag := s.Let(`flag`, func(t *testcase.T) interface{} {
@@ -118,7 +128,7 @@ func (c FlagStorage) specFlagIsUniq(s *testcase.Spec) {
 	s.When(`flag already stored`, func(s *testcase.Spec) {
 		s.Before(func(t *testcase.T) {
 			require.Nil(t, subject(t))
-			contracts.HasEntity(t, c.storageGet(t), sh.FixtureFactoryGet(t).Context(), flag.Get(t).(*release.Flag))
+			contracts.HasEntity(t, c.storageGet(t), c.Context(t), flag.Get(t).(*release.Flag))
 		})
 
 		s.Then(`saving again will create error`, func(t *testcase.T) {
@@ -131,7 +141,8 @@ func (c FlagStorage) specFlagIsUniq(s *testcase.Spec) {
 
 type FlagFinder struct {
 	Subject        func(testing.TB) release.FlagStorage
-	FixtureFactory func(testing.TB) contracts.FixtureFactory
+	Context        func(testing.TB) context.Context
+	FixtureFactory func(testing.TB) frameless.FixtureFactory
 }
 
 func (c FlagFinder) storage() testcase.Var {
@@ -159,7 +170,7 @@ func (c FlagFinder) cleanup(s *testcase.Spec) {
 	once := &sync.Once{}
 	s.Before(func(t *testcase.T) {
 		once.Do(func() {
-			contracts.DeleteAllEntity(t, c.storageGet(t), sh.FixtureFactoryGet(t).Context())
+			contracts.DeleteAllEntity(t, c.storageGet(t), c.Context(t))
 		})
 	})
 }
@@ -177,7 +188,7 @@ func (c FlagFinder) specFindReleaseFlagsByName(s *testcase.Spec) {
 		flagNames    = testcase.Var{Name: `flag names`}
 		flagNamesGet = func(t *testcase.T) []string { return flagNames.Get(t).([]string) }
 		subject      = func(t *testcase.T) iterators.Interface {
-			flagEntriesIter := c.storageGet(t).FindByNames(sh.FixtureFactoryGet(t).Context(), flagNamesGet(t)...)
+			flagEntriesIter := c.storageGet(t).FindByNames(c.Context(t), flagNamesGet(t)...)
 			t.Defer(flagEntriesIter.Close)
 			return flagEntriesIter
 		}
@@ -186,7 +197,7 @@ func (c FlagFinder) specFindReleaseFlagsByName(s *testcase.Spec) {
 	s.Before(func(t *testcase.T) {
 		for _, name := range []string{`A`, `B`, `C`} {
 			var flag = release.Flag{Name: name}
-			contracts.CreateEntity(t, c.storageGet(t), sh.FixtureFactoryGet(t).Context(), &flag)
+			contracts.CreateEntity(t, c.storageGet(t), c.Context(t), &flag)
 		}
 	})
 
@@ -257,7 +268,7 @@ func (c FlagFinder) specFindReleaseFlagByName(s *testcase.Spec) {
 		flagName    = s.LetValue(`flag name`, fixtures.Random.String())
 		flagNameGet = func(t *testcase.T) string { return flagName.Get(t).(string) }
 		subject     = func(t *testcase.T) *release.Flag {
-			ff, err := c.storageGet(t).FindByName(sh.FixtureFactoryGet(t).Context(), flagNameGet(t))
+			ff, err := c.storageGet(t).FindByName(c.Context(t), flagNameGet(t))
 			require.Nil(t, err)
 			return ff
 		}
@@ -270,13 +281,13 @@ func (c FlagFinder) specFindReleaseFlagByName(s *testcase.Spec) {
 	s.When(`we have a release flag already set`, func(s *testcase.Spec) {
 		flag := s.Let(`flag`, func(t *testcase.T) interface{} {
 			f := &release.Flag{Name: flagNameGet(t)}
-			contracts.CreateEntity(t, c.storageGet(t), sh.FixtureFactoryGet(t).Context(), f)
+			contracts.CreateEntity(t, c.storageGet(t), c.Context(t), f)
 			return f
 		}).EagerLoading(s)
 
 		s.Then(`searching for it returns the flag entity`, func(t *testcase.T) {
 			ff := flag.Get(t).(*release.Flag)
-			actually, err := c.storageGet(t).FindByName(sh.FixtureFactoryGet(t).Context(), ff.Name)
+			actually, err := c.storageGet(t).FindByName(c.Context(t), ff.Name)
 			require.Nil(t, err)
 			require.Equal(t, ff, actually)
 		})
