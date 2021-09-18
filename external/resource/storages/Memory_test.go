@@ -41,7 +41,7 @@ func BenchmarkMemory(b *testing.B) {
 func SpecMemory(tb testing.TB) {
 	testcase.RunContract(sh.NewSpec(tb), contracts.Storage{
 		Subject: func(tb testing.TB) toggler.Storage {
-			return storages.NewEventLogMemoryStorage()
+			return storages.NewMemory()
 		},
 		FixtureFactory: func(tb testing.TB) frameless.FixtureFactory {
 			return sh.NewFixtureFactory(tb)
@@ -53,7 +53,7 @@ func SpecMemory(tb testing.TB) {
 }
 
 func TestMemoryReleasePilotStorage_smokeTest(t *testing.T) {
-	storage := storages.NewEventLogMemoryStorage()
+	storage := storages.NewMemory()
 	storage.EventLog.Options.DisableAsyncSubscriptionHandling = true
 	t.Cleanup(func() { require.Nil(t, storage.Close()) })
 

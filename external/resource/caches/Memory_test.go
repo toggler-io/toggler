@@ -31,7 +31,7 @@ var (
 func TestMemory_smoke(t *testing.T) {
 	s := testcase.NewSpec(t)
 	s.Test(``, func(t *testcase.T) {
-		storage := storages.NewEventLogMemoryStorage()
+		storage := storages.NewMemory()
 		storage.EventLog.Options.DisableAsyncSubscriptionHandling = true
 		m, err := caches.NewMemory(storage)
 		require.Nil(t, err)
@@ -52,7 +52,7 @@ func BenchmarkMemory(b *testing.B) { SpecMemory(b) }
 func SpecMemory(tb testing.TB) {
 	testcase.RunContract(sh.NewSpec(tb), contracts.Storage{
 		Subject: func(tb testing.TB) toggler.Storage {
-			storage := storages.NewEventLogMemoryStorage()
+			storage := storages.NewMemory()
 			storage.EventLog.Options.DisableAsyncSubscriptionHandling = true
 			m, err := caches.NewMemory(storage)
 			require.Nil(tb, err)

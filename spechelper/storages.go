@@ -1,8 +1,9 @@
 package spechelper
 
 import (
-	"github.com/adamluzsi/frameless/inmemory"
 	"os"
+
+	"github.com/adamluzsi/frameless/inmemory"
 
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
@@ -32,7 +33,7 @@ func storageOnLet(s *testcase.Spec) {
 func storageInit(t *testcase.T) interface{} {
 	connstr, ok := os.LookupEnv(`TEST_DATABASE_URL`)
 	if !ok { // use fake implementation
-		s := storages.NewEventLogMemoryStorage()
+		s := storages.NewMemory()
 		s.Options.EventLogging = true
 		s.EventLog.Options.DisableAsyncSubscriptionHandling = true
 		inmemory.LogHistoryOnFailure(t, s.EventLog)

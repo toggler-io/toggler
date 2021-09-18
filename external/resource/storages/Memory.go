@@ -3,17 +3,17 @@ package storages
 import (
 	"context"
 	"fmt"
+
 	"github.com/adamluzsi/frameless/reflects"
 
 	"github.com/adamluzsi/frameless/inmemory"
 	"github.com/adamluzsi/frameless/iterators"
 
-
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/security"
 )
 
-func NewEventLogMemoryStorage() *Memory {
+func NewMemory() *Memory {
 	return &Memory{EventLog: inmemory.NewEventLog()}
 }
 
