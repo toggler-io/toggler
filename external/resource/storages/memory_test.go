@@ -7,6 +7,7 @@ import (
 
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/fixtures"
+	"github.com/adamluzsi/frameless/inmemory"
 	"github.com/adamluzsi/testcase"
 	"github.com/stretchr/testify/require"
 
@@ -21,9 +22,9 @@ import (
 )
 
 var (
-	_ toggler.Storage            = &storages.Memory{}
-	_ release.Storage            = &storages.Memory{}
-	_ security.Storage           = &storages.Memory{}
+	_ toggler.Storage            = &storages.InMemory{}
+	_ release.Storage            = &storages.InMemory{}
+	_ security.Storage           = &storages.InMemory{}
 	_ release.EnvironmentStorage = &storages.MemoryReleaseEnvironmentStorage{}
 	_ release.FlagStorage        = &storages.MemoryReleaseFlagStorage{}
 	_ release.RolloutStorage     = &storages.MemoryReleaseRolloutStorage{}
@@ -41,7 +42,7 @@ func BenchmarkMemory(b *testing.B) {
 func SpecMemory(tb testing.TB) {
 	testcase.RunContract(sh.NewSpec(tb), contracts.Storage{
 		Subject: func(tb testing.TB) toggler.Storage {
-			return storages.NewMemory()
+			return storages.NewInMemory()
 		},
 		FixtureFactory: func(tb testing.TB) frameless.FixtureFactory {
 			return sh.NewFixtureFactory(tb)
@@ -53,7 +54,7 @@ func SpecMemory(tb testing.TB) {
 }
 
 func TestMemoryReleasePilotStorage_smokeTest(t *testing.T) {
-	storage := storages.NewMemory()
+	storage := storages.NewInMemory()
 	storage.EventLog.Options.DisableAsyncSubscriptionHandling = true
 	t.Cleanup(func() { require.Nil(t, storage.Close()) })
 
@@ -114,4 +115,25 @@ func (sub StubSub) Handle(ctx context.Context, ent interface{}) error {
 }
 func (sub StubSub) Error(ctx context.Context, err error) error {
 	return sub.ErrorFunc(ctx, err)
+}
+
+func TestInMemory_Namespace_isolates(t *testing.T) {
+	ctx := context.Background()
+	el := inmemory.NewEventLog()
+
+	storageA := storages.InMemory{EventLog: el}
+	storageA.Namespace = "A"
+	storageB := storages.InMemory{EventLog: el}
+	storageA.Namespace = "B"
+
+	env := release.Environment{Name: fixtures.Random.String()}
+	require.Nil(t, storageA.ReleaseEnvironment(ctx).Create(ctx, &env))
+
+	found, err := storageA.ReleaseEnvironment(ctx).FindByID(ctx, &release.Environment{}, env.ID)
+	require.Nil(t, err)
+	require.True(t, found)
+
+	found, err = storageB.ReleaseEnvironment(ctx).FindByID(ctx, &release.Environment{}, env.ID)
+	require.Nil(t, err)
+	require.False(t, found)
 }

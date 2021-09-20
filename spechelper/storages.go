@@ -33,8 +33,7 @@ func storageOnLet(s *testcase.Spec) {
 func storageInit(t *testcase.T) interface{} {
 	connstr, ok := os.LookupEnv(`TEST_DATABASE_URL`)
 	if !ok { // use fake implementation
-		s := storages.NewMemory()
-		s.Options.EventLogging = true
+		s := storages.NewInMemory()
 		s.EventLog.Options.DisableAsyncSubscriptionHandling = true
 		inmemory.LogHistoryOnFailure(t, s.EventLog)
 		t.Defer(s.Close)

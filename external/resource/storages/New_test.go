@@ -53,7 +53,7 @@ func TestNew(t *testing.T) {
 			s.Let(`connstr`, func(t *testcase.T) interface{} { return `memory` })
 
 			s.Then(`then it will return "inmemory" implementation`, func(t *testcase.T) {
-				_, isThat := onSuccess(t).(*storages.Memory)
+				_, isThat := onSuccess(t).(*storages.InMemory)
 
 				require.True(t, isThat)
 			})

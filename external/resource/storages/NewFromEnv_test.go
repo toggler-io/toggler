@@ -52,7 +52,7 @@ func TestNewFromEnv(t *testing.T) {
 			storage, err := subject()
 			require.Nil(t, err)
 			require.NotNil(t, storage)
-			_, ok := storage.(*storages.Memory)
+			_, ok := storage.(*storages.InMemory)
 			require.True(t, ok)
 		})
 	})

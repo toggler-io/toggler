@@ -13,41 +13,37 @@ import (
 	"github.com/toggler-io/toggler/domains/security"
 )
 
-func NewMemory() *Memory {
-	return &Memory{EventLog: inmemory.NewEventLog()}
+func NewInMemory() *InMemory {
+	return &InMemory{EventLog: inmemory.NewEventLog()}
 }
 
-type Memory struct {
-	EventLog *inmemory.EventLog
-
-	Options struct {
-		EventLogging bool
-	}
-
-	closed bool
+type InMemory struct {
+	EventLog  *inmemory.EventLog
+	Namespace string
+	closed    bool
 }
 
-func (s *Memory) storageFor(T interface{}) *inmemory.EventLogStorage {
-	return inmemory.NewEventLogStorageWithNamespace(T, s.EventLog, reflects.SymbolicName(T))
+func (s *InMemory) storageFor(T interface{}) *inmemory.EventLogStorage {
+	return inmemory.NewEventLogStorageWithNamespace(T, s.EventLog, s.Namespace+reflects.SymbolicName(T))
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func (s *Memory) BeginTx(ctx context.Context) (context.Context, error) {
+func (s *InMemory) BeginTx(ctx context.Context) (context.Context, error) {
 	return s.EventLog.BeginTx(ctx)
 }
 
-func (s *Memory) CommitTx(ctx context.Context) error {
+func (s *InMemory) CommitTx(ctx context.Context) error {
 	return s.EventLog.CommitTx(ctx)
 }
 
-func (s *Memory) RollbackTx(ctx context.Context) error {
+func (s *InMemory) RollbackTx(ctx context.Context) error {
 	return s.EventLog.RollbackTx(ctx)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func (s *Memory) ReleaseFlag(ctx context.Context) release.FlagStorage {
+func (s *InMemory) ReleaseFlag(ctx context.Context) release.FlagStorage {
 	return &MemoryReleaseFlagStorage{EventLogStorage: s.storageFor(release.Flag{})}
 }
 
@@ -100,7 +96,7 @@ func (s *MemoryReleaseFlagStorage) FindByNames(ctx context.Context, names ...str
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func (s *Memory) ReleasePilot(ctx context.Context) release.PilotStorage {
+func (s *InMemory) ReleasePilot(ctx context.Context) release.PilotStorage {
 	return &MemoryReleasePilotStorage{EventLogStorage: s.storageFor(release.Pilot{})}
 }
 
@@ -162,7 +158,7 @@ func (s *MemoryReleasePilotStorage) FindByPublicID(ctx context.Context, pilotPub
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func (s *Memory) ReleaseRollout(ctx context.Context) release.RolloutStorage {
+func (s *InMemory) ReleaseRollout(ctx context.Context) release.RolloutStorage {
 	return &MemoryReleaseRolloutStorage{EventLogStorage: s.storageFor(release.Rollout{})}
 }
 
@@ -191,7 +187,7 @@ func (s *MemoryReleaseRolloutStorage) FindByFlagEnvironment(ctx context.Context,
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func (s *Memory) ReleaseEnvironment(ctx context.Context) release.EnvironmentStorage {
+func (s *InMemory) ReleaseEnvironment(ctx context.Context) release.EnvironmentStorage {
 	return &MemoryReleaseEnvironmentStorage{EventLogStorage: s.storageFor(release.Environment{})}
 }
 
@@ -220,7 +216,7 @@ func (s *MemoryReleaseEnvironmentStorage) FindByAlias(ctx context.Context, idOrN
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func (s *Memory) SecurityToken(ctx context.Context) security.TokenStorage {
+func (s *InMemory) SecurityToken(ctx context.Context) security.TokenStorage {
 	return &MemorySecurityTokenStorage{EventLogStorage: s.storageFor(security.Token{})}
 }
 
@@ -250,7 +246,7 @@ func (s *MemorySecurityTokenStorage) FindTokenBySHA512Hex(ctx context.Context, t
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func (s *Memory) Close() error {
+func (s *InMemory) Close() error {
 	if s.closed {
 		return fmt.Errorf(`dev storage already closed`)
 	}
