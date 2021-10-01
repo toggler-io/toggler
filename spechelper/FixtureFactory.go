@@ -1,6 +1,7 @@
 package spechelper
 
 import (
+	"context"
 	"crypto/sha512"
 	"encoding/hex"
 	"fmt"
@@ -37,12 +38,12 @@ func NewFixtureFactory(tb testing.TB) frameless.FixtureFactory {
 		Random:  t.Random,
 		Options: []fixtures.Option{fixtures.SkipByTag(`ext`, "id", "ID")},
 	}
-	factory.RegisterType(release.Flag{}, func() interface{} {
+	factory.RegisterType(release.Flag{}, func(ctx context.Context) interface{} {
 		return release.Flag{
 			Name: fmt.Sprintf(`%s - %s`, t.Random.StringN(4), uuid.New().String()),
 		}
 	})
-	factory.RegisterType(release.RolloutDecisionByAPI{}, func() interface{} {
+	factory.RegisterType(release.RolloutDecisionByAPI{}, func(ctx context.Context) interface{} {
 		var byAPI release.RolloutDecisionByAPI
 		byAPI = release.NewRolloutDecisionByAPIDeprecated()
 		u, err := url.ParseRequestURI(fmt.Sprintf(`https://example.com/%s`, url.PathEscape(t.Random.String())))
@@ -52,14 +53,14 @@ func NewFixtureFactory(tb testing.TB) frameless.FixtureFactory {
 		byAPI.URL = u
 		return byAPI
 	})
-	factory.RegisterType(release.RolloutDecisionByPercentage{}, func() interface{} {
+	factory.RegisterType(release.RolloutDecisionByPercentage{}, func(ctx context.Context) interface{} {
 		var r release.RolloutDecisionByPercentage
 		r = release.NewRolloutDecisionByPercentage()
 		r.Percentage = t.Random.IntBetween(0, 100)
 		r.Seed = int64(t.Random.IntBetween(0, 1024))
 		return r
 	})
-	factory.RegisterType(security.Token{}, func() interface{} {
+	factory.RegisterType(security.Token{}, func(ctx context.Context) interface{} {
 		hash := sha512.New()
 		hash.Write([]byte(t.Random.String()))
 		sum := hash.Sum([]byte{})
@@ -70,7 +71,7 @@ func NewFixtureFactory(tb testing.TB) frameless.FixtureFactory {
 			Duration: time.Duration(t.Random.IntBetween(int(time.Second), int(time.Hour))),
 		}
 	})
-	factory.RegisterType(release.Pilot{}, func() interface{} {
+	factory.RegisterType(release.Pilot{}, func(ctx context.Context) interface{} {
 		return release.Pilot{
 			FlagID:          ExampleReleaseFlag(t).ID,
 			EnvironmentID:   ExampleDeploymentEnvironment(t).ID,
@@ -78,7 +79,7 @@ func NewFixtureFactory(tb testing.TB) frameless.FixtureFactory {
 			IsParticipating: t.Random.Bool(),
 		}
 	})
-	factory.RegisterType(release.Rollout{}, func() interface{} {
+	factory.RegisterType(release.Rollout{}, func(ctx context.Context) interface{} {
 		t.Helper()
 		return release.Rollout{
 			FlagID:        ExampleReleaseFlag(t).ID,

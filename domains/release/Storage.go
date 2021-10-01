@@ -26,7 +26,9 @@ type FlagStorage interface {
 	frameless.Finder
 	frameless.Updater
 	frameless.Deleter
-	frameless.Publisher
+	frameless.CreatorPublisher
+	frameless.UpdaterPublisher
+	frameless.DeleterPublisher
 	FindByName(ctx context.Context, name string) (*Flag, error)
 	FindByNames(ctx context.Context, names ...string) FlagEntries
 }
@@ -36,7 +38,9 @@ type PilotStorage interface {
 	frameless.Finder
 	frameless.Updater
 	frameless.Deleter
-	frameless.Publisher
+	frameless.CreatorPublisher
+	frameless.UpdaterPublisher
+	frameless.DeleterPublisher
 	FindByFlagEnvPublicID(ctx context.Context, flagID, envID interface{}, publicID string) (*Pilot, error)
 	FindByFlag(ctx context.Context, flag Flag) PilotEntries
 	FindByPublicID(ctx context.Context, publicID string) PilotEntries
@@ -47,7 +51,9 @@ type RolloutStorage interface {
 	frameless.Finder
 	frameless.Updater
 	frameless.Deleter
-	frameless.Publisher
+	frameless.CreatorPublisher
+	frameless.UpdaterPublisher
+	frameless.DeleterPublisher
 	FindByFlagEnvironment(context.Context, Flag, Environment, *Rollout) (bool, error)
 
 	// TODO:
@@ -59,6 +65,8 @@ type EnvironmentStorage /* Environment */ interface {
 	frameless.Finder
 	frameless.Updater
 	frameless.Deleter
-	frameless.Publisher
+	frameless.CreatorPublisher
+	frameless.UpdaterPublisher
+	frameless.DeleterPublisher
 	FindByAlias(ctx context.Context, idOrName string, env *Environment) (bool, error)
 }

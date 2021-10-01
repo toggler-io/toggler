@@ -2,6 +2,7 @@ package security
 
 import (
 	"context"
+
 	"github.com/adamluzsi/frameless"
 )
 
@@ -15,6 +16,8 @@ type TokenStorage interface {
 	frameless.Finder
 	frameless.Updater
 	frameless.Deleter
-	frameless.Publisher
+	frameless.CreatorPublisher
+	frameless.UpdaterPublisher
+	frameless.DeleterPublisher
 	FindTokenBySHA512Hex(ctx context.Context, sha512hex string) (*Token, error)
 }

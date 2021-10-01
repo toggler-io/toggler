@@ -6,14 +6,17 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"strings"
+	"sync"
+
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/iterators"
+	"github.com/adamluzsi/frameless/lazyloading"
 	"github.com/adamluzsi/frameless/postgresql"
 	"github.com/adamluzsi/frameless/reflects"
-
+	"github.com/lib/pq"
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/security"
-	"strings"
 
 	"github.com/toggler-io/toggler/external/resource/storages/migrations"
 )
@@ -26,11 +29,56 @@ func NewPostgres(dsn string) (*Postgres, error) {
 		return nil, err
 	}
 
-	return &Postgres{ConnectionManager: cm}, nil
+	postgres := &Postgres{
+		DSN:               dsn,
+		ConnectionManager: cm,
+	}
+	return postgres, postgres.Init()
 }
 
 type Postgres struct {
-	*postgresql.ConnectionManager
+	DSN string
+	postgresql.ConnectionManager
+
+	init sync.Once
+
+	subs struct {
+		listener  *pq.Listener
+		lock      sync.Mutex
+		callbacks []pq.EventCallbackType
+	}
+	storage struct {
+		ReleaseFlag        lazyloading.Var
+		ReleasePilot       lazyloading.Var
+		ReleaseRollout     lazyloading.Var
+		ReleaseEnvironment lazyloading.Var
+		SecurityToken      lazyloading.Var
+	}
+}
+
+func (p *Postgres) Init() (rErr error) {
+	p.init.Do(func() {
+		// toggler#Storage
+		// releases#Storage
+		// FlagStorage
+		// Publisher
+		// CreatorPublisher
+		// describe .Subscribe/Create
+		// and events made
+		// and then new subscriberGet registered
+		// and further events made
+		// then new subscriberGet will receive new events
+		// and it fails because in some case old events are not received when a new subscriber is made.
+		//
+		//const reconnectMinInterval = 10 * time.Second
+		//const reconnectMaxInterval = time.Minute
+		//p.subs.listener = pq.NewListener(p.DSN, reconnectMinInterval, reconnectMaxInterval, func(event pq.ListenerEventType, err error) {
+		//	for _, cb := range p.subs.callbacks {
+		//		cb(event, err)
+		//	}
+		//})
+	})
+	return
 }
 
 func (p *Postgres) Close() error {
@@ -40,25 +88,42 @@ func (p *Postgres) Close() error {
 	return p.ConnectionManager.Close()
 }
 
+func (p *Postgres) mkPostgresqlStorage(T interface{}, m postgresql.Mapping) *postgresql.Storage {
+	listenNotifySM := postgresql.NewListenNotifySubscriptionManager(T, m, p.DSN, p.ConnectionManager)
+	//listenNotifySM.Listener = p.subs.listener
+	//p.subs.lock.Lock()
+	//p.subs.callbacks = append(p.subs.callbacks, listenNotifySM.ListenerEventCallback)
+	//p.subs.lock.Unlock()
+	return &postgresql.Storage{
+		T:                   T,
+		Mapping:             m,
+		ConnectionManager:   p.ConnectionManager,
+		SubscriptionManager: listenNotifySM,
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func (p *Postgres) ReleaseFlag(ctx context.Context) release.FlagStorage {
-	return ReleaseFlagPgStorage{
-		Storage: postgresql.NewStorage(release.Flag{}, p.ConnectionManager, postgresql.Mapper{
-			Table:   "release_flags",
-			ID:      "id",
-			NewIDFn: newIDFn,
-			Columns: []string{"id", "name"},
-			ToArgsFn: func(ptr interface{}) ([]interface{}, error) {
-				e := ptr.(*release.Flag)
-				return []interface{}{e.ID, e.Name}, nil
-			},
-			MapFn: func(s iterators.SQLRowScanner, ptr interface{}) error {
-				e := ptr.(*release.Flag)
-				return s.Scan(&e.ID, &e.Name)
-			},
-		}),
-	}
+	return p.storage.ReleaseFlag.Do(func() interface{} {
+		return ReleaseFlagPgStorage{
+			Storage: p.mkPostgresqlStorage(release.Flag{},
+				postgresql.Mapper{
+					Table:   "release_flags",
+					ID:      "id",
+					NewIDFn: newIDFn,
+					Columns: []string{"id", "name"},
+					ToArgsFn: func(ptr interface{}) ([]interface{}, error) {
+						e := ptr.(*release.Flag)
+						return []interface{}{e.ID, e.Name}, nil
+					},
+					MapFn: func(s iterators.SQLRowScanner, ptr interface{}) error {
+						e := ptr.(*release.Flag)
+						return s.Scan(&e.ID, &e.Name)
+					},
+				}),
+		}
+	}).(ReleaseFlagPgStorage)
 }
 
 type ReleaseFlagPgStorage struct {
@@ -67,9 +132,9 @@ type ReleaseFlagPgStorage struct {
 
 func (s ReleaseFlagPgStorage) FindByName(ctx context.Context, name string) (*release.Flag, error) {
 	m := s.Mapping
-	query := fmt.Sprintf(`SELECT %s FROM %s WHERE "name" = $1`, toSelectClause(m), m.TableName())
+	query := fmt.Sprintf(`SELECT %s FROM %s WHERE "name" = $1`, toSelectClause(m), m.TableRef())
 
-	c, err := s.ConnectionManager.GetConnection(ctx)
+	c, err := s.ConnectionManager.Connection(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -100,10 +165,10 @@ func (s ReleaseFlagPgStorage) FindByNames(ctx context.Context, names ...string) 
 
 	query := fmt.Sprintf(`SELECT %s FROM %s WHERE "name" IN (%s)`,
 		toSelectClause(m),
-		m.TableName(),
+		m.TableRef(),
 		strings.Join(namesInClause, `,`))
 
-	c, err := s.Storage.ConnectionManager.GetConnection(ctx)
+	c, err := s.Storage.ConnectionManager.Connection(ctx)
 	if err != nil {
 		return iterators.NewError(err)
 	}
@@ -120,40 +185,42 @@ func (s ReleaseFlagPgStorage) FindByNames(ctx context.Context, names ...string) 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func (p *Postgres) ReleasePilot(ctx context.Context) release.PilotStorage {
-	return ReleasePilotPgStorage{
-		Storage: postgresql.NewStorage(release.Pilot{}, p.ConnectionManager, postgresql.Mapper{
-			Table:   "release_pilots",
-			ID:      "id",
-			NewIDFn: newIDFn,
-			Columns: []string{
-				`id`,
-				`flag_id`,
-				`env_id`,
-				`public_id`,
-				`is_participating`,
-			},
-			ToArgsFn: func(ptr interface{}) ([]interface{}, error) {
-				e := ptr.(*release.Pilot)
-				return []interface{}{
-					e.ID,
-					e.FlagID,
-					e.EnvironmentID,
-					e.PublicID,
-					e.IsParticipating,
-				}, nil
-			},
-			MapFn: func(s iterators.SQLRowScanner, ptr interface{}) error {
-				e := ptr.(*release.Pilot)
-				return s.Scan(
-					&e.ID,
-					&e.FlagID,
-					&e.EnvironmentID,
-					&e.PublicID,
-					&e.IsParticipating,
-				)
-			},
-		}),
-	}
+	return p.storage.ReleasePilot.Do(func() interface{} {
+		return ReleasePilotPgStorage{
+			Storage: p.mkPostgresqlStorage(release.Pilot{}, postgresql.Mapper{
+				Table:   "release_pilots",
+				ID:      "id",
+				NewIDFn: newIDFn,
+				Columns: []string{
+					`id`,
+					`flag_id`,
+					`env_id`,
+					`public_id`,
+					`is_participating`,
+				},
+				ToArgsFn: func(ptr interface{}) ([]interface{}, error) {
+					e := ptr.(*release.Pilot)
+					return []interface{}{
+						e.ID,
+						e.FlagID,
+						e.EnvironmentID,
+						e.PublicID,
+						e.IsParticipating,
+					}, nil
+				},
+				MapFn: func(s iterators.SQLRowScanner, ptr interface{}) error {
+					e := ptr.(*release.Pilot)
+					return s.Scan(
+						&e.ID,
+						&e.FlagID,
+						&e.EnvironmentID,
+						&e.PublicID,
+						&e.IsParticipating,
+					)
+				},
+			}),
+		}
+	}).(ReleasePilotPgStorage)
 }
 
 type ReleasePilotPgStorage struct {
@@ -168,10 +235,10 @@ func (s ReleasePilotPgStorage) FindByFlagEnvPublicID(ctx context.Context, flagID
 	m := s.Mapping
 	q := fmt.Sprintf(`SELECT %s FROM %s WHERE "flag_id" = $1 AND "env_id" = $2 AND "public_id" = $3`,
 		toSelectClause(m),
-		m.TableName(),
+		m.TableRef(),
 	)
 
-	c, err := s.ConnectionManager.GetConnection(ctx)
+	c, err := s.ConnectionManager.Connection(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -204,9 +271,9 @@ func (s ReleasePilotPgStorage) FindByFlag(ctx context.Context, flag release.Flag
 	}
 
 	m := s.Mapping
-	query := fmt.Sprintf(`SELECT %s FROM %s WHERE "flag_id" = $1`, toSelectClause(m), m.TableName())
+	query := fmt.Sprintf(`SELECT %s FROM %s WHERE "flag_id" = $1`, toSelectClause(m), m.TableRef())
 
-	c, err := s.ConnectionManager.GetConnection(ctx)
+	c, err := s.ConnectionManager.Connection(ctx)
 	if err != nil {
 		return iterators.NewError(err)
 	}
@@ -222,8 +289,8 @@ func (s ReleasePilotPgStorage) FindByFlag(ctx context.Context, flag release.Flag
 
 func (s ReleasePilotPgStorage) FindByPublicID(ctx context.Context, externalID string) release.PilotEntries {
 	m := s.Mapping
-	q := fmt.Sprintf(`SELECT %s FROM %s WHERE "public_id" = $1`, toSelectClause(m), m.TableName())
-	c, err := s.ConnectionManager.GetConnection(ctx)
+	q := fmt.Sprintf(`SELECT %s FROM %s WHERE "public_id" = $1`, toSelectClause(m), m.TableRef())
+	c, err := s.ConnectionManager.Connection(ctx)
 	if err != nil {
 		return iterators.NewError(err)
 	}
@@ -238,38 +305,40 @@ func (s ReleasePilotPgStorage) FindByPublicID(ctx context.Context, externalID st
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func (p *Postgres) ReleaseRollout(ctx context.Context) release.RolloutStorage {
-	return ReleaseRolloutPgStorage{
-		Storage: postgresql.NewStorage(release.Rollout{}, p.ConnectionManager, postgresql.Mapper{
-			Table:   "release_rollouts",
-			ID:      "id",
-			NewIDFn: newIDFn,
-			Columns: []string{`id`, `flag_id`, `env_id`, `plan`},
-			ToArgsFn: func(ptr interface{}) ([]interface{}, error) {
-				e := ptr.(*release.Rollout)
-				return []interface{}{
-					e.ID,
-					e.FlagID,
-					e.EnvironmentID,
-					releaseRolloutPlanValue{RolloutPlan: e.Plan},
-				}, nil
-			},
-			MapFn: func(s iterators.SQLRowScanner, ptr interface{}) error {
-				var rollout release.Rollout
-				var rolloutPlanValue releaseRolloutPlanValue
-				if err := s.Scan(
-					&rollout.ID,
-					&rollout.FlagID,
-					&rollout.EnvironmentID,
-					&rolloutPlanValue,
-				); err != nil {
-					return err
-				}
+	return p.storage.ReleaseRollout.Do(func() interface{} {
+		return ReleaseRolloutPgStorage{
+			Storage: p.mkPostgresqlStorage(release.Rollout{}, postgresql.Mapper{
+				Table:   "release_rollouts",
+				ID:      "id",
+				NewIDFn: newIDFn,
+				Columns: []string{`id`, `flag_id`, `env_id`, `plan`},
+				ToArgsFn: func(ptr interface{}) ([]interface{}, error) {
+					e := ptr.(*release.Rollout)
+					return []interface{}{
+						e.ID,
+						e.FlagID,
+						e.EnvironmentID,
+						releaseRolloutPlanValue{RolloutPlan: e.Plan},
+					}, nil
+				},
+				MapFn: func(s iterators.SQLRowScanner, ptr interface{}) error {
+					var rollout release.Rollout
+					var rolloutPlanValue releaseRolloutPlanValue
+					if err := s.Scan(
+						&rollout.ID,
+						&rollout.FlagID,
+						&rollout.EnvironmentID,
+						&rolloutPlanValue,
+					); err != nil {
+						return err
+					}
 
-				rollout.Plan = rolloutPlanValue.RolloutPlan
-				return reflects.Link(rollout, ptr)
-			},
-		}),
-	}
+					rollout.Plan = rolloutPlanValue.RolloutPlan
+					return reflects.Link(rollout, ptr)
+				},
+			}),
+		}
+	}).(ReleaseRolloutPgStorage)
 }
 
 type ReleaseRolloutPgStorage struct {
@@ -303,9 +372,9 @@ func (rp *releaseRolloutPlanValue) Scan(iSRC interface{}) error {
 func (s ReleaseRolloutPgStorage) FindByFlagEnvironment(ctx context.Context, flag release.Flag, env release.Environment, rollout *release.Rollout) (bool, error) {
 	m := s.Mapping
 	tmpl := `SELECT %s FROM %s WHERE flag_id = $1 AND env_id = $2`
-	query := fmt.Sprintf(tmpl, toSelectClause(m), m.TableName())
+	query := fmt.Sprintf(tmpl, toSelectClause(m), m.TableRef())
 
-	c, err := s.ConnectionManager.GetConnection(ctx)
+	c, err := s.ConnectionManager.Connection(ctx)
 	if err != nil {
 		return false, err
 	}
@@ -324,22 +393,24 @@ func (s ReleaseRolloutPgStorage) FindByFlagEnvironment(ctx context.Context, flag
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func (p *Postgres) ReleaseEnvironment(ctx context.Context) release.EnvironmentStorage {
-	return ReleaseEnvironmentPgStorage{
-		Storage: postgresql.NewStorage(release.Environment{}, p.ConnectionManager, postgresql.Mapper{
-			Table:   "release_environments",
-			ID:      "id",
-			NewIDFn: newIDFn,
-			Columns: []string{`id`, `name`},
-			ToArgsFn: func(ptr interface{}) ([]interface{}, error) {
-				e := ptr.(*release.Environment)
-				return []interface{}{e.ID, e.Name}, nil
-			},
-			MapFn: func(s iterators.SQLRowScanner, ptr interface{}) error {
-				e := ptr.(*release.Environment)
-				return s.Scan(&e.ID, &e.Name)
-			},
-		}),
-	}
+	return p.storage.ReleaseEnvironment.Do(func() interface{} {
+		return ReleaseEnvironmentPgStorage{
+			Storage: p.mkPostgresqlStorage(release.Environment{}, postgresql.Mapper{
+				Table:   "release_environments",
+				ID:      "id",
+				NewIDFn: newIDFn,
+				Columns: []string{`id`, `name`},
+				ToArgsFn: func(ptr interface{}) ([]interface{}, error) {
+					e := ptr.(*release.Environment)
+					return []interface{}{e.ID, e.Name}, nil
+				},
+				MapFn: func(s iterators.SQLRowScanner, ptr interface{}) error {
+					e := ptr.(*release.Environment)
+					return s.Scan(&e.ID, &e.Name)
+				},
+			}),
+		}
+	}).(ReleaseEnvironmentPgStorage)
 }
 
 type ReleaseEnvironmentPgStorage struct {
@@ -357,9 +428,9 @@ func (s ReleaseEnvironmentPgStorage) FindByAlias(ctx context.Context, idOrName s
 	} else {
 		format = `SELECT %s FROM %s WHERE name = $1`
 	}
-	query = fmt.Sprintf(format, toSelectClause(m), m.TableName())
+	query = fmt.Sprintf(format, toSelectClause(m), m.TableRef())
 
-	c, err := s.ConnectionManager.GetConnection(ctx)
+	c, err := s.ConnectionManager.Connection(ctx)
 	if err != nil {
 		return false, err
 	}
@@ -374,38 +445,40 @@ func (s ReleaseEnvironmentPgStorage) FindByAlias(ctx context.Context, idOrName s
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func (p *Postgres) SecurityToken(ctx context.Context) security.TokenStorage {
-	return SecurityTokenPgStorage{
-		Storage: postgresql.NewStorage(security.Token{}, p.ConnectionManager, postgresql.Mapper{
-			Table:   "tokens", // TODO: change it to security_tokens
-			ID:      "id",
-			NewIDFn: newIDFn,
-			Columns: []string{`id`, `sha512`, `duration`, `issued_at`, `owner_uid`},
-			ToArgsFn: func(ptr interface{}) ([]interface{}, error) {
-				e := ptr.(*security.Token)
-				return []interface{}{
-					e.ID,
-					e.SHA512,
-					e.Duration,
-					e.IssuedAt.UTC(),
-					e.OwnerUID,
-				}, nil
-			},
-			MapFn: func(s iterators.SQLRowScanner, ptr interface{}) error {
-				var src security.Token
-				if err := s.Scan(
-					&src.ID,
-					&src.SHA512,
-					&src.Duration,
-					&src.IssuedAt,
-					&src.OwnerUID,
-				); err != nil {
-					return err
-				}
-				src.IssuedAt = src.IssuedAt.UTC()
-				return reflects.Link(src, ptr)
-			},
-		}),
-	}
+	return p.storage.SecurityToken.Do(func() interface{} {
+		return SecurityTokenPgStorage{
+			Storage: p.mkPostgresqlStorage(security.Token{}, postgresql.Mapper{
+				Table:   "tokens", // TODO: change it to security_tokens
+				ID:      "id",
+				NewIDFn: newIDFn,
+				Columns: []string{`id`, `sha512`, `duration`, `issued_at`, `owner_uid`},
+				ToArgsFn: func(ptr interface{}) ([]interface{}, error) {
+					e := ptr.(*security.Token)
+					return []interface{}{
+						e.ID,
+						e.SHA512,
+						e.Duration,
+						e.IssuedAt.UTC(),
+						e.OwnerUID,
+					}, nil
+				},
+				MapFn: func(s iterators.SQLRowScanner, ptr interface{}) error {
+					var src security.Token
+					if err := s.Scan(
+						&src.ID,
+						&src.SHA512,
+						&src.Duration,
+						&src.IssuedAt,
+						&src.OwnerUID,
+					); err != nil {
+						return err
+					}
+					src.IssuedAt = src.IssuedAt.UTC()
+					return reflects.Link(src, ptr)
+				},
+			}),
+		}
+	}).(SecurityTokenPgStorage)
 }
 
 type SecurityTokenPgStorage struct {
@@ -415,12 +488,12 @@ type SecurityTokenPgStorage struct {
 func (s SecurityTokenPgStorage) FindTokenBySHA512Hex(ctx context.Context, sha512hex string) (*security.Token, error) {
 	m := s.Mapping
 
-	c, err := s.ConnectionManager.GetConnection(ctx)
+	c, err := s.ConnectionManager.Connection(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	query := fmt.Sprintf(`SELECT %s FROM %s WHERE "sha512" = $1`, toSelectClause(m), m.TableName())
+	query := fmt.Sprintf(`SELECT %s FROM %s WHERE "sha512" = $1`, toSelectClause(m), m.TableRef())
 	row := c.QueryRowContext(ctx, query, sha512hex)
 
 	var t security.Token
@@ -439,5 +512,5 @@ func (s SecurityTokenPgStorage) FindTokenBySHA512Hex(ctx context.Context, sha512
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func toSelectClause(m postgresql.Mapping) string {
-	return strings.Join(m.ColumnNames(), `,`)
+	return strings.Join(m.ColumnRefs(), `,`)
 }

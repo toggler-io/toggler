@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/adamluzsi/frameless"
+	"github.com/adamluzsi/frameless/doubles"
 	"github.com/adamluzsi/frameless/fixtures"
 	"github.com/adamluzsi/frameless/inmemory"
 	"github.com/adamluzsi/testcase"
@@ -69,10 +70,10 @@ func TestMemoryReleasePilotStorage_smokeTest(t *testing.T) {
 
 	var pilotCreateEvents []release.Pilot
 
-	sub, err := releasePilotStorage.Subscribe(ctx, StubSub{
+	sub, err := releasePilotStorage.SubscribeToCreatorEvents(ctx, doubles.StubSubscriber{
 		HandleFunc: func(ctx context.Context, event interface{}) error {
 			switch event := event.(type) {
-			case frameless.EventCreate:
+			case frameless.CreateEvent:
 				ent := event.Entity.(release.Pilot)
 				pilotCreateEvents = append(pilotCreateEvents, ent)
 			}
@@ -103,18 +104,6 @@ func TestMemoryReleasePilotStorage_smokeTest(t *testing.T) {
 	retry.Assert(t, func(tb testing.TB) {
 		require.Contains(tb, pilotCreateEvents, *pilot)
 	})
-}
-
-type StubSub struct {
-	HandleFunc func(ctx context.Context, event interface{}) error
-	ErrorFunc  func(ctx context.Context, err error) error
-}
-
-func (sub StubSub) Handle(ctx context.Context, ent interface{}) error {
-	return sub.HandleFunc(ctx, ent)
-}
-func (sub StubSub) Error(ctx context.Context, err error) error {
-	return sub.ErrorFunc(ctx, err)
 }
 
 func TestInMemory_Namespace_isolates(t *testing.T) {

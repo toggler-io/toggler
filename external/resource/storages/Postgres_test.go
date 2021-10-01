@@ -42,10 +42,11 @@ func SpecPostgres(tb testing.TB) {
 
 	storage, err := storages.NewPostgres(getDatabaseConnectionString(tb))
 	require.Nil(tb, err)
-	defer storage.Close()
+	tb.Cleanup(func() { require.NoError(tb, storage.Close()) })
 
 	testcase.RunContract(sh.NewSpec(tb), contracts.Storage{
 		Subject: func(tb testing.TB) toggler.Storage {
+
 			return storage
 		},
 		FixtureFactory: func(tb testing.TB) frameless.FixtureFactory {
@@ -89,7 +90,7 @@ func TestPostgres_Close(t *testing.T) {
 	}
 
 	s.Then(`it will close the DB object`, func(t *testcase.T) {
-		c, err := pgGet(t).ConnectionManager.GetConnection(sh.ContextGet(t))
+		c, err := pgGet(t).ConnectionManager.Connection(sh.ContextGet(t))
 		require.Nil(t, err)
 		require.Nil(t, subject(t))
 		_, err = c.ExecContext(context.Background(), `SELECT 1`)

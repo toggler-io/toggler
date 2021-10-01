@@ -2,6 +2,8 @@ package caches
 
 import (
 	"context"
+	"sync"
+
 	"github.com/adamluzsi/frameless"
 	"github.com/adamluzsi/frameless/cache"
 	"github.com/adamluzsi/frameless/inmemory"
@@ -9,7 +11,6 @@ import (
 	"github.com/toggler-io/toggler/domains/release"
 	"github.com/toggler-io/toggler/domains/security"
 	"github.com/toggler-io/toggler/domains/toggler"
-	"sync"
 )
 
 func NewMemory(s toggler.Storage) (*Memory, error) {
@@ -35,7 +36,6 @@ func (m *Memory) Init(ctx context.Context) error {
 		newManager := func(T frameless.T, s cache.Source) (*cache.Manager, error) {
 			return cache.NewManager(T, newMemoryStorage(T, m.Memory), s)
 		}
-
 		m.releaseFlag, err = newManager(release.Flag{}, m.Source.ReleaseFlag(ctx))
 		if err != nil {
 			return
