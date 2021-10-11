@@ -67,6 +67,8 @@ github.com/adamluzsi/frameless v0.4.0/go.mod h1:flLF8nExVR/jZQbTrU65FaASpJ19XTvp
 github.com/adamluzsi/frameless v0.56.0/go.mod h1:QMVwdVnFsKaS6/CYsqCtY6QwSyOtQKvco8F9ePUNzeo=
 github.com/adamluzsi/frameless v0.60.2 h1:W8a5y2iNy0E/1E0caDTOcoE8S5Ej6bm3IbPidqhb0VE=
 github.com/adamluzsi/frameless v0.60.2/go.mod h1:QMVwdVnFsKaS6/CYsqCtY6QwSyOtQKvco8F9ePUNzeo=
+github.com/adamluzsi/frameless v0.61.0 h1:HY2NOnBgIzKnfi1P0V1DuGKzvwFdq4c43qeCikismaY=
+github.com/adamluzsi/frameless v0.61.0/go.mod h1:QMVwdVnFsKaS6/CYsqCtY6QwSyOtQKvco8F9ePUNzeo=
 github.com/adamluzsi/frameless/postgresql v0.0.0-20211001214858-2420265de785 h1:DD/9lf2iCTiuFJJUhfxUI3I1f1JwaQhzjoXWDkdFyQw=
 github.com/adamluzsi/frameless/postgresql v0.0.0-20211001214858-2420265de785/go.mod h1:h357fcX6/off9YsI+0xkCfIjBiP1MmQBkI/plSGa38A=
 github.com/adamluzsi/gorest v0.6.1 h1:2RmMia4K1rFEFtGe9BpWzYFaw9LGdg1rWBC/RguI9jw=

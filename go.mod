@@ -3,7 +3,7 @@ module github.com/toggler-io/toggler
 go 1.16
 
 require (
-	github.com/adamluzsi/frameless v0.60.2
+	github.com/adamluzsi/frameless v0.61.0
 	github.com/adamluzsi/frameless/postgresql v0.0.0-20211001214858-2420265de785
 	github.com/adamluzsi/gorest v0.6.1
 	github.com/adamluzsi/testcase v0.55.0
